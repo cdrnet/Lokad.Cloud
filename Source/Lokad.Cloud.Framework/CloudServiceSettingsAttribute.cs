@@ -11,7 +11,7 @@ namespace Lokad.Cloud.Framework
 {
 	/// <summary>Shared settings for all <see cref="CloudService"/>s.</summary>
 	[AttributeUsageAttribute(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-	public class CloudServiceSettingsAttribute
+	public class CloudServiceSettingsAttribute : Attribute
 	{
 		/// <summary>Indicates whether the service is be started by default
 		/// when the cloud app is deployed.</summary>
