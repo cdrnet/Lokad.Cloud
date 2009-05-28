@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "Lokad.Cloud", "Lokad.Cloud\Lokad.Cloud.ccproj", "{2852690A-742A-4C43-8C54-411FE4F7C31E}"
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "Lokad.Cloud", "Source\Lokad.Cloud\Lokad.Cloud.ccproj", "{2852690A-742A-4C43-8C54-411FE4F7C31E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.WebRole", "Lokad.Cloud.WebRole\Lokad.Cloud.WebRole.csproj", "{2F00BD58-DE46-4FD0-8A64-32520F86EF4D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.WebRole", "Source\Lokad.Cloud.WebRole\Lokad.Cloud.WebRole.csproj", "{2F00BD58-DE46-4FD0-8A64-32520F86EF4D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.WorkerRole", "Lokad.Cloud.WorkerRole\Lokad.Cloud.WorkerRole.csproj", "{78EC3B0C-6C2B-4919-A986-658A40A34825}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.WorkerRole", "Source\Lokad.Cloud.WorkerRole\Lokad.Cloud.WorkerRole.csproj", "{78EC3B0C-6C2B-4919-A986-658A40A34825}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageClient", "Microsoft.StorageClient\StorageClient.csproj", "{C6F30C10-E1C2-4327-BB6B-3160B479CCA1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageClient", "Source\Microsoft.StorageClient\StorageClient.csproj", "{C6F30C10-E1C2-4327-BB6B-3160B479CCA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.Framework", "Lokad.Cloud.Framework\Lokad.Cloud.Framework.csproj", "{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.Framework", "Source\Lokad.Cloud.Framework\Lokad.Cloud.Framework.csproj", "{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
