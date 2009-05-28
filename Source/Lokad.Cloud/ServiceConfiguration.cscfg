@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ServiceConfiguration serviceName="Lokad.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration">
+  <Role name="LokadCloudWebRole">
+    <Instances count="1"/>
+    <ConfigurationSettings>
+    </ConfigurationSettings>
+  </Role>
+  <Role name="LokadCloudWorkerRole">
+    <Instances count="1"/>
+    <ConfigurationSettings>
+    </ConfigurationSettings>
+  </Role>
+</ServiceConfiguration>
