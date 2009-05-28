@@ -29,7 +29,8 @@ namespace Lokad.Cloud.Framework
 		/// </remarks>
 		public void Put<T>(IEnumerable<T> messages)
 		{
-			throw new NotImplementedException();
+			// TODO: need to unify Type --> Convertion
+			Put(messages, typeof(T).FullName);
 		}
 
 		/// <summary>Put messages into the queue identified by <c>queueId</c>.</summary>

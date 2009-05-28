@@ -1,14 +1,27 @@
-﻿This library is intended as an infrastructure layer for cloud apps.
+Lokad.Cloud is intended as an infrastructure layer for cloud apps.
+
+OVERALL DESIGN
+
+- Lokad.Cloud.Framework is the sole assembly refered by the client app.
+(ideally Lokad.Cloud.Framework does not even reference the StorageClient)
+
+- Lokad.Cloud.Core contains the actual implementation.
+(it's Lokad.Cloud.Core that interacts with the StorageClient)
+
+- Lokad.Cloud.WorkerRole is the cloud host.
 
 Problems pending:
+- unification of the implicit conversions type => identifier?
 - generic design for the serialization providers?
 - generic design for logs?
 
+STORAGE SCHEMAS
 
 Blob containers part of the framework:
 
 lokad-cloud-locks
-lokad-cloud-queues
+lokad-cloud-queues-metadata
+lokad-cloud-queues-overflow
 
 Queue containers part of the framework:
 

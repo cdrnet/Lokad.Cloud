@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Lokad.Cloud.Framework")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Lokad.com")]
 [assembly: AssemblyProduct("Lokad.Cloud.Framework")]
 [assembly: AssemblyCopyright("Copyright © Lokad 2009")]
 [assembly: AssemblyTrademark("")]
