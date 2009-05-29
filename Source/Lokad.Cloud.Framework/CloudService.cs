@@ -39,6 +39,16 @@ namespace Lokad.Cloud.Framework
 			// does nothing
 		}
 
+		public BlobSet<T> GetBlobSet<T>()
+		{
+			return new BlobSet<T>(_providers.TypeMapper.GetStorageName(typeof(T)));
+		}
+
+		public BlobSet<T> GetBlobSet<T>(string containerName)
+		{
+			return new BlobSet<T>(containerName);
+		}
+
 		/// <summary>Put messages into the queue implicitely associated to the
 		/// type <c>T</c>.</summary>
 		/// <remarks>
@@ -47,7 +57,7 @@ namespace Lokad.Cloud.Framework
 		/// </remarks>
 		public void Put<T>(IEnumerable<T> messages)
 		{
-			Put(messages, _providers.TypeMapper.GetIdentifier(typeof(T)));
+			Put(messages, _providers.TypeMapper.GetStorageName(typeof(T)));
 		}
 
 		/// <summary>Put messages into the queue identified by <c>queueName</c>.</summary>

@@ -14,9 +14,9 @@ namespace Lokad.Cloud.Core
 	public interface ITypeMapperProvider
 	{
 		/// <summary>Gets the identifier associated to the specifed type.</summary>
-		string GetIdentifier(Type type);
+		string GetStorageName(Type type);
 
 		/// <summary>Gets the type based on the identifier.</summary>
-		Type GetType(string identifier);
+		Type GetType(string storageName);
 	}
 }
