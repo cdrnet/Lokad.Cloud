@@ -20,15 +20,15 @@ namespace Lokad.Cloud.Core
 	public class QueueStorageProvider : IQueueStorageProvider
 	{
 		// root for synchronized access
-		private object _sync = new object();
+		readonly object _sync = new object();
 
-		private QueueStorage _queueStorage;
-		private BlobStorage _blobStorage;
-		private ActionPolicy _policy;
-		private IFormatter _formatter;
+		readonly QueueStorage _queueStorage;
+		readonly BlobStorage _blobStorage; // needed for overflowing messages
+		readonly ActionPolicy _policy;
+		readonly IFormatter _formatter;
 
 		// messages currently being processed
-		private Dictionary<object, Message> _inprocess;
+		private readonly Dictionary<object, Message> _inprocess;
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
@@ -38,6 +38,8 @@ namespace Lokad.Cloud.Core
 			_blobStorage = blobStorage;
 			_policy = policy;
 			_formatter = formatter;
+
+			_inprocess = new Dictionary<object, Message>();
 		}
 
 		public IEnumerable<T> Get<T>(string queueName, int count)

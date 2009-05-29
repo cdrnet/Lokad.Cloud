@@ -15,10 +15,6 @@ namespace Lokad.Cloud.Framework
 	/// <see cref="CloudService"/>.</remarks>
 	public class ProvidersForCloudService
 	{
-		/// <summary>Formatter used for (de)serialization while interacting
-		/// with the cloud storage.</summary>
-		public IFormatter Formatter { get; set; }
-
 		/// <summary>Error Logger</summary>
 		public ILog Log { get; set; }
 
