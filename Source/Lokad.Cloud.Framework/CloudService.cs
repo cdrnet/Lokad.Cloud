@@ -27,6 +27,7 @@ namespace Lokad.Cloud.Framework
 			get { return GetType().FullName; }
 		}
 
+		/// <summary>IoC constructor.</summary>
 		protected CloudService(ProvidersForCloudService providers)
 		{
 			_providers = providers;
@@ -49,10 +50,10 @@ namespace Lokad.Cloud.Framework
 			Put(messages, _providers.TypeMapper.GetIdentifier(typeof(T)));
 		}
 
-		/// <summary>Put messages into the queue identified by <c>queueId</c>.</summary>
-		public void Put<T>(IEnumerable<T> messages, string queueId)
+		/// <summary>Put messages into the queue identified by <c>queueName</c>.</summary>
+		public void Put<T>(IEnumerable<T> messages, string queueName)
 		{
-			_providers.QueueStorage.Put(queueId, messages);
+			_providers.QueueStorage.Put(queueName, messages);
 		}
 	}
 }

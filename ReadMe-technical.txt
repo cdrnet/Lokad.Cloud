@@ -28,6 +28,12 @@ lokad-cloud-logs
 
 TECHNICALITIES
 
+- need to strenghten (de)serialization with starting/ending code as sanity check 
+(but that could also be used to organize the serializer versionning)
+
+- where do we apply the retry policy? directly on the storage client? and/or
+within the providers themselves?
+
 - overflowing queue items should be put into blob using the date of the date as prefix.
 Though this prefix, it becomes easy to garbage collect those items 7 days afterward
 if the message hasn't been processed.
