@@ -2,10 +2,6 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Lokad.Cloud.Framework
 {
@@ -14,6 +10,12 @@ namespace Lokad.Cloud.Framework
 	/// <see cref="ScheduledServiceSettingsAttribute"/>.</summary>
 	public abstract class ScheduledService : CloudService
 	{
+		/// <summary>IoC constructor.</summary>
+		protected ScheduledService(ProvidersForCloudService providers) : base(providers)
+		{
+			// nothing	
+		}
+
 		/// <summary>Called by the framework.</summary>
 		/// <remarks>We suggest not performing any heavy processing here. In case
 		/// of heavy processing, put a message and use <see cref="QueueService{T}"/>

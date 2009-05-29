@@ -4,16 +4,33 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Lokad.Cloud.Framework
 {
 	/// <summary>Base class for cloud services.</summary>
+	/// <remarks>Do not inherit directly from <see cref="CloudService"/>, inherit from
+	/// <see cref="QueueService{T}"/> or <see cref="ScheduledService"/> instead.</remarks>
 	public abstract class CloudService
 	{
+		internal protected ProvidersForCloudService _providers;
+
+		/// <summary>Error logger.</summary>
+		public ILog Log
+		{
+			get { return _providers.Log; }
+		}
+
 		/// <summary>Name of the service (used for reporting purposes).</summary>
-		public abstract string Name { get; }
+		/// <remarks>Default implementation returns <c>Type.FullName</c>.</remarks>
+		public virtual string Name
+		{
+			get { return GetType().FullName; }
+		}
+
+		protected CloudService(ProvidersForCloudService providers)
+		{
+			_providers = providers;
+		}
 
 		/// <summary>Called when the service is shut down.</summary>
 		public virtual void Stop()
@@ -29,14 +46,13 @@ namespace Lokad.Cloud.Framework
 		/// </remarks>
 		public void Put<T>(IEnumerable<T> messages)
 		{
-			// TODO: need to unify Type --> Convertion
-			Put(messages, typeof(T).FullName);
+			Put(messages, _providers.TypeMapper.GetIdentifier(typeof(T)));
 		}
 
 		/// <summary>Put messages into the queue identified by <c>queueId</c>.</summary>
 		public void Put<T>(IEnumerable<T> messages, string queueId)
 		{
-			throw new NotImplementedException();
+			_providers.QueueStorage.Put(queueId, messages);
 		}
 	}
 }

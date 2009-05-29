@@ -4,8 +4,6 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Lokad.Cloud.Framework
 {
@@ -20,6 +18,13 @@ namespace Lokad.Cloud.Framework
 	/// </remarks>
 	public abstract class QueueService<T> : CloudService
 	{
+		/// <summary>IoC constructor.</summary>
+		protected QueueService(ProvidersForCloudService providers)
+			: base(providers)
+		{
+			// nothing
+		}
+
 		/// <summary>Method called by the <c>Lokad.Cloud</c> framework when messages are
 		/// available for processing.</summary>
 		/// <param name="messages">Messages to be processed.</param>
@@ -30,11 +35,18 @@ namespace Lokad.Cloud.Framework
 		/// </remarks>
 		public abstract void Start(IEnumerable<T> messages);
 
+		/// <summary>Get more messages from the underlying queue.</summary>
+		/// <param name="count">Maximal number of messages to be retrieved.</param>
+		/// <returns>Retrieved messages (enumeration might be empty).</returns>
+		/// <remarks>It is suggested to <see cref="Delete"/> messages first
+		/// before asking for more.</remarks>
 		public IEnumerable<T> GetMore(int count)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <summary>Delete messages retrieved either through <see cref="Start"/>
+		/// or through <see cref="GetMore"/>.</summary>
 		public void Delete(IEnumerable<T> messages)
 		{
 			throw new NotImplementedException();

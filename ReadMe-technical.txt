@@ -10,11 +10,6 @@ OVERALL DESIGN
 
 - Lokad.Cloud.WorkerRole is the cloud host.
 
-Problems pending:
-- unification of the implicit conversions type => identifier?
-- generic design for the serialization providers?
-- generic design for logs?
-
 STORAGE SCHEMAS
 
 Blob containers part of the framework:
