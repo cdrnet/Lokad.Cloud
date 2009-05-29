@@ -7,6 +7,10 @@ using System;
 namespace Lokad.Cloud.Core
 {
 	/// <summary>Maps types to storage names, and vice-versa.</summary>
+	/// <remarks>
+	/// Spec on queue names: http://msdn.microsoft.com/en-us/library/dd179349.aspx
+	/// Spec on container names: http://msdn.microsoft.com/en-us/library/dd135715.aspx
+	/// </remarks>
 	public class TypeMapperProvider : ITypeMapperProvider
 	{
 		public string GetStorageName(Type type)
