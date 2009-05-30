@@ -12,7 +12,7 @@ namespace Lokad.Cloud.Framework
 	/// <see cref="QueueService{T}"/> or <see cref="ScheduledService"/> instead.</remarks>
 	public abstract class CloudService
 	{
-		internal protected ProvidersForCloudService _providers;
+		internal protected ProvidersForCloudStorage _providers;
 
 		/// <summary>Error logger.</summary>
 		public ILog Log
@@ -28,7 +28,7 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>IoC constructor.</summary>
-		protected CloudService(ProvidersForCloudService providers)
+		protected CloudService(ProvidersForCloudStorage providers)
 		{
 			_providers = providers;
 		}
@@ -49,12 +49,12 @@ namespace Lokad.Cloud.Framework
 
 		public BlobSet<T> GetBlobSet<T>()
 		{
-			return new BlobSet<T>(_providers.TypeMapper.GetStorageName(typeof(T)));
+			return new BlobSet<T>(_providers, _providers.TypeMapper.GetStorageName(typeof(T)));
 		}
 
 		public BlobSet<T> GetBlobSet<T>(string containerName)
 		{
-			return new BlobSet<T>(containerName);
+			return new BlobSet<T>(_providers, containerName);
 		}
 
 		/// <summary>Put messages into the queue implicitely associated to the

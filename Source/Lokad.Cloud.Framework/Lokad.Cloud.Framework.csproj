@@ -56,7 +56,7 @@
     <Compile Include="Core\IQueueStorageProvider.cs" />
     <Compile Include="Core\ITypeMapperProvider.cs" />
     <Compile Include="Cuid.cs" />
-    <Compile Include="ProvidersForCloudService.cs" />
+    <Compile Include="ProvidersForCloudStorage.cs" />
     <Compile Include="QueueServiceSettingsAttribute.cs" />
     <Compile Include="Lock.cs" />
     <Compile Include="QueueService.cs" />

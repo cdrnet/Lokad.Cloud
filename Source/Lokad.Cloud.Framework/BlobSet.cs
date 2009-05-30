@@ -27,7 +27,8 @@ namespace Lokad.Cloud.Framework
 	/// through IoC.</remarks>
 	public class BlobSet<T> : IEnumerable<T>
 	{
-		private readonly string _name;
+		readonly ProvidersForCloudStorage _providers;
+		readonly string _name;
 
 		/// <summary>Storage identifier for this collection.</summary>
 		/// <remarks>This identifier is used as <em>prefix</em> through the blob storage
@@ -38,8 +39,9 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>Constructor that specifies the <see cref="Name"/>.</summary>
-		internal BlobSet(string name)
+		internal BlobSet(ProvidersForCloudStorage providers, string name)
 		{
+			_providers = providers;
 			_name = name;
 		}
 

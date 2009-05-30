@@ -23,7 +23,7 @@ namespace Lokad.Cloud.Framework
 		readonly int _batchSize;
 
 		/// <summary>IoC constructor.</summary>
-		protected QueueService(ProvidersForCloudService providers)
+		protected QueueService(ProvidersForCloudStorage providers)
 			: base(providers)
 		{
 			var settings = GetType().GetAttribute<QueueServiceSettingsAttribute>(true);

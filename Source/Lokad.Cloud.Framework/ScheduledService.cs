@@ -11,7 +11,7 @@ namespace Lokad.Cloud.Framework
 	public abstract class ScheduledService : CloudService
 	{
 		/// <summary>IoC constructor.</summary>
-		protected ScheduledService(ProvidersForCloudService providers) : base(providers)
+		protected ScheduledService(ProvidersForCloudStorage providers) : base(providers)
 		{
 			// nothing	
 		}
