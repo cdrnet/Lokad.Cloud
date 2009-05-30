@@ -16,10 +16,17 @@ namespace Lokad.Cloud.Framework
 			// nothing	
 		}
 
+		/// <seealso cref="CloudService.Start"/>
+		public override bool Start()
+		{
+			// TODO: must check here that the activation time is right.
+			throw new System.NotImplementedException();
+		}
+
 		/// <summary>Called by the framework.</summary>
 		/// <remarks>We suggest not performing any heavy processing here. In case
 		/// of heavy processing, put a message and use <see cref="QueueService{T}"/>
 		/// instead.</remarks>
-		public abstract void Start();
+		public abstract void StartOnSchedule();
 	}
 }

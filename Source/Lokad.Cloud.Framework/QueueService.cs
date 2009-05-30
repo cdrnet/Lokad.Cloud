@@ -4,6 +4,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lokad.Cloud.Framework
 {
@@ -18,11 +19,37 @@ namespace Lokad.Cloud.Framework
 	/// </remarks>
 	public abstract class QueueService<T> : CloudService
 	{
+		readonly string _queueName;
+		readonly int _batchSize;
+
 		/// <summary>IoC constructor.</summary>
 		protected QueueService(ProvidersForCloudService providers)
 			: base(providers)
 		{
-			// nothing
+			var settings = GetType().GetAttribute<QueueServiceSettingsAttribute>(true);
+
+			if(null != settings) // settings are provided through custom attribute
+			{
+				_queueName = settings.QueueName;
+				_batchSize = settings.BatchSize;
+			}
+			else // default setting
+			{
+				_queueName = _providers.TypeMapper.GetStorageName(typeof (T));
+				_batchSize = 1;
+			}
+		}
+
+		/// <summary>Do not override this method, use <see cref="Start(IEnumerable{T})"/>
+		/// instead.</summary>
+		public override bool Start()
+		{
+			var messages = _providers.QueueStorage.Get<T>(_queueName, _batchSize);
+
+			var count = messages.Count();
+			if (count > 0) Start(messages);
+
+			return count > 0;
 		}
 
 		/// <summary>Method called by the <c>Lokad.Cloud</c> framework when messages are

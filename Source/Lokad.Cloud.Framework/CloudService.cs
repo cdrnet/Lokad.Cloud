@@ -33,6 +33,14 @@ namespace Lokad.Cloud.Framework
 			_providers = providers;
 		}
 
+		/// <summary>Called when the service is launched.</summary>
+		/// <returns><c>true</c> if the service did actually perform an operation, and
+		/// <c>false</c> otherwise. This value is used by the framework to adjust the
+		/// start frequency of the respective services.</returns>
+		/// <remarks>This method is expected to be implemented by the framework services
+		/// not by the app services.</remarks>
+		public abstract bool Start();
+
 		/// <summary>Called when the service is shut down.</summary>
 		public virtual void Stop()
 		{
