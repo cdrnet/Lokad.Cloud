@@ -15,7 +15,9 @@ namespace Lokad.Cloud.Core
 	public interface IBlobStorageProvider
 	{
 		/// <summary>Creates a new blob container.</summary>
-		void CreateContainer(string containerName);
+		/// <returns><c>true</c> if the container was actually created and false if
+		/// the container already exists.</returns>
+		bool CreateContainer(string containerName);
 
 		/// <summary>Delete a container.</summary>
 		/// <remarks>Returns <c>true</c> if the container has been actually deleted.</remarks>

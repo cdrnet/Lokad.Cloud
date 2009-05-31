@@ -55,7 +55,6 @@ namespace Lokad.Cloud.Core
 				foreach(var rawMessage in rawMessages)
 				{
 					var stream = new MemoryStream(rawMessage.ContentAsBytes());
-
 					var innerMessage = _formatter.Deserialize(stream);
 
 					if(innerMessage is T)
