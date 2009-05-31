@@ -46,7 +46,7 @@
 	<Target Name="Clean">
 		<MSBuild Projects="$(ProjectName).sln" 
 			Targets="Clean" 
-			Properties="Configuration=$(Configuration);CloudExtensionsDir=$(CloudExtensionsDir);"/>
+			Properties="Configuration=$(Configuration)"/>
 
 		<CreateItem Include="**/Debug/**/*.*;**/Release/**/*.*">
 			<Output ItemName="_binaryFiles" TaskParameter="Include"/>
