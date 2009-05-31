@@ -48,3 +48,6 @@ process corresponding messages).
 
 - timeouting items should not be bluntly discarded, instead they should be put into
 a dedicated persistent storage (maybe a HashSet) for later processing and/or investigation.
+
+- the Windows Azure SDK is relying on custom MsBuild tasks (.ccproj files), the files need
+to be manually deployed along with the Windows Azure SDK (only shipped with the VS tools).

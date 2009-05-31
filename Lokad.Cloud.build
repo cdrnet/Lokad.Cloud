@@ -10,9 +10,7 @@
 		<ArtifactDirectory Condition="$(ArtifactDirectory)==''">$(BuildPath)\Artifact</ArtifactDirectory>
 		<PublicationRoot Condition="$(PublicationRoot)==''">$(BuildPath)\_Package</PublicationRoot>
 		<PackageDirectory Condition="$(PackageDirectory)==''">$(BuildPath)\_Package\Package\$(Version)</PackageDirectory>
-		
-		<!-- Needed to compile .ccproj (Windows Azure packages) -->
-		<CloudExtensionsDir>$(MSBuildProjectDirectory)\Resource\Build\</CloudExtensionsDir>
+	
 		
 		<!--Derived-->
 
@@ -37,17 +35,18 @@
 
 	<Target Name="Build">
 		<MSBuild Projects="$(ProjectName).sln" 
-						 Targets="Build" 
-						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(CloudExtensionsDir)"/>
+				 Targets="Build" 
+						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile);"/>
 
-		<!-- no publish for now
 		<MSBuild Projects="$(ProjectName).sln" 
-						 Targets="publish"
-						 Properties="Configuration=$(Configuration);ApplicationVersion=$(Version);ConfigProfile=$(ConfigProfile)" /> -->
+				 Targets="publish"
+				 Properties="Configuration=$(Configuration);ApplicationVersion=$(Version);ConfigProfile=$(ConfigProfile)" />
 	</Target>
 
 	<Target Name="Clean">
-		<MSBuild Projects="$(ProjectName).sln" Targets="Clean" Properties="Configuration=$(Configuration)"/>
+		<MSBuild Projects="$(ProjectName).sln" 
+			Targets="Clean" 
+			Properties="Configuration=$(Configuration);CloudExtensionsDir=$(CloudExtensionsDir);"/>
 
 		<CreateItem Include="**/Debug/**/*.*;**/Release/**/*.*">
 			<Output ItemName="_binaryFiles" TaskParameter="Include"/>
