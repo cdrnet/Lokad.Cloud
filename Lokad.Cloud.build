@@ -10,6 +10,10 @@
 		<ArtifactDirectory Condition="$(ArtifactDirectory)==''">$(BuildPath)\Artifact</ArtifactDirectory>
 		<PublicationRoot Condition="$(PublicationRoot)==''">$(BuildPath)\_Package</PublicationRoot>
 		<PackageDirectory Condition="$(PackageDirectory)==''">$(BuildPath)\_Package\Package\$(Version)</PackageDirectory>
+		
+		<!-- Needed to compile .ccproj (Windows Azure packages) -->
+		<CloudExtensionsDir>$(MSBuildProjectDirectory)\Resource\Build\</CloudExtensionsDir>
+		
 		<!--Derived-->
 
 		<TestPath>$(BuildPath)\Test</TestPath>
@@ -34,7 +38,7 @@
 	<Target Name="Build">
 		<MSBuild Projects="$(ProjectName).sln" 
 						 Targets="Build" 
-						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile)"/>
+						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(CloudExtensionsDir)"/>
 
 		<!-- no publish for now
 		<MSBuild Projects="$(ProjectName).sln" 

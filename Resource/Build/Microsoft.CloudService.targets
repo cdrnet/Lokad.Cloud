@@ -1,0 +1,647 @@
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- =========================================================== 
+       Setup the place where we look for the Windows Azure SDK 
+       =========================================================== -->
+
+  <!-- Set installation properties. These properties can be overriden to support non-default installation -->
+  <PropertyGroup>
+    <ServiceHostingSDKInstallDir Condition=" '$(ServiceHostingSDKInstallDir)' == '' ">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\ServiceHosting\v1.0@InstallPath)</ServiceHostingSDKInstallDir>
+    <ServiceHostingSDKSupport    Condition=" '$(ServiceHostingSDKSupport)' == '' ">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\ServiceHosting\v1.0@ToolsVersionSupportLevel)</ServiceHostingSDKSupport> 
+    <!-- Ensure ServiceHostingSDKInstallDir has a trailing slash, so it can be concatenated -->
+    <ServiceHostingSDKInstallDir Condition=" '$(ServiceHostingSDKInstallDir)' != '' and !HasTrailingSlash('$(ServiceHostingSDKInstallDir)')">$(ServiceHostingSDKInstallDir)\</ServiceHostingSDKInstallDir>
+
+    <ServiceHostingSDKBinDir     Condition=" '$(ServiceHostingSDKBinDir)' == '' ">$(ServiceHostingSDKInstallDir)bin\</ServiceHostingSDKBinDir>
+
+    <ServiceHostingSDKTaskPath   Condition=" '$(ServiceHostingSDKTaskPath)' == '' ">$(ServiceHostingSDKBinDir)Microsoft.ServiceHosting.Tools.MSBuildTasks.dll</ServiceHostingSDKTaskPath>
+
+  </PropertyGroup>
+
+  <!-- =========================================================== 
+       Bring in the CSPack MSBuild task 
+       =========================================================== -->
+  <UsingTask TaskName="CSPack"                AssemblyFile="$(ServiceHostingSDKTaskPath)" Condition=" Exists('$(ServiceHostingSDKTaskPath)') " />
+  <UsingTask TaskName="ValidateServiceFiles"  AssemblyFile="$(ServiceHostingSDKTaskPath)" Condition=" Exists('$(ServiceHostingSDKTaskPath)') " />
+
+  <!-- =========================================================== 
+       Bring in our tasks
+       =========================================================== -->
+  <PropertyGroup>
+    <CloudExtensionsDir       Condition=" '$(CloudExtensionsDir)' == '' ">$(MSBuildExtensionsPath)\Microsoft\Cloud Service\v1.0\</CloudExtensionsDir>
+
+    <CloudExtensionsTaskPath  Condition=" '$(CloudExtensionsTaskPath)' == '' ">$(CloudExtensionsDir)Microsoft.CloudService.MSBuildTasks.dll</CloudExtensionsTaskPath>
+  </PropertyGroup>
+
+  <UsingTask TaskName="ItemGroupsOrderedMerge"  AssemblyFile="$(CloudExtensionsTaskPath)" />
+  <UsingTask TaskName="XPathQuery"              AssemblyFile="$(CloudExtensionsTaskPath)" />
+  <UsingTask TaskName="IsolatedCSPack"          AssemblyFile="$(CloudExtensionsTaskPath)" />
+
+  <!-- =========================================================== 
+       Import the Common targets file and override the standard 
+       tasks that VS expects to perform a build 
+       =========================================================== -->
+
+  <!-- Import the Common targets file -->
+  <Import Project="$(MSBuildBinPath)\Microsoft.Common.targets" />
+
+  <!-- =========================================================== 
+       Property Declarations
+       =========================================================== -->
+
+  <PropertyGroup>
+
+    <!-- The level of ToolsVersionSupportLevel this msi will support-->
+    <ServiceHostingVSSupport>3</ServiceHostingVSSupport>
+    <!-- Example, bin\Debug\Compute.csx\  -->
+    <ServiceOutputDirectory Condition=" '$(ServiceOutputDirectory)' == '' ">$(OutDir)$(ProjectName).csx\</ServiceOutputDirectory>
+
+    <!-- The local path where Windows Azure compiler outputs the roles -->
+    <ServiceHosting_HardcodedDirectory Condition =" '$(ServiceHosting_HardcodedDirectory)' == '' ">roles\</ServiceHosting_HardcodedDirectory>
+
+    <!-- The namespace of the service definition and service configuration xml files -->
+    <ServiceDefinitionNamespace>http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition</ServiceDefinitionNamespace>
+    <ServiceConfigurationNamespace>http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration</ServiceConfigurationNamespace>
+
+    <!-- SSL properties. These new property names holds the same value of the thumbprint property 
+         inside the project file. We use new names, so we don't override the one in the project file. -->
+    <_DevelopmentSslCertificateThumbprint Condition=" '$(DevelopmentSslCertificateEnabled)' == 'True' ">$(DevelopmentSslCertificateThumbprint)</_DevelopmentSslCertificateThumbprint>
+    <_DevelopmentSslCertificateThumbprint Condition=" '$(DevelopmentSslCertificateEnabled)' != 'True' "></_DevelopmentSslCertificateThumbprint>
+
+    <_PublishSslCertificateThumbprint Condition=" '$(PublishSslCertificateEnabled)' == 'True' ">$(PublishSslCertificateThumbprint)</_PublishSslCertificateThumbprint>
+    <_PublishSslCertificateThumbprint Condition=" '$(PublishSslCertificateEnabled)' != 'True' "></_PublishSslCertificateThumbprint>
+
+  </PropertyGroup>
+  
+  <!-- =========================================================== 
+       Override the CoreBuildDependsOn property from Microsoft.Common.targets
+       to the targets that are needed for the CloudExtensions target
+       =========================================================== -->
+
+  <PropertyGroup>
+    <CoreBuildDependsOn>
+      BuildOnlySettings;
+      PrepareForBuild;
+      PreBuildEvent;
+      ResolveReferences;
+      PackageComputeService;
+      GetTargetPath;
+      IncrementalClean;
+      PostBuildEvent
+    </CoreBuildDependsOn>
+  </PropertyGroup>
+
+
+  <!-- =============== PackageComputeService ======================================== 
+       Packages the compute service project
+       ============================================================================== -->
+  <PropertyGroup>
+    <PackageComputeServiceDependsOn>
+      BeforePackageComputeService;
+      CorePackageComputeService;
+      AfterPackageComputeService;
+    </PackageComputeServiceDependsOn>
+  </PropertyGroup>
+  <Target
+    Name="PackageComputeService"
+    DependsOnTargets="$(PackageComputeServiceDependsOn)" />
+
+  <!-- Redefine this target in your project in order to run tasks just before Build -->
+  <Target Name="BeforePackageComputeService" />
+
+  <!-- Redefine this target in your project in order to run tasks just before Build -->
+  <Target Name="AfterPackageComputeService" />
+
+  <!-- =============== CorePackageComputeService ==================================== 
+       This is the core packaging target. It uses CSPack task to package the compute
+       project. 
+       ============================================================================== -->
+  <PropertyGroup>
+    <CorePackageComputeServiceDependsOn>
+      VerifySDKInstallation;
+      FindServiceDefinition;
+      FindServiceConfiguration;
+      ResetTargetNames;
+      ValidateComputeProject;
+      ResolveRoleReferences;
+      RetrieveRoleNames;
+    </CorePackageComputeServiceDependsOn>
+  </PropertyGroup>
+  <Target
+    Name="CorePackageComputeService"
+    DependsOnTargets="$(CorePackageComputeServiceDependsOn)"
+    >
+
+    <Message Text="Start - PackageComputeService" />
+    <Message Text="ServiceHostingSDKInstallDir is $(ServiceHostingSDKInstallDir)" />
+
+    <ItemGroup>
+      <Roles Include="@(RoleReferences->'%(OutputDir)')" >
+        <RoleName>%(RoleName)</RoleName>
+        <EntryPoint>%(EntryPoint)</EntryPoint>
+        <SourceDir>%(SourceDir)</SourceDir>
+      </Roles>
+    </ItemGroup>
+
+    <Message Text="ModelFile            is @(ServiceDefinition)" />
+    <Message Text="OutputDirectory      is $(ServiceOutputDirectory)" />
+    <Message Text="PackRoles            is @(Roles), Name=%(RoleName), EntryPoint=%(EntryPoint), SourceDir=%(SourceDir)" />
+
+    <Message Text="Calling ServicePack" />
+
+    <Message Text="DevelopmentSslCertificateThumbprint = $(_DevelopmentSslCertificateThumbprint)" />
+
+    <CSPack
+      ServiceDefinitionFile="@(ServiceDefinition)"
+      Output="$(ServiceOutputDirectory)"
+      PackRoles="@(Roles)"
+      DevelopmentSSLCertificateThumbprint="$(_DevelopmentSslCertificateThumbprint)"
+      CopyOnly="true"
+     >
+      <Output TaskParameter="OutputFiles" ItemName="FileWrites" />
+    </CSPack>
+
+    <!-- Add generated policy files and others to the FileWrites list -->
+    <ItemGroup>
+      <FileWrites Include=" $(ServiceOutputDirectory)**\__entrypoint.txt " />
+    </ItemGroup>
+
+    <!-- Copy service configuration to output directory -->
+    <Message Text="Copying the service configuration." />
+    <Copy
+      SourceFiles="@(ServiceConfiguration)"
+      DestinationFolder="$(OutDir)"
+     >
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+
+    <Message Text="End - PackageComputeService" />
+
+  </Target>
+
+
+  <!-- =============== VerifySDKInstallation ======================================== 
+       Verify that the Computing SDK is installed and it is compatible with this version of tools
+       ============================================================================== -->
+  <Target Name="VerifySDKInstallation">
+
+    <Error Condition=" !Exists('$(ServiceHostingSDKInstallDir)') or 
+                       !Exists('$(ServiceHostingSDKBinDir)') or 
+                       !Exists('$(ServiceHostingSDKTaskPath)') "
+          Text="Failed to locate the Windows Azure SDK. Please make sure the Windows Azure SDK v1.0 is installed." />
+
+    <Error Condition="'$(ServiceHostingSDKSupport)' != '$(ServiceHostingVSSupport)'" Code="CCT050" HelpKeyword="SDKVersionNotSupported"
+          Text="The version of the Windows Azure SDK currently installed is not compatible with this version of Windows Azure Tools for Microsoft Visual Studio.  Please download and install the latest version of both the Windows Azure SDK and the Windows Azure Tools for Microsoft Visual Studio"/>
+    
+  </Target>
+
+  <!-- =============== FindServiceDefinition  ============================================ 
+       Finds the service definition in the project and raises an error if it is not found. 
+       ============================================================================== -->
+  <Target Name="FindServiceDefinition">
+
+    <!--Find the Compute Application Model File -->
+    <Message Text="ServiceDefinition in @(ServiceDefinition)" Importance="normal"/>
+
+    <Error Condition=" '@(ServiceDefinition)' == '' "
+           Text="No service definition file has been specified"
+           Code="CCT010"
+           HelpKeyword="MissingModelFile"/>
+
+    <!-- Only one active service definition can be active, check for that and throw an error -->
+    <Error Condition=" '@(ServiceDefinition)' == '' or '@(ServiceDefinition->'%(dummy)')' != '' "
+           Text="Only one service definition can be active."
+           Code="CCT020"
+           HelpKeyword="OneActiveModelFile" />
+
+  </Target>
+
+  <!-- =============== FindServiceConfiguration  ============================================ 
+       Finds the Service Configuration file in the project and raises an error if it is not found. 
+       ============================================================================== -->
+  <Target Name="FindServiceConfiguration">
+
+    <Message Text="ServiceConfigurationFile is @(ServiceConfiguration)" />
+
+    <!-- Compute project must contain at least one service configuration file -->
+    <Error Condition=" '@(ServiceConfiguration)' == '' "
+           Text="No service configuration file has been specified"
+           Code="CCT030"
+           HelpKeyword="MissingServiceConfiguration"/>
+
+    <!-- Only one service configuration per compute project, check for that and throw an error -->
+    <Error Condition=" '@(ServiceConfiguration)' == '' or '@(ServiceConfiguration->'%(dummy)')' != '' "
+           Text="Only one Service Configuration file per Compute project."
+           Code="CCT040"
+           HelpKeyword="OneServiceConfigurationFile" />
+
+  </Target>
+
+
+  <!-- =============== ResetTargetNames  ==================================== 
+       Resets the $(TargetName) and $(TargetExt) to be compute specific.
+
+       Properties:
+           TargetName - the name of the compute app model file 
+           TargetExt  - the extension of the compute app model file 
+       ========================================================================== -->
+  <Target Name="ResetTargetNames">
+
+    <PropertyGroup>
+      <TargetDir>$(ServiceOutputDirectory)</TargetDir>
+      <TargetName>@(ServiceDefinition->'%(filename)')</TargetName>
+      <TargetExt>.rd</TargetExt>
+      <TargetFileName>$(TargetName)$(TargetExt)</TargetFileName>
+      <TargetPath>$(TargetDir)$(TargetFileName)</TargetPath>
+    </PropertyGroup>
+
+    <Message Text="Reset the targetDir      to $(TargetDir)" />
+    <Message Text="Reset the TargetName     to $(TargetName)" />
+    <Message Text="Reset the TargetExt      to $(TargetExt)" />
+    <Message Text="Reset the TargetFileName to $(TargetFileName)" />
+    <Message Text="Reset the TargetPath     to $(TargetPath)" />
+
+  </Target>
+
+  <!-- =============== ResolveRoleReferences ======================== 
+       Finds the role projects defined in the project file.      
+
+       [OUT]
+       
+       RoleReferences: (item) list of all project references for
+            web and worker. Each item contains these properties:
+              - @         : Path to the project file.
+              - Role      : The name of the role, Web, or Worker.
+              - OutputDir : The path where we can find the outputs of the role.
+              
+       RoleReferencesFiles: (item) recursive file list of all the
+            files of the role references.
+
+      ========================================================================== -->
+  <Target Name="ResolveRoleReferences">
+
+    <!-- Get all the roles from the project references section -->
+    <ItemGroup>
+      <WebRoleReferences Include="@(ProjectReference->'%(Identity)')" Condition=" '%(RoleType)' == 'Web' " >
+        <RoleType>%(RoleType)</RoleType>
+        <ProjectName>%(Name)</ProjectName>
+      </WebRoleReferences>
+      <WorkerRoleReferences Include="@(ProjectReference->'%(Identity)')" Condition=" '%(RoleType)' == 'Worker' " >
+        <RoleType>%(RoleType)</RoleType>
+        <ProjectName>%(Name)</ProjectName>
+      </WorkerRoleReferences>
+    </ItemGroup>
+
+    <!-- Get the fullpath of the Compute intermediate output path to pass to MSBuild bellow -->
+    <ItemGroup>
+      <IntermediateOutputPathItem Include="$(IntermediateOutputPath)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <IntermediateOutputFullPath>@(IntermediateOutputPathItem->'%(FullPath)')</IntermediateOutputFullPath>
+    </PropertyGroup>
+
+    <Message Text="Web = @(WebRoleReferences), role=%(RoleType), projname=%(ProjectName)" />
+    <Message Text="Worker = @(WorkerRoleReferences), role=%(RoleType), projname=%(ProjectName)" />
+    <Message Text="BuildingProject = $(BuildingProject)" />
+    <Message Text="BuildingSolutionFile = $(BuildingSolutionFile)" />
+    <Message Text="BuildingInsideVisualStudio = $(BuildingInsideVisualStudio)" />
+    <Message Text="IntermediateOutputPath.FullPath = $(IntermediateOutputFullPath)" />
+
+    <!-- 
+    ========================
+    Web : Publish the web role to an intermediate location. 
+    ========================
+    -->
+
+    <!-- Get the output path of the web role -->
+    <MSBuild
+      Condition=" '@(WebRoleReferences)' != '' "
+      Projects="@(WebRoleReferences)"
+      Targets="GetTargetPath"
+      Properties="Configuration=$(Configuration); Platform=$(Platform)"
+      ContinueOnError="false"
+      >
+      <Output TaskParameter="TargetOutputs" ItemName="WebTargetPathItem" />
+    </MSBuild>
+
+    <!-- Include the TargetDir metadata into every item of WebRoleReferences -->
+    <ItemGroupsOrderedMerge
+      Condition=" '@(WebRoleReferences)' != '' "
+      MainList="@(WebRoleReferences)"
+      Values="@(WebTargetPathItem->'%(RootDir)%(Directory)')"
+      MetadataName="TargetDir"
+      >
+      <Output TaskParameter="OutputList" ItemName="WebRoleReferencesWithTargetPath" />
+    </ItemGroupsOrderedMerge>
+
+    <!-- Set WebRoleReferences from WebRoleReferencesWithTargetPath -->
+    <ItemGroup Condition=" '@(WebRoleReferences)' != '' " >
+      <WebRoleReferences Remove="@(WebRoleReferences)" />
+      <WebRoleReferences Include="@(WebRoleReferencesWithTargetPath)" />
+    </ItemGroup>
+
+    <!-- Call the prepare for run target with build at the same location of the web project.
+         This will make sure the build is bypassed because files are up to date, and this 
+         will only generate the _PublishedWebsites folder. 
+         
+         Set UseHostCompilerIfAvailable to false to make sure that the up to date check on
+         the CoreCompile target is done using its inputs and outputs instead of the 
+         Csc host object for Visual Studio.
+    -->
+    <MSBuild
+      Condition=" '@(WebRoleReferences)' != '' "
+      Projects="@(WebRoleReferences)"
+      Targets="Build;PrepareForRun"
+      Properties="OutDir=%(TargetDir); Configuration=$(Configuration); Platform=$(Platform); UseHostCompilerIfAvailable=false"
+      ContinueOnError="false"
+      >
+    </MSBuild>
+
+    <!-- Set the projected output directory on the web role -->
+    <ItemGroup Condition=" '@(WebRoleReferences)' != '' " >
+      <WebRoleReferences>
+        <OutputDir>$(IntermediateOutputPath)%(ProjectName)\</OutputDir>
+        <SourceDir>%(RootDir)%(Directory)</SourceDir>
+        <!-- web doesn't use entrypoint, set it to empty as default -->
+        <EntryPoint></EntryPoint>
+      </WebRoleReferences>
+    </ItemGroup>
+
+    <!-- Remove the intermediate webrole output folders, to start on clean always -->
+    <RemoveDir Condition=" '@(WebRoleReferences)' != '' "
+               Directories="%(WebRoleReferences.OutputDir)" />
+    
+    <!-- Move the published site from the site's target path to the intermediate folder in the cloud project -->
+    <ItemGroup Condition=" '@(WebRoleReferences)' != '' ">
+      <PublishedWebsitesFiles Include="%(WebRoleReferences.TargetDir)_PublishedWebsites\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PublishedWebsitesFiles)"
+          DestinationFiles="$(IntermediateOutputPath)%(RecursiveDir)%(Filename)%(Extension)" />
+    <RemoveDir Condition=" '@(WebRoleReferences)' != '' "
+               Directories="%(WebRoleReferences.TargetDir)_PublishedWebsites" />
+    
+    <!-- Copy the contents of the TargetDir folder (bin) -->
+    <ItemGroup Condition=" '@(WebRoleReferences)' != '' ">
+      <PublishedWebsitesBinFiles Include="%(WebRoleReferences.TargetDir)**\*.*" Exclude="%(WebRoleReferences.TargetDir)_PublishedWebsites\**\*.*" >
+        <DestinationDir>%(OutputDir)bin\</DestinationDir>
+      </PublishedWebsitesBinFiles>                                 
+    </ItemGroup>
+    <Copy SourceFiles="@(PublishedWebsitesBinFiles)"
+          DestinationFiles="%(DestinationDir)%(RecursiveDir)%(Filename)%(Extension)"
+          SkipUnchangedFiles="true" />
+
+    <!-- Register intermediate published websites for Clean -->
+    <ItemGroup Condition=" '@(WebRoleReferences)' != '' ">
+      <FileWrites Include="%(WebRoleReferences.OutputDir)**\*.*" />
+    </ItemGroup>
+
+    <!-- 
+    ========================
+    Worker : Get the target path 
+    ========================
+    -->
+    <MSBuild
+      Condition=" '@(WorkerRoleReferences)' != '' "
+      Projects="@(WorkerRoleReferences)"
+      Targets="GetTargetPath"
+      Properties="Configuration=$(Configuration); Platform=$(Platform)"
+      ContinueOnError="false"
+      >
+
+      <Output TaskParameter="TargetOutputs" ItemName="WorkerTargetPathItem" />
+    </MSBuild>
+    
+    <!-- Add the metadata OutputDir to WorkerRoleReferences into the new item group WorkerRoleReferences2 -->
+    <ItemGroupsOrderedMerge
+      Condition=" '@(WorkerRoleReferences)' != '' "
+      MainList="@(WorkerRoleReferences)"
+      Values="@(WorkerTargetPathItem->'%(RootDir)%(Directory)')"
+      MetadataName="OutputDir"
+      >
+      <Output TaskParameter="OutputList" ItemName="WorkerRoleReferences2" />
+    </ItemGroupsOrderedMerge>
+
+    <!-- Add the metadata EntryPoint to WorkerRoleReferences2 into the new item group WorkerRoleReferences3 -->
+    <ItemGroupsOrderedMerge
+      Condition=" '@(WorkerRoleReferences2)' != '' "
+      MainList="@(WorkerRoleReferences2)"
+      Values="@(WorkerTargetPathItem->'%(FileName)%(Extension)')"
+      MetadataName="EntryPoint"
+      >
+      <Output TaskParameter="OutputList" ItemName="WorkerRoleReferences3" />
+    </ItemGroupsOrderedMerge>
+
+    <!-- Set WebRoleReferences from WorkerRoleReferences3 -->
+    <ItemGroup Condition=" '@(WorkerRoleReferences)' != '' " >
+      <WorkerRoleReferences Remove="@(WorkerRoleReferences)" />
+      <WorkerRoleReferences Include="@(WorkerRoleReferences3)">
+        <!-- worker doesn't use SourceDir, set it to empty as default -->
+        <SourceDir></SourceDir>
+      </WorkerRoleReferences>
+    </ItemGroup>
+    
+    <!-- Combine WebRoleReferences and WorkerRoleReferences -->
+    <ItemGroup>
+      <RoleReferences Include="@(WebRoleReferences); @(WorkerRoleReferences)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <RoleReferencesFiles Include="%(RoleReferences.OutputDir)**\*.*" />
+    </ItemGroup>
+
+    <Message Text="Role = @(RoleReferences), role=%(RoleType), projname=%(ProjectName), output=%(OutputDir)" />
+
+  </Target>
+
+  <!-- =============== RetrieveRoleNames ========================================
+       Gets the role names from the service definition file. It updates the 
+       RoleReferences item group with the roleName metadata.
+
+      ========================================================================== -->
+  <Target Name="RetrieveRoleNames">
+
+    <Message Text="Role = @(RoleReferences), role=%(RoleType), projname=%(ProjectName), output=%(OutputDir)" />
+
+    <ItemGroup>
+      <Namespaces Include="$(ServiceDefinitionNamespace)">
+        <Prefix>csd</Prefix>
+      </Namespaces>
+    </ItemGroup>
+
+    <!-- Find the web role name -->
+
+    <XPathQuery
+        Condition=" '@(WebRoleReferences)' != '' "
+        Namespaces="@(Namespaces)"
+        XPath="csd:ServiceDefinition/csd:WebRole[1]/@name"
+        XmlFile="@(ServiceDefinition)"
+        >
+
+      <Output TaskParameter="QueryResult" ItemName="WebRoleNames" />
+    </XPathQuery>
+
+    <Message Condition=" '@(WebRoleReferences)' != '' " Text="WebRoleNames = @(WebRoleNames)" />
+
+    <PropertyGroup Condition=" '@(WebRoleReferences)' != '' ">
+      <WebRoleName>@(WebRoleNames)</WebRoleName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RoleReferences Condition=" '%(RoleType)' == 'Web' ">
+        <RoleName>$(WebRoleName)</RoleName>
+      </RoleReferences>
+    </ItemGroup>
+
+    <!-- Find the worker role name -->
+
+    <XPathQuery
+        Condition=" '@(WorkerRoleReferences)' != '' "
+        Namespaces="@(Namespaces)"
+        XPath="csd:ServiceDefinition/csd:WorkerRole[1]/@name"
+        XmlFile="@(ServiceDefinition)"
+        >
+
+      <Output TaskParameter="QueryResult" ItemName="WorkerRoleNames" />
+    </XPathQuery>
+
+    <Message Condition=" '@(WorkerRoleReferences)' != '' " Text="WorkerRoleNames = @(WorkerRoleNames)" />
+
+    <PropertyGroup Condition=" '@(WorkerRoleReferences)' != '' ">
+      <WorkerRoleName>@(WorkerRoleNames)</WorkerRoleName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RoleReferences Condition=" '%(RoleType)' == 'Worker' ">
+        <RoleName>$(WorkerRoleName)</RoleName>
+      </RoleReferences>
+    </ItemGroup>
+
+    <Message Text="Role = @(RoleReferences), role=%(RoleType), projname=%(ProjectName), output=%(OutputDir), roleName=%(RoleName)" />
+
+  </Target>
+
+  <!-- =============== ValidateComputeProject ===================================== 
+       Runs validations on the compute project to verify it's valid
+       ============================================================================ -->
+  <PropertyGroup>
+    <ValidateComputeProjectDependsOn>
+      ValidateRoleProjects;
+      ValidateServiceFiles;
+    </ValidateComputeProjectDependsOn>
+  </PropertyGroup>
+  <Target Name="ValidateComputeProject"
+          DependsOnTargets="$(ValidateComputeProjectDependsOn)">
+  </Target>
+
+  <!-- =============== ValidateRoleProjects ======================================= 
+       Validates that we have the right number of role projects to match the 
+       declared application architecture. Generates errors if these are not correct
+       ============================================================================ -->
+  <Target Name="ValidateRoleProjects">
+
+    <CreateItem Include="@(ProjectReference)" Condition=" '%(RoleType)' == 'Web' " >
+      <Output TaskParameter="Include" ItemName="WebRoles" />
+    </CreateItem>
+
+    <CreateItem Include="@(ProjectReference)" Condition=" '%(RoleType)' == 'Worker' " >
+      <Output TaskParameter="Include" ItemName="WorkerRoles" />
+    </CreateItem>
+
+    <Message Text="Web Project        is @(WebRoles)" />
+    <Message Text="Worker Project     is @(WorkerRoles)" />
+
+    <!-- Error out if unknown architecture or we don't have enough role projects for the architecture type -->
+    <Error Condition=" '@(WebRoles)'=='' And '@(WorkerRoles)'=='' " Text="A Web or Worker project is required but could not be found" Code="CCT001" HelpKeyword="MissingWebOrWorkerRole"/>
+
+  </Target>
+
+  
+  <!-- =============== ValidateServiceFiles ========================================= 
+       Validates the integrity of both the definition file and the configuration files.       
+       ============================================================================== -->
+  <Target Name="ValidateServiceFiles">
+
+    <ValidateServiceFiles
+        ServiceDefinitionFile="@(ServiceDefinition)"
+        ServiceConfigurationFile="@(ServiceConfiguration)">
+    </ValidateServiceFiles>
+
+  </Target>
+
+  
+  <!-- =============== CreateManifestResourceNames ================================ 
+       The IDE is calling into this target. We don't have any resource files. 
+       So, implement this target to do nothing
+       ============================================================================ -->
+
+  <Target Name="CreateManifestResourceNames" />
+
+  <!-- =============== CorePublish ================================================
+       Builds the project(s) but in single-file-package mode (i.e., does not specify
+       the /copyonly parameter to cspack) and copies the generated output to the 
+       publish folder.
+       ============================================================================ -->
+
+  <!-- Overriding the PublishDependsOn list from common targets. -->
+  <PropertyGroup>
+    <PublishDependsOn>
+      BeforePublish;
+      CorePublish;
+      AfterPublish
+    </PublishDependsOn>
+  </PropertyGroup>
+
+  <Target Name="CorePublish" DependsOnTargets="Build">
+
+    
+    <Message Text="Publishing starting..." />
+
+    <Message Text="Publishing to '$(OutDir)Publish'" />
+
+    <MakeDir Directories=" $(OutDir)Publish " />
+
+    <Message Text="PublishSSLCertificateThumbprint = $(_PublishSslCertificateThumbprint)" />
+
+    <IsolatedCSPack
+      ServiceHostingTasksPath="$(ServiceHostingSDKTaskPath)"
+      ServiceDefinitionFile="@(ServiceDefinition)"
+      Output="$(OutDir)Publish\$(ProjectName).cspkg"
+      PackRoles="@(Roles)"
+      PublishSSLCertificateThumbprint="$(_PublishSslCertificateThumbprint)"
+      CopyOnly="false"
+      >
+    </IsolatedCSPack>
+
+    <!-- Copy service configuration to output directory -->
+    <Message Text="Copying the service configuration file." />
+
+    <Copy SourceFiles="@(ServiceConfiguration)" DestinationFolder="$(OutDir)Publish" />
+
+    <Message Text="Publishing process has completed."/>
+
+  </Target>
+
+  <!-- =============== _CreateDevStorageTable =====================================
+       This target runs the tool DevtableGen.exe to generate the dev storage tables
+       ============================================================================ -->
+
+  <Target Name="_CreateDevStorageTable" DependsOnTargets="Build">
+
+    <Message Text="DevTableStorageDatabaseName = $(DevTableStorageDatabaseName)" />
+
+    <PropertyGroup>
+      <DevTableGenPath>$(ServiceHostingSDKBinDir)DevtableGen.exe</DevTableGenPath>
+    </PropertyGroup>
+
+    <Error Text="The development table storage database name cannot be empty." Condition=" '$(DevTableStorageDatabaseName)' == '' " />
+    <Error Text="The development table generator tool couldn't be found at $(DevTableGenPath)." Condition=" !Exists('$(DevTableGenPath)') " />
+
+    <ItemGroup>
+      <TableAssemblies Include="%(Roles.Identity)**\*.dll" />
+    </ItemGroup>
+
+    <Message Text="Launching DevtableGen Tool:" Importance="high" />
+    <Exec Command='"$(DevTableGenPath)" /forceCreate "/database:$(DevTableStorageDatabaseName)" "@(TableAssemblies)"' />
+    
+  </Target>
+
+</Project>
