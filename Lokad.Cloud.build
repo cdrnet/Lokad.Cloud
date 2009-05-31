@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project DefaultTargets="integrate" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Import Project="Resource\Build\MSBuild.Community.Tasks.targets" />
+	<Import Project="Resource\Build\NCoverExplorer.MSBuildTasks.targets"/>
+
+	<PropertyGroup>
+		<Version Condition="$(Version)==''">0.0.0.0</Version>
+		<BuildPath Condition="$(BuildPath)==''">$(MSBuildProjectDirectory)\Build</BuildPath>
+		<Configuration Condition="$(Configuration)==''">Release</Configuration>
+		<ArtifactDirectory Condition="$(ArtifactDirectory)==''">$(BuildPath)\Artifact</ArtifactDirectory>
+		<PublicationRoot Condition="$(PublicationRoot)==''">$(BuildPath)\_Package</PublicationRoot>
+		<PackageDirectory Condition="$(PackageDirectory)==''">$(BuildPath)\_Package\Package\$(Version)</PackageDirectory>
+		<!--Derived-->
+
+		<TestPath>$(BuildPath)\Test</TestPath>
+		<ProjectName>$(MSBuildProjectName)</ProjectName>
+		<SampleSource>Sample</SampleSource>
+		<TempPath>$(BuildPath)\Temp</TempPath>
+		<SourceExclusions>**\.svn\**\*.*;**\_svn\**\*.*;**\*.user;**\*.suo;**\*.db;**\bin\**\*.*;**\obj\**\*.*;</SourceExclusions>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Tokens Include="CloudPackage">
+			<ReplacementValue>Package/$(Version)/$(ProjectName)-Cspkg-$(Version).zip</ReplacementValue>
+		</Tokens>
+		<Tokens Include="SourcePackage">
+			<ReplacementValue>Package/$(Version)/$(ProjectName)-Source-$(Version).zip</ReplacementValue>
+		</Tokens>
+		<Tokens Include="Version">
+			<ReplacementValue>$(Version)</ReplacementValue>
+		</Tokens>
+	</ItemGroup>
+
+	<Target Name="Build">
+		<MSBuild Projects="$(ProjectName).sln" 
+						 Targets="Build" 
+						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile)"/>
+
+		<!-- no publish for now
+		<MSBuild Projects="$(ProjectName).sln" 
+						 Targets="publish"
+						 Properties="Configuration=$(Configuration);ApplicationVersion=$(Version);ConfigProfile=$(ConfigProfile)" /> -->
+	</Target>
+
+	<Target Name="Clean">
+		<MSBuild Projects="$(ProjectName).sln" Targets="Clean" Properties="Configuration=$(Configuration)"/>
+
+		<CreateItem Include="**/Debug/**/*.*;**/Release/**/*.*">
+			<Output ItemName="_binaryFiles" TaskParameter="Include"/>
+		</CreateItem>
+		<Delete Files="@(_binaryFiles)" TreatErrorsAsWarnings="true"/>
+		<RemoveDir Directories="$(BuildPath)" />
+	</Target>
+
+	<Target Name="Rebuild" DependsOnTargets="Clean;Build;" />
+
+	<Target Name="Integrate" DependsOnTargets="Clean;Test;Report" />
+
+	<Target Name="Test" DependsOnTargets="Build;Copy">
+		<MakeDir Directories="$(ArtifactDirectory)" />
+		<!-- placeholder for now -->
+	</Target>
+	
+	<Target Name="Report">
+		<!-- placeholder for now
+		<FxCop ToolPath="Resource/Tool/FxCop" ProjectFile="$(ProjectName).FxCop" AnalysisReportFileName="$(ArtifactDirectory)/$(ProjectName).fxcop-result.xml"/> -->
+	</Target>
+	<Target Name="Copy" DependsOnTargets="Build" >
+
+	</Target>
+
+	<Target Name="GenerateHelp" DependsOnTargets="Build;Copy">
+		<!-- placeholder for now
+		<Exec Command="Resource\Tool\SHFB\SandcastleBuilderConsole.exe $(MSBuildProjectName).shfb" /> -->
+	</Target>
+
+	<Target Name="Distrib" DependsOnTargets="Clean;Build;Copy;GenerateHelp">
+		<!-- placeholder for now -->
+	</Target>
+
+	<!--For Continuous integration and automated releases-->
+	<Target Name="Release" DependsOnTargets="Clean;_Version;Build;Test;Distrib" />
+	
+	<Target Name="_Version">
+		<!-- placeholder for now 
+		<CreateItem Include="**\GlobalAssemblyInfo.cs">
+			<Output ItemName="_VersionPaths" TaskParameter="Include"/>
+		</CreateItem>
+		<CreateItem Include="@(_VersionPaths->'%(SubFolder)%(RecursiveDir)VersionAssemblyInfo.cs')">
+			<Output ItemName="_VersionFiles" TaskParameter="Include"/>
+		</CreateItem>
+		<Time Format="yyyy-MM-dd HH:mm">
+			<Output TaskParameter="FormattedTime" PropertyName="BuildTime" />
+		</Time>
+		<AssemblyInfo OutputFile="%(_VersionFiles.FullPath)" CodeLanguage="CS"
+									AssemblyVersion="$(Version)"
+									AssemblyFileVersion="$(Version)"
+									AssemblyConfiguration="$(Configuration) built on $(BuildTime)" /> -->
+	</Target>
+
+
+	<Target Name="WipeResources">
+		<!-- placeholder for now -->
+	</Target>
+</Project>
