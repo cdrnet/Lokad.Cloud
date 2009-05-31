@@ -21,6 +21,9 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Type mapper for implicit cloud storage.</summary>
 		public ITypeMapperProvider TypeMapper { get; set; }
 
+		/// <summary>Abstracts the Blob Storage.</summary>
+		public IBlobStorageProvider BlobStorage { get; set; }
+
 		/// <summary>Abstracts the Queue Storage.</summary>
 		public IQueueStorageProvider QueueStorage { get; set; }
 	}

@@ -13,36 +13,66 @@ namespace Lokad.Cloud.Framework
 {
 	/// <summary>Item locator for <see cref="BlobSet{T}"/> collection.</summary>
 	[Serializable]
-	public class BlobId
+	public class BlobLocator
 	{
-		// not implemented
-	}
-
-	/// <summary>The <c>BlobSet</c> is a blob-based scalable collection that
-	/// provides scalable iterators (basically mappers and reducers).</summary>
-	/// <typeparam name="T">Type being enumerated.</typeparam>
-	/// <remarks>The <see cref="BlobSet{T}"/> should be instanciated through the
-	/// <see cref="CloudService.GetBlobSet{T}()"/>. This pattern has been chosen
-	/// because the <see cref="BlobSet{T}"/> needs arguments passed to the service
-	/// through IoC.</remarks>
-	public class BlobSet<T> : IEnumerable<T>
-	{
-		readonly ProvidersForCloudStorage _providers;
 		readonly string _name;
 
-		/// <summary>Storage identifier for this collection.</summary>
-		/// <remarks>This identifier is used as <em>prefix</em> through the blob storage
-		/// in order to iterate through the collection.</remarks>
 		public string Name
 		{
 			get { return _name; }
 		}
 
-		/// <summary>Constructor that specifies the <see cref="Name"/>.</summary>
-		internal BlobSet(ProvidersForCloudStorage providers, string name)
+		public BlobLocator(string name)
+		{
+			_name = name;
+		}
+	}
+
+	/// <summary>The <c>BlobSet</c> is a blob-based scalable collection that
+	/// provides scalable iterators (basically mappers and reducers).</summary>
+	/// <typeparam name="T">Type being enumerated.</typeparam>
+	/// <remarks>
+	/// <para>The <see cref="BlobSet{T}"/> should be instanciated through the
+	/// <see cref="CloudService.GetBlobSet{T}()"/>. This pattern has been chosen
+	/// because the <see cref="BlobSet{T}"/> needs arguments passed to the service
+	/// through IoC.
+	/// </para>
+	/// <para>All <see cref="BlobSet{T}"/>s are stored in a single blob containers.
+	/// They are separated through the usage of a blob name prefix.
+	/// </para>
+	/// </remarks>
+	public class BlobSet<T> : IEnumerable<T>
+	{
+		/// <summary>Delimiter used for prefixing iterations on Blob Storage.</summary>
+		public const string Delimiter = "/";
+
+		readonly ProvidersForCloudStorage _providers;
+		readonly string _containerName;
+		readonly string _prefixName;
+
+		/// <summary>Name of the container for this collection.</summary>
+		public string ContainerName
+		{
+			get { return _containerName; }
+		}
+
+		/// <summary>Storage prefix for this collection.</summary>
+		/// <remarks>This identifier is used as <em>prefix</em> through the blob storage
+		/// in order to iterate through the collection.</remarks>
+		public string PrefixName
+		{
+			get { return _prefixName; }
+		}
+
+		/// <summary>Constructor that specifies the <see cref="PrefixName"/>.</summary>
+		/// <remarks>The container name is based on the type <c>T</c>.</remarks>
+		internal BlobSet(ProvidersForCloudStorage providers, string prefixName)
 		{
 			_providers = providers;
-			_name = name;
+			_prefixName = prefixName;
+
+			// default container name is based on the type
+			_containerName = _providers.TypeMapper.GetStorageName(typeof (T));
 		}
 
 		/// <summary>Apply the specified mapping to all items of this collection.</summary>
@@ -69,7 +99,7 @@ namespace Lokad.Cloud.Framework
 		/// This method is asynchronous.
 		/// </remarks>
 		public void MapToQueue<U, M>(
-			Func<BlobId, U> mapper, M onCompleted, string mappingQueueName, string messageQueueName)
+			Func<BlobLocator, U> mapper, M onCompleted, string mappingQueueName, string messageQueueName)
 		{
 			throw new NotImplementedException();
 		}
@@ -93,37 +123,47 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>Retrieves an item based on the blob identifier.</summary>
-		public T this[BlobId blobId]
+		public T this[BlobLocator locator]
 		{
-			get { throw new NotImplementedException(); }
+			get
+			{
+				return _providers.BlobStorage.GetBlob<T>(
+					_containerName, _prefixName + Delimiter + locator.Name);
+			}
 		}
 
 		/// <summary>Adds an item and returns the corresponding blob identifier.</summary>
-		public BlobId Add(T item)
+		public BlobLocator Add(T item)
 		{
-			throw new NotImplementedException();
+			// TODO: need to unify the name generation.
+			var blobName = Guid.NewGuid().ToString();
+			_providers.BlobStorage.PutBlob(_containerName, _prefixName + Delimiter + blobName, item);
+
+			return new BlobLocator(blobName);
 		}
 
 		/// <summary>Removes an item based on its identifier.</summary>
-		public void Remove(BlobId blobId)
+		/// <returns><c>true</c> if the blob was successfully removed and <c>false</c> otherwise.</returns>
+		public bool Remove(BlobLocator locator)
 		{
-			throw new NotImplementedException();
+			return _providers.BlobStorage.DeleteBlob(
+				_containerName, _prefixName + Delimiter + locator.Name);
 		}
 
 		/// <summary>Removes an item (relyies on the hashcode and <c>Equals</c> method).</summary>
-		public void Remove(T item)
+		public bool Remove(T item)
 		{
+			// TODO: need a partially deterministic name generation.
+
 			throw new NotImplementedException();
 		}
 
 		/// <summary>Remove all items from within the collection.</summary>
+		/// <remarks>Considering that the <see cref="BlobSet{T}"/> is nothing
+		/// but a list of prefixed blobs in a container of the Blob Storage,
+		/// clearing the collection is equivalent to deleting the collection.
+		/// </remarks>
 		public void Clear()
-		{
-			throw new NotImplementedException();
-		}
-
-		/// <summary>Clear the collection and then delete the collection itself.</summary>
-		public void Delete()
 		{
 			throw new NotImplementedException();
 		}
