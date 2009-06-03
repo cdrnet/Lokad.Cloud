@@ -61,7 +61,43 @@
 
 	<Target Name="Test" DependsOnTargets="Build;Copy">
 		<MakeDir Directories="$(ArtifactDirectory)" />
-		<!-- placeholder for now -->
+		
+		<CreateItem Include="$(TestPath)\*.Test.dll">
+			<Output ItemName="testAssemblies" TaskParameter="Include"/>
+		</CreateItem>
+		
+		<CreateItem Include="$(TestPath)\Lokad.Cloud*dll" Exclude="">
+			<Output ItemName="coverageAssemblies" TaskParameter="Include"/>
+		</CreateItem>
+		
+		<!--@(_testFiles->'&quot;%(FullPath)&quot;', ' ')-->
+		<!--
+		Important: if this code breaks down and you are running 64 bit machine,
+		then you have to force NUnit-console and NCover to 32 bit mode
+		with CorFlags.exe from .NET SDK 2.0 (included in NCover and NUnit folders)
+		-->
+		<NCover ToolPath="Resource\Tool\NCover"
+			CommandLineExe="Resource/Tool/NUnit/nunit-console-x86.exe"
+			CommandLineArgs="@(testAssemblies->'&quot;%(FullPath)&quot;', ' ') /nologo /noshadow /xml=&quot;$(ArtifactDirectory)\$(ProjectName).Tests-result.xml&quot;"
+			AssemblyList="@(coverageAssemblies)"
+			CoverageFile="$(ArtifactDirectory)\$(ProjectName)-coverage.xml"
+			LogFile="$(ArtifactDirectory)\$(ProjectName)-coverage.log"
+			ExcludeAttributes="Lokad.Quality.NoCodeCoverageAttribute;System.Runtime.CompilerServices.CompilerGeneratedAttribute;System.CodeDom.Compiler.GeneratedCodeAttribute"
+			ContinueOnError="false"
+		/>
+
+		<NCoverExplorer
+			ToolPath="Resource\Tool\NCoverExplorer"
+			ProjectName="$(MSBuildProjectName)"
+			ReportType="ModuleClassSummary"
+			XmlReportName="$(ArtifactDirectory)\$(ProjectName).fCoverage-result.xml"
+			HtmlReportName="$(ArtifactDirectory)\$(ProjectName).fCoverage-summary.html"
+			ShowExcluded="True"
+			SatisfactoryCoverage="75"
+			MinimumCoverage="75"
+			Sort="FunctionCoverageAscending"
+			CoverageFiles="$(ArtifactDirectory)\$(ProjectName)-coverage.xml"
+		/>
 	</Target>
 	
 	<Target Name="Report">
