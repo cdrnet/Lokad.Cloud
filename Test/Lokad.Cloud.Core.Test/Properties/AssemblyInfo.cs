@@ -9,11 +9,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Lokad.Cloud.Core.Tests")]
+[assembly: AssemblyTitle("Lokad.Cloud.Core.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Lokad.com")]
-[assembly: AssemblyProduct("Lokad.Cloud.Core.Tests")]
+[assembly: AssemblyProduct("Lokad.Cloud.Core.Test")]
 [assembly: AssemblyCopyright("Copyright © Lokad 2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

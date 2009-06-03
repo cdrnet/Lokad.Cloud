@@ -66,7 +66,7 @@
 			<Output ItemName="testAssemblies" TaskParameter="Include"/>
 		</CreateItem>
 		
-		<CreateItem Include="$(TestPath)\Lokad.Cloud*dll" Exclude="">
+		<CreateItem Include="$(TestPath)\Lokad.Cloud*dll" Exclude="$(TestPath)\*.Test.dll">
 			<Output ItemName="coverageAssemblies" TaskParameter="Include"/>
 		</CreateItem>
 		
@@ -105,6 +105,12 @@
 		<FxCop ToolPath="Resource/Tool/FxCop" ProjectFile="$(ProjectName).FxCop" AnalysisReportFileName="$(ArtifactDirectory)/$(ProjectName).fxcop-result.xml"/> -->
 	</Target>
 	<Target Name="Copy" DependsOnTargets="Build" >
+
+		<!--All Tests-->
+		<CreateItem Include="Test\**\bin\$(Configuration)\*.*" Exclude="Test\**\bin\$(Configuration)\*.xml;Test\**\bin\$(Configuration)\*.pdb;">
+			<Output ItemName="testSources" TaskParameter="Include"/>
+		</CreateItem>
+		<Copy SourceFiles="@(testSources)" DestinationFolder="$(TestPath)" />
 
 	</Target>
 
