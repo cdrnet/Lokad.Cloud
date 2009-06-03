@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSetup.cs" />
+    <Compile Include="QueueStorageProviderTests.cs" />
     <Compile Include="TypeMapperProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

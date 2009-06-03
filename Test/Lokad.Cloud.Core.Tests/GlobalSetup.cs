@@ -2,8 +2,8 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-
 using System;
+using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Microsoft.Samples.ServiceHosting.StorageClient;
@@ -22,16 +22,15 @@ namespace Lokad.Cloud.Core.Tests
 
 			var policy = ActionPolicy
 				.With(HandleException)
-				.RetryForever(e => SystemUtil.Sleep(5.Seconds()));
+				.Retry(10, (e, i) => SystemUtil.Sleep(5.Seconds()));
 
 			builder.Register(policy);
 
-			var build = builder.Build();
-
-			var storage = build.Resolve<QueueStorage>();
-
-			Console.WriteLine(storage);
+			Container = builder.Build();
 		}
+
+		/// <summary>Gets the IoC container as initiliazed by the setup.</summary>
+		public static IContainer Container { get; set; }
 
 		static bool HandleException(Exception ex)
 		{

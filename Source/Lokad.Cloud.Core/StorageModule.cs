@@ -4,27 +4,35 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Core
 {
+	/// <summary>IoC module that auto-load <see cref="StorageAccountInfo"/>, 
+	/// <see cref="BlobStorage"/> and <see cref="QueueStorage"/> from the 
+	/// properties.</summary>
 	public sealed class StorageModule : Module
 	{
+		/// <summary>Account name of the Azure Storage.</summary>
 		public string AccountName { get; set; }
+
+		/// <summary>Key to access the Azure Storage.</summary>
 		public string AccountKey { get; set; }
+
+		/// <summary>URL of the Blob Storage.</summary>
 		public string BlobEndpoint { get; set; }
+
+		/// <summary>URL of the Queue Storage.</summary>
 		public string QueueEndpoint { get; set; }
 
 		protected override void Load(ContainerBuilder builder)
 		{
 			if (RoleManager.IsRoleManagerRunning)
 				ApplyOverridesFromRuntime();
-
 
 			if (!string.IsNullOrEmpty(QueueEndpoint))
 			{
@@ -58,8 +66,40 @@ namespace Lokad.Cloud.Core
 					return storage;
 				});
 			}
-		}
 
+			// registering the Lokad.Cloud providers
+			if (!string.IsNullOrEmpty(QueueEndpoint) && !string.IsNullOrEmpty(BlobEndpoint))
+			{
+				builder.Register(c =>
+             	{
+             		IFormatter formatter;
+             		if (!c.TryResolve(out formatter))
+             		{
+             			formatter = new BinaryFormatter();
+             		}
+
+             		return new BlobStorageProvider(
+             			c.Resolve<BlobStorage>(),
+             			c.Resolve<ActionPolicy>(),
+             			formatter);
+             	});
+
+				builder.Register(c =>
+				{
+					IFormatter formatter;
+					if (!c.TryResolve(out formatter))
+					{
+						formatter = new BinaryFormatter();
+					}
+
+					return new QueueStorageProvider(
+						c.Resolve<QueueStorage>(),
+						c.Resolve<BlobStorage>(),
+						c.Resolve<ActionPolicy>(),
+						formatter);
+				});
+			}
+		}
 
 		void ApplyOverridesFromRuntime()
 		{
