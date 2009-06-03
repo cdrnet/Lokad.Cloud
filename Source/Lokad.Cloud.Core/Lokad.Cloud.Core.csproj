@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BlobStorageProvider.cs" />
+    <Compile Include="DBAPI.cs" />
     <Compile Include="MessageWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueStorageProvider.cs" />

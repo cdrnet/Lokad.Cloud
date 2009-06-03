@@ -23,6 +23,9 @@ namespace Lokad.Cloud.Core
 		/// <summary>Key to access the Azure Storage.</summary>
 		public string AccountKey { get; set; }
 
+		/// <summary>Indicates whether the account key is encrypted with DBAPI.</summary>
+		public bool IsStorageKeyEncrypted { get; set; }
+
 		/// <summary>URL of the Blob Storage.</summary>
 		public string BlobEndpoint { get; set; }
 
@@ -37,7 +40,7 @@ namespace Lokad.Cloud.Core
 			if (!string.IsNullOrEmpty(QueueEndpoint))
 			{
 				var queueUri = new Uri(QueueEndpoint);
-				var accountInfo = new StorageAccountInfo(queueUri, null, AccountName, AccountKey);
+				var accountInfo = new StorageAccountInfo(queueUri, null, AccountName, GetAccountKey());
 
 				builder.Register(c =>
 				{
@@ -56,7 +59,7 @@ namespace Lokad.Cloud.Core
 			if (!string.IsNullOrEmpty(BlobEndpoint))
 			{
 				var blobUri = new Uri(BlobEndpoint);
-				var accountInfo = new StorageAccountInfo(blobUri, null, AccountName, AccountKey);
+				var accountInfo = new StorageAccountInfo(blobUri, null, AccountName, GetAccountKey());
 
 				builder.Register(c =>
 				{
@@ -99,6 +102,11 @@ namespace Lokad.Cloud.Core
 						formatter);
 				});
 			}
+		}
+
+		string GetAccountKey()
+		{
+			return IsStorageKeyEncrypted ? DBAPI.Decrypt(AccountKey) : AccountKey;
 		}
 
 		void ApplyOverridesFromRuntime()
