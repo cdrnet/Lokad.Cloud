@@ -24,7 +24,7 @@ namespace Lokad.Cloud.Core
 		public string AccountKey { get; set; }
 
 		/// <summary>Indicates whether the account key is encrypted with DBAPI.</summary>
-		public bool IsStorageKeyEncrypted { get; set; }
+		public string IsStorageKeyEncrypted { get; set; }
 
 		/// <summary>URL of the Blob Storage.</summary>
 		public string BlobEndpoint { get; set; }
@@ -106,7 +106,7 @@ namespace Lokad.Cloud.Core
 
 		string GetAccountKey()
 		{
-			return IsStorageKeyEncrypted ? DBAPI.Decrypt(AccountKey) : AccountKey;
+			return "true".Equals(IsStorageKeyEncrypted.ToLower()) ? DBAPI.Decrypt(AccountKey) : AccountKey;
 		}
 
 		void ApplyOverridesFromRuntime()
