@@ -15,7 +15,7 @@ namespace Lokad.Cloud.Core.Test
 		{
 			var mapper = new TypeMapperProvider();
 			Assert.AreEqual(
-				"lokad-cloud-core-tests-typemapperprovidertests", 
+				"lokad-cloud-core-test-typemapperprovidertests", 
 				mapper.GetStorageName(typeof(TypeMapperProviderTests)));
 		}
 	}
