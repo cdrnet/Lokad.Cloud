@@ -81,10 +81,7 @@ namespace Lokad.Cloud.Core
              			formatter = new BinaryFormatter();
              		}
 
-             		return new BlobStorageProvider(
-             			c.Resolve<BlobStorage>(),
-             			c.Resolve<ActionPolicy>(),
-             			formatter);
+             		return new BlobStorageProvider(c.Resolve<BlobStorage>(), formatter);
              	});
 
 				builder.Register(c =>

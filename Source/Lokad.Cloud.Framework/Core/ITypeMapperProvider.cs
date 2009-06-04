@@ -12,8 +12,5 @@ namespace Lokad.Cloud.Core
 	{
 		/// <summary>Gets the identifier associated to the specifed type.</summary>
 		string GetStorageName(Type type);
-
-		/// <summary>Gets the type based on the identifier.</summary>
-		Type GetType(string storageName);
 	}
 }

@@ -17,13 +17,11 @@ namespace Lokad.Cloud.Core
 	public class BlobStorageProvider : IBlobStorageProvider
 	{
 		readonly BlobStorage _blobStorage;
-		readonly ActionPolicy _policy;
 		readonly IFormatter _formatter;
 
-		public BlobStorageProvider(BlobStorage blobStorage, ActionPolicy policy, IFormatter formatter)
+		public BlobStorageProvider(BlobStorage blobStorage, IFormatter formatter)
 		{
 			_blobStorage = blobStorage;
-			_policy = policy;
 			_formatter = formatter;
 		}
 

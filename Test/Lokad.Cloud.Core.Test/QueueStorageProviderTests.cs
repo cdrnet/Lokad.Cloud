@@ -34,7 +34,7 @@ namespace Lokad.Cloud.Core.Test
 	[Serializable]
 	public class MyMessage
 	{
-		public Guid MyGuid { get; set; }
+		public Guid MyGuid { get; private set; }
 
 		public MyMessage()
 		{

@@ -13,6 +13,7 @@ namespace Lokad.Cloud.Core
 	/// </remarks>
 	public class TypeMapperProvider : ITypeMapperProvider
 	{
+		/// <see cref="ITypeMapperProvider.GetStorageName"/>
 		public string GetStorageName(Type type)
 		{
 			var name = type.FullName.ToLowerInvariant().Replace(".", "-");
@@ -24,11 +25,6 @@ namespace Lokad.Cloud.Core
 			}
 
 			return name;
-		}
-
-		public Type GetType(string storageName)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Linq;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Core.Test
@@ -12,7 +13,7 @@ namespace Lokad.Cloud.Core.Test
 	public class BlobStorageProviderTests
 	{
 		private const string ContainerName = "tests-blobstorageprovider-mycontainer";
-		private const string BlobName = "tests-blobstorageprovider-myblob";
+		private const string BlobName = "myprefix/myblob";
 
 		[Test]
 		public void CreatePutGetDelete()
@@ -28,16 +29,19 @@ namespace Lokad.Cloud.Core.Test
 
 			Assert.AreEqual(blob.MyGuid, retrievedBlob.MyGuid, "#A01");
 
-			Assert.IsTrue(provider.DeleteBlob(ContainerName, BlobName), "#A02");
+			Assert.IsTrue(provider.List(ContainerName, "myprefix").Contains(BlobName), "#A02");
+			Assert.IsTrue(!provider.List(ContainerName, "notmyprefix").Contains(BlobName), "#A03");
 
-			Assert.IsTrue(provider.DeleteContainer(ContainerName), "#A03");
+			Assert.IsTrue(provider.DeleteBlob(ContainerName, BlobName), "#A04");
+
+			Assert.IsTrue(provider.DeleteContainer(ContainerName), "#A05");
 		}
 	}
 
 	[Serializable]
 	public class MyBlob
 	{
-		public Guid MyGuid { get; set; }
+		public Guid MyGuid { get; private set; }
 
 		public MyBlob()
 		{
