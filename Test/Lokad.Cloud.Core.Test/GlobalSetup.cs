@@ -9,7 +9,7 @@ using Autofac.Configuration;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Core.Tests
+namespace Lokad.Cloud.Core.Test
 {
 	[SetUpFixture]
 	public sealed class GlobalSetup

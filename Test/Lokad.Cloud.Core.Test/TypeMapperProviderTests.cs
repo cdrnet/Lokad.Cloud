@@ -5,7 +5,7 @@
 
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Core.Tests
+namespace Lokad.Cloud.Core.Test
 {
 	[TestFixture]
 	public class TypeMapperProviderTests

@@ -6,12 +6,12 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Core.Tests
+namespace Lokad.Cloud.Core.Test
 {
 	[TestFixture]
 	public class QueueStorageProviderTests
 	{
-		private static string QueueName = "tests-queuestorageprovider-mymessage";
+		private const string QueueName = "tests-queuestorageprovider-mymessage";
 
 		[Test]
 		public void PutGetDelete()

@@ -57,6 +57,7 @@ namespace Lokad.Cloud.Core
 			container.GetBlob(blobName, blobContents, false);
 
 			var stream = blobContents.AsStream;
+			stream.Position = 0;
 			return (T)_formatter.Deserialize(stream);
 		}
 

@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BlobStorageProviderTests.cs" />
     <Compile Include="GlobalSetup.cs" />
     <Compile Include="QueueStorageProviderTests.cs" />
     <Compile Include="TypeMapperProviderTests.cs" />

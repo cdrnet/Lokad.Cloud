@@ -106,7 +106,8 @@ namespace Lokad.Cloud.Core
 
 		string GetAccountKey()
 		{
-			return "true".Equals(IsStorageKeyEncrypted.ToLower()) ? DBAPI.Decrypt(AccountKey) : AccountKey;
+			return "true".Equals((IsStorageKeyEncrypted ?? string.Empty).ToLower()) ? 
+				DBAPI.Decrypt(AccountKey) : AccountKey;
 		}
 
 		void ApplyOverridesFromRuntime()
