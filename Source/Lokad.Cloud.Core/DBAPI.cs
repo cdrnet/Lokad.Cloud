@@ -4,6 +4,7 @@
 #endregion
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -12,6 +13,7 @@ namespace Lokad.Cloud.Core
 	/// <summary>
 	/// Encrypts and decrypts data using DPAPI functions.
 	/// </summary>
+	[NoCodeCoverage]
 	public class DBAPI
 	{
 		// Wrapper for DPAPI CryptProtectData function.

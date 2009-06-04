@@ -43,18 +43,14 @@ namespace Lokad.Cloud.Framework
 	/// </remarks>
 	public class BlobSet<T> : IEnumerable<T>
 	{
+		/// <summary>Name of the container for all the blobsets.</summary>
+		public const string ContainerName = "lokad-blobsets";
+
 		/// <summary>Delimiter used for prefixing iterations on Blob Storage.</summary>
 		public const string Delimiter = "/";
 
 		readonly ProvidersForCloudStorage _providers;
-		readonly string _containerName;
 		readonly string _prefixName;
-
-		/// <summary>Name of the container for this collection.</summary>
-		public string ContainerName
-		{
-			get { return _containerName; }
-		}
 
 		/// <summary>Storage prefix for this collection.</summary>
 		/// <remarks>This identifier is used as <em>prefix</em> through the blob storage
@@ -70,9 +66,6 @@ namespace Lokad.Cloud.Framework
 		{
 			_providers = providers;
 			_prefixName = prefixName;
-
-			// default container name is based on the type
-			_containerName = _providers.TypeMapper.GetStorageName(typeof (T));
 		}
 
 		/// <summary>Apply the specified mapping to all items of this collection.</summary>
@@ -128,7 +121,7 @@ namespace Lokad.Cloud.Framework
 			get
 			{
 				return _providers.BlobStorage.GetBlob<T>(
-					_containerName, _prefixName + Delimiter + locator.Name);
+					ContainerName, _prefixName + Delimiter + locator.Name);
 			}
 		}
 
@@ -137,7 +130,7 @@ namespace Lokad.Cloud.Framework
 		{
 			// TODO: need to unify the name generation.
 			var blobName = Guid.NewGuid().ToString();
-			_providers.BlobStorage.PutBlob(_containerName, _prefixName + Delimiter + blobName, item);
+			_providers.BlobStorage.PutBlob(ContainerName, _prefixName + Delimiter + blobName, item);
 
 			return new BlobLocator(blobName);
 		}
@@ -147,7 +140,7 @@ namespace Lokad.Cloud.Framework
 		public bool Remove(BlobLocator locator)
 		{
 			return _providers.BlobStorage.DeleteBlob(
-				_containerName, _prefixName + Delimiter + locator.Name);
+				ContainerName, _prefixName + Delimiter + locator.Name);
 		}
 
 		/// <summary>Removes an item (relyies on the hashcode and <c>Equals</c> method).</summary>

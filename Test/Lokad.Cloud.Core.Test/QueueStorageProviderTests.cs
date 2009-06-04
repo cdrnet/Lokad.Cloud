@@ -6,6 +6,8 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 
+// TODO: add tests for overflowing messages.
+
 namespace Lokad.Cloud.Core.Test
 {
 	[TestFixture]

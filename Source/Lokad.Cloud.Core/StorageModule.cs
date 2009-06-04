@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;
@@ -15,6 +16,7 @@ namespace Lokad.Cloud.Core
 	/// <summary>IoC module that auto-load <see cref="StorageAccountInfo"/>, 
 	/// <see cref="BlobStorage"/> and <see cref="QueueStorage"/> from the 
 	/// properties.</summary>
+	[NoCodeCoverage]
 	public sealed class StorageModule : Module
 	{
 		/// <summary>Account name of the Azure Storage.</summary>
