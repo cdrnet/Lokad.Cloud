@@ -3,11 +3,14 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Text;
 
 // Notes about delegate serialization can be found at
 // http://blogs.microsoft.co.il/blogs/aviwortzel/archive/2008/06/20/how-to-serialize-anonymous-delegates.aspx
+
+// TODO: [vermorel] The algorithm that enable fast iteration is slightly subtle
+// and will be provided as a white paper along with the Lokad.Cloud documentation.
+
 
 namespace Lokad.Cloud.Framework
 {
@@ -40,9 +43,17 @@ namespace Lokad.Cloud.Framework
 	/// <para>All <see cref="BlobSet{T}"/>s are stored in a single blob containers.
 	/// They are separated through the usage of a blob name prefix.
 	/// </para>
+	/// <para>
+	/// Items put in a <see cref="BlobSet{T}"/> are giving pseudo-random names.
+	/// The pseudo-random pattern is used for fast iteration.
+	/// </para>
 	/// </remarks>
-	public class BlobSet<T> : IEnumerable<T>
+	public class BlobSet<T>
 	{
+		static Random _rand = new Random();
+		static readonly char[] HexDigits = "0123456789abcdef".ToCharArray();
+		const int HexDepth = 8;
+
 		/// <summary>Name of the container for all the blobsets.</summary>
 		public const string ContainerName = "lokad-blobsets";
 
@@ -50,22 +61,22 @@ namespace Lokad.Cloud.Framework
 		public const string Delimiter = "/";
 
 		readonly ProvidersForCloudStorage _providers;
-		readonly string _prefixName;
+		readonly string _prefix;
 
 		/// <summary>Storage prefix for this collection.</summary>
 		/// <remarks>This identifier is used as <em>prefix</em> through the blob storage
 		/// in order to iterate through the collection.</remarks>
-		public string PrefixName
+		public string Prefix
 		{
-			get { return _prefixName; }
+			get { return _prefix; }
 		}
 
-		/// <summary>Constructor that specifies the <see cref="PrefixName"/>.</summary>
+		/// <summary>Constructor that specifies the <see cref="Prefix"/>.</summary>
 		/// <remarks>The container name is based on the type <c>T</c>.</remarks>
-		internal BlobSet(ProvidersForCloudStorage providers, string prefixName)
+		internal BlobSet(ProvidersForCloudStorage providers, string prefix)
 		{
 			_providers = providers;
-			_prefixName = prefixName;
+			_prefix = prefix;
 		}
 
 		/// <summary>Apply the specified mapping to all items of this collection.</summary>
@@ -120,18 +131,15 @@ namespace Lokad.Cloud.Framework
 		{
 			get
 			{
-				return _providers.BlobStorage.GetBlob<T>(
-					ContainerName, _prefixName + Delimiter + locator.Name);
+				return _providers.BlobStorage.GetBlob<T>(ContainerName, locator.Name);
 			}
 		}
 
 		/// <summary>Adds an item and returns the corresponding blob identifier.</summary>
 		public BlobLocator Add(T item)
 		{
-			// TODO: need to unify the name generation.
-			var blobName = Guid.NewGuid().ToString();
-			_providers.BlobStorage.PutBlob(ContainerName, _prefixName + Delimiter + blobName, item);
-
+			var blobName = GetNewBlobName();
+			_providers.BlobStorage.PutBlob(ContainerName, blobName, item);
 			return new BlobLocator(blobName);
 		}
 
@@ -139,16 +147,7 @@ namespace Lokad.Cloud.Framework
 		/// <returns><c>true</c> if the blob was successfully removed and <c>false</c> otherwise.</returns>
 		public bool Remove(BlobLocator locator)
 		{
-			return _providers.BlobStorage.DeleteBlob(
-				ContainerName, _prefixName + Delimiter + locator.Name);
-		}
-
-		/// <summary>Removes an item (relyies on the hashcode and <c>Equals</c> method).</summary>
-		public bool Remove(T item)
-		{
-			// TODO: need a partially deterministic name generation.
-
-			throw new NotImplementedException();
+			return _providers.BlobStorage.DeleteBlob(ContainerName, locator.Name);
 		}
 
 		/// <summary>Remove all items from within the collection.</summary>
@@ -161,14 +160,25 @@ namespace Lokad.Cloud.Framework
 			throw new NotImplementedException();
 		}
 
-		public IEnumerator<T> GetEnumerator()
+		/// <summary>Get a new blob name including the prefix, the pseudo-random pattern plus
+		/// the Guid. Those names are choosen to avoid collision and facilitate fast iteration.
+		/// </summary>
+		string GetNewBlobName()
 		{
-			throw new NotImplementedException();
-		}
+			var builder = new StringBuilder();
+			builder.Append(_prefix);
+			builder.Append(Delimiter);
+            
+			// Required for fast iteration
+			for(int i = 0; i < HexDepth; i++)
+			{
+				builder.Append(HexDigits[_rand.Next(16)]);
+				builder.Append(Delimiter);
+			}
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
+			builder.Append(Guid.NewGuid().ToString());
+
+			return builder.ToString();
 		}
 	}
 }

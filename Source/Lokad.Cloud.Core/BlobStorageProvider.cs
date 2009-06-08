@@ -2,7 +2,7 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-using System;
+
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -68,10 +68,14 @@ namespace Lokad.Cloud.Core
 		public IEnumerable<string> List(string containerName, string prefix)
 		{
 			var container = _blobStorage.GetBlobContainer(containerName);
+			var blobList = container.ListBlobs(prefix, false);
 
-			foreach(BlobProperties blobProperty in container.ListBlobs(prefix, false))
+			if (null != blobList)
 			{
-				yield return blobProperty.Name;
+				foreach (BlobProperties blobProperty in blobList)
+				{
+					yield return blobProperty.Name;
+				}
 			}
 		}
 	}
