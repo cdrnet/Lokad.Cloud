@@ -8,7 +8,7 @@ namespace Lokad.Cloud.Framework
 	/// <summary>Default settings for the <see cref="QueueService{T}"/>. Once the queue
 	/// service is deployed, settings are stored in the <c>lokad-cloud-queues</c> blob
 	/// container.</summary>
-	class QueueServiceSettingsAttribute : CloudServiceSettingsAttribute
+	sealed class QueueServiceSettingsAttribute : CloudServiceSettingsAttribute
 	{
 		/// <summary>Name of the queue attached to the <see cref="QueueService{T}"/>.</summary>
 		/// <remarks>If this value is null or empty, a default queue name is chosen based
