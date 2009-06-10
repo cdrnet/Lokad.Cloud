@@ -10,7 +10,7 @@ namespace Lokad.Cloud.Core
 	/// <summary>The purpose of the <see cref="MessageWrapper"/> is to gracefully
 	/// handle messages that are too large of the queue storage.</summary>
 	[Serializable]
-	class MessageWrapper : ISerializable
+	sealed class MessageWrapper : ISerializable
 	{
 		public object InnerMessage { get; set; }
 

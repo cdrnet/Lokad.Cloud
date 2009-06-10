@@ -86,7 +86,9 @@ This code is released under the terms of the new BSD licence]]></FileHeader>
     </Naming2>
   </CodeStyleSettings>
   <CodeAnnotations>
+    <Namespace>JetBrains.Annotations</Namespace>
+    <Namespace>Lokad.Quality</Namespace>
     <Namespace>System.Diagnostics.CodeAnalysis</Namespace>
-    <DefaultNamespace>System.Diagnostics.CodeAnalysis</DefaultNamespace>
+    <DefaultNamespace>Lokad.Quality</DefaultNamespace>
   </CodeAnnotations>
 </Configuration>

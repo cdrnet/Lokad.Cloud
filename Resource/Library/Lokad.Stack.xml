@@ -64,21 +64,21 @@
     </member>
     <member name="M:Lokad.Container.ContainerBuilderExtensions.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)">
       <summary>
-            Runs auto-registration based on the <see cref="T:System.Container.ComponentAttribute" /></summary>
+            Runs auto-registration based on the <see cref="T:Lokad.Container.ComponentAttribute" /></summary>
       <param name="type">
       </param>
       <param name="builder">
       </param>
     </member>
-    <member name="M:Lokad.Container.ContainerBuilderExtensions.GetScope(System.Container.RegistrationScope)">
+    <member name="M:Lokad.Container.ContainerBuilderExtensions.GetScope(Lokad.Container.RegistrationScope)">
       <summary>
-            Converts <see cref="T:System.Container.RegistrationScope" /> to <see cref="T:Autofac.InstanceScope" /></summary>
+            Converts <see cref="T:Lokad.Container.RegistrationScope" /> to <see cref="T:Autofac.InstanceScope" /></summary>
       <param name="scope">
       </param>
       <returns>
       </returns>
     </member>
-    <member name="M:Lokad.Container.ContainerBuilderExtensions.LoadDecorators(Autofac.IContainer,System.Collections.Generic.IEnumerable{System.Container.DecoratorInfo})">
+    <member name="M:Lokad.Container.ContainerBuilderExtensions.LoadDecorators(Autofac.IContainer,System.Collections.Generic.IEnumerable{Lokad.Container.DecoratorInfo})">
       <summary>
             Loads decorators into the container
             </summary>
@@ -135,7 +135,7 @@
     </member>
     <member name="F:Lokad.Logging.LogProviderWrapper.Instance">
       <summary>
-            Singleton instance of the <see cref="T:System.INamedProvider`1" /> for <see cref="T:System.ILog" /></summary>
+            Singleton instance of the <see cref="T:Lokad.INamedProvider`1" /> for <see cref="T:Lokad.ILog" /></summary>
     </member>
     <member name="M:Lokad.Logging.LogProviderWrapper.Get(System.String)">
       <summary>
@@ -150,7 +150,7 @@
             Syntax for configuring logging within the logging stack
             </summary>
     </member>
-    <member name="M:Lokad.Logging.LogSyntax.Filter(System.LogLevel,System.LogLevel)">
+    <member name="M:Lokad.Logging.LogSyntax.Filter(Lokad.LogLevel,Lokad.LogLevel)">
       <summary>
             Appends inclusive filter to the log
             </summary>

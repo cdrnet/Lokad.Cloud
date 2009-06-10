@@ -16,7 +16,7 @@ namespace Lokad.Cloud.Framework
 	/// }
 	/// </code>
 	/// </remarks>
-	public class Lock : IDisposable
+	public sealed class Lock : IDisposable
 	{
 		/// <summary>Try to acquire the lock. Call is blocked until the lock is
 		/// acquired.</summary>
