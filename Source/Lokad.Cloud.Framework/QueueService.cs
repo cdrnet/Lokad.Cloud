@@ -2,7 +2,7 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-using System;
+
 using System.Collections.Generic;
 using System.Linq;
 
@@ -69,14 +69,14 @@ namespace Lokad.Cloud.Framework
 		/// before asking for more.</remarks>
 		public IEnumerable<T> GetMore(int count)
 		{
-			throw new NotImplementedException();
+			return _providers.QueueStorage.Get<T>(_queueName, count);
 		}
 
 		/// <summary>Delete messages retrieved either through <see cref="Start"/>
 		/// or through <see cref="GetMore"/>.</summary>
 		public void Delete(IEnumerable<T> messages)
 		{
-			throw new NotImplementedException();
+			_providers.QueueStorage.Delete(_queueName, messages);
 		}
 	}
 }

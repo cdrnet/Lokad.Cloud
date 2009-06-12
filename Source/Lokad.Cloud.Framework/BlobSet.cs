@@ -8,7 +8,7 @@ using System.Text;
 // Notes about delegate serialization can be found at
 // http://blogs.microsoft.co.il/blogs/aviwortzel/archive/2008/06/20/how-to-serialize-anonymous-delegates.aspx
 
-// TODO: [vermorel] The algorithm that enable fast iteration is slightly subtle
+// TODO: [vermorel] The algorithm that enables fast iteration is subtle
 // and will be provided as a white paper along with the Lokad.Cloud documentation.
 
 
