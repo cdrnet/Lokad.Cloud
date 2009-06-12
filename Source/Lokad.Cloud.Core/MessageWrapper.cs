@@ -13,10 +13,6 @@ namespace Lokad.Cloud.Core
 	[Serializable]
 	public sealed class MessageWrapper : ISerializable
 	{
-		public bool IsOverflow { get; set; }
-
-		public object InnerMessage { get; set; }
-
 		public string ContainerName { get; set; }
 
 		public string BlobName { get; set; }
@@ -28,36 +24,16 @@ namespace Lokad.Cloud.Core
 		/// <summary>Deserialization constructor.</summary>
 		public MessageWrapper(SerializationInfo info, StreamingContext context)
 		{
-			IsOverflow = info.GetBoolean("io");
-
-			if(IsOverflow)
-			{
-				ContainerName = info.GetString("cn");
-				BlobName = info.GetString("bn");
-			}
-			else
-			{
-				var ty = (Type)info.GetValue("ty", typeof(Type));
-				InnerMessage = info.GetValue("in", ty);
-			}
+			ContainerName = info.GetString("cn");
+			BlobName = info.GetString("bn");
 		}
 
 		/// <summary>Serialization method.</summary>
 		public void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
 			info.AddValue("vs", "1.0");
-			info.AddValue("io", IsOverflow);
-
-			if(IsOverflow)
-			{
-				info.AddValue("cn", ContainerName);
-				info.AddValue("bn", BlobName);
-			}
-			else
-			{
-				info.AddValue("ty", InnerMessage.GetType());
-				info.AddValue("in", InnerMessage);
-			}
+			info.AddValue("cn", ContainerName);
+			info.AddValue("bn", BlobName);
 		}
 	}
 }

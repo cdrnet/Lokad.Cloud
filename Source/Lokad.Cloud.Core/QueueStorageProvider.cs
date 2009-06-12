@@ -10,6 +10,11 @@ using System.Runtime.Serialization;
 
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
+// TODO: service missing to garbage collect lost overflowing messages.
+// Overflowing messages are stored in blob storage and normally deleted as with
+// their originating correspondance in queue storage. Yet if messages aren't processed
+// in 7 days, then, they should be removed.
+
 namespace Lokad.Cloud.Core
 {
 	/// <summary>Provides access to the Queue Storage (plus the Blob Storage when
@@ -19,7 +24,13 @@ namespace Lokad.Cloud.Core
 	/// </remarks>
 	public class QueueStorageProvider : IQueueStorageProvider
 	{
-		// root for synchronized access
+		/// <summary>Name of the blob container used to hold overflowing messages
+		/// from the queues.</summary>
+		public const string OverflowingContainer = "lokad-overflowing-queues";
+
+		/// <summary>Root used to synchronize accesses to <c>_inprocess</c>. 
+		/// Caution: do not hold the lock while performing operations on the cloud
+		/// storage.</summary>
 		readonly object _sync = new object();
 
 		readonly QueueStorage _queueStorage;
@@ -27,8 +38,8 @@ namespace Lokad.Cloud.Core
 		readonly ActionPolicy _policy;
 		readonly IFormatter _formatter;
 
-		// messages currently being processed
-		private readonly Dictionary<object, Message> _inprocess;
+		// messages currently being processed (boolean property indicates if the message is overflowing)
+		private readonly Dictionary<object, Tuple<Message, bool>> _inprocess;
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
@@ -39,7 +50,7 @@ namespace Lokad.Cloud.Core
 			_policy = policy;
 			_formatter = formatter;
 
-			_inprocess = new Dictionary<object, Message>();
+			_inprocess = new Dictionary<object, Tuple<Message, bool>>();
 		}
 
 		public IEnumerable<T> Get<T>(string queueName, int count)
@@ -48,7 +59,11 @@ namespace Lokad.Cloud.Core
 
 			var rawMessages = queue.GetMessages(count);
 
+			// skip empty queue
+			if (null == rawMessages) return new T[0];
+
 			var messages = new List<T>(rawMessages.Count());
+			var wrappedMessages = new List<MessageWrapper>();
 
 			lock(_sync)
 			{
@@ -60,17 +75,57 @@ namespace Lokad.Cloud.Core
 					if(innerMessage is T)
 					{
 						messages.Add((T)innerMessage);
-						_inprocess.Add(innerMessage, rawMessage);
+						_inprocess.Add(innerMessage, new Tuple<Message, bool>(rawMessage, false));
 					}
 					else
 					{
-						// TODO: need to deal with message wrapper here
-						var wrapper = (MessageWrapper) innerMessage;
+						// we don't retrieve messages while holding the lock
+						var mw = (MessageWrapper) innerMessage;
+						wrappedMessages.Add(mw);
 
-						throw new NotImplementedException();
+						_inprocess.Add(mw, new Tuple<Message, bool>(rawMessage, true));
 					}
 				}
 			}
+			
+			// unwrapping messages
+            foreach(var mw in wrappedMessages)
+            {
+            	var container = _blobStorage.GetBlobContainer(mw.ContainerName);
+            	var stream = new MemoryStream();
+            	var blobContents = new BlobContents(stream);
+            	var blobProperties = container.GetBlob(mw.BlobName, blobContents, false);
+
+				// blob may not exists in (rare) case of failure just before queue deletion
+				// but after container deletion (or also timeout deletion).
+				if(null == blobProperties)
+				{
+					Message rawMessage;
+					lock (_sync)
+					{
+						rawMessage = _inprocess[mw].Item1;
+						_inprocess.Remove(mw);
+					}
+
+					queue.DeleteMessage(rawMessage);
+
+					// skipping the message if it can't be unwrapped
+					continue;
+				}
+
+            	stream.Position = 0;
+            	var innerMessage = (T)_formatter.Deserialize(stream);
+
+				// substitution: message wrapper replaced by actual item in '_inprocess' list
+				lock(_sync)
+				{
+					var rawMessage = _inprocess[mw];
+					_inprocess.Remove(mw);
+					_inprocess.Add(innerMessage, rawMessage);
+				}
+
+				messages.Add(innerMessage);
+            }
 
 			return messages;
 		}
@@ -86,28 +141,59 @@ namespace Lokad.Cloud.Core
 
 				var buffer = stream.GetBuffer();
 
-				if(buffer.Length < Message.MaxMessageSize)
+				if(buffer.Length >= Message.MaxMessageSize)
 				{
+					var container = _blobStorage.GetBlobContainer(OverflowingContainer);
+					var blobName = GetNewBlobName();
+
+					var blobContents = new BlobContents(buffer);
+					var blobProperties = new BlobProperties(blobName);
+
 					try
 					{
-						queue.PutMessage(new Message(buffer));
+						container.CreateBlob(blobProperties, blobContents, false);
 					}
-					catch(StorageClientException ex)
+					catch (StorageClientException ex)
 					{
-						// HACK: not storage status error code yet
-						if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+						if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
 						{
-							queue.CreateQueue();
+							container.CreateContainer();
 
-							// It usually takes time before the queue gets available
-							_policy.Do(() => queue.PutMessage(new Message(buffer)));
+							// It usually takes time before the container gets available
+							_policy.Do(() => container.CreateBlob(blobProperties, blobContents, false));
+						}
+						else
+						{
+							throw;
 						}
 					}
+
+					var mw = new MessageWrapper {ContainerName = OverflowingContainer, BlobName = blobName};
+					stream = new MemoryStream();
+					_formatter.Serialize(stream, mw);
+
+					// buffer gets replaced by the wrapper
+					buffer = stream.GetBuffer();
 				}
-				else
+
+				try
 				{
-					// TODO: overflowing messages should be handled.
-					throw new NotImplementedException();
+					queue.PutMessage(new Message(buffer));
+				}
+				catch (StorageClientException ex)
+				{
+					// HACK: not storage status error code yet
+					if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+					{
+						queue.CreateQueue();
+
+						// It usually takes time before the queue gets available
+						_policy.Do(() => queue.PutMessage(new Message(buffer)));
+					}
+					else
+					{
+						throw;
+					}
 				}
 			}
 		}
@@ -119,10 +205,23 @@ namespace Lokad.Cloud.Core
 			foreach(var message in messages)
 			{
 				Message rawMessage;
+				bool isOverflowing;
  
 				lock(_sync)
 				{
-					rawMessage = _inprocess[message];
+					var tuple = _inprocess[message];
+					rawMessage = tuple.Item1;
+					isOverflowing = tuple.Item2;
+				}
+
+				// deleting the overflowing copy from the blob storage.
+				if(isOverflowing)
+				{
+					var stream = new MemoryStream(rawMessage.ContentAsBytes());
+					var mw = (MessageWrapper)_formatter.Deserialize(stream);
+
+					var container = _blobStorage.GetBlobContainer(mw.ContainerName);
+					container.DeleteBlob(mw.BlobName);
 				}
 
 				queue.DeleteMessage(rawMessage);
@@ -132,6 +231,14 @@ namespace Lokad.Cloud.Core
 					_inprocess.Remove(message);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Naming is following a date pattern to facilitate cleaning later on.
+		/// </summary>
+		string GetNewBlobName()
+		{
+			return DateTime.Now.ToString("yyyy/MM/dd/hh/mm/ss/") + Guid.NewGuid();
 		}
 	}
 }

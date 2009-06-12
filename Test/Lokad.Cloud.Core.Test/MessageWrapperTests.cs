@@ -16,7 +16,7 @@ namespace Lokad.Cloud.Core.Test
 		public void Serialization()
 		{
 			// overflowing message
-			var om = new MessageWrapper {IsOverflow = true, ContainerName = "con", BlobName = "blo"};
+			var om = new MessageWrapper {ContainerName = "con", BlobName = "blo"};
 
 			var stream = new MemoryStream();
 			var formatter = new BinaryFormatter();
@@ -25,20 +25,8 @@ namespace Lokad.Cloud.Core.Test
 			stream.Position = 0;
 			var omBis = (MessageWrapper) formatter.Deserialize(stream);
 
-			Assert.AreEqual(om.IsOverflow, omBis.IsOverflow, "#A00");
-			Assert.AreEqual(om.ContainerName, omBis.ContainerName, "#A01");
-			Assert.AreEqual(om.BlobName, omBis.BlobName, "#A02");
-			
-			// regular message
-			om = new MessageWrapper { InnerMessage = "foobar"};
-
-			stream.Position = 0;
-			formatter.Serialize(stream, om);
-			stream.Position = 0;
-			omBis = (MessageWrapper)formatter.Deserialize(stream);
-
-			Assert.AreEqual(om.IsOverflow, omBis.IsOverflow, "#A00");
-			Assert.AreEqual(om.InnerMessage, omBis.InnerMessage, "#A01");
+			Assert.AreEqual(om.ContainerName, omBis.ContainerName, "#A00");
+			Assert.AreEqual(om.BlobName, omBis.BlobName, "#A01");
 		}
 	}
 }
