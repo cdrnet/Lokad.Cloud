@@ -8,13 +8,14 @@ using System.Runtime.Serialization;
 namespace Lokad.Cloud.Core
 {
 	/// <summary>The purpose of the <see cref="MessageWrapper"/> is to gracefully
-	/// handle messages that are too large of the queue storage.</summary>
+	/// handle messages that are too large of the queue storage (or messages that happen
+	/// to be already stored in the Blob Storage).</summary>
 	[Serializable]
-	sealed class MessageWrapper : ISerializable
+	public sealed class MessageWrapper : ISerializable
 	{
-		public object InnerMessage { get; set; }
-
 		public bool IsOverflow { get; set; }
+
+		public object InnerMessage { get; set; }
 
 		public string ContainerName { get; set; }
 
@@ -27,13 +28,36 @@ namespace Lokad.Cloud.Core
 		/// <summary>Deserialization constructor.</summary>
 		public MessageWrapper(SerializationInfo info, StreamingContext context)
 		{
-			throw new NotImplementedException();
+			IsOverflow = info.GetBoolean("io");
+
+			if(IsOverflow)
+			{
+				ContainerName = info.GetString("cn");
+				BlobName = info.GetString("bn");
+			}
+			else
+			{
+				var ty = (Type)info.GetValue("ty", typeof(Type));
+				InnerMessage = info.GetValue("in", ty);
+			}
 		}
 
 		/// <summary>Serialization method.</summary>
 		public void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
-			throw new NotImplementedException();
+			info.AddValue("vs", "1.0");
+			info.AddValue("io", IsOverflow);
+
+			if(IsOverflow)
+			{
+				info.AddValue("cn", ContainerName);
+				info.AddValue("bn", BlobName);
+			}
+			else
+			{
+				info.AddValue("ty", InnerMessage.GetType());
+				info.AddValue("in", InnerMessage);
+			}
 		}
 	}
 }

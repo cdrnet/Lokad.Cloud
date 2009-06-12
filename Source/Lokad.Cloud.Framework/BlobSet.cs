@@ -103,7 +103,7 @@ namespace Lokad.Cloud.Framework
 		/// This method is asynchronous.
 		/// </remarks>
 		public void MapToQueue<U, M>(
-			Func<BlobLocator, U> mapper, M onCompleted, string mappingQueueName, string messageQueueName)
+			Func<T, U> mapper, M onCompleted, string mappingQueueName, string messageQueueName)
 		{
 			throw new NotImplementedException();
 		}
