@@ -68,14 +68,10 @@ namespace Lokad.Cloud.Core
 		public IEnumerable<string> List(string containerName, string prefix)
 		{
 			var container = _blobStorage.GetBlobContainer(containerName);
-			var blobList = container.ListBlobs(prefix, false);
 
-			if (null != blobList)
+			foreach (BlobProperties blobProperty in container.ListBlobs(prefix, false))
 			{
-				foreach (BlobProperties blobProperty in blobList)
-				{
-					yield return blobProperty.Name;
-				}
+				yield return blobProperty.Name;
 			}
 		}
 	}

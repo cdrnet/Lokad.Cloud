@@ -4,6 +4,7 @@
 #endregion
 using System;
 using System.Text;
+using Lokad.Cloud.Services;
 
 // Notes about delegate serialization can be found at
 // http://blogs.microsoft.co.il/blogs/aviwortzel/archive/2008/06/20/how-to-serialize-anonymous-delegates.aspx
@@ -29,6 +30,15 @@ namespace Lokad.Cloud.Framework
 		{
 			_name = name;
 		}
+	}
+
+	/// <summary>Settings of a map operation.</summary>
+	[Serializable]
+	public class BlobSetMapSettings
+	{
+		public object Mapper { get; set; }
+		public object OnCompleted { get; set; }
+		public string OnCompletedQueueName { get; set; }
 	}
 
 	/// <summary>The <c>BlobSet</c> is a blob-based scalable collection that
@@ -60,6 +70,9 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Delimiter used for prefixing iterations on Blob Storage.</summary>
 		public const string Delimiter = "/";
 
+		/// <summary>Blob name used to store the mapping during a map operation.</summary>
+		public const string MapSettingsBlobName = "mapping";
+
 		readonly ProvidersForCloudStorage _providers;
 		readonly string _prefix;
 
@@ -80,31 +93,56 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>Apply the specified mapping to all items of this collection.</summary>
+		/// <param name="destPrefix">Prefix to be used for the destination <c>BlobSet</c>.</param>
 		/// <typeparam name="U">Output type of the mapped items.</typeparam>
 		/// <typeparam name="M">Output type of the termination message.</typeparam>
 		/// <param name="mapper">Mapping function (should be serializable).</param>
 		/// <param name="onCompleted">Message pushed when the mapping is completed.</param>
-		/// <remarks>
-		/// This method is asynchronous, all mapped items with will be implicitely
-		/// put to the queue matching the type <c>U</c>.
-		/// </remarks>
-		public void MapToQueue<U, M>(Func<T, U> mapper, M onCompleted)
+		/// <remarks>This method is asynchronous.</remarks>
+		public void MapToBlobSet<U, M>(string destPrefix, Func<T, U> mapper, M onCompleted)
 		{
-			throw new NotImplementedException();
+			var completionQueueName = _providers.TypeMapper.GetStorageName(typeof(M));
+			MapToBlobSet(destPrefix, mapper, onCompleted, completionQueueName);
 		}
 
 		/// <summary>Apply the specified mapping  to all items of this collection.</summary>
+		/// <param name="destPrefix">Prefix to be used for the destination <c>BlobSet</c>.</param>
 		/// <typeparam name="U">Output type of the mapped items.</typeparam>
 		/// <typeparam name="M">Output type of the termination message.</typeparam>
 		/// <param name="mapper">Mapping function (should be serializable).</param>
-		/// <param name="mappingQueueName">Identifier of the queue where items will be put.</param>
-		/// <param name="messageQueueName">Identifier of the queue where the termination message is put.</param>
+		/// <param name="onCompletedQueueName">Identifier of the queue where the termination message is put.</param>
 		/// <remarks>
 		/// This method is asynchronous.
 		/// </remarks>
-		public void MapToQueue<U, M>(
-			Func<T, U> mapper, M onCompleted, string mappingQueueName, string messageQueueName)
+		public void MapToBlobSet<U, M>(
+			string destPrefix, Func<T, U> mapper, M onCompleted, string onCompletedQueueName)
 		{
+			// HACK: sequential iteration over the BlobSet (not scalable)
+
+			var settings = new BlobSetMapSettings
+			               	{
+			               		Mapper = mapper,
+			               		OnCompleted = onCompleted,
+			               		OnCompletedQueueName = onCompletedQueueName
+			               	};
+
+			_providers.BlobStorage.PutBlob(
+				ContainerName, destPrefix + Delimiter + MapSettingsBlobName, settings);
+
+			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
+			{
+				var message = new BlobSetMessage
+				              	{
+				              		BlobName = blobName, 
+									DestinationPrefix = destPrefix, 
+									SourcePrefix = _prefix
+				              	};
+
+				_providers.QueueStorage.Put(BlobSetService.QueueName, new[]{message});
+			}
+
+			// TODO: missing counter (to be used to keep track of termination)
+
 			throw new NotImplementedException();
 		}
 
@@ -138,7 +176,7 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Adds an item and returns the corresponding blob identifier.</summary>
 		public BlobLocator Add(T item)
 		{
-			var blobName = GetNewBlobName();
+			var blobName = GetNewItemBlobName();
 			_providers.BlobStorage.PutBlob(ContainerName, blobName, item);
 			return new BlobLocator(blobName);
 		}
@@ -163,7 +201,7 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Get a new blob name including the prefix, the pseudo-random pattern plus
 		/// the Guid. Those names are choosen to avoid collision and facilitate fast iteration.
 		/// </summary>
-		string GetNewBlobName()
+		string GetNewItemBlobName()
 		{
 			var builder = new StringBuilder();
 			builder.Append(_prefix);
