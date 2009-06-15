@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -52,11 +53,45 @@ namespace Lokad.Cloud.Core
 		{
 			var blobContents = new BlobContents(new MemoryStream());
 			var container = _blobStorage.GetBlobContainer(containerName);
-			container.GetBlob(blobName, blobContents, false);
+			var properties = container.GetBlob(blobName, blobContents, false);
+
+			if (null == properties) return default(T);
 
 			var stream = blobContents.AsStream;
 			stream.Position = 0;
 			return (T)_formatter.Deserialize(stream);
+		}
+
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)
+		{
+			var blobContents = new BlobContents(new MemoryStream());
+			var container = _blobStorage.GetBlobContainer(containerName);
+			var properties = container.GetBlob(blobName, blobContents, false);
+
+			T item;
+			if(null == properties)
+			{
+				item = default(T);
+			}
+			else
+			{
+				var rstream = blobContents.AsStream;
+				rstream.Position = 0;
+				item = (T)_formatter.Deserialize(rstream);
+			}
+
+			// updating the item
+			item = updater(item);
+
+			var wstream = new MemoryStream();
+			_formatter.Serialize(wstream, item);
+			var buffer = wstream.GetBuffer();
+
+			blobContents = new BlobContents(buffer);
+
+			return null == properties ? 
+				container.CreateBlob(properties, blobContents, false) : 
+				container.UpdateBlobIfNotModified(properties, blobContents);
 		}
 
 		public bool DeleteBlob(string containerName, string blobName)

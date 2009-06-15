@@ -2,6 +2,8 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
+using System;
 using System.Collections.Generic;
 
 namespace Lokad.Cloud.Core
@@ -27,7 +29,17 @@ namespace Lokad.Cloud.Core
 		void PutBlob<T>(string containerName, string blobName, T item);
 
 		/// <summary>Gets a blob.</summary>
+		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
+		/// returned.</returns>
 		T GetBlob<T>(string containerName, string blobName);
+
+		/// <summary>Update a blob while garantying an atomic update process.</summary>
+		/// <returns><c>true</c> if the update is successful.
+		/// If the blob is updated between the retrieval and the update attempt,
+		/// then no update is performed and the method returns <c>false</c>.</returns>
+		/// <remarks>If there is not such blob available, the update is performed with
+		/// the default <c>T</c> value.</remarks>
+		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater);
 
 		/// <summary>Deletes a blob.</summary>
 		bool DeleteBlob(string containerName, string blobName);
