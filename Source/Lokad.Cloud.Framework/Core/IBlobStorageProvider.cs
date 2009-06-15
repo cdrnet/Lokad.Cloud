@@ -39,7 +39,7 @@ namespace Lokad.Cloud.Core
 		/// then no update is performed and the method returns <c>false</c>.</returns>
 		/// <remarks>If there is not such blob available, the update is performed with
 		/// the default <c>T</c> value.</remarks>
-		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater);
+		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result);
 
 		/// <summary>Deletes a blob.</summary>
 		bool DeleteBlob(string containerName, string blobName);

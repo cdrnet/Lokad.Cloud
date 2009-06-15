@@ -4,12 +4,13 @@
 #endregion
 using System;
 using System.Text;
+using System.Threading;
 using Lokad.Cloud.Services;
 
 // Notes about delegate serialization can be found at
 // http://blogs.microsoft.co.il/blogs/aviwortzel/archive/2008/06/20/how-to-serialize-anonymous-delegates.aspx
 
-// TODO: [vermorel] The algorithm that enables fast iteration is subtle
+// TODO: [vermorel] The algorithm that enables fast iteration is subtle (and not implemented yet)
 // and will be provided as a white paper along with the Lokad.Cloud documentation.
 
 
@@ -73,6 +74,12 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Blob name used to store the mapping during a map operation.</summary>
 		public const string MapSettingsBlobName = "mapping";
 
+		/// <summary>Blob name used to store the number of remaining mappings during
+		/// a map operation.</summary>
+		public const string MapCounterBlobName = "counter";
+
+		const long MapInitialShift = 2l ^ 48;
+
 		readonly ProvidersForCloudStorage _providers;
 		readonly string _prefix;
 
@@ -129,21 +136,35 @@ namespace Lokad.Cloud.Framework
 			_providers.BlobStorage.PutBlob(
 				ContainerName, destPrefix + Delimiter + MapSettingsBlobName, settings);
 
+			long ignored;
+			var isModified = _providers.BlobStorage.UpdateIfNotModified(
+				ContainerName, 
+				destPrefix + Delimiter + MapCounterBlobName, 
+				x => x + MapInitialShift, 
+				out ignored);
+
+			if(!isModified) throw new InvalidOperationException(
+				"MapToBlobSet can't be executed twice on the same destination BlobSet.");
+
+			var itemCount = 0l;
 			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
 			{
 				var message = new BlobSetMessage
 				              	{
-				              		BlobName = blobName, 
+				              		ItemSuffix = blobName.Substring(_prefix.Length + 1), 
 									DestinationPrefix = destPrefix, 
 									SourcePrefix = _prefix
 				              	};
 
 				_providers.QueueStorage.Put(BlobSetService.QueueName, new[]{message});
+				itemCount++;
 			}
 
-			// TODO: missing counter (to be used to keep track of termination)
-
-			throw new NotImplementedException();
+			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
+				ContainerName, 
+				destPrefix + Delimiter + MapCounterBlobName, 
+				x => x + itemCount - MapInitialShift, 
+				out ignored));
 		}
 
 		/// <summary>Apply a reducing function and outputs to the queue
@@ -217,6 +238,27 @@ namespace Lokad.Cloud.Framework
 			builder.Append(Guid.NewGuid().ToString());
 
 			return builder.ToString();
+		}
+
+		/// <summary>Retry an update method until it succeeds. Timing
+		/// increases to avoid overstressing the storage for nothing.</summary>
+		/// <param name="func"></param>
+		public static void RetryUpdate(Func<bool> func)
+		{
+			// HACK: hard-code constants, the whole counter system have to be perfected.
+			const int InitMaxSleepInMs = 50;
+			const int MaxSleepInMs = 2000;
+
+			var maxSleepInMs = InitMaxSleepInMs;
+
+			while(!func())
+			{
+				var sleepTime = _rand.Next(maxSleepInMs).Milliseconds();
+				Thread.Sleep(sleepTime);
+
+				maxSleepInMs += 50;
+				maxSleepInMs = Math.Min(maxSleepInMs, MaxSleepInMs);
+			}
 		}
 	}
 }

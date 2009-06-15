@@ -7,6 +7,8 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 
+// TODO: refactor tests so that containers do not have to be created each time.
+
 namespace Lokad.Cloud.Core.Test
 {
 	[TestFixture]
@@ -45,7 +47,8 @@ namespace Lokad.Cloud.Core.Test
 			provider.CreateContainer(ContainerName);
 
 			provider.PutBlob(ContainerName, BlobName, 1);
-			var isUpdated = provider.UpdateIfNotModified<int>(ContainerName, BlobName, i => i + 1);
+			int ignored;
+			var isUpdated = provider.UpdateIfNotModified(ContainerName, BlobName, i => i + 1, out ignored);
 
 			Assert.IsTrue(isUpdated, "#A00");
 

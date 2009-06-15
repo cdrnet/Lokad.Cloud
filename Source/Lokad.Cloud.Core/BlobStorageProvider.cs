@@ -62,29 +62,28 @@ namespace Lokad.Cloud.Core
 			return (T)_formatter.Deserialize(stream);
 		}
 
-		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result)
 		{
 			var blobContents = new BlobContents(new MemoryStream());
 			var container = _blobStorage.GetBlobContainer(containerName);
 			var properties = container.GetBlob(blobName, blobContents, false);
 
-			T item;
 			if(null == properties)
 			{
-				item = default(T);
+				result = default(T);
 			}
 			else
 			{
 				var rstream = blobContents.AsStream;
 				rstream.Position = 0;
-				item = (T)_formatter.Deserialize(rstream);
+				result = (T)_formatter.Deserialize(rstream);
 			}
 
 			// updating the item
-			item = updater(item);
+			result = updater(result);
 
 			var wstream = new MemoryStream();
-			_formatter.Serialize(wstream, item);
+			_formatter.Serialize(wstream, result);
 			var buffer = wstream.GetBuffer();
 
 			blobContents = new BlobContents(buffer);
