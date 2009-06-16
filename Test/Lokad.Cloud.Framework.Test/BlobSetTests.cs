@@ -4,9 +4,10 @@
 #endregion
 using System;
 using System.IO;
-using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using NUnit.Framework;
+
+using BlobSet = Lokad.Cloud.Framework.BlobSet<object>;
 
 namespace Lokad.Cloud.Framework.Test
 {
@@ -36,10 +37,7 @@ namespace Lokad.Cloud.Framework.Test
 		{
 			var myFunc = new Func<int, int>(i => i * i);
 
-			var result = (int)myFunc.GetType().InvokeMember(
-				"Invoke", BindingFlags.InvokeMethod, null, myFunc, new object[] {5});
-
-			Assert.AreEqual(myFunc(5), result, "#A00");
+			Assert.AreEqual(myFunc(5), BlobSet.InvokeAsDelegate(myFunc, 5), "#A00");
 		}
 	}
 }

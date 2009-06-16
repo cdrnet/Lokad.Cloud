@@ -32,9 +32,12 @@ namespace Lokad.Cloud
 
 			using (var build = builder.Build())
 			{
-				var command = build.Resolve<ServiceBalancerCommand>();
+				var loadAssembly = build.Resolve<AssemblyLoadCommand>();
+				loadAssembly.Execute();
 
-				command.Execute();
+				// balancer endlessly keeps pinging queues for pending work
+				var balancer = build.Resolve<ServiceBalancerCommand>();
+				balancer.Execute();
 			}
 		}
 

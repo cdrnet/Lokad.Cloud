@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyLoadCommand.cs" />
     <Compile Include="BlobStorageProvider.cs" />
     <Compile Include="DBAPI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
