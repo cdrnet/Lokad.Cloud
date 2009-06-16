@@ -4,7 +4,6 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Lokad.Cloud.Framework;
 
 using BlobSet = Lokad.Cloud.Framework.BlobSet<object>;
@@ -42,37 +41,35 @@ namespace Lokad.Cloud.Services
 		{
 			const string containerName = BlobSet.ContainerName;
 			const string delimiter = BlobSet.Delimiter;
-			const string mapSettingsBlobName = BlobSet.MapSettingsBlobName;
-			const string mapCounterBlobName = BlobSet.MapCounterBlobName;
+			const string mapSettingsSuffix = BlobSet.MapSettingsSuffix;
+			const string mapCounterSuffix = BlobSet.MapCounterSuffix;
 
             foreach(var message in messages)
             {
-            	var srcPrefix = message.SourcePrefix;
-            	var destPrefix = message.DestinationPrefix;
-            	var itemSuffix = message.ItemSuffix;
+            	var settingsBlobName = message.DestinationPrefix + delimiter + mapSettingsSuffix;
+            	var counterBlobName = message.DestinationPrefix + delimiter + mapCounterSuffix;
+            	var inputBlobName = message.SourcePrefix + delimiter + message.ItemSuffix;
+            	var outputBlobName = message.DestinationPrefix + delimiter + message.ItemSuffix;
 
 				// TODO: need to support caching for the mapper
                 // retrieving the mapper
-            	var mapSettings = _providers.BlobStorage.GetBlob<BlobSetMapSettings>(
-            		containerName, destPrefix + delimiter + mapSettingsBlobName);
+            	var mapSettings = _providers.BlobStorage.
+					GetBlob<BlobSetMapSettings>(containerName, settingsBlobName);
 
 				// retrieving the input
-            	var input = _providers.BlobStorage.GetBlob<object>(
-					containerName, srcPrefix + delimiter + itemSuffix);
+            	var input = _providers.BlobStorage.GetBlob<object>(containerName, inputBlobName);
 
-				// invoking the mapper through reflexion
-            	var output = mapSettings.Mapper.GetType().InvokeMember(
-            		"Invoke", BindingFlags.InvokeMethod, null, mapSettings.Mapper, new[] {input});
+				// map
+            	var output = BlobSet.InvokeAsDelegate(mapSettings.Mapper, input);
 
-				// saving the mapped output
-				_providers.BlobStorage.PutBlob(
-					containerName, destPrefix + delimiter + itemSuffix, output);
+				// saving the output
+				_providers.BlobStorage.PutBlob(containerName, outputBlobName, output);
 
 				// Decrementing the counter once the operation is completed
             	var remainingMappings = long.MaxValue;
 				BlobSet.RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
-					containerName, 
-					destPrefix + delimiter + mapCounterBlobName, 
+					containerName,
+					counterBlobName, 
 					x => x - 1, 
 					out remainingMappings));
 

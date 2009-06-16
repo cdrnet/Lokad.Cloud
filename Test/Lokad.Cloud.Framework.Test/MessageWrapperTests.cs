@@ -7,7 +7,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Core.Test
+namespace Lokad.Cloud.Framework.Test
 {
 	[TestFixture]
 	public class MessageWrapperTests

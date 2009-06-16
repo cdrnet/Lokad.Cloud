@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
 // TODO: service missing to garbage collect lost overflowing messages.
@@ -198,9 +198,11 @@ namespace Lokad.Cloud.Core
 			}
 		}
 
-		public void Delete<T>(string queueName, IEnumerable<T> messages)
+		public int Delete<T>(string queueName, IEnumerable<T> messages)
 		{
 			var queue = _queueStorage.GetQueue(queueName);
+
+			int deletionCount = 0;
 
 			foreach(var message in messages)
 			{
@@ -224,13 +226,20 @@ namespace Lokad.Cloud.Core
 					container.DeleteBlob(mw.BlobName);
 				}
 
-				queue.DeleteMessage(rawMessage);
+				if(queue.DeleteMessage(rawMessage)) deletionCount++;
 
 				lock(_sync)
 				{
 					_inprocess.Remove(message);
 				}
 			}
+
+			return deletionCount;
+		}
+
+		public bool DeleteQueue(string queueName)
+		{
+			return _queueStorage.GetQueue(queueName).DeleteQueue();
 		}
 
 		/// <summary>

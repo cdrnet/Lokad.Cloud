@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using Lokad.Cloud.Services;
@@ -53,8 +54,11 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Name of the queue where the final reduction should be put.</summary>
 		public string ReductionQueue { get; set; }
 
-		/// <summary>Name of the blob that contains the reduction counter.</summary>
+		/// <summary>Suffix of the blob that contains the reduction counter.</summary>
 		public string ReductionCounter { get; set; }
+
+		/// <summary>Suffix of the blob that contains a counter of number of worker.</summary>
+		public string ReducerInQueueCounter { get; set; }
 	}
 
 	/// <summary>The <c>BlobSet</c> is a blob-based scalable collection that
@@ -87,15 +91,15 @@ namespace Lokad.Cloud.Framework
 		public const string Delimiter = "/";
 
 		/// <summary>Blob name used to store the mapping during a map operation.</summary>
-		public const string MapSettingsBlobName = "map-settings";
+		public const string MapSettingsSuffix = "map-settings";
 
 		/// <summary>Blob name used to store the number of remaining mappings during
 		/// a map operation.</summary>
-		public const string MapCounterBlobName = "map-counter";
+		public const string MapCounterSuffix = "map-counter";
 
 		/// <summary>Blob name used to store the number of remaining reductions during
 		/// a reduce operation.</summary>
-		public const string ReduceCounterBlobName = "reduce-counter";
+		public const string ReduceCounterSuffix = "reduce-counter";
 
 		// used as a heuristic for counter initialization in map operation
 		const long CounterInitialShift = 2l ^ 48;
@@ -156,12 +160,12 @@ namespace Lokad.Cloud.Framework
 			// settings are put in the destination blobset, so that many mappings
 			// can take place simultaneously
 			_providers.BlobStorage.PutBlob(
-				ContainerName, destPrefix + Delimiter + MapSettingsBlobName, settings);
+				ContainerName, destPrefix + Delimiter + MapSettingsSuffix, settings);
 
 			long ignored;
 			var isModified = _providers.BlobStorage.UpdateIfNotModified(
 				ContainerName, 
-				destPrefix + Delimiter + MapCounterBlobName, 
+				destPrefix + Delimiter + MapCounterSuffix, 
 				x => x + CounterInitialShift, 
 				out ignored);
 
@@ -184,7 +188,7 @@ namespace Lokad.Cloud.Framework
 
 			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
 				ContainerName, 
-				destPrefix + Delimiter + MapCounterBlobName, 
+				destPrefix + Delimiter + MapCounterSuffix, 
 				x => x + itemCount - CounterInitialShift, 
 				out ignored));
 		}
@@ -221,7 +225,7 @@ namespace Lokad.Cloud.Framework
 			_providers.BlobStorage.PutBlob(ContainerName, settingsBlobName, settings);
 
 			long ignored;
-			var isModified = _providers.BlobStorage.UpdateIfNotModified(
+			_providers.BlobStorage.UpdateIfNotModified(
 				ContainerName,
 				counterBlobName,
 				x => x + CounterInitialShift,
@@ -230,24 +234,29 @@ namespace Lokad.Cloud.Framework
 			var itemCount = 0l;
 			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
 			{
-
-				_providers.QueueStorage.Put(workQueue, new[] {blobName});
+				// listing directly the wrappers (to avoid retrieving items).
+				var wrapper = new MessageWrapper {ContainerName = ContainerName, BlobName = blobName};
+				_providers.QueueStorage.Put(workQueue, new[] { wrapper });
 				itemCount++;
 			}
 
 			var message = new BlobSetReduceMessage
 			{
 				SourcePrefix = _prefix,
-				ReductionSettings = settingsBlobName
+				SettingsSuffix = settingsBlobName
 			};
 
-			// putting a single message (the service itself with deal with the parallelization of the reduction)
-			_providers.QueueStorage.Put(BlobSetReduceService.QueueName, new[] {message});
+			// HACK: naive parallelization here using at most SQRT(N) workers
+			for (int i = 0; i < Math.Sqrt(itemCount); i++)
+			{
+				_providers.QueueStorage.Put(BlobSetReduceService.QueueName, new[] {message});
+			}
 
+			// -1 because there are only N-1 reductions for N items.
 			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
 				ContainerName,
 				counterBlobName,
-				x => x + itemCount - CounterInitialShift,
+				x => x + itemCount - 1 - CounterInitialShift,
 				out ignored));
 		}
 
@@ -355,6 +364,13 @@ namespace Lokad.Cloud.Framework
 				maxSleepInMs += 50;
 				maxSleepInMs = Math.Min(maxSleepInMs, MaxSleepInMs);
 			}
+		}
+
+		/// <summary>Use reflection to invoke a delegate.</summary>
+		public static object InvokeAsDelegate(object target, params object[] inputs)
+		{
+			return target.GetType().InvokeMember(
+				"Invoke", BindingFlags.InvokeMethod, null, target, inputs);
 		}
 	}
 }

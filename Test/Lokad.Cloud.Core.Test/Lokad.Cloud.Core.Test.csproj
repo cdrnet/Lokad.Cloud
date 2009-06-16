@@ -59,7 +59,6 @@
   <ItemGroup>
     <Compile Include="BlobStorageProviderTests.cs" />
     <Compile Include="GlobalSetup.cs" />
-    <Compile Include="MessageWrapperTests.cs" />
     <Compile Include="QueueStorageProviderTests.cs" />
     <Compile Include="TypeMapperProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

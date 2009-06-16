@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Framework
 {
 	/// <summary>The purpose of the <see cref="MessageWrapper"/> is to gracefully
 	/// handle messages that are too large of the queue storage (or messages that happen
