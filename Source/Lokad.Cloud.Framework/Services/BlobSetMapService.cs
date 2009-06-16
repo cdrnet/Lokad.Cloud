@@ -9,11 +9,13 @@ using Lokad.Cloud.Framework;
 
 using BlobSet = Lokad.Cloud.Framework.BlobSet<object>;
 
+// TODO: need to use a custom queue
+
 namespace Lokad.Cloud.Services
 {
-	/// <summary>Elementary mapping to be performed by the <see cref="BlobSetService"/>.</summary>
+	/// <summary>Elementary mapping to be performed by the <see cref="BlobSetMapService"/>.</summary>
 	[Serializable]
-	public class BlobSetMessage
+	public class BlobSetMapMessage
 	{
 		/// <summary>Prefix associated to the input <c>BlobSet</c>.</summary>
 		public string SourcePrefix { get; set; }
@@ -28,15 +30,15 @@ namespace Lokad.Cloud.Services
 	/// <summary>Framework service part of Lokad.Cloud. This service is used to
 	/// perform map operations between <see cref="BlobSet{T}"/>.</summary>
 	[QueueServiceSettings(AutoStart = true, QueueName = QueueName)]
-	public class BlobSetService : QueueService<BlobSetMessage>
+	public class BlobSetMapService : QueueService<BlobSetMapMessage>
 	{
-		public const string QueueName = "lokad-blobsets";
+		public const string QueueName = "lokad-blobsets-map";
 
-		public BlobSetService(ProvidersForCloudStorage providers) : base(providers)
+		public BlobSetMapService(ProvidersForCloudStorage providers) : base(providers)
 		{
 		}
 
-		public override void Start(IEnumerable<BlobSetMessage> messages)
+		protected override void Start(IEnumerable<BlobSetMapMessage> messages)
 		{
 			const string containerName = BlobSet.ContainerName;
 			const string delimiter = BlobSet.Delimiter;
@@ -52,7 +54,7 @@ namespace Lokad.Cloud.Services
 				// TODO: need to support caching for the mapper
                 // retrieving the mapper
             	var mapSettings = _providers.BlobStorage.GetBlob<BlobSetMapSettings>(
-            		containerName, srcPrefix + delimiter + mapSettingsBlobName);
+            		containerName, destPrefix + delimiter + mapSettingsBlobName);
 
 				// retrieving the input
             	var input = _providers.BlobStorage.GetBlob<object>(
@@ -73,6 +75,9 @@ namespace Lokad.Cloud.Services
 					destPrefix + delimiter + mapCounterBlobName, 
 					x => x - 1, 
 					out remainingMappings));
+
+				// deleting message
+				Delete(message);
 
 				// HACK: failing processes could generate retry, and eventually negative values here.
 				if(remainingMappings == 0)

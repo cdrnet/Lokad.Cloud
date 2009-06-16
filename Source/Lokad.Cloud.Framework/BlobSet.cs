@@ -7,12 +7,8 @@ using System.Text;
 using System.Threading;
 using Lokad.Cloud.Services;
 
-// Notes about delegate serialization can be found at
-// http://blogs.microsoft.co.il/blogs/aviwortzel/archive/2008/06/20/how-to-serialize-anonymous-delegates.aspx
-
 // TODO: [vermorel] The algorithm that enables fast iteration is subtle (and not implemented yet)
 // and will be provided as a white paper along with the Lokad.Cloud documentation.
-
 
 namespace Lokad.Cloud.Framework
 {
@@ -37,9 +33,28 @@ namespace Lokad.Cloud.Framework
 	[Serializable]
 	public class BlobSetMapSettings
 	{
+		/// <summary>Underlying type is expected to be <see cref="Func{T,TResult}"/>.</summary>
 		public object Mapper { get; set; }
+
 		public object OnCompleted { get; set; }
 		public string OnCompletedQueueName { get; set; }
+	}
+
+	/// <summary>Settings of a reduce operation.</summary>
+	[Serializable]
+	public class BlobSetReduceSettings
+	{
+		/// <summary>Underlying type is expected to be <see cref="Func{T,T,T}"/>.</summary>
+		public object Reducer { get; set; }
+
+		/// <summary>Name of the queue dedicated to reduction process.</summary>
+		public string WorkQueue { get; set; }
+
+		/// <summary>Name of the queue where the final reduction should be put.</summary>
+		public string ReductionQueue { get; set; }
+
+		/// <summary>Name of the blob that contains the reduction counter.</summary>
+		public string ReductionCounter { get; set; }
 	}
 
 	/// <summary>The <c>BlobSet</c> is a blob-based scalable collection that
@@ -72,13 +87,18 @@ namespace Lokad.Cloud.Framework
 		public const string Delimiter = "/";
 
 		/// <summary>Blob name used to store the mapping during a map operation.</summary>
-		public const string MapSettingsBlobName = "mapping";
+		public const string MapSettingsBlobName = "map-settings";
 
 		/// <summary>Blob name used to store the number of remaining mappings during
 		/// a map operation.</summary>
-		public const string MapCounterBlobName = "counter";
+		public const string MapCounterBlobName = "map-counter";
 
-		const long MapInitialShift = 2l ^ 48;
+		/// <summary>Blob name used to store the number of remaining reductions during
+		/// a reduce operation.</summary>
+		public const string ReduceCounterBlobName = "reduce-counter";
+
+		// used as a heuristic for counter initialization in map operation
+		const long CounterInitialShift = 2l ^ 48;
 
 		readonly ProvidersForCloudStorage _providers;
 		readonly string _prefix;
@@ -127,12 +147,14 @@ namespace Lokad.Cloud.Framework
 			// HACK: sequential iteration over the BlobSet (not scalable)
 
 			var settings = new BlobSetMapSettings
-			               	{
-			               		Mapper = mapper,
-			               		OnCompleted = onCompleted,
-			               		OnCompletedQueueName = onCompletedQueueName
-			               	};
+				{
+					Mapper = mapper,
+					OnCompleted = onCompleted,
+					OnCompletedQueueName = onCompletedQueueName
+				};
 
+			// settings are put in the destination blobset, so that many mappings
+			// can take place simultaneously
 			_providers.BlobStorage.PutBlob(
 				ContainerName, destPrefix + Delimiter + MapSettingsBlobName, settings);
 
@@ -140,7 +162,7 @@ namespace Lokad.Cloud.Framework
 			var isModified = _providers.BlobStorage.UpdateIfNotModified(
 				ContainerName, 
 				destPrefix + Delimiter + MapCounterBlobName, 
-				x => x + MapInitialShift, 
+				x => x + CounterInitialShift, 
 				out ignored);
 
 			if(!isModified) throw new InvalidOperationException(
@@ -149,21 +171,21 @@ namespace Lokad.Cloud.Framework
 			var itemCount = 0l;
 			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
 			{
-				var message = new BlobSetMessage
-				              	{
-				              		ItemSuffix = blobName.Substring(_prefix.Length + 1), 
-									DestinationPrefix = destPrefix, 
-									SourcePrefix = _prefix
-				              	};
+				var message = new BlobSetMapMessage
+					{
+						ItemSuffix = blobName.Substring(_prefix.Length + 1),
+						DestinationPrefix = destPrefix,
+						SourcePrefix = _prefix
+					};
 
-				_providers.QueueStorage.Put(BlobSetService.QueueName, new[]{message});
+				_providers.QueueStorage.Put(BlobSetMapService.QueueName, new[]{message});
 				itemCount++;
 			}
 
 			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
 				ContainerName, 
 				destPrefix + Delimiter + MapCounterBlobName, 
-				x => x + itemCount - MapInitialShift, 
+				x => x + itemCount - CounterInitialShift, 
 				out ignored));
 		}
 
@@ -173,7 +195,7 @@ namespace Lokad.Cloud.Framework
 		/// <param name="reducer">Reducing function.</param>
 		public void ReduceToQueue<U>(Func<U, U, U> reducer)
 		{
-			throw  new NotImplementedException();
+			ReduceToQueue(reducer, _providers.TypeMapper.GetStorageName(typeof(U)));
 		}
 
 		/// <summary>Apply a reducing function and outputs to the queue specified.</summary>
@@ -182,7 +204,51 @@ namespace Lokad.Cloud.Framework
 		/// <param name="queueName">Identifier the output queue.</param>
 		public void ReduceToQueue<U>(Func<U,U,U> reducer, string queueName)
 		{
-			throw new NotImplementedException();
+			// HACK: sequential iteration over the blobset (not scalable)
+			var workQueue = GetTmpQueueName();
+
+			var settingsBlobName = GetTmpBlobName();
+			var counterBlobName = GetTmpBlobName();
+
+			var settings = new BlobSetReduceSettings
+				{
+					Reducer = reducer,
+					ReductionQueue = queueName,
+					ReductionCounter = counterBlobName,
+					WorkQueue = workQueue
+				};
+
+			_providers.BlobStorage.PutBlob(ContainerName, settingsBlobName, settings);
+
+			long ignored;
+			var isModified = _providers.BlobStorage.UpdateIfNotModified(
+				ContainerName,
+				counterBlobName,
+				x => x + CounterInitialShift,
+				out ignored);
+
+			var itemCount = 0l;
+			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
+			{
+
+				_providers.QueueStorage.Put(workQueue, new[] {blobName});
+				itemCount++;
+			}
+
+			var message = new BlobSetReduceMessage
+			{
+				SourcePrefix = _prefix,
+				ReductionSettings = settingsBlobName
+			};
+
+			// putting a single message (the service itself with deal with the parallelization of the reduction)
+			_providers.QueueStorage.Put(BlobSetReduceService.QueueName, new[] {message});
+
+			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
+				ContainerName,
+				counterBlobName,
+				x => x + itemCount - CounterInitialShift,
+				out ignored));
 		}
 
 		/// <summary>Retrieves an item based on the blob identifier.</summary>
@@ -209,7 +275,8 @@ namespace Lokad.Cloud.Framework
 			return _providers.BlobStorage.DeleteBlob(ContainerName, locator.Name);
 		}
 
-		/// <summary>Remove all items from within the collection.</summary>
+		/// <summary>Remove all items from within the collection. Method is asynchronous,
+		/// it returns immediately once the deletion task is queued.</summary>
 		/// <remarks>Considering that the <see cref="BlobSet{T}"/> is nothing
 		/// but a list of prefixed blobs in a container of the Blob Storage,
 		/// clearing the collection is equivalent to deleting the collection.
@@ -236,6 +303,35 @@ namespace Lokad.Cloud.Framework
 			}
 
 			builder.Append(Guid.NewGuid().ToString());
+
+			return builder.ToString();
+		}
+
+		string GetTmpQueueName()
+		{
+			// Prefix with 'lokad-tmp'
+			// Followed by date (so that garbage collection can occur later in case of failure)
+
+			var builder = new StringBuilder();
+			builder.Append("lokad-tmp-");
+			builder.Append(DateTime.Now.ToString("yyyy-MM-dd"));
+			builder.Append("-");
+			builder.Append(Guid.NewGuid().ToString("N"));
+
+			return builder.ToString();
+		}
+
+		string GetTmpBlobName()
+		{
+			// Prefix with 'lokad-tmp'
+			// Followed by date (so that garbage collection can occur later in case of failure)
+
+			var builder = new StringBuilder();
+			builder.Append("lokad-tmp");
+			builder.Append(Delimiter);
+			builder.Append(DateTime.Now.ToString("yyyy-MM-dd"));
+			builder.Append(Delimiter);
+			builder.Append(Guid.NewGuid().ToString("N"));
 
 			return builder.ToString();
 		}

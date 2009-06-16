@@ -60,7 +60,7 @@ namespace Lokad.Cloud.Framework
 		/// method. Otherwise, messages will be automatically deleted when the method
 		/// returns (except if an exception is thrown obviously).
 		/// </remarks>
-		public abstract void Start(IEnumerable<T> messages);
+		protected abstract void Start(IEnumerable<T> messages);
 
 		/// <summary>Get more messages from the underlying queue.</summary>
 		/// <param name="count">Maximal number of messages to be retrieved.</param>
@@ -72,9 +72,25 @@ namespace Lokad.Cloud.Framework
 			return _providers.QueueStorage.Get<T>(_queueName, count);
 		}
 
+		/// <summary>Get more message from an arbitrary queue.</summary>
+		/// <typeparam name="U">Message type.</typeparam>
+		/// <param name="count">Number of message to be retrieved.</param>
+		/// <param name="queueName">Name of the queue.</param>
+		/// <returns>Retrieved message (enumeration might be empty).</returns>
+		public IEnumerable<U> GetMore<U>(int count, string queueName)
+		{
+			return _providers.QueueStorage.Get<U>(_queueName, count);
+		}
+
+		/// <seealso cref="Delete(IEnumerable{U})"/>
+		public void Delete<U>(U message)
+		{
+			Delete(new[]{message});
+		}
+
 		/// <summary>Delete messages retrieved either through <see cref="Start"/>
 		/// or through <see cref="GetMore"/>.</summary>
-		public void Delete(IEnumerable<T> messages)
+		public void Delete<U>(IEnumerable<U> messages)
 		{
 			_providers.QueueStorage.Delete(_queueName, messages);
 		}
