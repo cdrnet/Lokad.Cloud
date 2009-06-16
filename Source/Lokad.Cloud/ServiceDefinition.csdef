@@ -7,5 +7,11 @@
     </InputEndpoints>
   </WebRole>
   <WorkerRole name="LokadCloudWorkerRole">
+		<ConfigurationSettings>
+			<Setting name="AccountName" />
+			<Setting name="AccountKey" />
+			<Setting name="BlobEndpoint" />
+			<Setting name="QueueEndpoint" />
+		</ConfigurationSettings>
   </WorkerRole>
 </ServiceDefinition>

@@ -4,7 +4,6 @@
 #endregion
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;

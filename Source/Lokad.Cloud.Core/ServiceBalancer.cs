@@ -9,7 +9,7 @@ using Lokad.Cloud.Framework;
 namespace Lokad.Cloud.Core
 {
 	/// <summary>Organize the executions of the services.</summary>
-	public class ServiceBalancer
+	public class ServiceBalancerCommand : ICommand
 	{
 		/// <summary>Resting duration expressed in seconds.</summary>
 		const int IdleSleep = 60;
@@ -22,15 +22,15 @@ namespace Lokad.Cloud.Core
 		bool _isStopRequested;
 		bool _isStopped;
 
-		public ServiceBalancer(CloudService[] services, ILog logger)
+		public ServiceBalancerCommand(CloudService[] services, ILog logger)
 		{
 			_services = services;
 			_logger = logger;
 		}
 
-		public void Start()
+		public void Execute()
 		{
-			int index = 0;
+						int index = 0;
 
 			// number of allowed runs before going to sleep
 			var runCount = _services.Length;

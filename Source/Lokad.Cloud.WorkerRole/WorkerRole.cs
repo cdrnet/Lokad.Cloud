@@ -3,25 +3,38 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Linq;
-using System.Text;
+using Autofac.Builder;
+using Lokad.Cloud.Core;
+using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud
 {
+	/// <summary>Entry point of Lokad.Cloud.</summary>
 	public class WorkerRole : RoleEntryPoint
 	{
 		public override void Start()
 		{
-			// This is a sample worker implementation. Replace with your logic.
-			RoleManager.WriteToLog("Information", "Worker Process entry point called");
+			RoleManager.WriteToLog("Information", "Worker Process entry point called.");
 
-			while (true)
+			var builder = new ContainerBuilder();
+			builder.RegisterModule(new StorageModule());
+
+			var policy = ActionPolicy
+				.With(HandleException)
+				.Retry(10, (e, i) => SystemUtil.Sleep(5.Seconds()));
+
+			builder.Register(policy);
+
+			// TODO: retrieve assemblies
+			// TODO: load assemblies
+			// TODO: add services to container
+
+			using (var build = builder.Build())
 			{
-				Thread.Sleep(10000);
-				RoleManager.WriteToLog("Information", "Working");
+				var command = build.Resolve<ServiceBalancerCommand>();
+
+				command.Execute();
 			}
 		}
 
@@ -29,6 +42,14 @@ namespace Lokad.Cloud
 		{
 			// This is a sample worker implementation. Replace with your logic.
 			return RoleStatus.Healthy;
+		}
+
+		static bool HandleException(Exception ex)
+		{
+			if (ex is StorageServerException)
+				return true;
+
+			return false;
 		}
 	}
 }

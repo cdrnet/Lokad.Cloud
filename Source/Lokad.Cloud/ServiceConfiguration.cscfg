@@ -8,6 +8,11 @@
   <Role name="LokadCloudWorkerRole">
     <Instances count="1"/>
     <ConfigurationSettings>
+			<!--Wired down to the Autofac's modules-->
+			<Setting name="AccountName" value="lokad1" />
+			<Setting name="AccountKey" value="******************************************"/>
+			<Setting name="BlobEndpoint" value="http://blob.core.windows.net"/>
+			<Setting name="QueueEndpoint" value="http://queue.core.windows.net"/>
     </ConfigurationSettings>
   </Role>
 </ServiceConfiguration>
