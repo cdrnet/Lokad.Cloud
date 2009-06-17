@@ -26,6 +26,8 @@ namespace Lokad.Cloud
 
 			builder.Register(policy);
 
+			builder.Register(typeof (CloudLogger));
+
 			// TODO: retrieve assemblies
 			// TODO: load assemblies
 			// TODO: add services to container

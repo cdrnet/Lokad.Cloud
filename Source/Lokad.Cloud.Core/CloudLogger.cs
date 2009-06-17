@@ -25,12 +25,20 @@ namespace Lokad.Cloud.Core
 		public const string Delimiter = "/";
 
 		BlobStorageProvider _provider;
-		LogLevel _minLogLevel;
+		LogLevel _logLevelThreshold;
 
-		public CloudLogger(BlobStorageProvider provider, LogLevel minLogLevel)
+		/// <summary>Minimal log level (inclusive), below this level,
+		/// notifications are ignored.</summary>
+		public LogLevel LogLevelThreshold
+		{
+			get { return _logLevelThreshold;  }
+			set { _logLevelThreshold = value; }
+		}
+
+		public CloudLogger(BlobStorageProvider provider)
 		{
 			_provider = provider;
-			_minLogLevel = minLogLevel;
+			_logLevelThreshold = LogLevel.Min;
 		}
 
 		public void Log(LogLevel level, object message)
@@ -61,7 +69,7 @@ namespace Lokad.Cloud.Core
 
 		public bool IsEnabled(LogLevel level)
 		{
-			return level >= _minLogLevel;
+			return level >= _logLevelThreshold;
 		}
 
 		static string GetNewLogBlobName(LogLevel level)
