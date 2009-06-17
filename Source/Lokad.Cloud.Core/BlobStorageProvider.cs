@@ -40,13 +40,18 @@ namespace Lokad.Cloud.Core
 
 		public void PutBlob<T>(string containerName, string blobName, T item)
 		{
+			PutBlob(containerName, blobName, item, true);
+		}
+
+		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite)
+		{
 			var stream = new MemoryStream();
 			_formatter.Serialize(stream, item);
 			var buffer = stream.GetBuffer();
 
 			// StorageClient already deals with spliting large items
 			var container = _blobStorage.GetBlobContainer(containerName);
-			container.CreateBlob(new BlobProperties(blobName), new BlobContents(buffer), true);
+			return container.CreateBlob(new BlobProperties(blobName), new BlobContents(buffer), overwrite);
 		}
 
 		public T GetBlob<T>(string containerName, string blobName)
