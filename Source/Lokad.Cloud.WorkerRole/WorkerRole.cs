@@ -26,7 +26,7 @@ namespace Lokad.Cloud
 
 			builder.Register(policy);
 
-			builder.Register(typeof (CloudLogger));
+			builder.Register(c => (ILog)new CloudLogger(c.Resolve<BlobStorageProvider>()));
 
 			// TODO: retrieve assemblies
 			// TODO: load assemblies

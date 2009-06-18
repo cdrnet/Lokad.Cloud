@@ -247,7 +247,7 @@ namespace Lokad.Cloud.Core
 		/// </summary>
 		string GetNewBlobName()
 		{
-			return DateTime.Now.ToString("yyyy/MM/dd/hh/mm/ss/") + Guid.NewGuid();
+			return DateTime.Now.ToUniversalTime().ToString("yyyy/MM/dd/hh/mm/ss/") + Guid.NewGuid();
 		}
 	}
 }

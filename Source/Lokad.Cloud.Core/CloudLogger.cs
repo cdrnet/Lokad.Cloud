@@ -6,6 +6,7 @@
 using System;
 using System.Security;
 using System.Text;
+using Microsoft.Samples.ServiceHosting.StorageClient;
 
 namespace Lokad.Cloud.Core
 {
@@ -60,11 +61,24 @@ namespace Lokad.Cloud.Core
 ", SecurityElement.Escape(message.ToString()),
    SecurityElement.Escape(ex.ToString()) ?? string.Empty);
 
-			var attempt = 0;
-			while (!_provider.PutBlob(ContainerName, blobName + attempt, log, false))
-			{
-				attempt++;
-			}
+
+			// on first execution, container need to be created.
+			var policy = ActionPolicy.With(e =>
+				{
+					var storageException = e as StorageClientException;
+					if(storageException == null) return false;
+					return storageException.ErrorCode == StorageErrorCode.ContainerNotFound;
+				})
+				.Retry(2, (e, i) => _provider.CreateContainer(ContainerName));
+			
+			policy.Do(() =>
+				{
+					var attempt = 0;
+					while (!_provider.PutBlob(ContainerName, blobName + attempt, log, false))
+					{
+						attempt++;
+					}
+				});
 		}
 
 		public bool IsEnabled(LogLevel level)
@@ -77,7 +91,7 @@ namespace Lokad.Cloud.Core
 			var builder = new StringBuilder();
 			builder.Append(level.ToString());
 			builder.Append(Delimiter);
-			builder.Append(DateTime.Now.ToString("yyyy/MM/dd/hh/mm/ss/fff"));
+			builder.Append(DateTime.Now.ToUniversalTime().ToString("yyyy/MM/dd/hh/mm/ss/fff"));
 			builder.Append(Delimiter);
 
 			return builder.ToString();
