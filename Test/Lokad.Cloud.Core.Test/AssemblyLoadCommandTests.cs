@@ -16,8 +16,16 @@ namespace Lokad.Cloud.Core.Test
 		[Test]
 		public void Execute()
 		{
+			var path = @"..\..\Sample\sample.dll.zip";
+			if(!File.Exists(path))
+			{
+				// special casing the integration server
+				path = @"..\..\Test\Lokad.Cloud.Core.Test\Sample\sample.dll.zip";
+			}
+
+
 			byte[] buffer;
-			using (var dllFile = new FileStream("../../Sample/sample.dll.zip", FileMode.Open))
+			using (var dllFile = new FileStream(path, FileMode.Open))
 			{
 				buffer = new byte[dllFile.Length];
 				dllFile.Read(buffer, 0, buffer.Length);
