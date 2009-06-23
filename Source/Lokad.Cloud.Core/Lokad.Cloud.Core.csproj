@@ -64,7 +64,7 @@
     <Compile Include="DBAPI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueStorageProvider.cs" />
-    <Compile Include="ServiceBalancer.cs" />
+    <Compile Include="ServiceBalancerCommand.cs" />
     <Compile Include="StorageModule.cs" />
     <Compile Include="TypeMapperProvider.cs" />
   </ItemGroup>

@@ -3,6 +3,8 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Lokad.Cloud.Framework;
 
@@ -22,15 +24,29 @@ namespace Lokad.Cloud.Core
 		bool _isStopRequested;
 		bool _isStopped;
 
-		public ServiceBalancerCommand(CloudService[] services, ILog logger)
+		public CloudService[] Services
 		{
-			_services = services;
+			get { return _services; }
+		}
+
+		public ServiceBalancerCommand(ILog logger, ProvidersForCloudStorage providers)
+		{
+			_services = null;
 			_logger = logger;
+
+			// invoking all loaded services through reflexion
+			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
+				.Select(a => a.GetExportedTypes()).SelectMany(x => x)
+				.Where(t => t.IsSubclassOf(typeof(CloudService)) && !t.IsAbstract && !t.IsGenericType);
+
+			_services = serviceTypes.Select(t => 
+					(CloudService)t.InvokeMember("_ctor", BindingFlags.CreateInstance, null, null, new object[] {providers}))
+					.ToArray();
 		}
 
 		public void Execute()
 		{
-						int index = 0;
+			int index = 0;
 
 			// number of allowed runs before going to sleep
 			var runCount = _services.Length;

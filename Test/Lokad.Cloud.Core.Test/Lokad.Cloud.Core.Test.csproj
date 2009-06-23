@@ -62,6 +62,7 @@
     <Compile Include="CloudLoggerTests.cs" />
     <Compile Include="GlobalSetup.cs" />
     <Compile Include="QueueStorageProviderTests.cs" />
+    <Compile Include="ServiceBalancerCommandTests.cs" />
     <Compile Include="TypeMapperProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

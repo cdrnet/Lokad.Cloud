@@ -5,7 +5,12 @@
 
 using System.IO;
 using System.Reflection;
-using ICSharpCode.SharpZipLib.Zip; 
+using ICSharpCode.SharpZipLib.Zip;
+
+// TODO: for now, we are just loading the assemblies once.
+// But it would be better, to keep track of the blob status
+// in order to know when the instance should be rebooted
+// and the assemblies reloaded.
 
 namespace Lokad.Cloud.Core
 {

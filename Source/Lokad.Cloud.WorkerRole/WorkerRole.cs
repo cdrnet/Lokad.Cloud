@@ -5,6 +5,7 @@
 using System;
 using Autofac.Builder;
 using Lokad.Cloud.Core;
+using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
@@ -28,9 +29,9 @@ namespace Lokad.Cloud
 
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<BlobStorageProvider>()));
 
-			// TODO: retrieve assemblies
-			// TODO: load assemblies
-			// TODO: add services to container
+			builder.Register(typeof(ProvidersForCloudStorage));
+			builder.Register(typeof(AssemblyLoadCommand));
+			builder.Register(typeof(ServiceBalancerCommand));
 
 			using (var build = builder.Build())
 			{

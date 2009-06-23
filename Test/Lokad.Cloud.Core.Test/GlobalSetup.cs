@@ -6,6 +6,7 @@ using System;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
+using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using NUnit.Framework;
 
@@ -28,7 +29,9 @@ namespace Lokad.Cloud.Core.Test
 
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<BlobStorageProvider>()));
 
+			builder.Register(typeof (ProvidersForCloudStorage));
 			builder.Register(typeof (AssemblyLoadCommand));
+			builder.Register(typeof (ServiceBalancerCommand));
 
 			Container = builder.Build();
 		}
