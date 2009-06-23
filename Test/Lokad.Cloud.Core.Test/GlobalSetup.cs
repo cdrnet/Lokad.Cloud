@@ -28,6 +28,8 @@ namespace Lokad.Cloud.Core.Test
 
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<BlobStorageProvider>()));
 
+			builder.Register(typeof (AssemblyLoadCommand));
+
 			Container = builder.Build();
 		}
 

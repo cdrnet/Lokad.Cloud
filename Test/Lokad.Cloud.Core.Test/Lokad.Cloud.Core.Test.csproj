@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyLoadCommandTests.cs" />
     <Compile Include="BlobStorageProviderTests.cs" />
     <Compile Include="CloudLoggerTests.cs" />
     <Compile Include="GlobalSetup.cs" />
