@@ -11,7 +11,7 @@ using Lokad.Cloud.Core;
 
 namespace Lokad.Cloud.Web
 {
-	public partial class Dashboard : System.Web.UI.Page
+	public partial class Assemblies : System.Web.UI.Page
 	{
 		readonly IBlobStorageProvider _provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 

@@ -75,19 +75,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AssemblyManager.aspx" />
+    <Content Include="Assemblies.aspx" />
     <Content Include="Default.aspx" />
     <Content Include="Login.aspx" />
+    <Content Include="Logs.aspx" />
     <Content Include="ReadMe.txt" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyManager.aspx.cs">
-      <DependentUpon>AssemblyManager.aspx</DependentUpon>
+    <Compile Include="Assemblies.aspx.cs">
+      <DependentUpon>Assemblies.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="AssemblyManager.aspx.designer.cs">
-      <DependentUpon>AssemblyManager.aspx</DependentUpon>
+    <Compile Include="Assemblies.aspx.designer.cs">
+      <DependentUpon>Assemblies.aspx</DependentUpon>
     </Compile>
     <Compile Include="Default.aspx.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -103,6 +104,13 @@
     </Compile>
     <Compile Include="Login.aspx.designer.cs">
       <DependentUpon>Login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Logs.aspx.cs">
+      <DependentUpon>Logs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Logs.aspx.designer.cs">
+      <DependentUpon>Logs.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

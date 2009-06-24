@@ -11,7 +11,7 @@
 namespace Lokad.Cloud.Web {
     
     
-    public partial class Dashboard {
+    public partial class Assemblies {
         
         /// <summary>
         /// ArchiveView control.

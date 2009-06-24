@@ -11,9 +11,10 @@
     <div>
 		<h1>Home</h1>
 		<asp:LoginName ID="_LoginName" runat="server" /> (<asp:LoginStatus ID="_LoginStatus" runat="server" />)
-		<p>
-			<asp:HyperLink ID="DashboardLink" runat="server" NavigateUrl="~/AssemblyManager.aspx" Text="Assembly manager" />
-		</p>
+		<ul>
+			<li><asp:HyperLink runat="server" NavigateUrl="~/Assemblies.aspx" Text="Manage assemblies" /></li>
+			<li><asp:HyperLink runat="server" NavigateUrl="~/Logs.aspx" Text="View Error Logs" /></li>
+		</ul>
     </div>
     </form>
 </body>

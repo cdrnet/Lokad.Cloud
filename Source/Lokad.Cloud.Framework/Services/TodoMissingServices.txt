@@ -1,0 +1,7 @@
+﻿Joannes Vermorel, 2009-06-24
+
+Several services are still missing:
+
+- overflowing queue garbage collection
+	- 1 scheduled service to check whether there are garbage left.
+	- 1 queue service to proceed with the deletion.

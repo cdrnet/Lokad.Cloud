@@ -11,7 +11,7 @@
     <div>
 		<h1>Login</h1>
 		
-		<RP:OpenIdLogin ID="_openIdLogin" runat="server" OnLoggingIn="OpenIdLogin_LoggingIn"  />
+		<RP:OpenIdLogin ID="_openIdLogin" runat="server"  />
     </div>
     </form>
 </body>
