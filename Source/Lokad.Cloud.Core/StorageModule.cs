@@ -111,15 +111,14 @@ namespace Lokad.Cloud.Core
 
 		void ApplyOverridesFromRuntime()
 		{
-			//// get overrides from the role manager's settings
-			//var settings = RoleManagerOpened
-			//    .GetSettings()
-			//    .ToDictionary(s => s.Key, s => s.Value);
-
+			// HACK: listing all properties is brittle
 			var properties = typeof(StorageModule).GetProperties();
 
 			foreach (var info in properties)
 			{
+				// HACK: ignoring the encryption property
+				if("IsStorageKeyEncrypted" == info.Name) continue;
+
 				var value = RoleManager.GetConfigurationSetting(info.Name);
 				if (!string.IsNullOrEmpty(value))
 				{
