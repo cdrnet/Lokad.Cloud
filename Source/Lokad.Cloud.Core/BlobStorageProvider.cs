@@ -108,6 +108,9 @@ namespace Lokad.Cloud.Core
 		{
 			var container = _blobStorage.GetBlobContainer(containerName);
 
+			// Trick: 'ListBlobs' is lazilly enumerating over the blob storage
+			// only the minimal amount of network call will be made depending on
+			// the number of items actually enumerated.
 			foreach (BlobProperties blobProperty in container.ListBlobs(prefix, false))
 			{
 				yield return blobProperty.Name;
