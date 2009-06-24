@@ -75,19 +75,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Dashboard.aspx" />
+    <Content Include="AssemblyManager.aspx" />
     <Content Include="Default.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="ReadMe.txt" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dashboard.aspx.cs">
-      <DependentUpon>Dashboard.aspx</DependentUpon>
+    <Compile Include="AssemblyManager.aspx.cs">
+      <DependentUpon>AssemblyManager.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Dashboard.aspx.designer.cs">
-      <DependentUpon>Dashboard.aspx</DependentUpon>
+    <Compile Include="AssemblyManager.aspx.designer.cs">
+      <DependentUpon>AssemblyManager.aspx</DependentUpon>
     </Compile>
     <Compile Include="Default.aspx.cs">
       <SubType>ASPXCodeBehind</SubType>

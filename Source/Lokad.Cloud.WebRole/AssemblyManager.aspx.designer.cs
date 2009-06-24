@@ -14,15 +14,6 @@ namespace Lokad.Cloud.Web {
     public partial class Dashboard {
         
         /// <summary>
-        /// form1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-        
-        /// <summary>
         /// ArchiveView control.
         /// </summary>
         /// <remarks>
@@ -32,12 +23,30 @@ namespace Lokad.Cloud.Web {
         protected global::System.Web.UI.WebControls.GridView ArchiveView;
         
         /// <summary>
-        /// HomeLink control.
+        /// AssemblyFileUpload control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HomeLink;
+        protected global::System.Web.UI.WebControls.FileUpload AssemblyFileUpload;
+        
+        /// <summary>
+        /// UploadValidator control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CustomValidator UploadValidator;
+        
+        /// <summary>
+        /// UploadSucceededLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label UploadSucceededLabel;
     }
 }

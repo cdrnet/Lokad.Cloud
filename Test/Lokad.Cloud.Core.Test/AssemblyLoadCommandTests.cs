@@ -30,7 +30,7 @@ namespace Lokad.Cloud.Core.Test
 				dllFile.Read(buffer, 0, buffer.Length);
 			}
 
-			IBlobStorageProvider provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 			provider.CreateContainer(AssemblyLoadCommand.DefaultContainerName);
 
 			// put the sample assembly
