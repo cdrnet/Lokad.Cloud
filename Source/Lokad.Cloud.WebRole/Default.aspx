@@ -12,7 +12,7 @@
 		<h1>Home</h1>
 		<asp:LoginName ID="_LoginName" runat="server" /> (<asp:LoginStatus ID="_LoginStatus" runat="server" />)
 		<p>
-			todo: add links to various pages
+			<asp:HyperLink ID="DashboardLink" runat="server" NavigateUrl="~/Dashboard.aspx" Text="Dashboard" />
 		</p>
     </div>
     </form>

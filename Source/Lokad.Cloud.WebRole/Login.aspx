@@ -9,7 +9,7 @@
 <body>
     <form id="form1" runat="server">
     <div>
-		Login
+		<h1>Login</h1>
 		
 		<RP:OpenIdLogin ID="_openIdLogin" runat="server" OnLoggingIn="OpenIdLogin_LoggingIn"  />
     </div>

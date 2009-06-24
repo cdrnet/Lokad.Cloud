@@ -5,10 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using ICSharpCode.SharpZipLib.Zip;
 using Lokad.Cloud.Core;
 
@@ -18,12 +14,16 @@ namespace Lokad.Cloud.Web
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			// HACK: pseudo-feature, displaying the assemblies contained in the archive.
+			ArchiveView.DataSource = GetZipEntries();
+			ArchiveView.DataBind();
+		}
 
+		static IEnumerable<object> GetZipEntries()
+		{
 			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 
 			var buffer = provider.GetBlob<byte[]>(
-				AssemblyLoadCommand.DefaultContainerName, 
+				AssemblyLoadCommand.DefaultContainerName,
 				AssemblyLoadCommand.DefaultBlobName);
 
 			using (var zipStream = new ZipInputStream(new MemoryStream(buffer)))
@@ -31,10 +31,12 @@ namespace Lokad.Cloud.Web
 				ZipEntry entry;
 				while ((entry = zipStream.GetNextEntry()) != null)
 				{
-					var data = new byte[entry.Size];
-					zipStream.Read(data, 0, (int)entry.Size);
-
-					// TODO: display ZIP content
+					yield return new
+						{
+							entry.Name, 
+							entry.DateTime, 
+							entry.Size
+					};
 				}
 			}
 		}

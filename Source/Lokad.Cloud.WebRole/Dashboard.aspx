@@ -11,8 +11,10 @@
     <div>
 		<h1>Dashboard</h1>
 		
-		Content of the assembly archive
-		<pre><asp:Label ID="ZipContentLabel" runat="server" /></pre>
+		Content of the assembly archive:
+		<asp:GridView ID="ArchiveView" runat="server" />
+		
+		<asp:HyperLink ID="HomeLink" runat="server" NavigateUrl="~/Default.aspx" Text="Home" />
     </div>
     </form>
 </body>
