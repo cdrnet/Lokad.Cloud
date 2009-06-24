@@ -20,13 +20,13 @@ namespace Lokad.Cloud.Core
 
 		public const string DefaultBlobName = "default";
 
-		readonly BlobStorageProvider _provider;
+		readonly IBlobStorageProvider _provider;
 		
 		public string ContainerName { get; set; }
 
 		public string BlobName { get; set; }
 
-		public AssemblyLoadCommand(BlobStorageProvider provider)
+		public AssemblyLoadCommand(IBlobStorageProvider provider)
 		{
 			_provider = provider;
 			ContainerName = DefaultContainerName;

@@ -57,7 +57,22 @@ namespace Lokad.Cloud.Core
 		{
 			var queue = _queueStorage.GetQueue(queueName);
 
-			var rawMessages = queue.GetMessages(count);
+			IEnumerable<Message> rawMessages;
+
+			try
+			{
+				rawMessages = queue.GetMessages(count);
+			}
+			catch (StorageClientException ex)
+			{
+				// if the queue does not exist return an empty collection.
+				if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+				{
+					return new T[0];
+				}
+
+				throw;
+			}
 
 			// skip empty queue
 			if (null == rawMessages) return new T[0];

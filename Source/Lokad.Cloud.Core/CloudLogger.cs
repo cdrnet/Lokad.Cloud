@@ -25,7 +25,7 @@ namespace Lokad.Cloud.Core
 		public const string ContainerName = "lokad-cloud-logs";
 		public const string Delimiter = "/";
 
-		BlobStorageProvider _provider;
+		IBlobStorageProvider _provider;
 		LogLevel _logLevelThreshold;
 
 		/// <summary>Minimal log level (inclusive), below this level,
@@ -36,7 +36,7 @@ namespace Lokad.Cloud.Core
 			set { _logLevelThreshold = value; }
 		}
 
-		public CloudLogger(BlobStorageProvider provider)
+		public CloudLogger(IBlobStorageProvider provider)
 		{
 			_provider = provider;
 			_logLevelThreshold = LogLevel.Min;

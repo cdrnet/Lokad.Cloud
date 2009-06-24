@@ -6,8 +6,6 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 
-// TODO: add tests for overflowing messages.
-
 namespace Lokad.Cloud.Core.Test
 {
 	[TestFixture]
@@ -20,7 +18,7 @@ namespace Lokad.Cloud.Core.Test
 		[Test]
 		public void PutGetDelete()
 		{
-			var provider = GlobalSetup.Container.Resolve<QueueStorageProvider>();
+			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
 
 			Assert.IsNotNull(provider, "#A00");
 
@@ -37,7 +35,7 @@ namespace Lokad.Cloud.Core.Test
 		[Test]
 		public void PutGetDeleteOverflowing()
 		{
-			var provider = GlobalSetup.Container.Resolve<QueueStorageProvider>();
+			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
 
 			Assert.IsNotNull(provider, "#A00");
 

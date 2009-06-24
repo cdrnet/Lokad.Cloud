@@ -20,7 +20,7 @@ namespace Lokad.Cloud.Core.Test
 		[Test]
 		public void CreatePutGetDelete()
 		{
-			IBlobStorageProvider provider = GlobalSetup.Container.Resolve<BlobStorageProvider>();
+			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 			provider.CreateContainer(ContainerName);
 
 			var blob = new MyBlob();

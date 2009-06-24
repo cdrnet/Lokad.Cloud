@@ -20,7 +20,7 @@ namespace Lokad.Cloud.Web
 		{
 			// HACK: pseudo-feature, displaying the assemblies contained in the archive.
 
-			var provider = GlobalSetup.Container.Resolve<BlobStorageProvider>();
+			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 
 			var buffer = provider.GetBlob<byte[]>(
 				AssemblyLoadCommand.DefaultContainerName, 

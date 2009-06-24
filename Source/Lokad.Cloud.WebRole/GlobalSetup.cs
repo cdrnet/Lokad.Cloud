@@ -6,9 +6,7 @@
 using System;
 using Autofac;
 using Autofac.Builder;
-using Autofac.Configuration;
 using Lokad.Cloud.Core;
-using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
 namespace Lokad.Cloud.Web
@@ -28,7 +26,8 @@ namespace Lokad.Cloud.Web
 
 			builder.Register(policy);
 
-			builder.Register(c => (ILog)new CloudLogger(c.Resolve<BlobStorageProvider>()));
+			builder.Register(c => (ITypeMapperProvider) new TypeMapperProvider());
+			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
 
 			Container = builder.Build();
 		}
@@ -36,7 +35,9 @@ namespace Lokad.Cloud.Web
 		static bool HandleException(Exception ex)
 		{
 			if (ex is StorageServerException)
+			{
 				return true;
+			}
 
 			return false;
 		}

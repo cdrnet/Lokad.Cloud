@@ -63,7 +63,7 @@ namespace Lokad.Cloud.Core
 					// to terminate fast if 'Stop' is requested.
 					lock(_sync)
 					{
-						Monitor.Wait(IdleSleep.Seconds());
+						Monitor.Wait(_sync, IdleSleep.Seconds());
 					}
 				}
 			}

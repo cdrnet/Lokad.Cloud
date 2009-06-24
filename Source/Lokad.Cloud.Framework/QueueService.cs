@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,7 +32,7 @@ namespace Lokad.Cloud.Framework
 			if(null != settings) // settings are provided through custom attribute
 			{
 				_queueName = settings.QueueName;
-				_batchSize = settings.BatchSize;
+				_batchSize = Math.Max(settings.BatchSize, 1); // need to be at least 1
 			}
 			else // default setting
 			{

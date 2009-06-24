@@ -23,7 +23,6 @@ namespace Lokad.Cloud.Core.Test
 				path = @"..\..\Test\Lokad.Cloud.Core.Test\Sample\sample.dll.zip";
 			}
 
-
 			byte[] buffer;
 			using (var dllFile = new FileStream(path, FileMode.Open))
 			{
@@ -31,7 +30,7 @@ namespace Lokad.Cloud.Core.Test
 				dllFile.Read(buffer, 0, buffer.Length);
 			}
 
-			IBlobStorageProvider provider = GlobalSetup.Container.Resolve<BlobStorageProvider>();
+			IBlobStorageProvider provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 			provider.CreateContainer(AssemblyLoadCommand.DefaultContainerName);
 
 			// put the sample assembly

@@ -15,16 +15,29 @@ namespace Lokad.Cloud.Framework
 	/// <see cref="CloudService"/>.</remarks>
 	public class ProvidersForCloudStorage
 	{
+		/// <summary>Abstracts the Blob Storage.</summary>
+		public IBlobStorageProvider BlobStorage { get; set; }
+
+		/// <summary>Abstracts the Queue Storage.</summary>
+		public IQueueStorageProvider QueueStorage { get; set; }
+
 		/// <summary>Error Logger</summary>
 		public ILog Log { get; set; }
 
 		/// <summary>Type mapper for implicit cloud storage.</summary>
 		public ITypeMapperProvider TypeMapper { get; set; }
 
-		/// <summary>Abstracts the Blob Storage.</summary>
-		public IBlobStorageProvider BlobStorage { get; set; }
-
-		/// <summary>Abstracts the Queue Storage.</summary>
-		public IQueueStorageProvider QueueStorage { get; set; }
+		/// <summary>IoC constructor.</summary>
+		public ProvidersForCloudStorage(
+			IBlobStorageProvider blobStorage, 
+			IQueueStorageProvider queueStorage,
+			ILog log,
+			ITypeMapperProvider typeMapper)
+		{
+			BlobStorage = blobStorage;
+			QueueStorage = queueStorage;
+			Log = log;
+			TypeMapper = typeMapper;
+		}
 	}
 }

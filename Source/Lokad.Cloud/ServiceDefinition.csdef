@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ServiceDefinition name="Lokad.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition">
-  <WebRole name="LokadCloudWebRole">
+  <WebRole name="LokadCloudWebRole" enableNativeCodeExecution="true">
     <InputEndpoints>
       <!-- Must use port 80 for http and port 443 for https when running in the cloud -->
       <InputEndpoint name="HttpIn" protocol="http" port="80" />
@@ -12,7 +12,7 @@
 			<Setting name="QueueEndpoint" />
 		</ConfigurationSettings>
   </WebRole>
-  <WorkerRole name="LokadCloudWorkerRole">
+  <WorkerRole name="LokadCloudWorkerRole" enableNativeCodeExecution="true">
 		<ConfigurationSettings>
 			<Setting name="AccountName" />
 			<Setting name="AccountKey" />

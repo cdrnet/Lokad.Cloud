@@ -83,7 +83,7 @@ namespace Lokad.Cloud.Core
              			formatter = new BinaryFormatter();
              		}
 
-             		return new BlobStorageProvider(c.Resolve<BlobStorage>(), formatter);
+             		return (IBlobStorageProvider)new BlobStorageProvider(c.Resolve<BlobStorage>(), formatter);
              	});
 
 				builder.Register(c =>
@@ -94,7 +94,7 @@ namespace Lokad.Cloud.Core
 						formatter = new BinaryFormatter();
 					}
 
-					return new QueueStorageProvider(
+					return (IQueueStorageProvider)new QueueStorageProvider(
 						c.Resolve<QueueStorage>(),
 						c.Resolve<BlobStorage>(),
 						c.Resolve<ActionPolicy>(),
