@@ -3,6 +3,12 @@
   <Role name="LokadCloudWebRole">
     <Instances count="1"/>
     <ConfigurationSettings>
+			<!--Wired down to the Autofac's modules-->
+			<Setting name="AccountName" value="lokad1" />
+			<!-- Not a real key (just cut and paste from the Azure samples) -->
+			<Setting name="AccountKey" value="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="/>
+			<Setting name="BlobEndpoint" value="http://blob.core.windows.net"/>
+			<Setting name="QueueEndpoint" value="http://queue.core.windows.net"/>
     </ConfigurationSettings>
   </Role>
   <Role name="LokadCloudWorkerRole">
@@ -10,7 +16,8 @@
     <ConfigurationSettings>
 			<!--Wired down to the Autofac's modules-->
 			<Setting name="AccountName" value="lokad1" />
-			<Setting name="AccountKey" value="******************************************"/>
+			<!-- Not a real key (just cut and paste from the Azure samples) -->
+			<Setting name="AccountKey" value="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="/>
 			<Setting name="BlobEndpoint" value="http://blob.core.windows.net"/>
 			<Setting name="QueueEndpoint" value="http://queue.core.windows.net"/>
     </ConfigurationSettings>
