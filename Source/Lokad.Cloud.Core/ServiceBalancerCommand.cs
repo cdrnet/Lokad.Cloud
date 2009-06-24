@@ -33,15 +33,7 @@ namespace Lokad.Cloud.Core
 		{
 			_services = null;
 			_logger = logger;
-
-			// invoking all loaded services through reflexion
-			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
-				.Select(a => a.GetExportedTypes()).SelectMany(x => x)
-				.Where(t => t.IsSubclassOf(typeof(CloudService)) && !t.IsAbstract && !t.IsGenericType);
-
-			_services = serviceTypes.Select(t => 
-					(CloudService)t.InvokeMember("_ctor", BindingFlags.CreateInstance, null, null, new object[] {providers}))
-					.ToArray();
+			_services = CloudService.GetAllServices(providers).ToArray();
 		}
 
 		public void Execute()

@@ -3,7 +3,10 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Lokad.Cloud.Framework
 {
@@ -76,6 +79,19 @@ namespace Lokad.Cloud.Framework
 		public void Put<T>(IEnumerable<T> messages, string queueName)
 		{
 			_providers.QueueStorage.Put(queueName, messages);
+		}
+
+		/// <summary>Get all services instantiated through reflection.</summary>
+		public static IEnumerable<CloudService> GetAllServices(ProvidersForCloudStorage providers)
+		{
+			// invoking all loaded services through reflexion
+			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
+				.Select(a => a.GetExportedTypes()).SelectMany(x => x)
+				.Where(t => t.IsSubclassOf(typeof(CloudService)) && !t.IsAbstract && !t.IsGenericType);
+
+			return serviceTypes.Select(t =>
+				(CloudService)t.InvokeMember("_ctor", 
+				BindingFlags.CreateInstance, null, null, new object[] { providers }));
 		}
 	}
 }

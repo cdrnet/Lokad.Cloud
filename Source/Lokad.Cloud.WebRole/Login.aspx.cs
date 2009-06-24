@@ -3,26 +3,26 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Collections;
-using System.Configuration;
-using System.Data;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Web.Security;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using System.Web.UI.WebControls.WebParts;
-using System.Xml.Linq;
-using Microsoft.ServiceHosting.ServiceRuntime;
+using DotNetOpenId.RelyingParty;
 
 namespace Lokad.Cloud.Web
 {
-	public partial class _Default : System.Web.UI.Page
+	public partial class Login : System.Web.UI.Page
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{
+			
+		}
 
+		protected void OpenIdLogin_LoggingIn(object sender, OpenIdEventArgs args)
+		{
+			// TODO: add validation based on 'args.ClaimedIdentifier'
+			// (if it can't be done directly in web.config)
 		}
 	}
 }

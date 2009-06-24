@@ -11,7 +11,7 @@
 namespace Lokad.Cloud.Web {
     
     
-    public partial class _Default {
+    public partial class Login {
         
         /// <summary>
         /// form1 control.
@@ -23,21 +23,12 @@ namespace Lokad.Cloud.Web {
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
         
         /// <summary>
-        /// _LoginName control.
+        /// _openIdLogin control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LoginName _LoginName;
-        
-        /// <summary>
-        /// _LoginStatus control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LoginStatus _LoginStatus;
+        protected global::DotNetOpenId.RelyingParty.OpenIdLogin _openIdLogin;
     }
 }
