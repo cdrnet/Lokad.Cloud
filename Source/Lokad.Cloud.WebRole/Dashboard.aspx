@@ -9,7 +9,10 @@
 <body>
     <form id="form1" runat="server">
     <div>
-		Dashboard
+		<h1>Dashboard</h1>
+		
+		Content of the assembly archive
+		<pre><asp:Label ID="ZipContentLabel" runat="server" /></pre>
     </div>
     </form>
 </body>
