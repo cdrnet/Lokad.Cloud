@@ -6,6 +6,10 @@
 
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
 	<h1>Home</h1>
-	The administration console of Lokad.Cloud provide management
-	features for your back-office processes running on Windows Azure.
+	<p>The administration console of Lokad.Cloud provide management
+	features for your back-office processes running on Windows Azure.</p>
+	
+	<p>List of the users having access to this console (use the
+	service configuration file to change this list).</p>
+	<asp:GridView ID="AdminsView" runat="server" />
 </asp:Content>

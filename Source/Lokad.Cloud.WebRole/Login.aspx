@@ -6,5 +6,5 @@
 
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
 	<h1>Login</h1>
-	<RP:OpenIdLogin ID="_openIdLogin" runat="server"  />
+	<RP:OpenIdLogin ID="_openIdLogin" runat="server" OnLoggingIn="OpenIdLogin_OnLoggingIn" />
 </asp:Content>

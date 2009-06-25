@@ -10,6 +10,8 @@
 			<Setting name="AccountKey" />
 			<Setting name="BlobEndpoint" />
 			<Setting name="QueueEndpoint" />
+			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
+			<Setting name="Admins"/>
 		</ConfigurationSettings>
   </WebRole>
   <WorkerRole name="LokadCloudWorkerRole" enableNativeCodeExecution="true">

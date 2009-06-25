@@ -3,17 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Collections;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Web;
-using System.Web.Security;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-using System.Web.UI.WebControls.WebParts;
-using System.Xml.Linq;
+using System.Collections.Generic;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
@@ -22,7 +12,21 @@ namespace Lokad.Cloud.Web
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{
+			AdminsView.DataSource = GetAdmins();
+			AdminsView.DataBind();
+		}
 
+		IEnumerable<object> GetAdmins()
+		{
+			var admins = RoleManager.GetConfigurationSetting("Admins");
+
+			foreach(var admin in admins.Split(new [] {" "}, StringSplitOptions.RemoveEmptyEntries))
+			{
+				yield return new
+					{
+						Credential = admin
+					};
+			}
 		}
 	}
 }
