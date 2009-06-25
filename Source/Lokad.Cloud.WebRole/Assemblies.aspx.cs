@@ -17,8 +17,8 @@ namespace Lokad.Cloud.Web
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			ArchiveView.DataSource = GetZipEntries();
-			ArchiveView.DataBind();
+			AssembliesView.DataSource = GetZipEntries();
+			AssembliesView.DataBind();
 		}
 
 		IEnumerable<object> GetZipEntries()
@@ -55,7 +55,7 @@ namespace Lokad.Cloud.Web
 				AssemblyLoadCommand.DefaultBlobName, 
 				AssemblyFileUpload.FileBytes, true);
 
-			ArchiveView.DataBind();
+			AssembliesView.DataBind();
 
 			UploadSucceededLabel.Visible = true;
 		}

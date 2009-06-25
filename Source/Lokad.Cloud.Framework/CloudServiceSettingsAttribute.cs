@@ -21,7 +21,7 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Gets a description of the service (for administration purposes).</summary>
 		public string Description { get; set; }
 
-		/// <summary>Excution time-out for the <c>Start</c> methods of 
+		/// <summary>Excution time-out for the <c>StartImpl</c> methods of 
 		/// <see cref="CloudService"/> inheritors.</summary>
 		public TimeSpan ProcessingTimeout { get; set; }
 	}

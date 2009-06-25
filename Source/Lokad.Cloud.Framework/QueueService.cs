@@ -23,6 +23,12 @@ namespace Lokad.Cloud.Framework
 		readonly string _queueName;
 		readonly int _batchSize;
 
+		/// <summary>Name of the queue associated to the service.</summary>
+		public override string Name
+		{
+			get { return _queueName; }
+		}
+
 		/// <summary>IoC constructor.</summary>
 		protected QueueService(ProvidersForCloudStorage providers)
 			: base(providers)
@@ -43,7 +49,7 @@ namespace Lokad.Cloud.Framework
 
 		/// <summary>Do not override this method, use <see cref="Start(IEnumerable{T})"/>
 		/// instead.</summary>
-		public override bool Start()
+		protected override bool StartImpl()
 		{
 			var messages = _providers.QueueStorage.Get<T>(_queueName, _batchSize);
 
@@ -89,7 +95,7 @@ namespace Lokad.Cloud.Framework
 			Delete(new[]{message});
 		}
 
-		/// <summary>Delete messages retrieved either through <see cref="Start"/>
+		/// <summary>Delete messages retrieved either through <see cref="StartImpl"/>
 		/// or through <see cref="GetMore"/>.</summary>
 		public void Delete<U>(IEnumerable<U> messages)
 		{

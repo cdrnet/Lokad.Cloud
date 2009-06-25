@@ -16,8 +16,8 @@ namespace Lokad.Cloud.Framework
 			// nothing	
 		}
 
-		/// <seealso cref="CloudService.Start"/>
-		public override bool Start()
+		/// <seealso cref="CloudService.StartImpl"/>
+		protected override bool StartImpl()
 		{
 			// TODO: must check here that the activation time is right.
 			throw new System.NotImplementedException();

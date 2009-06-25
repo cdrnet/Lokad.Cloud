@@ -26,9 +26,11 @@ namespace Lokad.Cloud.Core
 		bool DeleteContainer(string containerName);
 
 		/// <summary>Puts a blob (overwrite if the blob already exists).</summary>
+		/// <remarks>Creates the container if it does not exist beforehand.</remarks>
 		void PutBlob<T>(string containerName, string blobName, T item);
 
 		/// <summary>Puts a blob and optionally overwrite.</summary>
+		/// <remarks>Creates the container if it does not exist beforehand.</remarks>
 		/// <returns><c>true</c> if the blob has been put and false if the blob already
 		/// exists but could not be overwritten.</returns>
 		bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite);

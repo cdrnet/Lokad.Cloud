@@ -17,10 +17,13 @@ Blob containers part of the framework:
 lokad-cloud-locks
 lokad-cloud-queues-metadata
 lokad-cloud-queues-overflow
+lokad-cloud-services
 
 Queue containers part of the framework:
 
 lokad-cloud-schedule
+lokad-cloud-blobsets-map
+lokad-cloud-blobsets-reduce
 
 Table contains part of the framework:
 

@@ -31,7 +31,7 @@ namespace Lokad.Cloud.Services
 	[QueueServiceSettings(AutoStart = true, QueueName = QueueName)]
 	public class BlobSetMapService : QueueService<BlobSetMapMessage>
 	{
-		public const string QueueName = "lokad-blobsets-map";
+		public const string QueueName = "lokad-cloud-blobsets-map";
 
 		public BlobSetMapService(ProvidersForCloudStorage providers) : base(providers)
 		{

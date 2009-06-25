@@ -6,5 +6,5 @@
 
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
 	<h1>Error Logs</h1>
-	<asp:GridView ID="LogsView" runat="server" />
+	<asp:GridView ID="LogsView" runat="server" EmptyDataText="No logs yet." />
 </asp:Content>

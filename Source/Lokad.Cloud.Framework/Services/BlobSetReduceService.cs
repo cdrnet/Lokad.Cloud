@@ -27,7 +27,7 @@ namespace Lokad.Cloud.Services
 	[QueueServiceSettings(AutoStart = true, QueueName = QueueName, BatchSize = 1)]
 	public class BlobSetReduceService : QueueService<BlobSetReduceMessage>
 	{
-		public const string QueueName = "lokad-blobsets-reduce";
+		public const string QueueName = "lokad-cloud-blobsets-reduce";
 
 		public BlobSetReduceService(ProvidersForCloudStorage providers) : base(providers)
 		{

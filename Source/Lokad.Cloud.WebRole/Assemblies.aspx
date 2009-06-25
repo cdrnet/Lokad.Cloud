@@ -8,7 +8,7 @@
 	<h1>Assembly manager</h1>
 
 	Content of the assembly archive:
-	<asp:GridView ID="ArchiveView" runat="server" />
+	<asp:GridView ID="AssembliesView" runat="server" EmptyDataText="No file in archive yet." />
 	
 	<p>Upload a new assembly archive:
 	</p>

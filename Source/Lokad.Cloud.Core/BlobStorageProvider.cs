@@ -51,16 +51,43 @@ namespace Lokad.Cloud.Core
 
 			// StorageClient already deals with spliting large items
 			var container = _blobStorage.GetBlobContainer(containerName);
-			return container.CreateBlob(new BlobProperties(blobName), new BlobContents(buffer), overwrite);
+			try
+			{
+				return container.CreateBlob(new BlobProperties(blobName), new BlobContents(buffer), overwrite);
+			}
+			catch (StorageClientException ex)
+			{
+				// if the container does not exist, it gets created
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+				{
+					container.CreateContainer();
+				}
+
+				return container.CreateBlob(new BlobProperties(blobName), new BlobContents(buffer), overwrite);
+			}
 		}
 
 		public T GetBlob<T>(string containerName, string blobName)
 		{
 			var blobContents = new BlobContents(new MemoryStream());
 			var container = _blobStorage.GetBlobContainer(containerName);
-			var properties = container.GetBlob(blobName, blobContents, false);
+			
+			// no such container, return default
+			try
+			{
+				var properties = container.GetBlob(blobName, blobContents, false);
 
-			if (null == properties) return default(T);
+				if (null == properties) return default(T);
+			}
+			catch(StorageClientException ex)
+			{
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
+					|| ex.ErrorCode == StorageErrorCode.BlobNotFound)
+				{
+					return default(T);
+				}
+				throw;
+			}
 
 			var stream = blobContents.AsStream;
 			stream.Position = 0;
@@ -71,19 +98,37 @@ namespace Lokad.Cloud.Core
 		{
 			var blobContents = new BlobContents(new MemoryStream());
 			var container = _blobStorage.GetBlobContainer(containerName);
-			var properties = container.GetBlob(blobName, blobContents, false);
+			BlobProperties properties = null;
 
-			if(null == properties)
+			try
 			{
-				result = default(T);
-			}
-			else
-			{
-				var rstream = blobContents.AsStream;
-				rstream.Position = 0;
-				result = (T)_formatter.Deserialize(rstream);
-			}
+				properties = container.GetBlob(blobName, blobContents, false);
 
+				if (null == properties)
+				{
+					result = default(T);
+				}
+				else
+				{
+					var rstream = blobContents.AsStream;
+					rstream.Position = 0;
+					result = (T)_formatter.Deserialize(rstream);
+				}
+			}
+			catch (StorageClientException ex)
+			{
+				// creating the container when missing
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+				{
+					result = default(T);
+					container.CreateContainer();
+				}
+				else
+				{
+					throw;
+				}
+			}
+			
 			// updating the item
 			result = updater(result);
 
@@ -101,7 +146,19 @@ namespace Lokad.Cloud.Core
 		public bool DeleteBlob(string containerName, string blobName)
 		{
 			var container = _blobStorage.GetBlobContainer(containerName);
-			return container.DeleteBlob(blobName);
+
+			try
+			{
+				return container.DeleteBlob(blobName);
+			}
+			catch (StorageClientException ex) // no such container, return false
+			{
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+				{
+					return false;
+				}
+				throw;
+			}
 		}
 
 		public IEnumerable<string> List(string containerName, string prefix)
@@ -111,9 +168,30 @@ namespace Lokad.Cloud.Core
 			// Trick: 'ListBlobs' is lazilly enumerating over the blob storage
 			// only the minimal amount of network call will be made depending on
 			// the number of items actually enumerated.
-			foreach (BlobProperties blobProperty in container.ListBlobs(prefix, false))
+
+			var enumerator = container.ListBlobs(prefix, false).GetEnumerator();
+
+			while(true)
 			{
-				yield return blobProperty.Name;
+				try
+				{
+					if(!enumerator.MoveNext())
+					{
+						yield break;
+					}
+				}
+				catch (StorageClientException ex)
+				{
+					// if the container does not exist, empty enumeration
+					if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+					{
+						yield break;
+					}
+					throw;
+				}
+
+				// 'yield return' cannot appear in try/catch block
+				yield return ((BlobProperties)enumerator.Current).Name;
 			}
 		}
 	}
