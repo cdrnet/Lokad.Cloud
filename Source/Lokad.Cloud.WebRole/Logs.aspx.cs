@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Lokad.Cloud.Core;
 
 // TODO: only most recent logs gets displayed for now.
+// It's not possible (yet) to browse all logs.
 
 namespace Lokad.Cloud.Web
 {

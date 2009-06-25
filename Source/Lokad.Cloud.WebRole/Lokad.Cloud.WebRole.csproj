@@ -112,7 +112,21 @@
     <Compile Include="Logs.aspx.designer.cs">
       <DependentUpon>Logs.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Nav.Master.cs">
+      <DependentUpon>Nav.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Nav.Master.designer.cs">
+      <DependentUpon>Nav.Master</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services.aspx.cs">
+      <DependentUpon>Services.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Services.aspx.designer.cs">
+      <DependentUpon>Services.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Lokad.Cloud.Core\Lokad.Cloud.Core.csproj">
@@ -127,6 +141,10 @@
       <Project>{C6F30C10-E1C2-4327-BB6B-3160B479CCA1}</Project>
       <Name>StorageClient</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Nav.Master" />
+    <Content Include="Services.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -1,0 +1,25 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Nav.master.cs" Inherits="Lokad.Cloud.Web.Nav" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head runat="server">
+    <asp:ContentPlaceHolder ID="HeadPlaceHolder" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body>
+    <form runat="server">
+    <div>
+		<asp:LoginName ID="_LoginName" runat="server" /> (<asp:LoginStatus ID="_LoginStatus" runat="server" />)
+		
+        <asp:ContentPlaceHolder ID="BodyPlaceHolder" runat="server"></asp:ContentPlaceHolder>
+        
+        <ul>
+			<li><asp:HyperLink runat="server" NavigateUrl="~/Default.aspx" Text="Home" /></li>
+			<li><asp:HyperLink runat="server" NavigateUrl="~/Assemblies.aspx" Text="Manage assemblies" /></li>
+			<li><asp:HyperLink runat="server" NavigateUrl="~/Logs.aspx" Text="View Error Logs" /></li>
+			<li><asp:HyperLink runat="server" NavigateUrl="~/Services.aspx" Text="Manage services" /></li>
+		</ul>
+    </div>
+    </form>
+</body>
+</html>

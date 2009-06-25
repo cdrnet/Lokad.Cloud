@@ -1,21 +1,11 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="Lokad.Cloud.Web._Default" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/Nav.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="Lokad.Cloud.Web._Default" %>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<asp:Content ContentPlaceHolderID="HeadPlaceHolder" runat="server">
+	<title>Home - Lokad.Cloud administration console</title>
+</asp:Content>
 
-<html xmlns="http://www.w3.org/1999/xhtml" >
-<head runat="server">
-    <title>Home - Lokad.Cloud administration console</title>
-</head>
-<body>
-    <form id="form1" runat="server">
-    <div>
-		<h1>Home</h1>
-		<asp:LoginName ID="_LoginName" runat="server" /> (<asp:LoginStatus ID="_LoginStatus" runat="server" />)
-		<ul>
-			<li><asp:HyperLink runat="server" NavigateUrl="~/Assemblies.aspx" Text="Manage assemblies" /></li>
-			<li><asp:HyperLink runat="server" NavigateUrl="~/Logs.aspx" Text="View Error Logs" /></li>
-		</ul>
-    </div>
-    </form>
-</body>
-</html>
+<asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
+	<h1>Home</h1>
+	The administration console of Lokad.Cloud provide management
+	features for your back-office processes running on Windows Azure.
+</asp:Content>

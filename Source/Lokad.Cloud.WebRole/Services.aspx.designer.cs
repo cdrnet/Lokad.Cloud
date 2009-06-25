@@ -11,6 +11,6 @@
 namespace Lokad.Cloud.Web {
     
     
-    public partial class _Default {
+    public partial class Services {
     }
 }
