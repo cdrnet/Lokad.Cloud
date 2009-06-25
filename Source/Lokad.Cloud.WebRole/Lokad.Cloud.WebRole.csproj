@@ -150,9 +150,26 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Themes\Lokad\Lokad.css" />
     <Content Include="Nav.Master" />
     <Content Include="Services.aspx" />
     <Content Include="Workloads.aspx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_Themes\Lokad\Images\bg_body.gif" />
+    <Content Include="App_Themes\Lokad\Images\bg_col2.gif" />
+    <Content Include="App_Themes\Lokad\Images\bg_content.gif" />
+    <Content Include="App_Themes\Lokad\Images\bg_logo.gif" />
+    <Content Include="App_Themes\Lokad\Images\bg_nav.gif" />
+    <Content Include="App_Themes\Lokad\Images\bg_nav_active.gif" />
+    <Content Include="App_Themes\Lokad\Images\bt_btntop_left.gif" />
+    <Content Include="App_Themes\Lokad\Images\bt_btntop_right.gif" />
+    <Content Include="App_Themes\Lokad\Images\bullet_orange.gif" />
+    <Content Include="App_Themes\Lokad\Images\bullet_red.gif" />
+    <Content Include="App_Themes\Lokad\Images\ico_arrow.gif" />
+    <Content Include="App_Themes\Lokad\Images\ico_frontlist.gif" />
+    <Content Include="App_Themes\Lokad\Images\logo.gif" />
+    <Content Include="App_Themes\Lokad\Lokad.skin" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -4,23 +4,93 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head runat="server">
+	<link rel="alternate" type="application/rss+xml" title="Forecasting for Business" href="http://blog.lokad.com/journal/rss.xml" />
     <asp:ContentPlaceHolder ID="HeadPlaceHolder" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>
     <form runat="server">
-    <div>
-		<asp:LoginName ID="_LoginName" runat="server" /> (<asp:LoginStatus ID="_LoginStatus" runat="server" />)
-		
-        <asp:ContentPlaceHolder ID="BodyPlaceHolder" runat="server"></asp:ContentPlaceHolder>
-        
-        <ul>
-			<li><asp:HyperLink runat="server" NavigateUrl="~/Default.aspx" Text="Home" /></li>
-			<li><asp:HyperLink runat="server" NavigateUrl="~/Assemblies.aspx" Text="Manage assemblies" /></li>
-			<li><asp:HyperLink runat="server" NavigateUrl="~/Logs.aspx" Text="View Error Logs" /></li>
-			<li><asp:HyperLink runat="server" NavigateUrl="~/Services.aspx" Text="Manage services" /></li>
-			<li><asp:HyperLink runat="server" NavigateUrl="~/Workloads.aspx" Text="View queue workloads" /></li>
+    
+	<div id="HeaderDiv">
+		<div id="Lang">
+		<ul>
+		    <li><asp:LoginName ID="_LoginName" runat="server" /><asp:LoginStatus ID="_LoginStatus" runat="server" /></li>
 		</ul>
-    </div>
+		</div>	
+		<div class="logo">
+			<h1 id="LogoHeader">
+				<a href="http://www.lokad.com/"><span class="hidden">Lokad.com</span></a>
+			</h1>
+		</div>
+		<div id="TopControls">
+			<div class="btn">
+				<span>
+					<asp:HyperLink runat="server" NavigateUrl="~/Login.aspx" Text="Login" />
+				</span>
+			</div>
+		</div>
+		<div id="Visual"><h2>Lokad.Cloud - Console Administration</h2></div>
+		<div id="TopNav">
+			<ul>
+				<li><asp:HyperLink runat="server" NavigateUrl="~/Default.aspx" Text="Home" /></li>
+				<li><asp:HyperLink runat="server" NavigateUrl="~/Assemblies.aspx" Text=Assemblies" /></li>
+				<li><asp:HyperLink runat="server" NavigateUrl="~/Logs.aspx" Text="Error Logs" /></li>
+				<li><asp:HyperLink runat="server" NavigateUrl="~/Services.aspx" Text="Services" /></li>
+				<li><asp:HyperLink runat="server" NavigateUrl="~/Workloads.aspx" Text="Queues" /></li>
+			</ul>
+		</div>
+	</div>
+	
+	<div id="ContentWrapper">
+		<div></div>
+		<div id="ContainerDiv">
+			<div id="SidebarDiv">
+				<div id="SidebarHeaderDiv">
+					<!-- Used for layout purposes only -->
+				</div>
+				<div id="SidebarContentDiv">
+				</div>
+				<div id="SidebarFooterDiv">
+					<!-- Used for layout purposes only -->
+				</div>
+			</div>
+			<div id="MainDiv">
+				<div id="MainHeaderDiv">
+					<!-- Used for layout purposes only -->
+				</div>
+				<div id="Text" style="width:530px">
+					<asp:ContentPlaceHolder ID="BodyPlaceHolder" runat="server"></asp:ContentPlaceHolder>
+				</div>
+				<div id="MainFooterDiv">
+					<!-- Used for layout purposes only -->
+				</div>
+			</div>
+		</div>
+		<div id="FooterDiv">
+		</div>
+	</div>
+    
+    <div id="FooterWrapper">
+	<div id="Footer">
+		<div class="left">
+			<b>Lokad.Cloud:</b>
+			<ul>
+			<li class="first"><a href="http://code.google.com/p/lokad-cloud/" class="pagelink">Lokad.Cloud project</a><br /> 
+			   <a href="http://code.google.com/p/lokad-cloud/issues/list" class="pagelink">Report an issue</a>
+			</li>
+			<li>
+			</li>
+			</ul>
+		</div>
+		<div class="right">
+			<a href="http://www.lokad.com/AboutUs.ashx" class="pagelink" title="About Us">About Us</a> | 
+			<a href="http://www.lokad.com/ContactUs.ashx" class="pagelink" title="Contact Us">Contact Us</a> | 
+			&copy;2009, Lokad.
+		</div>
+	</div>
+	<br />
+	<%-- scripts --%>
+	</div>
+	
     </form>
 </body>
 </html>

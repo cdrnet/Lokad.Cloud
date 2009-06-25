@@ -11,5 +11,6 @@
 	
 	<p>List of the users having access to this console (use the
 	service configuration file to change this list).</p>
-	<asp:GridView ID="AdminsView" runat="server" />
+	<asp:GridView ID="AdminsView" runat="server" 
+		EmptyDataText="No administrators set in the configuration file." />
 </asp:Content>

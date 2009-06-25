@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Configuration;
 using DotNetOpenId.RelyingParty;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
@@ -18,8 +17,17 @@ namespace Lokad.Cloud.Web
 
 		protected void OpenIdLogin_OnLoggingIn(object sender, OpenIdEventArgs e)
 		{
-			var admins = RoleManager.GetConfigurationSetting("Admins");
+			var admins = string.Empty;
 
+			try
+			{
+				admins = RoleManager.GetConfigurationSetting("Admins");
+			}
+			catch (NullReferenceException)
+			{
+				// ignore exception
+			}
+			
 			foreach(var admin in admins.Split(new [] {" "}, StringSplitOptions.RemoveEmptyEntries))
 			{
 				if(e.ClaimedIdentifier == admin)

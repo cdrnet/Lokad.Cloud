@@ -1,0 +1,469 @@
+/* Copyright (c) Lokad 2009 - All rights reserved */
+/* When updating this file do not forget about Lokad.App overrides at the bottom */
+body {  padding: 0; margin: 0; font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; font-size: 62.5%; color: #565656;  background: #2B2B2B;     }
+table, img, div, form{ padding:0; margin:0; border:none; }
+p { font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; color: #555555; padding: 0; margin: 0; }
+h1, h2, h3, h4 { font-family: Arial, Helvetica, sans-serif; font-size: 24px; color: #686868; padding: 0; margin: 0 0 10px 0; font-weight: normal; }
+h2 { font-size: 16px; padding: 0px; margin: 0px; font-weight: bold; }
+h3 { font-size: 14px; padding: 0px; margin: 0px; font-weight: bold; }
+h4 { padding: 0px; margin: 0px; font-weight: normal; font-style: italic; }
+ul, ol { font-size:1em; margin: 0px; padding-top: 0px; padding-bottom: 0px; padding-left: 28px; padding-right: 8px; }
+li { margin: 2px 0px 0px 0px; padding: 0px; }
+a:active{outline: none;}
+
+.hidden{	display:none;}
+
+.resulterror, .resulterror * { color: #FF0000; }
+.resultok, .resultok * { color: #009900; }
+
+input, label { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; color: #000000; padding: 2px; margin: 0px; }
+select { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; color: #000000; margin: 0px; }
+input.tab { background-color: #DDDDDD; border: solid 3px #DDDDDD; color: #000000; font-size: 11px; width: auto; overflow: visible; padding: 0px; }
+input.tabselected { background-color: #214C9A; border: solid 3px #214C9A; color: #FFFFFF; font-size: 11px; width: auto; overflow: visible; font-weight: bold; padding: 0px; }
+#TabDiv { border-bottom: solid 6px #214C9A; margin-bottom: 10px; }
+
+/* Contains the date picks in the Edit.aspx page */
+#DatePickDiv { font-size: 11px; border: solid 1px #999999; background-color: #FFFFFF; padding: 2px; }
+a.datepicklink { display: block; }
+
+/* Small text */
+p.small, small { font-size: 11px; }
+
+/* Big text */
+p.big, big { font-size: 15px; }
+
+/* Description/legend for images */
+p.imagedescription { font-size: 11px; font-style: italic; margin-top: 4px; }
+
+/* General purpose links */
+a, a:link, a:active { color: #C7180F; text-decoration: underline; }
+a:hover { color: #E80C00; text-decoration: underline; }
+a:visited { color: #660000; text-decoration: underline; }
+
+/* Link to an external URL */
+a.externallink { background-image: url(Images/ExternalLink.gif); background-position: right; background-repeat: no-repeat; padding-right: 14px; }
+
+/* Link to an internal file */
+a.internallink {}
+
+/* Link to a Wiki page */
+a.pagelink {}
+
+/* Link to unknown/inexistent pages */
+a.unknownlink, a.unknownlink:link, a.unknownlink:active { color: #990000; text-decoration: none; }
+a.unknownlink:hover { color: #D9671E; text-decoration: underline; }
+
+/* Email Link */
+a.emaillink {}
+
+h1.pagetitle { font-size: 22px; margin-bottom: 2px; }
+
+/* Class for applying a separator under H elements (useful to avoid usage of HR) */
+h1.separator, h2.separator, h3.separator { padding-bottom: 2px; margin-bottom: 8px; }
+
+a.editsectionlink { float: right; font-size: 11px; margin: 4px 0px 0px 0px; }
+code, pre { font-family: Courier New, Lucida Console, Monospace; color: #000000; padding: 0px; margin: 0px; }
+pre { border: dashed 1px #999999; background-color: #FFFFF0; margin: 0px 10px 0px 10px; padding: 8px; }
+
+/* Class for general purpose images (contained in Wiki pages) */
+img.image { border: solid 1px #F5F5F5; }
+
+/* Class of the formatting Buttons in Edit.aspx */
+img.format { border: solid 1px; padding: 2px; }
+
+/* Div used for clearing floats */
+.clear { clear: both; height:1px; line-height:1px; font-size:1px; overflow: hidden;}
+
+/* Div containing images alighed to the left */
+div.imageleft { border: 1px solid #E0DAC8; background-color: #FFFFFF; padding: 4px; margin-left: 0px; margin-right: 8px; margin-top: 4px; margin-bottom: 4px; float: left; }
+
+/* Div containing images alighed to the right */
+div.imageright { border: 1px solid #E0DAC8; background-color: #FFFFFF; padding: 4px; margin-left: 8px; margin-right: 0px; margin-top: 4px; margin-bottom: 4px; float: right; }
+
+/* Table containing images not aligned */
+table.imageauto { border: 1px solid #E0DAC8; background-color: #FFFFFF; padding: 4px; margin: 4px 4px 4px 0px; }
+
+/* Div acting like a box */
+div.box { border: 1px solid #CCCCCC; background-color: #F9F9F9; display: block; padding: 7px; margin: 0px; }
+
+/* Contains the Header */
+#HeaderDiv { width:100%; float:left;  background: #F2EDD9 url(Images/bg_body.gif) repeat-x;     }
+
+	#Lang{ width: 760px; margin:0 auto; height:13px; padding:4px 0 4px 0; }
+	#Lang ul{ list-style: none; float:right; padding:0; margin:0;}
+	#Lang li{ display: block;  padding:0; margin:0 0 0 9px; float:left;  background-repeat: no-repeat;  }
+	#Lang li.en{	background-image: url(Images/ico_flag_en.gif);}
+	#Lang li.de{	background-image: url(Images/ico_flag_de.gif);}
+	#Lang li.fr{	background-image: url(Images/ico_flag_fr.gif);}
+	#Lang a{ display:block; width:19px; height:13px; 	}
+	#Lang a:hover{width:17px; height:11px;	border: 1px solid #FF4500;}
+
+	#LogoLine{  }
+	.logo{ position:absolute; left:0; top:21px; width:50%; height:51px; background-image: url(Images/bg_logo.gif);  background-color: #F2EDD9;  background-position: right;  background-repeat: no-repeat;   }	
+		.logo a{ display:block; width:223px; height:51px;   }
+		.logo h1{ padding: 0 157px 0 0; float:right; display:block; width:223px; height:51px; overflow: hidden;  background: url(Images/logo.gif) no-repeat;  margin: 0;   }
+	#TopControls{ width: 760px; height: 51px; margin:0 auto;  }
+	#TopControls div.btn{ font-size:1.1em; font-weight:bold; padding: 0 9px 0 0; float: right; margin: 13px 0 0 0px;  display: block; height: 30px;   background-image: url(Images/bt_btntop_right.gif); background-position: right; background-repeat: no-repeat; background-color: #FCBC5D;  font-family: Arial, Helvetica, sans-serif;  }
+	#TopControls div.btn a{	color: #A11603; text-decoration: none; padding-top:5px; display:block;	height:18px; overflow: hidden;  float: left; }
+	#TopControls div.btn a:hover{ color: #E81D00; text-decoration: none;  cursor: pointer;   }
+	#TopControls div.btn span{ float:left; display:block; height:30px;  padding:0 0 0 27px; background-image: url(Images/bt_btntop_left.gif); background-position: left; background-repeat: no-repeat;  }
+	
+	.searchbox{position:relative; float: right; width:139px; height:30px; margin:13px 0 0 5px;  background-image: url(Images/bg_searchbox.gif);  background-repeat: no-repeat;  	 }
+	#TxtSearchBox { font-size: 11px; width: 100px; margin:5px 0 0 22px; padding: 1px 3px 1px 3px; height: 12px; background:none; border: none;  color: #912711;     }
+	
+	#Visual{ margin:0 auto; width:760px; height: 60px; overflow: hidden; background: #AB1B11; }
+		#Visual h2{	height:104px; overflow: hidden; display: block; margin:0 auto; padding: 18px 0 0 0;  color: #E6AA94;  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; font-size: 1.8em;	font-weight:normal;  }
+
+	#TopNav{ text-align:center; width: 760px; height:30px; margin:0 auto;}	
+		#TopNav ul{	list-style: none;	padding:0; margin:0; font-size:1.3em;	}
+		#TopNav li{  height: 30px; float: left; padding: 0; margin: 0 0 0 1px; background: #E25333 url(Images/bg_nav.gif) repeat-x bottom; }
+		#TopNav li.active{ background: #FAFAFA url(Images/bg_nav_active.gif) repeat-x;  }
+		#TopNav li.home{ padding:0 3px; }
+		#TopNav a{ color: white; margin: 0; text-decoration: none; display: block; padding: 6px 0 0 0; width: 93px; text-align: center; font-weight: bold; font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; }
+		#TopNav li.active a{ color: #AB0B00; }
+		#TopNav a:hover{ position: relative; top: -1px;  }
+		
+/* Contains the SidebarDiv and the MainDiv */
+#ContentWrapper{	width:100%; padding: 0 0 50px 0; float:left;  background: White url(Images/bg_content.gif) repeat-x;  }
+#ContainerDiv { width: 760px; padding: 0; margin: 0 auto;  }
+
+/* Contains the Sidebar */
+#SidebarDiv { display:none;   }
+#SidebarContentDiv{}
+#Side{ float:right; font-size:1.2em; width: 180px; margin: 0; padding: 36px 0 0px 40px; background: url(Images/bg_SidebarDiv.gif) no-repeat 0 6px; /*  min-height: 460px; */ position: relative; 	}
+	#Side h3{ font-size: 1.38em; text-transform: uppercase; color: #727272;  font-family: "Trebuchet MS";  font-weight: bold;   }
+
+	#GetStarted ul{ list-style: none; padding: 0; margin: 1em 0 1.5em 0; font-size: 1.1em; }
+		#GetStarted li{ display: block; margin:0 0 8px 0; background-repeat: no-repeat; padding:0;}
+		#GetStarted li a{ display: block; height: 30px; width: 128px; padding: 9px 0 0 52px; background: url(Images/start_tour.gif); overflow: hidden; color: #545454; text-decoration: none; }
+		#GetStarted li.tour a{ background: url(Images/start_tour.gif); }
+		#GetStarted li.try a{ background: url(Images/start_trylokad.gif); }
+		#GetStarted li.download a{ background: url(Images/start_download.gif); }
+		#GetStarted li.save a{ background: url(Images/start_save.gif); }
+		#GetStarted li.ecommerce a{ background: url(Images/industry_ecommerce.gif); }
+		#GetStarted li.retail a{ background: url(Images/industry_retail.gif); }
+		#GetStarted li.manufacturing a{ background: url(Images/industry_manufacturing.gif); }
+		#GetStarted li.call a{ background: url(Images/industry_call.gif); }
+		#GetStarted li a:hover{ text-decoration: underline; background-position: 0 -39px; }
+		#GetStarted li.active a{ color: #cc0000; background-position: 0 -78px; }
+		#GetStarted li.active a:hover{ background-position: 0 -78px; }
+		
+	#Side .fromprice{ width:180px; margin: 0 0 1.5em 0; padding:0; height: 59px;  background: #A5C7EB url(Images/from_price.gif);  }	
+	#Side .fromprice a{ display:block; text-decoration:none; width:110px; padding:21px 60px 0 10px; height: 25px; color: White;  font-size: 1.2em;  font-weight:bold;  overflow: hidden;   }	
+	#Side .fromprice a:hover{		text-decoration: underline;	}
+	#Side .news ul{ list-style:none; font-weight: bold; font-size:0.9em; color: #DE4338; margin:0.8em 0 20px 0; padding:0;  font-family: Arial, Helvetica, sans-serif; 	}
+	#Side .news li{ margin:0 0 10px 0;	}
+	#Side .news a{ font-style: normal; font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;  line-height:1.4em; font-size: 1.2em; font-weight: normal; text-decoration: none; color: #515151; }
+	#Side .news a:hover{		text-decoration: underline;	}
+
+	
+/* Contains the contents of a Page */
+#MainDiv { float:left; width:760px; margin: 0; padding:0;}
+#Text { float:left; width:535px; line-height:1.4em; margin: 0; padding:40px 0 0 0; font-size:1.4em; }
+	#Text .large{ font-size: 1.17em; color: #777777; }
+	#Text .frontlist{ margin:10px 0 15px 0;  }
+	#Text .frontlist ul{	list-style:none; margin:0; padding:3px 0 0 20px;	}
+	#Text .frontlist li{ padding:0 0 0 30px;	margin:0 0 6px 0; background-image: url(Images/ico_frontlist.gif);	background-position: left;	background-repeat: no-repeat;}
+	ul.listorange{ padding: 0 0 0 18px; }
+		ul.listorange li{ list-style: url(Images/bullet_orange.gif); }
+	ul.listred li{ list-style: url(Images/bullet_red.gif); }
+	ul.listred li.empty{ list-style: none none;  }
+	
+	/* 2-columns 'table' */
+	.col2{ float:left; width:100%; list-style: none; margin: 0; padding: 0; background: url(Images/bg_col2.gif) repeat-y 255px 0; }
+		.col2 li.left{ list-style: none; margin: 0; padding: 0; width: 250px; padding: 0 15px 0 0; }
+		.col2 li.right{ list-style: none; margin: 0; padding: 0; width: 250px; padding: 0 0 0 15px; }
+		.col2 li li{ list-style: disc; }
+	
+	/* decorated list */
+	ul.tick{ margin: 0; padding: 0; }
+	ul.tick li{ list-style: none; margin: 0 0 5px 0; padding: 0 0 0 20px; background: url(Images/bullet_tick.gif) no-repeat 0 4px; }
+	
+	/* LSSC page */
+	h1.lssc{ background: url(Images/icon_ssc.gif) no-repeat left; line-height: 33px; padding: 0 0 0 40px; }
+
+	/* screenshots */
+	.screenshot{ float: left; margin: 0 60px 15px 0; padding: 2px; border: 1px solid #e1e1e1; position: relative; }
+		.screenshot img{ float: left; width:131px; }
+		.screenshot a{ position: absolute; text-indent: -5000px; bottom: 0; left: 0; width: 135px; height: 95px; background: url(Images/icon_zoom.gif) no-repeat bottom right; }
+		.rightscreenshot{ margin: 0 0 15px 0; }
+	
+/* Contains the Page Header (title, last modify, etc.) */
+#PageTop{ display: none; }
+#PageHeaderDiv { display:none;}
+#PageInternalHeaderDiv { }
+#PageInternalFooterDiv { }
+
+
+/* Contains the Footer */
+#FooterWrapper{ width:100%; margin: 0; padding: 18px 0 0px 0;  border-top: 13px solid #E6E6E6;  background-color: #2B2B2B;  color: #D5D5D5;  clear: both;  position: relative;      }
+#Footer{	width:760px; margin:0 auto; padding:0; line-height:1.6em; font-size:1.1em; font-family: "MS Sans Serif", Geneva, sans-serif; }
+	#Footer .left{ float: left; width: 530px; padding-bottom:30px; }
+	#Footer .right{ float: right; width: 225px; text-align: right; }
+	#Footer .right a{	text-decoration: none; color:#dddddd;	}
+	#Footer .left a{	color: #8A8A8A; text-decoration: none;}
+	#Footer a:hover{  color:#EEEEEE; border-bottom:1px solid #CCCCCC;	}
+	#Footer .left ul{ list-style: none; padding: 0; margin: 0; }
+	#Footer .left li{		display:block; float:left;  border-left: 1px solid #222222;  border-right: 1px solid #414141;  padding: 0 14px 0 14px;  	 }
+	#Footer .left li.first{		border-left:none;	padding-left:0;}
+	#Footer .left li.last{		border-right:none; padding-right:0;	}
+	#Footer .admin{ float: right; width: 225px; text-align: right; color: #666666; margin: 0; padding: 0; }
+	#Footer .admin a{	text-decoration: none; color:#666666;	}
+
+
+/* Contains the link to the page editing form (Edit.aspx) and history */
+#EditHistoryLinkDiv { float: right; font-size: 11px; padding-top: 4px; padding-bottom: 4px; }
+#EditLink, #HistoryLink, #ViewCodeLink, #DiscussLink, #BackLink, #PostReplyLink { margin-left: 4px; padding: 2px; border: solid 1px #999999; display: none; }
+#EditLink:hover, #HistoryLink:hover, #ViewCodeLink:hover, #DiscussLink:hover, #BackLink:hover, #PostReplyLink:hover { border: solid 1px #214C9A; text-decoration: none; background-color: #FFFFEE; }
+
+/* Class of the P containing the Edit Link */
+p.editlink { font-size: 11px; }
+
+.editsectionlink{ font-size: 8px; /* display:none; */ }
+
+/* Shown when a page is Locked */
+#PageLockedDiv { float: left; width: 12px; height: 12px; margin-right: 4px; background-image: url(Images/Lock.png); background-repeat: no-repeat; background-position: center; text-indent: -3000px; position: relative; }
+
+/* Shown when a page is Public */
+#PagePublicDiv { float: left; width: 12px; height: 12px; margin-right: 4px; background-image: url(Images/Public.png); background-repeat: no-repeat; background-position: center; text-indent: -3000px; position: relative; }
+#PageInfoDiv { font-size: 11px; }
+
+#BreadcrumbsDiv { font-size: 11px; margin-top: 2px; padding-bottom: 1px; border-bottom: solid 1px #F0F0F0; border-top: solid 1px #F0F0F0; /*background-color: #FFFEDF;*/ overflow: hidden; }
+
+/* Contains the link to the Page RSS */
+#RssLinkDiv { float: right; position: relative; }
+
+/* The link to the Page RSS */
+#RssLink { background-image: url(Images/RSS.png); background-repeat: no-repeat; text-indent: -2500px; display: block; height: 13px; width: 24px; }
+#PrintLinkDiv { float: right; position: relative; }
+#PrintLink { background-image: url(Images/Print.png); background-repeat: no-repeat; text-indent: -2500px; display: block; margin-left: 4px; height: 16px; width: 16px; }
+
+/* Contains the Page Content */
+#PageContentDiv { margin: 0; }
+
+
+/* Contains the page preview in the Edit.aspx page */
+#PreviewDiv {}
+
+/* Contains the special tags in the Edit.aspx page */
+#SpecialTagsDiv { font-size: 11px; border: solid 1px #999999; background-color: #FFFFFF; padding: 0px; }
+
+a.specialtaglink { display: block; }
+
+#PageListDiv { font-size: 11px; border: solid 1px #999999; background-color: #FFFFFF; padding: 0px; }
+
+#FileListDiv { font-size: 11px; border: solid 1px #999999; background-color: #FFFFFF; padding: 4px; }
+
+a.pagelistlink { display: block; }
+
+#SnippetListDiv { font-size: 11px; border: solid 1px #999999; background-color: #FFFFFF; padding: 0px; }
+
+a.snippetlistlink { display: block; }
+
+/* Contains the anchors in the Edit.aspx page */
+#AnchorsDiv { font-size: 11px; border: solid 1px #999999; background-color: #FFFFFF; padding: 0px; }
+
+a.anchorlink { display: block; }
+
+/* Contains the anchors in the Edit.aspx page */
+#ImagesDiv { font-size: 11px; border: solid 1px #999999; background-color: #FFFFFF; padding: 0px; }
+
+a.imagelink { display: block; }
+
+#SpecialTagsDiv *, #AnchorsDiv *, #ImagesDiv *, #PageListDiv *, #SnippetListDiv * { padding: 2px; }
+
+#SpecialTagsDiv a:hover, #AnchorsDiv a:hover, #ImagesDiv a:hover, #PageListDiv a:hover, #SnippetListDiv a:hover { color: #FFFFFF; background-color: #214C9A; text-decoration: none; }
+
+/* Contains the Special characters in the Edit.aspx page */
+#SpecialCharsDiv { margin-top: 8px; border: solid 1px #888888; padding: 4px; }
+
+#FormatUl { margin: 0px; padding: 0px; }
+
+#FormatUl li { display: inline; list-style-image: none; margin: 0px; padding: 0px; }
+
+/* Formatting Button in Edit.aspx */
+a.formatlink { background-position: center; background-repeat: no-repeat; width: 20px; height: 20px; border: solid 1px #214C9A; text-indent: -2000px; margin-right: 2px; float: left; }
+
+/* Formatting Button in Edit.aspx */
+a.formatlink:hover { text-decoration: none; border: solid 1px #D9671E; }
+
+#BoldLink { background-image: url(Images/Bold.png); }
+#ItalicLink { background-image: url(Images/Italic.png); }
+#UnderlineLink { background-image: url(Images/Underline.png); }
+#StrikeLink { background-image: url(Images/Strike.png); }
+#H1Link { background-image: url(Images/H1.png); }
+#H2Link { background-image: url(Images/H2.png); }
+#H3Link { background-image: url(Images/H3.png); }
+#H4Link { background-image: url(Images/H4.png); }
+#SubLink { background-image: url(Images/Sub.png); }
+#SupLink { background-image: url(Images/Sup.png); }
+#PageListLink { background-image: url(Images/PageLink.png); }
+#FileLink { background-image: url(Images/File.png); }
+#LinkLink { background-image: url(Images/Link.png); }
+#ImageLink { background-image: url(Images/Image.png); }
+#AnchorLink { background-image: url(Images/Anchor.png); }
+#CodeLink { background-image: url(Images/Code.png); }
+#PreLink { background-image: url(Images/Pre.png); }
+#BoxLink { background-image: url(Images/Box.png); }
+#BrLink { background-image: url(Images/BR.png); }
+#SnippetListLink { background-image: url(Images/Snippet.png); }
+#SpecialTagsLink { background-image: url(Images/SpecialTags.png); }
+#NoWikiLink { background-image: url(Images/NoWiki.png); }
+#CommentLink { background-image: url(Images/Comment.png); }
+#EscapeLink { background-image: url(Images/Escape.png); }
+
+#PageListTable { width: 90%; margin: 0px 10px 0px 10px; }
+
+#PageListHeader { background-color: #DDDDDD; }
+
+.pagelistcelleven { border-bottom: solid 1px #CCCCCC; }
+.pagelistcellodd { border-bottom: solid 1px #CCCCCC; background-color: #F4F4F4; }
+
+#PageTreeP { margin: 0px 0px 0px 10px; padding: 0px 0px 0px 6px; border-left: 4px solid #CCCCCC; }
+
+#FileListTable { width: 98%; margin: 0px; }
+
+#FileListHeader { background-color: #DDDDDD; }
+
+.filelistcelleven { border-bottom: solid 1px #CCCCCC; }
+.filelistcellodd { border-bottom: solid 1px #CCCCCC; background-color: #F4F4F4; }
+
+#RevisionListTable { width: 98%; margin: 0px; }
+
+#RevisionListHeader { background-color: #DDDDDD; }
+
+.revisionlistcelleven { border-bottom: solid 1px #CCCCCC; }
+.revisionlistcellodd { border-bottom: solid 1px #CCCCCC; background-color: #F4F4F4; }
+
+#PreviewDivExternal { }
+#PreviewDiv { padding: 10px; border: solid 4px #CCCCCC; }
+
+blockquote { border-left: solid 8px #DDDDDD; margin-left: 16px; padding: 0px 0px 2px 6px; }
+
+div.messagecontainer { margin: 0px 0px 0px 16px; }
+div.rootmessagecontainer { border-top: solid 4px #214C9A; }
+div.messageheader { font-size: 10px; background-color: #F0F0F0; padding: 2px; }
+span.messagesubject {	font-weight: bold;	font-size: 12px;}
+div.messagebody {	border-bottom: solid 1px #F0F0F0;	border-left: solid 1px #F0F0F0;	border-right: solid 1px #F0F0F0;	margin: 0px 0px 6px 0px;	padding: 4px;}
+div.reply {	float: right;	margin: 6px 10px 0px 0px;	font-size: 11px;	font-weight: bold;}
+a.reply {	background-image: url(Images/MessageReply.png);	background-repeat: no-repeat;	background-position: left center;	padding: 0px 0px 0px 12px;}
+
+a.edit { background-image: url(Images/MessageEdit.png); background-repeat: no-repeat; background-position: left center; padding: 0px 0px 0px 13px; margin-left: 16px; }
+a.delete { background-image: url(Images/MessageDelete.png); background-repeat: no-repeat; background-position: left center; padding: 0px 0px 0px 10px; margin-left: 16px; }
+div.warning { padding: 6px; background-color: #FEF693; border: solid 1px #FFCF10; display: table-cell; border-collapse: collapse; }
+
+
+#ConcurrentEditingDiv { padding: 6px; background-color: #FEF693; border: solid 1px #FFCF10; }
+
+span.signature { font-style: italic; }
+
+#TocContainer { border: solid 1px #CCCCCC; display: table-cell; padding: 7px; border-collapse: collapse; background-color: #F9F9F9; }
+
+#AttachmentsDiv { margin-top: 6px; padding: 4px; border: solid 1px #559955; background-color: #D6EED2; }
+
+a.attachment { padding-left: 14px; background-image: url(Images/Attachment.png); background-repeat: no-repeat; background-position: left center; }
+
+#RedirectionInfoDiv { font-size: 11px; padding-left: 10px; padding-top: 4px; color: #999999; }
+
+#RedirectionDiv { margin-bottom: 16px; padding-left: 24px; margin-left: 10px; font-size: 14px; background-image: url(Images/Redirect.png); background-repeat: no-repeat; background-position: left center; }
+
+/* JsFileTree control begin */
+div.subtreediv { margin: 0px 0px 0px 10px; }
+a.subdirlink { background-image: url(../../Images/Dir.png); background-repeat: no-repeat; background-position: left center; padding: 0px 0px 0px 18px; }
+a.filelink { background-image: url(../../Images/File.png); background-repeat: no-repeat; background-position: left center; padding: 0px 0px 0px 18px; }
+/* JsFileTree control end */
+
+/* JsImageBrowser control begin */
+#ImageBrowserDiv { background-color: #FFFFFF; border: solid 1px #999999; width: 616px; }
+#MainContainerDiv { overflow: auto; height: 286px; }
+div.container { float: left; width: 96px; height: 126px; background-color: #FFFFFF; margin: 4px; }
+#UpLevelLink, #UpLevelLink:hover { display: block; width: 96px; height: 96px; vertical-align: bottom; text-align: center; text-decoration: none; }
+a.dirlink, a.dirlink:hover { display: block; width: 96px; height: 96px; vertical-align: bottom; text-align: center; text-decoration: none; }
+a.itemlink, a.itemlink:hover { display: block; width: 96px; height: 116px; vertical-align: bottom; text-align: center; text-decoration: none; }
+span.itemtext { color: #000000; background-color: #FFFFFF; padding: 0px; width: 96px; height: 96px; vertical-align: bottom; font-size: 10px; }
+#ImagePreviewDiv { float: right; width: 256px; height: 268px; border: solid 1px #CCCCCC; margin: 4px; padding: 4px; text-align: center; vertical-align: middle; background-color: #FFFFFF; }
+#PreviewImg { height: 248px; vertical-align: middle; }
+img.thumb { border: solid 1px #CCCCCC; }
+#ImageDescriptionSpan { font-size: 11px; font-style: italic; }
+/* JsImageBrowser control end */
+
+/* TABLES - Pricing  */
+.table{	border: 1px solid #FCCC85; }
+.table td, .Table th{ background-color: #FCF9F0;  color: #312104;  }
+.table th{ color: #B51B0E; font-size: 0.9em; font-family: Arial, Helvetica, sans-serif; }
+.table .bgh { font-size: 125%; padding: 0px; }
+.table .bg0{ background-color: #FCF9F0; }
+.table .bg1{ background-color: #FCF0DA; }
+.table .bg2{ background-color: #FCE7C5; }
+.table .bg3{ background-color: #FCDEB0; }
+.table .bg4{ background-color: #FCCC85; }
+.table .btn{ background: #FCB040 url(Images/bg_btn.gif) repeat-x; font-size:1.1em; letter-spacing: 2px; font-weight:bold; font-family: Arial, Helvetica, sans-serif;  padding: 5px;  }
+.table .btn a{	text-decoration: none;}
+.table .btn a:hover{	text-decoration: underline;}
+.table .diagramm{ padding:0;  background: #fcf0da;   }
+.table .diagramm img{ float: right; }
+.table .small{ line-height: 1.5em; }
+
+.small { font-size: 0.85em; }
+
+/* NEW FRONTPAGE */
+.linelist{	padding:0; margin:7px 0 36px 0; float:left; width:100%; list-style:none;   }
+.linelist li{ float: left;  padding: 0 30px 0 30px; width:125px;  background-image: url(Images/ico_frontlist.gif); background-position: left top; background-repeat: no-repeat;  color: #535353;  }
+	
+	#Side .btndownload{ cursor: pointer;  position:relative; width: 180px; margin: 0 0 1.5em 0; height: 59px; background: #A5C7EB url(Images/bg_download.gif); }
+	#Side .btndownload a{ padding: 16px 22px 0 0; height: 43px; width:158px; display:block; text-align: right; color: white; letter-spacing:2px; font: bold 1.2em Arial, Helvetica, sans-serif; text-decoration: none;  }
+	#Side .btndownload a:hover{	text-decoration: underline;}
+	#Side .btndownload span{ position:absolute; right:22px; top: 29px; color:white; display: block; font: bold 10px Arial, Helvetica, sans-serif;  }
+	
+	#Text .right{	float:right; }
+	#Text .left{	float:left; }
+	#Text img.left{ margin: 5px 15px 5px 0; }
+	#Text img.right{ margin: 5px 0 5px 15px; }
+	.textjustify{ text-align: justify; }
+	.textleft{ text-align: left; }
+	.textright{ text-align: right; }
+	.textcenter{ text-align: center; }
+	#Text .actions{ list-style:none; padding:0; margin:10px 0 15px 0; font-size:1.4em;	}
+	#Text .actions li{ display:inline;	}
+	#Text .actions li.arrow{ padding: 0 0 0 10px; margin: 0 0 0 6px; background: url(Images/ico_arrow.gif) no-repeat left; }
+
+/* ------------------------------------------------- */
+/* Local Overrides specific to the Lokad application */
+
+/* Bigger Logo */
+	.logo a{ width:332px; }
+	.logo h1{ padding: 0 48px 0 0; width:332px; overflow: hidden; background:url(Images/logo_account.gif) no-repeat; }
+	.logo h1.Test { background:url(Images/logo_test.gif) no-repeat;}
+	
+/* Help styles */
+	#HelpHeader { width:100%; float:left; border-bottom: solid #F2EDD9 2px; background-color:White;}
+		#HelpLogo { background-image: url(Images/lokad-help.gif);background-repeat: no-repeat; height:51px; }
+	#HelpWrapper {  line-height:1.4em; margin: 0; font-size:1.4em; background-color:White; padding-left:10px;padding-right:10px; padding-top:15px;}
+		#HelpWrapper h1 {padding-bottom: 2px; margin-bottom: 8px;}
+		#HelpWrapper h2 { margin-top: 20px;}
+		.CloseHelp {float: right; }
+/* Main style overrides */
+	#TopControls div.btn { margin-left:5px;}
+		
+#Text { width: 760px;}
+
+/* web app does not use sidebars, so stick with wider columns */
+	.col2 { background-position: 367px 0; }
+	.col2 li.left{ width: 362px;  }
+	.col2 li.right{ width: 362px;  }
+
+#Text p { padding: 0 0 1em 0;}
+
+span.warning { color: #ff0000; }
+
+
+/* Used for Lokad.skin */
+.DefaultGrid
+{
+	border-collapse: collapse;
+	border: solid 1px #000000;
+}
+.Centered
+{
+	margin: 0em auto 1em auto;
+}

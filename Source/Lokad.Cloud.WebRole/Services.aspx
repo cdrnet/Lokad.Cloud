@@ -5,7 +5,7 @@
 </asp:Content>
 
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
-	<h1>Services manager</h1>
+	<h1 class="separator">Services manager</h1>
 	<asp:GridView ID="ServicesView" runat="server" 
 		EmptyDataText="No services listed yet."
 		OnRowCommand="ServicesView_OnRowCommand" >

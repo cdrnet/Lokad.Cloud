@@ -1,0 +1,43 @@
+<%-- Copyright (c) Lokad 2009 - All rights reserved --%>
+
+<%-- Default GridView Skin --%>
+<asp:GridView runat="server"
+    CssClass="DefaultGrid"
+    CellPadding="3"
+    CellSpacing="3" />
+    
+<asp:GridView runat="server" SkinId="ItemListGrid"
+    SelectedRowStyle-BackColor="#fcaf3e"
+    CssClass="DefaultGrid"
+    CellPadding="3"
+    CellSpacing="3" />
+
+<asp:GridView runat="server" SkinId="ItemListGridCentered"
+    SelectedRowStyle-BackColor="#fcaf3e"
+    CssClass="DefaultGrid Centered"
+    CellPadding="3"
+    CellSpacing="3" />
+    
+<asp:DetailsView runat="server" SkinId="NewItemDetails"
+    CssClass="DefaultGrid"
+    CellPadding="3"
+    CellSpacing="3" />
+    
+<asp:DetailsView runat="server" SkinId="NewItemDetailsCentered"
+    CssClass="DefaultGrid Centered"
+    CellPadding="3"
+    CellSpacing="3" />
+    
+<asp:DetailsView runat="server" SkinId="ItemDetails"
+    HeaderStyle-Font-Bold="true"
+    CssClass="DefaultGrid"
+    CellPadding="3"
+    CellSpacing="3" />
+    
+<asp:DetailsView runat="server" SkinId="ItemDetailsCentered"
+    HeaderStyle-Font-Bold="true"
+    CssClass="DefaultGrid Centered"
+    CellPadding="3"
+    CellSpacing="3" />
+   
+    
