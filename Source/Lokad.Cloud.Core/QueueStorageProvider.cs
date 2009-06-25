@@ -53,6 +53,14 @@ namespace Lokad.Cloud.Core
 			_inprocess = new Dictionary<object, Tuple<Message, bool>>();
 		}
 
+		public IEnumerable<string> List(string prefix)
+		{
+			foreach(var queue in _queueStorage.ListQueues(prefix))
+			{
+				yield return queue.Name;
+			}
+		}
+
 		public IEnumerable<T> Get<T>(string queueName, int count)
 		{
 			var queue = _queueStorage.GetQueue(queueName);
@@ -255,6 +263,24 @@ namespace Lokad.Cloud.Core
 		public bool DeleteQueue(string queueName)
 		{
 			return _queueStorage.GetQueue(queueName).DeleteQueue();
+		}
+
+		public int GetApproximateCount(string queueName)
+		{
+			try
+			{
+				return _queueStorage.GetQueue(queueName).ApproximateCount();
+			}
+			catch (StorageClientException ex)
+			{
+				// if the queue does not exist, return 0 (no queue)
+				if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+				{
+					return 0;
+				}
+
+				throw;
+			}
 		}
 
 		/// <summary>

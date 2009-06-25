@@ -18,6 +18,7 @@
 			<li><asp:HyperLink runat="server" NavigateUrl="~/Assemblies.aspx" Text="Manage assemblies" /></li>
 			<li><asp:HyperLink runat="server" NavigateUrl="~/Logs.aspx" Text="View Error Logs" /></li>
 			<li><asp:HyperLink runat="server" NavigateUrl="~/Services.aspx" Text="Manage services" /></li>
+			<li><asp:HyperLink runat="server" NavigateUrl="~/Workloads.aspx" Text="View queue workloads" /></li>
 		</ul>
     </div>
     </form>

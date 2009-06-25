@@ -15,6 +15,10 @@ namespace Lokad.Cloud.Core
 	/// </remarks>
 	public interface IQueueStorageProvider
 	{
+		/// <summary>Gets the list of queues whose name start with the specifed prefix.</summary>
+		/// <param name="prefix">If null or empty, returns all queues.</param>
+		IEnumerable<string> List(string prefix);
+
 		/// <summary>Gets messages from a queue.</summary>
 		/// <typeparam name="T">Type of the messages.</typeparam>
 		/// <param name="queueName">Identifier of the queue to be pulled.</param>
@@ -40,5 +44,8 @@ namespace Lokad.Cloud.Core
 		/// <summary>Deletes a queue.</summary>
 		/// <remarks><c>true</c> if the queue name has been actually deleted.</remarks>
 		bool DeleteQueue(string queueName);
+
+		/// <summary>Gets the approximate number of items in this queue.</summary>
+		int GetApproximateCount(string queueName);
 	}
 }

@@ -127,6 +127,13 @@
     <Compile Include="Services.aspx.designer.cs">
       <DependentUpon>Services.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Workloads.aspx.cs">
+      <DependentUpon>Workloads.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Workloads.aspx.designer.cs">
+      <DependentUpon>Workloads.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Lokad.Cloud.Core\Lokad.Cloud.Core.csproj">
@@ -145,6 +152,7 @@
   <ItemGroup>
     <Content Include="Nav.Master" />
     <Content Include="Services.aspx" />
+    <Content Include="Workloads.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
