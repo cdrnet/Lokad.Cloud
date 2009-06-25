@@ -6,5 +6,11 @@
 
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
 	<h1>Services manager</h1>
-	<asp:GridView ID="ServicesView" runat="server" EmptyDataText="No services listed yet." />
+	<asp:GridView ID="ServicesView" runat="server" 
+		EmptyDataText="No services listed yet."
+		OnRowCommand="ServicesView_OnRowCommand" >
+		<Columns>
+			<asp:ButtonField ButtonType="Link" Text="Toggle" CommandName="Toggle" />
+		</Columns>
+	</asp:GridView>
 </asp:Content>

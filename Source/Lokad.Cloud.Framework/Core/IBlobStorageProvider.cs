@@ -48,6 +48,9 @@ namespace Lokad.Cloud.Core
 		/// the default <c>T</c> value.</remarks>
 		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result);
 
+		/// <summary>Update a blob while garantying an atomic update process.</summary>
+		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater);
+
 		/// <summary>Deletes a blob.</summary>
 		bool DeleteBlob(string containerName, string blobName);
 

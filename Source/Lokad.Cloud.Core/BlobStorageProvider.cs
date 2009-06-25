@@ -94,6 +94,12 @@ namespace Lokad.Cloud.Core
 			return (T)_formatter.Deserialize(stream);
 		}
 
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)
+		{
+			T ignored;
+			return UpdateIfNotModified(containerName, blobName, updater, out ignored);
+		}
+
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result)
 		{
 			var blobContents = new BlobContents(new MemoryStream());

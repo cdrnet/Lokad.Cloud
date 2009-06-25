@@ -4,6 +4,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Web.UI.WebControls;
 using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
@@ -35,6 +36,30 @@ namespace Lokad.Cloud.Web
 						Name = blobName.Substring(prefix.Length + 1), // discarding the prefix
 						State = state.ToString()
 					};
+			}
+		}
+
+		protected void ServicesView_OnRowCommand(object sender, GridViewCommandEventArgs e)
+		{
+			var cn = CloudService.ServiceAdministrationContainer;
+			var prefix = CloudService.StatePrefix;
+
+			if(e.CommandName == "Toggle")
+			{
+				var row = -1;
+				int.TryParse(e.CommandArgument as string, out row);
+
+				var suffix = ServicesView.Rows[row].Cells[1].Text;
+				var bn = prefix + "/" + suffix;
+
+				// inverting the service status
+				_provider.UpdateIfNotModified<CloudServiceState?>(cn, bn, 
+					s => s.HasValue ? 
+						(s.Value == CloudServiceState.Started ? CloudServiceState.Stopped : CloudServiceState.Started) :
+						CloudServiceState.Started);
+
+				ServicesView.DataSource = GetServices();
+				ServicesView.DataBind();
 			}
 		}
 	}
