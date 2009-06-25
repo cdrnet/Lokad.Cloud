@@ -6,6 +6,7 @@
 
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
 	<h1 class="separator">Services manager</h1>
+	<p>Use the panel below to start or stop services.</p>
 	<asp:GridView ID="ServicesView" runat="server" 
 		EmptyDataText="No services listed yet."
 		OnRowCommand="ServicesView_OnRowCommand" >

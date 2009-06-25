@@ -4,6 +4,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
@@ -18,7 +19,16 @@ namespace Lokad.Cloud.Web
 
 		IEnumerable<object> GetAdmins()
 		{
-			var admins = RoleManager.GetConfigurationSetting("Admins");
+			// HACK: logic to retrieve admins is duplicated with 'Default.aspx'
+			var admins = string.Empty;
+			if (RoleManager.IsRoleManagerRunning)
+			{
+				admins = RoleManager.GetConfigurationSetting("Admins");
+			}
+			else
+			{
+				admins = ConfigurationManager.AppSettings["Admins"];
+			}
 
 			foreach(var admin in admins.Split(new [] {" "}, StringSplitOptions.RemoveEmptyEntries))
 			{

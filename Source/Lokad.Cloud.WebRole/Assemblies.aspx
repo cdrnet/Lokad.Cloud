@@ -7,9 +7,10 @@
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
 	<h1 class="separator">Assembly manager</h1>
 
-	Content of the assembly archive:
+	<p>Content of the assembly archive:</p>
 	<asp:GridView ID="AssembliesView" runat="server" EmptyDataText="No file in archive yet." />
 	
+	<br />
 	<p>Upload a new assembly archive:
 	</p>
 	<p>

@@ -99,7 +99,7 @@ div.box { border: 1px solid #CCCCCC; background-color: #F9F9F9; display: block; 
 	#Lang a:hover{width:17px; height:11px;	border: 1px solid #FF4500;}
 
 	#LogoLine{  }
-	.logo{ position:absolute; left:0; top:21px; width:50%; height:51px; background-image: url(Images/bg_logo.gif);  background-color: #F2EDD9;  background-position: right;  background-repeat: no-repeat;   }	
+	.logo{ position:absolute; left:0; top:21px; width:50%; height:51px; background-image: url(Images/bg_logo.png);  background-color: #F2EDD9;  background-position: right;  background-repeat: no-repeat;   }	
 		.logo a{ display:block; width:223px; height:51px;   }
 		.logo h1{ padding: 0 157px 0 0; float:right; display:block; width:223px; height:51px; overflow: hidden;  background: url(Images/logo.gif) no-repeat;  margin: 0;   }
 	#TopControls{ width: 760px; height: 51px; margin:0 auto;  }

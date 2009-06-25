@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
+using System.Configuration;
 using DotNetOpenId.RelyingParty;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
@@ -17,15 +18,15 @@ namespace Lokad.Cloud.Web
 
 		protected void OpenIdLogin_OnLoggingIn(object sender, OpenIdEventArgs e)
 		{
+			// HACK: logic to retrieve admins is duplicated with 'Default.aspx'
 			var admins = string.Empty;
-
-			try
+			if (RoleManager.IsRoleManagerRunning)
 			{
 				admins = RoleManager.GetConfigurationSetting("Admins");
 			}
-			catch (NullReferenceException)
+			else
 			{
-				// ignore exception
+				admins = ConfigurationManager.AppSettings["Admins"];
 			}
 			
 			foreach(var admin in admins.Split(new [] {" "}, StringSplitOptions.RemoveEmptyEntries))

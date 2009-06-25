@@ -4,10 +4,13 @@
 #endregion
 
 using System;
+using System.Web.Security;
 using Autofac;
 using Autofac.Builder;
+using Autofac.Configuration;
 using Lokad.Cloud.Core;
 using Microsoft.Samples.ServiceHosting.StorageClient;
+using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
 {
@@ -18,7 +21,16 @@ namespace Lokad.Cloud.Web
 		static GlobalSetup()
 		{
 			var builder = new ContainerBuilder();
-			builder.RegisterModule(new StorageModule());
+
+			// loading configuration from the Azure Service Configuration
+			if (RoleManager.IsRoleManagerRunning)
+			{
+				builder.RegisterModule(new StorageModule());
+			}
+			else // or from the web.config directly (when azure config is not available)
+			{
+				builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
+			}
 
 			var policy = ActionPolicy
 				.With(HandleException)

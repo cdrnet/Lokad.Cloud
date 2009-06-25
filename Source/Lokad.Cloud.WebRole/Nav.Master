@@ -13,7 +13,7 @@
 	<div id="HeaderDiv">
 		<div id="Lang">
 		<ul>
-		    <li><asp:LoginName ID="_LoginName" runat="server" /><asp:LoginStatus ID="_LoginStatus" runat="server" /></li>
+		    <li><asp:LoginName ID="_LoginName" runat="server" /></li>
 		</ul>
 		</div>	
 		<div class="logo">
@@ -24,7 +24,8 @@
 		<div id="TopControls">
 			<div class="btn">
 				<span>
-					<asp:HyperLink runat="server" NavigateUrl="~/Login.aspx" Text="Login" />
+					<asp:LoginStatus ID="_LoginStatus" runat="server" />
+					<%--<asp:HyperLink runat="server" NavigateUrl="~/Login.aspx" Text="Login" />--%>
 				</span>
 			</div>
 		</div>
@@ -32,7 +33,7 @@
 		<div id="TopNav">
 			<ul>
 				<li><asp:HyperLink runat="server" NavigateUrl="~/Default.aspx" Text="Home" /></li>
-				<li><asp:HyperLink runat="server" NavigateUrl="~/Assemblies.aspx" Text=Assemblies" /></li>
+				<li><asp:HyperLink runat="server" NavigateUrl="~/Assemblies.aspx" Text="Assemblies" /></li>
 				<li><asp:HyperLink runat="server" NavigateUrl="~/Logs.aspx" Text="Error Logs" /></li>
 				<li><asp:HyperLink runat="server" NavigateUrl="~/Services.aspx" Text="Services" /></li>
 				<li><asp:HyperLink runat="server" NavigateUrl="~/Workloads.aspx" Text="Queues" /></li>
@@ -72,9 +73,9 @@
     <div id="FooterWrapper">
 	<div id="Footer">
 		<div class="left">
-			<b>Lokad.Cloud:</b>
+			<b>Lokad.Cloud</b>
 			<ul>
-			<li class="first"><a href="http://code.google.com/p/lokad-cloud/" class="pagelink">Lokad.Cloud project</a><br /> 
+			<li class="first"><a href="http://code.google.com/p/lokad-cloud/" class="pagelink">Project homepage</a><br /> 
 			   <a href="http://code.google.com/p/lokad-cloud/issues/list" class="pagelink">Report an issue</a>
 			</li>
 			<li>
@@ -84,7 +85,7 @@
 		<div class="right">
 			<a href="http://www.lokad.com/AboutUs.ashx" class="pagelink" title="About Us">About Us</a> | 
 			<a href="http://www.lokad.com/ContactUs.ashx" class="pagelink" title="Contact Us">Contact Us</a> | 
-			&copy;2009, Lokad.
+			&copy;2009 Lokad
 		</div>
 	</div>
 	<br />
