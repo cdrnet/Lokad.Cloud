@@ -18,6 +18,7 @@ lokad-cloud-locks
 lokad-cloud-queues-metadata
 lokad-cloud-queues-overflow
 lokad-cloud-services
+lokad-cloud-schedule
 
 Queue containers part of the framework:
 
@@ -34,6 +35,9 @@ TECHNICALITIES
 - the notion of "service priority" is still pretty much undefined. Not sure how the 
 priority should be defined (maybe as a the relevative weight of amount of attempts to 
 process corresponding messages).
+
+- need to strenghten the logging approach, see also
+http://davidaiken.com/windows-azure/windows-azure-online-log-reader/ 
 
 - need to better deal with incorrect cloud storage credential to provide more meaningfull error messages.
 

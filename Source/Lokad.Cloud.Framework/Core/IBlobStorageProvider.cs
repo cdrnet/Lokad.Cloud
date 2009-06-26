@@ -41,14 +41,26 @@ namespace Lokad.Cloud.Core
 		T GetBlob<T>(string containerName, string blobName);
 
 		/// <summary>Update a blob while garantying an atomic update process.</summary>
+		/// <param name="containerName"></param>
+		/// <param name="blobName"></param>
+		/// <param name="updater">The function is returning a <see cref="Result{T}"/>
+		/// because the updater can optionally decide not to succeed with the update
+		/// (in case where the update no more relevant for example.</param>
+		/// <param name="result">Result returned by the updated.</param>
 		/// <returns><c>true</c> if the update is successful.
 		/// If the blob is updated between the retrieval and the update attempt,
 		/// then no update is performed and the method returns <c>false</c>.</returns>
 		/// <remarks>If there is not such blob available, the update is performed with
 		/// the default <c>T</c> value.</remarks>
+		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater, out Result<T> result);
+
+		/// <seealso cref="UpdateIfNotModified{T}(string,string,System.Func{T,Lokad.Result{T}},out Lokad.Result{T})"/>
 		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result);
 
 		/// <summary>Update a blob while garantying an atomic update process.</summary>
+		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater);
+
+		/// <seealso cref="UpdateIfNotModified{T}(string,string,System.Func{T,Lokad.Result{T}})"/>
 		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater);
 
 		/// <summary>Deletes a blob.</summary>

@@ -96,29 +96,44 @@ namespace Lokad.Cloud.Core
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)
 		{
-			T ignored;
+			return UpdateIfNotModified<T>(containerName, blobName, x => Result.Success(updater(x)));
+		}
+
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater)
+		{
+			Result<T> ignored;
 			return UpdateIfNotModified(containerName, blobName, updater, out ignored);
 		}
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result)
 		{
+			Result<T> rresult;
+			var flag = UpdateIfNotModified(containerName, blobName, x => Result.Success(updater(x)), out rresult);
+
+			result = rresult.Value;
+			return flag;
+		}
+
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater, out Result<T> result)
+		{
 			var blobContents = new BlobContents(new MemoryStream());
 			var container = _blobStorage.GetBlobContainer(containerName);
 			BlobProperties properties = null;
 
+			T input;
 			try
 			{
 				properties = container.GetBlob(blobName, blobContents, false);
 
 				if (null == properties)
 				{
-					result = default(T);
+					input = default(T);
 				}
 				else
 				{
 					var rstream = blobContents.AsStream;
 					rstream.Position = 0;
-					result = (T)_formatter.Deserialize(rstream);
+					input = (T)_formatter.Deserialize(rstream);
 				}
 			}
 			catch (StorageClientException ex)
@@ -126,7 +141,7 @@ namespace Lokad.Cloud.Core
 				// creating the container when missing
 				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
 				{
-					result = default(T);
+					input = default(T);
 					container.CreateContainer();
 				}
 				else
@@ -136,10 +151,15 @@ namespace Lokad.Cloud.Core
 			}
 			
 			// updating the item
-			result = updater(result);
+			result = updater(input);
+
+			if(!result.IsSuccess)
+			{
+				return false;
+			}
 
 			var wstream = new MemoryStream();
-			_formatter.Serialize(wstream, result);
+			_formatter.Serialize(wstream, result.Value);
 			var buffer = wstream.GetBuffer();
 
 			blobContents = new BlobContents(buffer);

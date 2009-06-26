@@ -162,12 +162,10 @@ namespace Lokad.Cloud.Framework
 			_providers.BlobStorage.PutBlob(
 				ContainerName, destPrefix + Delimiter + MapSettingsSuffix, settings);
 
-			long ignored;
-			var isModified = _providers.BlobStorage.UpdateIfNotModified(
+			var isModified = _providers.BlobStorage.UpdateIfNotModified<long>(
 				ContainerName, 
 				destPrefix + Delimiter + MapCounterSuffix, 
-				x => x + CounterInitialShift, 
-				out ignored);
+				x => x + CounterInitialShift);
 
 			if(!isModified) throw new InvalidOperationException(
 				"MapToBlobSet can't be executed twice on the same destination BlobSet.");
@@ -186,11 +184,10 @@ namespace Lokad.Cloud.Framework
 				itemCount++;
 			}
 
-			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
+			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified<long>(
 				ContainerName, 
 				destPrefix + Delimiter + MapCounterSuffix, 
-				x => x + itemCount - CounterInitialShift, 
-				out ignored));
+				x => x + itemCount - CounterInitialShift));
 		}
 
 		/// <summary>Apply a reducing function and outputs to the queue
@@ -224,12 +221,10 @@ namespace Lokad.Cloud.Framework
 
 			_providers.BlobStorage.PutBlob(ContainerName, settingsBlobName, settings);
 
-			long ignored;
-			_providers.BlobStorage.UpdateIfNotModified(
+			_providers.BlobStorage.UpdateIfNotModified<long>(
 				ContainerName,
 				counterBlobName,
-				x => x + CounterInitialShift,
-				out ignored);
+				x => x + CounterInitialShift);
 
 			var itemCount = 0l;
 			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
@@ -253,11 +248,10 @@ namespace Lokad.Cloud.Framework
 			}
 
 			// -1 because there are only N-1 reductions for N items.
-			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
+			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified<long>(
 				ContainerName,
 				counterBlobName,
-				x => x + itemCount - 1 - CounterInitialShift,
-				out ignored));
+				x => x + itemCount - 1 - CounterInitialShift));
 		}
 
 		/// <summary>Retrieves an item based on the blob identifier.</summary>
