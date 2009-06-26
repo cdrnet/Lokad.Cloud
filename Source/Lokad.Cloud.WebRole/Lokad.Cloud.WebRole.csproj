@@ -120,6 +120,13 @@
       <DependentUpon>Nav.Master</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scheduler.aspx.cs">
+      <DependentUpon>Scheduler.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Scheduler.aspx.designer.cs">
+      <DependentUpon>Scheduler.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Services.aspx.cs">
       <DependentUpon>Services.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -171,6 +178,7 @@
     <Content Include="App_Themes\Lokad\Images\ico_frontlist.gif" />
     <Content Include="App_Themes\Lokad\Images\logo.gif" />
     <Content Include="App_Themes\Lokad\Lokad.skin" />
+    <Content Include="Scheduler.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

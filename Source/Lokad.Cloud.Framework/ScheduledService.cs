@@ -7,12 +7,21 @@ using System;
 
 namespace Lokad.Cloud.Framework
 {
+	/// <summary>Configuration state of the <seealso cref="ScheduledService"/>.</summary>
+	[Serializable]
+	public class ScheduledServiceState
+	{
+		public TimeSpan TriggerInterval { get; set; }
+		public DateTime LastExecuted { get; set; }
+	}
+
 	/// <summary>This cloud service is automatically called by the framework
 	/// on scheduled basis. Scheduling options are provided through the
 	/// <see cref="ScheduledServiceSettingsAttribute"/>.</summary>
 	public abstract class ScheduledService : CloudService
 	{
 		public const string ContainerName = "lokad-cloud-schedule";
+		public const string StatePrefix = "state";
 		public const string LastUpdatedSuffix = "lastupdated";
 		public const string TriggerIntervalSuffix = "";
 		public const string Delimiter = "/";
@@ -42,12 +51,13 @@ namespace Lokad.Cloud.Framework
 		/// <seealso cref="CloudService.StartImpl"/>
 		protected sealed override bool StartImpl()
 		{
+			// retrieving the state info if any
+			var stateName = StatePrefix + Delimiter + Name;
+			var state = _providers.BlobStorage.GetBlob<ScheduledServiceState>(ContainerName, stateName);
+
 			if(!_isInitialized)
 			{
-				var triggerIntervalName = Name + Delimiter + TriggerIntervalSuffix;
-				_triggerInterval = _providers.BlobStorage.GetBlob<TimeSpan>(ContainerName, triggerIntervalName);
-
-				if(default(TimeSpan) == _triggerInterval)
+				if(null == state)
 				{
 					var settings = GetType().GetAttribute<ScheduledServiceSettingsAttribute>(true);
 
@@ -59,30 +69,44 @@ namespace Lokad.Cloud.Framework
 
 					// recording trigger interval in the cloud storage
 					_triggerInterval = settings.TriggerInterval.Seconds();
-					_providers.BlobStorage.PutBlob(ContainerName, triggerIntervalName, _triggerInterval);
+					_providers.BlobStorage.PutBlob(ContainerName, stateName, _triggerInterval);
+				}
+				else
+				{
+					_triggerInterval = state.TriggerInterval;
 				}
 
 				_isInitialized = true;
 			}
 
-			var lastUpdatedName = Name + Delimiter + LastUpdatedSuffix;
-			_providers.BlobStorage.GetBlob<DateTime>(ContainerName, lastUpdatedName);
-
 			// checking if the last update is not too fresh, and eventually
 			// update this value if it's old enough. When the update fails,
 			// it simply means that another worker is already on its ways
 			// to execute the service.
-			var updated = _providers.BlobStorage.UpdateIfNotModified<DateTime>(ContainerName, lastUpdatedName,
-				lastUpdated =>
+			var updated = _providers.BlobStorage.UpdateIfNotModified<ScheduledServiceState>(
+				ContainerName, stateName, currentState =>
 					{
 						var now = DateTime.Now;
 
-						if(now.Subtract(lastUpdated) > _triggerInterval)
+						if(null == currentState)
 						{
-							return Result<DateTime>.Error("No need to update.");
+							return Result.Success(new ScheduledServiceState
+								{
+                                    TriggerInterval = _triggerInterval,
+									LastExecuted = now
+								});
 						}
 
-						return Result.Success(DateTime.Now);
+						if (now.Subtract(currentState.LastExecuted) > _triggerInterval)
+						{
+							return Result<ScheduledServiceState>.Error("No need to update.");
+						}
+
+						return Result.Success(new ScheduledServiceState
+							{
+								TriggerInterval = currentState.TriggerInterval,
+								LastExecuted = now
+							});
 					});
 
 			if (!updated) return false;

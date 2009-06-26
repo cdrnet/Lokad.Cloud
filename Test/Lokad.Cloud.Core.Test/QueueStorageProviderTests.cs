@@ -24,6 +24,7 @@ namespace Lokad.Cloud.Core.Test
 
 			var message = new MyMessage();
 
+			provider.Clear(QueueName);
 			provider.Put(QueueName, new [] {message});
 			var retrieved = provider.Get<MyMessage>(QueueName, 1).First();
 
@@ -44,6 +45,8 @@ namespace Lokad.Cloud.Core.Test
 
 			// fill buffer with random content
 			_rand.NextBytes(message.MyBuffer);
+
+			provider.Clear(QueueName);
 
 			provider.Put(QueueName, new[] { message });
 			var retrieved = provider.Get<MyMessage>(QueueName, 1).First();

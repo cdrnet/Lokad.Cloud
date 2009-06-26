@@ -125,21 +125,15 @@ namespace Lokad.Cloud.Core
 			{
 				properties = container.GetBlob(blobName, blobContents, false);
 
-				if (null == properties)
-				{
-					input = default(T);
-				}
-				else
-				{
-					var rstream = blobContents.AsStream;
-					rstream.Position = 0;
-					input = (T)_formatter.Deserialize(rstream);
-				}
+				var rstream = blobContents.AsStream;
+				rstream.Position = 0;
+				input = (T)_formatter.Deserialize(rstream);
 			}
 			catch (StorageClientException ex)
 			{
 				// creating the container when missing
-				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound 
+					|| ex.ErrorCode == StorageErrorCode.BlobNotFound)
 				{
 					input = default(T);
 					container.CreateContainer();

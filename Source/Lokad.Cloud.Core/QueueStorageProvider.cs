@@ -228,6 +228,24 @@ namespace Lokad.Cloud.Core
 			}
 		}
 
+		public void Clear(string queueName)
+		{
+			try
+			{
+				// TODO: not sure what with the return code of 'Clear'
+				_queueStorage.GetQueue(queueName).Clear();
+			}
+			catch (StorageClientException ex)
+			{
+				// if the queue does not exist do nothing
+				if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+				{
+					return;
+				}
+				throw;
+			}
+		}
+
 		public int Delete<T>(string queueName, IEnumerable<T> messages)
 		{
 			var queue = _queueStorage.GetQueue(queueName);

@@ -21,6 +21,12 @@ namespace Lokad.Cloud.Framework.Services
 		TriggerInterval = 24 * 60 * 60)] // 1 execution a day by default
 	public class QueueOverflowCollectorService : ScheduledService
 	{
+		/// <remarks>Name is override for consistency in the framework.</remarks>
+		public override string Name
+		{
+			get { return "lokad-cloud-queue-overflow-collector"; }
+		}
+
 		public QueueOverflowCollectorService(ProvidersForCloudStorage providers) : base(providers)
 		{
 		}
