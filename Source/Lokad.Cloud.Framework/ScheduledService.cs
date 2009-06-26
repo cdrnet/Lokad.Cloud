@@ -58,7 +58,7 @@ namespace Lokad.Cloud.Framework
 					}
 
 					// recording trigger interval in the cloud storage
-					_triggerInterval = settings.TriggerInterval;
+					_triggerInterval = settings.TriggerInterval.Seconds();
 					_providers.BlobStorage.PutBlob(ContainerName, triggerIntervalName, _triggerInterval);
 				}
 

@@ -4,30 +4,33 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
-// TODO: service missing to garbage collect lost overflowing messages.
-// Overflowing messages are stored in blob storage and normally deleted as with
-// their originating correspondance in queue storage. Yet if messages aren't processed
-// in 7 days, then, they should be removed.
+using QueueService = Lokad.Cloud.Framework.QueueService<object>;
 
 namespace Lokad.Cloud.Core
 {
 	/// <summary>Provides access to the Queue Storage (plus the Blob Storage when
 	/// messages are overflowing).</summary>
 	/// <remarks>
-	/// All the methods of <see cref="QueueStorageProvider"/> are thread-safe.
+	/// <para>
+	/// Overflowing messages are stored in blob storage and normally deleted as with
+	/// their originating correspondance in queue storage. Yet if messages aren't processed
+	/// in 7 days, then, they should be removed.
+	/// </para>
+	/// <para>
+	/// The pattern for blobname of overflowing message is:
+	/// <c>ExpirationDate / QueuName / GUID</c> 
+	/// </para>
+	/// <para>All the methods of <see cref="QueueStorageProvider"/> are thread-safe.</para>
 	/// </remarks>
 	public class QueueStorageProvider : IQueueStorageProvider
 	{
-		/// <summary>Name of the blob container used to hold overflowing messages
-		/// from the queues.</summary>
-		public const string OverflowingContainer = "lokad-overflowing-queues";
-
 		/// <summary>Root used to synchronize accesses to <c>_inprocess</c>. 
 		/// Caution: do not hold the lock while performing operations on the cloud
 		/// storage.</summary>
@@ -166,8 +169,8 @@ namespace Lokad.Cloud.Core
 
 				if(buffer.Length >= Message.MaxMessageSize)
 				{
-					var container = _blobStorage.GetBlobContainer(OverflowingContainer);
-					var blobName = GetNewBlobName();
+					var container = _blobStorage.GetBlobContainer(QueueService.OverflowingContainer);
+					var blobName = GetNewBlobName(queueName);
 
 					var blobContents = new BlobContents(buffer);
 					var blobProperties = new BlobProperties(blobName);
@@ -191,7 +194,11 @@ namespace Lokad.Cloud.Core
 						}
 					}
 
-					var mw = new MessageWrapper {ContainerName = OverflowingContainer, BlobName = blobName};
+					var mw = new MessageWrapper
+						{
+							ContainerName = QueueService.OverflowingContainer, 
+							BlobName = blobName
+						};
 					stream = new MemoryStream();
 					_formatter.Serialize(stream, mw);
 
@@ -286,9 +293,19 @@ namespace Lokad.Cloud.Core
 		/// <summary>
 		/// Naming is following a date pattern to facilitate cleaning later on.
 		/// </summary>
-		string GetNewBlobName()
+		/// <remarks>
+		/// The date specified by the blob name prefix correspond to the expiration
+		/// date of the overflowing message.
+		/// </remarks>
+		string GetNewBlobName(string queueName)
 		{
-			return DateTime.Now.ToUniversalTime().ToString("yyyy/MM/dd/hh/mm/ss/") + Guid.NewGuid();
+			// HACK: [vermorel] the message life-time is hard-coded to 7 days for now.
+			// In the future, we might consider a more modular approach where lifetime
+			// can be adjusted depending on the queue settings.
+			return DateTime.Now.ToUniversalTime().AddDays(7)
+				.ToString("yyyy/MM/dd/hh/mm/ss/", CultureInfo.InvariantCulture) 
+				+ queueName + "/"
+				+ Guid.NewGuid();
 		}
 	}
 }

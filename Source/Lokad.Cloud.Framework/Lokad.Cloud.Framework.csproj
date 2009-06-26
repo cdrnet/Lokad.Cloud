@@ -67,9 +67,7 @@
     <Compile Include="ScheduledServiceSettingsAttribute.cs" />
     <Compile Include="Services\BlobSetMapService.cs" />
     <Compile Include="Services\BlobSetReduceService.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Services\TodoMissingServices.txt" />
+    <Compile Include="Services\QueueOverflowCollectorService.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

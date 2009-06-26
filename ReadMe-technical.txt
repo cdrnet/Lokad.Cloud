@@ -15,8 +15,8 @@ STORAGE SCHEMAS
 Blob containers part of the framework:
 
 lokad-cloud-locks
-lokad-cloud-queues-metadata
-lokad-cloud-queues-overflow
+lokad-cloud-logs
+lokad-cloud-overflowing-queues
 lokad-cloud-services
 lokad-cloud-schedule
 
@@ -25,10 +25,6 @@ Queue containers part of the framework:
 lokad-cloud-schedule
 lokad-cloud-blobsets-map
 lokad-cloud-blobsets-reduce
-
-Table contains part of the framework:
-
-lokad-cloud-logs
 
 TECHNICALITIES
 
@@ -47,10 +43,6 @@ a smarter behavior to deal with long names.
 
 - need to strenghten (de)serialization with starting/ending code as sanity check 
 (but that could also be used to organize the serializer versioning).
-
-- overflowing queue items are put into blob using the date of the date as prefix.
-Though this prefix, it becomes easy to garbage collect those items 7 days afterward
-if the message hasn't been processed.
 
 - timeouting items should not be bluntly discarded, instead they should be put into
 a dedicated persistent storage (maybe a HashSet) for later processing and/or investigation.

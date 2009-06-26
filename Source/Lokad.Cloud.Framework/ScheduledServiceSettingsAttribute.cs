@@ -11,7 +11,10 @@ namespace Lokad.Cloud.Framework
 	/// specifing specific hours or days will be added later on.</remarks>
 	public sealed class ScheduledServiceSettingsAttribute : CloudServiceSettingsAttribute
 	{
-		/// <summary>Indicates the interval between the scheduled executions.</summary>
-		public TimeSpan TriggerInterval { get; set; }
+		/// <summary>Indicates the interval between the scheduled executions
+		/// (expressed in seconds).</summary>
+		/// <remarks><c>TimeSpan</c> cannot be used here, because it's not compatible
+		/// with the attribute usage.</remarks>
+		public double TriggerInterval { get; set; }
 	}
 }
