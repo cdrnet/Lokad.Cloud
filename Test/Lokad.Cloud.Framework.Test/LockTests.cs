@@ -199,7 +199,7 @@ namespace Lokad.Cloud.Framework.Test
 			Assert.IsTrue(lock1Done, "Lock1 was not used");
 		}
 
-		[Test]
+		[Test, Explicit]
 		public void Test_Lock_StealLock_WithRetries()
 		{
 			bool lock2Acquired = false;

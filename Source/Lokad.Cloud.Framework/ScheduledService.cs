@@ -20,11 +20,8 @@ namespace Lokad.Cloud.Framework
 	/// <see cref="ScheduledServiceSettingsAttribute"/>.</summary>
 	public abstract class ScheduledService : CloudService
 	{
-		public const string ContainerName = "lokad-cloud-schedule";
-		public const string StatePrefix = "state";
-		public const string LastUpdatedSuffix = "lastupdated";
-		public const string TriggerIntervalSuffix = "";
-		public const string Delimiter = "/";
+		public const string ScheduleStateContainer = "lokad-cloud-schedule";
+		public const string ScheduleStatePrefix = "state";
 
 		bool _isInitialized;
 		TimeSpan _triggerInterval;
@@ -52,8 +49,8 @@ namespace Lokad.Cloud.Framework
 		protected sealed override bool StartImpl()
 		{
 			// retrieving the state info if any
-			var stateName = StatePrefix + Delimiter + Name;
-			var state = _providers.BlobStorage.GetBlob<ScheduledServiceState>(ContainerName, stateName);
+			var stateName = ScheduleStatePrefix + Delimiter + Name;
+			var state = _providers.BlobStorage.GetBlob<ScheduledServiceState>(ScheduleStateContainer, stateName);
 
 			if(!_isInitialized)
 			{
@@ -67,9 +64,16 @@ namespace Lokad.Cloud.Framework
 						return false;
 					}
 
-					// recording trigger interval in the cloud storage
+					// recording a fresh schedule state in the cloud
 					_triggerInterval = settings.TriggerInterval.Seconds();
-					_providers.BlobStorage.PutBlob(ContainerName, stateName, _triggerInterval);
+
+					_providers.BlobStorage.PutBlob(
+						ScheduleStateContainer, stateName, 
+						new ScheduledServiceState
+							{
+								LastExecuted = DateTime.MinValue,
+								TriggerInterval = _triggerInterval
+							});
 				}
 				else
 				{
@@ -84,7 +88,7 @@ namespace Lokad.Cloud.Framework
 			// it simply means that another worker is already on its ways
 			// to execute the service.
 			var updated = _providers.BlobStorage.UpdateIfNotModified<ScheduledServiceState>(
-				ContainerName, stateName, currentState =>
+				ScheduleStateContainer, stateName, currentState =>
 					{
 						var now = DateTime.Now;
 
@@ -97,7 +101,7 @@ namespace Lokad.Cloud.Framework
 								});
 						}
 
-						if (now.Subtract(currentState.LastExecuted) > _triggerInterval)
+						if (now.Subtract(currentState.LastExecuted) < _triggerInterval)
 						{
 							return Result<ScheduledServiceState>.Error("No need to update.");
 						}

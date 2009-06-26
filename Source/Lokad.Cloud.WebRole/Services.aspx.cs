@@ -25,8 +25,8 @@ namespace Lokad.Cloud.Web
 
 		IEnumerable<object> GetServices()
 		{
-			var cn = CloudService.ServiceAdministrationContainer;
-			var prefix = CloudService.StatePrefix;
+			var cn = CloudService.ServiceStateContainer;
+			var prefix = CloudService.ServiceStatePrefix;
 
 			foreach(var blobName in _provider.List(cn, prefix))
 			{
@@ -41,8 +41,8 @@ namespace Lokad.Cloud.Web
 
 		protected void ServicesView_OnRowCommand(object sender, GridViewCommandEventArgs e)
 		{
-			var cn = CloudService.ServiceAdministrationContainer;
-			var prefix = CloudService.StatePrefix;
+			var cn = CloudService.ServiceStateContainer;
+			var prefix = CloudService.ServiceStatePrefix;
 
 			if(e.CommandName == "Toggle")
 			{

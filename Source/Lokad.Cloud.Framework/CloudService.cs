@@ -23,8 +23,8 @@ namespace Lokad.Cloud.Framework
 	/// <see cref="QueueService{T}"/> or <see cref="ScheduledService"/> instead.</remarks>
 	public abstract class CloudService
 	{
-		public const string ServiceAdministrationContainer = "lokad-cloud-services";
-		public const string StatePrefix = "state";
+		public const string ServiceStateContainer = "lokad-cloud-services";
+		public const string ServiceStatePrefix = "state";
 		public const string Delimiter = "/";
 
 		/// <summary>Indicates the state of the service, as retrieved during the last check.</summary>
@@ -69,8 +69,8 @@ namespace Lokad.Cloud.Framework
 			// checking service state at regular interval
 			if(now.Subtract(_lastStateCheck) > StateCheckInterval)
 			{
-				var cn = ServiceAdministrationContainer;
-				var bn = StatePrefix + Delimiter + Name;
+				var cn = ServiceStateContainer;
+				var bn = ServiceStatePrefix + Delimiter + Name;
 
 				var state = _providers.BlobStorage.GetBlob<CloudServiceState?>(cn, bn);
 

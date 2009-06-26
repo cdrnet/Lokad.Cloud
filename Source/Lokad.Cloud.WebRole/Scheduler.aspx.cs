@@ -4,10 +4,6 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
@@ -19,14 +15,25 @@ namespace Lokad.Cloud.Web
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
-
+			ScheduleView.DataSource = GetSchedules();
+			ScheduleView.DataBind();
 		}
 
 		IEnumerable<object> GetSchedules()
 		{
-			var cn = ScheduledService.ContainerName;
+			var cn = ScheduledService.ScheduleStateContainer;
+			var prefix = ScheduledService.ScheduleStatePrefix;
 
-			throw new NotImplementedException();
+			foreach (var blobName in _provider.List(cn, prefix))
+			{
+				var state = _provider.GetBlob<ScheduledServiceState>(cn, blobName);
+				yield return new
+				{
+					Name = blobName.Substring(prefix.Length + 1), // discarding the prefix
+					state.LastExecuted,
+					state.TriggerInterval
+				};
+			}
 		}
 	}
 }
