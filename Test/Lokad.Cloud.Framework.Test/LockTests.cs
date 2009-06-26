@@ -328,6 +328,16 @@ namespace Lokad.Cloud.Framework.Test
 			throw new NotImplementedException();
 		}
 
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Lokad.Result<T>> updater, out Lokad.Result<T> result)
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Lokad.Result<T>> updater)
+		{
+			throw new NotImplementedException();
+		}
+
 		public bool DeleteBlob(string containerName, string blobName)
 		{
 			return _containers[containerName].Remove(blobName);
