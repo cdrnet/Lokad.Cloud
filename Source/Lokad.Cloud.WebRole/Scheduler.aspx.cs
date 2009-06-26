@@ -4,6 +4,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
@@ -11,29 +12,54 @@ namespace Lokad.Cloud.Web
 {
 	public partial class Scheduler : System.Web.UI.Page
 	{
+		// shorthand
+		const string Cn = ScheduledService.ScheduleStateContainer;
+		const string Prefix = ScheduledService.ScheduleStatePrefix;
+
 		readonly IBlobStorageProvider _provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			ScheduleView.DataSource = GetSchedules();
+			//var states = GetStates().ToArray();
+
+			// TODO: loading twice the states (not efficient)
+
+			ScheduleView.DataSource = GetStates().Select(p => new
+				{
+					Name = p.Item1,
+					p.Item2.LastExecuted,
+					p.Item2.TriggerInterval
+				});
 			ScheduleView.DataBind();
+
+			ScheduleList.DataSource = GetStates().Select(p => p.Item1);
+			ScheduleList.DataBind();
 		}
 
-		IEnumerable<object> GetSchedules()
+		IEnumerable<Pair<string, ScheduledServiceState>> GetStates()
 		{
-			var cn = ScheduledService.ScheduleStateContainer;
-			var prefix = ScheduledService.ScheduleStatePrefix;
-
-			foreach (var blobName in _provider.List(cn, prefix))
+			foreach (var blobName in _provider.List(Cn, Prefix))
 			{
-				var state = _provider.GetBlob<ScheduledServiceState>(cn, blobName);
-				yield return new
-				{
-					Name = blobName.Substring(prefix.Length + 1), // discarding the prefix
-					state.LastExecuted,
-					state.TriggerInterval
-				};
+				yield return new Pair<string, ScheduledServiceState>(
+					// discarding the prefix for display purposes
+					blobName.Substring(Prefix.Length + 1),
+					_provider.GetBlob<ScheduledServiceState>(Cn, blobName));
 			}
+		}
+
+		protected void UpdateIntervalButton_OnClick(object sender, EventArgs e)
+		{
+			var bn = Prefix + "/" + ScheduleList.SelectedValue;
+			var triggerInterval = int.Parse(NewIntervalBox.Text);
+
+			_provider.UpdateIfNotModified<ScheduledServiceState>(Cn, bn,
+				state =>
+					{
+						state.TriggerInterval = triggerInterval.Seconds();
+						return state;
+					});
+
+			ScheduleView.DataBind();
 		}
 	}
 }
