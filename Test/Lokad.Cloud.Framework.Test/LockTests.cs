@@ -16,7 +16,7 @@ namespace Lokad.Cloud.Framework.Test
 	{
 		[Test]
 		[ExpectedException(typeof(ArgumentNullException))]
-		public void Test_Constructor_NullProvider()
+		public void Constructor_NullProvider()
 		{
 			new Lock(null, "mylock", new TimeSpan(0, 1, 0), new TimeSpan(0, 1, 0));
 		}
@@ -24,7 +24,7 @@ namespace Lokad.Cloud.Framework.Test
 		[RowTest]
 		[Row(null, ExpectedException = typeof(ArgumentNullException))]
 		[Row("", ExpectedException = typeof(ArgumentException))]
-		public void Test_Constructor_InvalidLockId(string lockId)
+		public void Constructor_InvalidLockId(string lockId)
 		{
 			new Lock(new InMemoryBlobStorageProvider(), lockId,
 				new TimeSpan(0, 1, 0), new TimeSpan(0, 1, 0));
@@ -32,7 +32,7 @@ namespace Lokad.Cloud.Framework.Test
 
 		[Test]
 		[ExpectedException(typeof(ArgumentException))]
-		public void Test_Constructor_ShortTimeout()
+		public void Constructor_ShortTimeout()
 		{
 			new Lock(new InMemoryBlobStorageProvider(), "mylock",
 				new TimeSpan((Lock.MinimumTimeoutInMS - 1) * TimeSpan.TicksPerMillisecond),
@@ -41,7 +41,7 @@ namespace Lokad.Cloud.Framework.Test
 
 		[Test]
 		[ExpectedException(typeof(ArgumentException))]
-		public void Test_Constructor_ShortLockDuration()
+		public void Constructor_ShortLockDuration()
 		{
 			new Lock(new InMemoryBlobStorageProvider(), "mylock",
 				new TimeSpan(0, 1, 0),
@@ -49,7 +49,7 @@ namespace Lokad.Cloud.Framework.Test
 		}
 
 		[Test]
-		public void Test_Lock_Simple()
+		public void Lock_Simple()
 		{
 			IBlobStorageProvider provider = new InMemoryBlobStorageProvider();
 
@@ -62,7 +62,7 @@ namespace Lokad.Cloud.Framework.Test
 		}
 
 		[Test]
-		public void Test_Lock_Simple_DifferentLocks()
+		public void Lock_Simple_DifferentLocks()
 		{
 			IBlobStorageProvider provider = new InMemoryBlobStorageProvider();
 
@@ -81,9 +81,12 @@ namespace Lokad.Cloud.Framework.Test
 			Console.WriteLine("Lock1 disposed");
 		}
 
-		[Test]
-		public void Test_Lock_WaitWithoutTimeout()
+		[Test, Explicit]
+		public void Lock_WaitWithoutTimeout()
 		{
+			// TODO: find another way to test concurrency without having race conditions
+			// The result of this test mostly depends on a race condition
+
 			bool lock1Done = false;
 			IBlobStorageProvider provider = new InMemoryBlobStorageProvider();
 
@@ -112,9 +115,10 @@ namespace Lokad.Cloud.Framework.Test
 			Console.WriteLine("Lock1 released");
 		}
 
-		[Test]
-		public void Test_Lock_WaitWithTimeout()
+		[Test, Explicit]
+		public void Lock_WaitWithTimeout()
 		{
+			// TODO: find another way to test concurrency without having race conditions
 			// The result of this test mostly depends on a race condition
 
 			bool lock1Done = false;
@@ -154,9 +158,10 @@ namespace Lokad.Cloud.Framework.Test
 			Assert.IsTrue(lock1Done, "Lock1 was not used");
 		}
 
-		[Test]
-		public void Test_Lock_Refresh()
+		[Test, Explicit]
+		public void Lock_Refresh()
 		{
+			// TODO: find another way to test concurrency without having race conditions
 			// The result of this test mostly depends on a race condition
 
 			bool lock1Done = false;
@@ -199,8 +204,8 @@ namespace Lokad.Cloud.Framework.Test
 			Assert.IsTrue(lock1Done, "Lock1 was not used");
 		}
 
-		[Test, Explicit]
-		public void Test_Lock_StealLock_WithRetries()
+		[Test]
+		public void Lock_StealLock_WithRetries()
 		{
 			bool lock2Acquired = false;
 			IBlobStorageProvider provider = new InMemoryBlobStorageProvider();
@@ -221,7 +226,7 @@ namespace Lokad.Cloud.Framework.Test
 		}
 
 		[Test]
-		public void Test_Lock_StealLock_WithoutRetries()
+		public void Lock_StealLock_WithoutRetries()
 		{
 			InMemoryBlobStorageProvider provider = new InMemoryBlobStorageProvider();
 
