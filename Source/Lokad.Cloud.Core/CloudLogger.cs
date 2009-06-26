@@ -9,9 +9,13 @@ using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Text;
-using System.Xml;
 using System.Xml.XPath;
 using Microsoft.Samples.ServiceHosting.StorageClient;
+
+// TODO: [vermorel] This class will most probably be reimplemented using Azure logger instead
+// http://davidaiken.com/windows-azure/windows-azure-online-log-reader/
+// For now, we are custom a custom logging framework, because azure logs can't be automatically
+// retrieved, and need to be manually managed through the Azure console WebUI.
 
 namespace Lokad.Cloud.Core
 {
