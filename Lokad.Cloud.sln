@@ -13,9 +13,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.Framework", "So
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CF8E9359-9AE9-46E8-B52E-E99B12663AEE}"
 	ProjectSection(SolutionItems) = preProject
+		Source\GlobalAssemblyInfo.cs = Source\GlobalAssemblyInfo.cs
 		Lokad.Cloud.build = Lokad.Cloud.build
 		Lokad.Cloud.ccnet = Lokad.Cloud.ccnet
-		ReadMe-technical.txt = ReadMe-technical.txt
+		Lokad.Cloud.ReadMe.txt = Lokad.Cloud.ReadMe.txt
+		Source\VersionAssemblyInfo.cs = Source\VersionAssemblyInfo.cs
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.Core", "Source\Lokad.Cloud.Core\Lokad.Cloud.Core.csproj", "{ADB1677C-FFDB-41EE-A6E4-DE6B40FBB879}"

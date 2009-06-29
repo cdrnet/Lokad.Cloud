@@ -19,7 +19,7 @@
 		<ProjectName>$(MSBuildProjectName)</ProjectName>
 		<SampleSource>Sample</SampleSource>
 		<TempPath>$(BuildPath)\Temp</TempPath>
-		<SourceExclusions>**\.svn\**\*.*;**\_svn\**\*.*;**\*.user;**\*.suo;**\*.db;**\bin\**\*.*;**\obj\**\*.*;</SourceExclusions>
+		<SourceExclusions>**\.svn\**\*.*;**\_svn\**\*.*;**\*.user;**\*.suo;**\*.db;**\bin\**\*.*;**\obj\**\*.*;**\*.resharper;**\_ReSharper*\**\*.*;</SourceExclusions>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -107,7 +107,8 @@
 	</Target>
 	
 	<Target Name="Copy" DependsOnTargets="Build" >
-
+		<MakeDir Directories="$(BuildPath)"/>
+		
 		<!--All Tests-->
 		<CreateItem Include="Test\**\bin\$(Configuration)\*.*" Exclude="Test\**\bin\$(Configuration)\*.xml;Test\**\bin\$(Configuration)\*.pdb;">
 			<Output ItemName="testSources" TaskParameter="Include"/>
@@ -137,6 +138,8 @@
 			<Output ItemName="sourceFiles" TaskParameter="Include" />
 		</CreateItem>
 		<Zip Files="@(sourceFiles)" ZipFileName="$(PackageDirectory)\$(ProjectName)-Source-$(Version).zip" Flatten="false" />
+
+		<!--Index, TODO: add index page later on -->
 		
 	</Target>
 
