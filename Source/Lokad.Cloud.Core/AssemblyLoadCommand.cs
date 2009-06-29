@@ -46,7 +46,7 @@ namespace Lokad.Cloud.Core
 					zipStream.Read(data, 0, (int)entry.Size);
 
 					// skipping everything but assemblies
-					if (!entry.IsFile || !entry.Name.EndsWith(".dll")) continue;
+					if (!entry.IsFile || !entry.Name.ToLowerInvariant().EndsWith(".dll")) continue;
 
 					// loading assembly from data packed in zip
 					Assembly.Load(data);
