@@ -38,11 +38,11 @@
 	<Target Name="Build">
 		<MSBuild Projects="$(ProjectName).sln" 
 				 Targets="Build" 
-						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile);"/>
+						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(MSBuildProjectDirectory)\Resource\Build\"/>
 
 		<MSBuild Projects="$(ProjectName).sln" 
 				 Targets="publish"
-				 Properties="Configuration=$(Configuration);ApplicationVersion=$(Version);ConfigProfile=$(ConfigProfile)" />
+				 Properties="Configuration=$(Configuration);ApplicationVersion=$(Version);ConfigProfile=$(ConfigProfile);$(MSBuildProjectDirectory)\Resource\Build\" />
 	</Target>
 
 	<Target Name="Clean">
