@@ -15,6 +15,7 @@
 
 		<CloudReadyPath>$(BuildPath)\CloudReady</CloudReadyPath>
 		<CloudSource>Source/Lokad.Cloud/bin/$(Configuration)/Publish</CloudSource>
+		<CloudTargets>$(MSBuildProjectDirectory)\Resource\Build\</CloudTargets>
 
 		<TestPath>$(BuildPath)\Test</TestPath>
 		<ProjectName>$(MSBuildProjectName)</ProjectName>
@@ -38,11 +39,11 @@
 	<Target Name="Build">
 		<MSBuild Projects="$(ProjectName).sln" 
 				 Targets="Build" 
-						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(MSBuildProjectDirectory)\Resource\Build\"/>
+						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(CloudTargets)"/>
 
 		<MSBuild Projects="$(ProjectName).sln" 
 				 Targets="publish"
-				 Properties="Configuration=$(Configuration);ApplicationVersion=$(Version);ConfigProfile=$(ConfigProfile);$(MSBuildProjectDirectory)\Resource\Build\" />
+				 Properties="Configuration=$(Configuration);ApplicationVersion=$(Version);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(CloudTargets)" />
 	</Target>
 
 	<Target Name="Clean">
