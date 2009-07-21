@@ -32,10 +32,11 @@
     <CloudExtensionsTaskPath  Condition=" '$(CloudExtensionsTaskPath)' == '' ">$(CloudExtensionsDir)Microsoft.CloudService.MSBuildTasks.dll</CloudExtensionsTaskPath>
   </PropertyGroup>
 
-  <UsingTask TaskName="ItemGroupsOrderedMerge"  AssemblyFile="$(CloudExtensionsTaskPath)" />
-  <UsingTask TaskName="XPathQuery"              AssemblyFile="$(CloudExtensionsTaskPath)" />
-  <UsingTask TaskName="IsolatedCSPack"          AssemblyFile="$(CloudExtensionsTaskPath)" />
-
+  <UsingTask TaskName="ItemGroupsOrderedMerge"              AssemblyFile="$(CloudExtensionsTaskPath)" />
+  <UsingTask TaskName="IsolatedCSPack"                      AssemblyFile="$(CloudExtensionsTaskPath)" />
+  <UsingTask TaskName="FindTargetPath"                      AssemblyFile="$(CloudExtensionsTaskPath)" />
+  <UsingTask TaskName="AssociatePlatformWithRoleReferences" AssemblyFile="$(CloudExtensionsTaskPath)" />
+  
   <!-- =========================================================== 
        Import the Common targets file and override the standard 
        tasks that VS expects to perform a build 
@@ -51,7 +52,7 @@
   <PropertyGroup>
 
     <!-- The level of ToolsVersionSupportLevel this msi will support-->
-    <ServiceHostingVSSupport>3</ServiceHostingVSSupport>
+    <ServiceHostingVSSupport>4</ServiceHostingVSSupport>
     <!-- Example, bin\Debug\Compute.csx\  -->
     <ServiceOutputDirectory Condition=" '$(ServiceOutputDirectory)' == '' ">$(OutDir)$(ProjectName).csx\</ServiceOutputDirectory>
 
@@ -69,6 +70,14 @@
 
     <_PublishSslCertificateThumbprint Condition=" '$(PublishSslCertificateEnabled)' == 'True' ">$(PublishSslCertificateThumbprint)</_PublishSslCertificateThumbprint>
     <_PublishSslCertificateThumbprint Condition=" '$(PublishSslCertificateEnabled)' != 'True' "></_PublishSslCertificateThumbprint>
+
+    <!-- Allow specifying explicit platform for the roles. 
+         format: 
+         {RoleName1}={Platform1};{RoleName2}={Platform2};...
+         if the role is not specified, it will use the current project target platform.
+    -->
+    <WebRoleTargetPlatform    Condition=" '$(WebRoleTargetPlatform)' == '' "></WebRoleTargetPlatform>
+    <WorkerRoleTargetPlatform Condition=" '$(WorkerRoleTargetPlatform)' == '' "></WorkerRoleTargetPlatform>
 
   </PropertyGroup>
   
@@ -102,8 +111,8 @@
     </PackageComputeServiceDependsOn>
   </PropertyGroup>
   <Target
-    Name="PackageComputeService"
-    DependsOnTargets="$(PackageComputeServiceDependsOn)" />
+      Name="PackageComputeService"
+      DependsOnTargets="$(PackageComputeServiceDependsOn)" />
 
   <!-- Redefine this target in your project in order to run tasks just before Build -->
   <Target Name="BeforePackageComputeService" />
@@ -123,13 +132,11 @@
       ResetTargetNames;
       ValidateComputeProject;
       ResolveRoleReferences;
-      RetrieveRoleNames;
     </CorePackageComputeServiceDependsOn>
   </PropertyGroup>
   <Target
-    Name="CorePackageComputeService"
-    DependsOnTargets="$(CorePackageComputeServiceDependsOn)"
-    >
+      Name="CorePackageComputeService"
+      DependsOnTargets="$(CorePackageComputeServiceDependsOn)">
 
     <Message Text="Start - PackageComputeService" />
     <Message Text="ServiceHostingSDKInstallDir is $(ServiceHostingSDKInstallDir)" />
@@ -182,7 +189,8 @@
   <!-- =============== VerifySDKInstallation ======================================== 
        Verify that the Computing SDK is installed and it is compatible with this version of tools
        ============================================================================== -->
-  <Target Name="VerifySDKInstallation">
+  <Target 
+      Name="VerifySDKInstallation">
 
     <Error Condition=" !Exists('$(ServiceHostingSDKInstallDir)') or 
                        !Exists('$(ServiceHostingSDKBinDir)') or 
@@ -197,7 +205,8 @@
   <!-- =============== FindServiceDefinition  ============================================ 
        Finds the service definition in the project and raises an error if it is not found. 
        ============================================================================== -->
-  <Target Name="FindServiceDefinition">
+  <Target 
+      Name="FindServiceDefinition">
 
     <!--Find the Compute Application Model File -->
     <Message Text="ServiceDefinition in @(ServiceDefinition)" Importance="normal"/>
@@ -218,7 +227,8 @@
   <!-- =============== FindServiceConfiguration  ============================================ 
        Finds the Service Configuration file in the project and raises an error if it is not found. 
        ============================================================================== -->
-  <Target Name="FindServiceConfiguration">
+  <Target 
+      Name="FindServiceConfiguration">
 
     <Message Text="ServiceConfigurationFile is @(ServiceConfiguration)" />
 
@@ -244,7 +254,8 @@
            TargetName - the name of the compute app model file 
            TargetExt  - the extension of the compute app model file 
        ========================================================================== -->
-  <Target Name="ResetTargetNames">
+  <Target 
+      Name="ResetTargetNames">
 
     <PropertyGroup>
       <TargetDir>$(ServiceOutputDirectory)</TargetDir>
@@ -270,25 +281,74 @@
        RoleReferences: (item) list of all project references for
             web and worker. Each item contains these properties:
               - @         : Path to the project file.
-              - Role      : The name of the role, Web, or Worker.
+              - RoleType  : The type of the role: Web, or Worker.
+              - RoleName  : The name of the role.
+              - ProjectName: The project name of the role.
+              - Platform  : CPU Platform of the role project.
               - OutputDir : The path where we can find the outputs of the role.
+              - SourceDir : (web specific) The source location of the web role.
+              - EntryPoint: (worker specific) The entry point assembly file name for worker role.
               
-       RoleReferencesFiles: (item) recursive file list of all the
-            files of the role references.
-
       ========================================================================== -->
-  <Target Name="ResolveRoleReferences">
+  <PropertyGroup>
+    <ResolveRoleReferencesDependsOn>
+      ResolveWebRoleReferences;
+      ResolveWorkerRoleReferences;
+    </ResolveRoleReferencesDependsOn>
+  </PropertyGroup>
+  <Target 
+      Name="ResolveRoleReferences" 
+      DependsOnTargets="$(ResolveRoleReferencesDependsOn)">
+
+    <!-- Combine WebRoleReferences and WorkerRoleReferences -->
+    <ItemGroup>
+      <RoleReferences Include="@(WebRoleReferences); @(WorkerRoleReferences)" />
+    </ItemGroup>
+
+    <Message Text="Role = @(RoleReferences), role=%(RoleType), projname=%(ProjectName), output=%(OutputDir)" />
+
+  </Target>
+
+  <!-- =============== ResolveWebRoleReferences ======================== 
+       Resolves the web role references
+
+       [OUT]
+       
+       WebRoleReferences: (item) list of all project references for web
+              - @         : Path to the project file.
+              - RoleType  : The type of the role: Web
+              - RoleName  : The name of the role.
+              - ProjectName: The project name of the role.
+              - Platform  : CPU Platform of the role project.
+              - OutputDir : The path where we can find the outputs of the role.
+              - SourceDir : The source location of the web role
+              - EntryPoint: not used.
+              
+      ========================================================================== -->
+  <Target 
+      Name="ResolveWebRoleReferences">
+
+    <Message Text="WebRoleTargetPlatform=$(WebRoleTargetPlatform)" />
 
     <!-- Get all the roles from the project references section -->
     <ItemGroup>
       <WebRoleReferences Include="@(ProjectReference->'%(Identity)')" Condition=" '%(RoleType)' == 'Web' " >
         <RoleType>%(RoleType)</RoleType>
+        <RoleName>%(Name)</RoleName>
         <ProjectName>%(Name)</ProjectName>
       </WebRoleReferences>
-      <WorkerRoleReferences Include="@(ProjectReference->'%(Identity)')" Condition=" '%(RoleType)' == 'Worker' " >
-        <RoleType>%(RoleType)</RoleType>
-        <ProjectName>%(Name)</ProjectName>
-      </WorkerRoleReferences>
+    </ItemGroup>
+
+    <AssociatePlatformWithRoleReferences
+      RoleReferences="@(WebRoleReferences)"
+      PlatformList="$(WebRoleTargetPlatform)"
+      DefaultPlatform="$(Platform)"
+      >
+      <Output TaskParameter="RoleReferencesWithPlatform" ItemName="WebRoleReferencesWithPlatform" />
+    </AssociatePlatformWithRoleReferences>
+    <ItemGroup>
+      <WebRoleReferences Remove="@(WebRoleReferences)" />
+      <WebRoleReferences Include="@(WebRoleReferencesWithPlatform)" />
     </ItemGroup>
 
     <!-- Get the fullpath of the Compute intermediate output path to pass to MSBuild bellow -->
@@ -300,24 +360,13 @@
     </PropertyGroup>
 
     <Message Text="Web = @(WebRoleReferences), role=%(RoleType), projname=%(ProjectName)" />
-    <Message Text="Worker = @(WorkerRoleReferences), role=%(RoleType), projname=%(ProjectName)" />
-    <Message Text="BuildingProject = $(BuildingProject)" />
-    <Message Text="BuildingSolutionFile = $(BuildingSolutionFile)" />
-    <Message Text="BuildingInsideVisualStudio = $(BuildingInsideVisualStudio)" />
-    <Message Text="IntermediateOutputPath.FullPath = $(IntermediateOutputFullPath)" />
-
-    <!-- 
-    ========================
-    Web : Publish the web role to an intermediate location. 
-    ========================
-    -->
 
     <!-- Get the output path of the web role -->
     <MSBuild
       Condition=" '@(WebRoleReferences)' != '' "
       Projects="@(WebRoleReferences)"
       Targets="GetTargetPath"
-      Properties="Configuration=$(Configuration); Platform=$(Platform)"
+      Properties="Configuration=$(Configuration); Platform=%(Platform)"
       ContinueOnError="false"
       >
       <Output TaskParameter="TargetOutputs" ItemName="WebTargetPathItem" />
@@ -351,15 +400,17 @@
       Condition=" '@(WebRoleReferences)' != '' "
       Projects="@(WebRoleReferences)"
       Targets="Build;PrepareForRun"
-      Properties="OutDir=%(TargetDir); Configuration=$(Configuration); Platform=$(Platform); UseHostCompilerIfAvailable=false"
+      Properties="OutDir=%(TargetDir); Configuration=$(Configuration); Platform=%(Platform); UseHostCompilerIfAvailable=false"
       ContinueOnError="false"
       >
     </MSBuild>
 
+    <Error Condition=" '@(WebRoleReferences)' != '' And !Exists('%(TargetDir)_PublishedWebsites') " Text="Web Role project %(FullPath) does not import Microsoft.WebApplication.targets.  The Web Role must be a Web Application that imports Microsoft.WebApplication.targets." Code="CCT060" HelpKeyword="MissingWebApplicationTargets"/>
+
     <!-- Set the projected output directory on the web role -->
     <ItemGroup Condition=" '@(WebRoleReferences)' != '' " >
       <WebRoleReferences>
-        <OutputDir>$(IntermediateOutputPath)%(ProjectName)\</OutputDir>
+        <OutputDir>$(IntermediateOutputFullPath)%(ProjectName)\</OutputDir>
         <SourceDir>%(RootDir)%(Directory)</SourceDir>
         <!-- web doesn't use entrypoint, set it to empty as default -->
         <EntryPoint></EntryPoint>
@@ -375,147 +426,278 @@
       <PublishedWebsitesFiles Include="%(WebRoleReferences.TargetDir)_PublishedWebsites\**\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(PublishedWebsitesFiles)"
-          DestinationFiles="$(IntermediateOutputPath)%(RecursiveDir)%(Filename)%(Extension)" />
+          DestinationFiles="$(IntermediateOutputFullPath)%(RecursiveDir)%(Filename)%(Extension)" />
     <RemoveDir Condition=" '@(WebRoleReferences)' != '' "
                Directories="%(WebRoleReferences.TargetDir)_PublishedWebsites" />
-    
-    <!-- Copy the contents of the TargetDir folder (bin) -->
-    <ItemGroup Condition=" '@(WebRoleReferences)' != '' ">
-      <PublishedWebsitesBinFiles Include="%(WebRoleReferences.TargetDir)**\*.*" Exclude="%(WebRoleReferences.TargetDir)_PublishedWebsites\**\*.*" >
-        <DestinationDir>%(OutputDir)bin\</DestinationDir>
-      </PublishedWebsitesBinFiles>                                 
-    </ItemGroup>
-    <Copy SourceFiles="@(PublishedWebsitesBinFiles)"
-          DestinationFiles="%(DestinationDir)%(RecursiveDir)%(Filename)%(Extension)"
-          SkipUnchangedFiles="true" />
 
     <!-- Register intermediate published websites for Clean -->
     <ItemGroup Condition=" '@(WebRoleReferences)' != '' ">
       <FileWrites Include="%(WebRoleReferences.OutputDir)**\*.*" />
     </ItemGroup>
 
-    <!-- 
-    ========================
-    Worker : Get the target path 
-    ========================
-    -->
+  </Target>
+
+  <!-- =============== ResolveWorkerRoleReferences ======================== 
+       Resolves the worker role references
+
+       [OUT]
+       WorkerRoleReferences: (item) list of all project references for worker
+              - @         : Path to the project file.
+              - RoleType  : The type of the role: Worker
+              - RoleName  : The name of the role.
+              - ProjectName: The project name of the role.
+              - Platform  : CPU Platform of the role project.
+              - OutputDir : The path where we can find the outputs of the role.
+              - SourceDir : not used
+              
+      ========================================================================== -->
+  <Target 
+      Name="ResolveWorkerRoleReferences">
+
+    <Message Text="WorkerRoleTargetPlatform=$(WorkerRoleTargetPlatform)" />
+
+    <!-- Get all the roles from the project references section -->
+    <ItemGroup>
+      <WorkerRoleProjects Include="@(ProjectReference->'%(Identity)')" Condition=" '%(RoleType)' == 'Worker' " >
+        <ProjectName>%(Name)</ProjectName>
+      </WorkerRoleProjects>
+    </ItemGroup>
+
     <MSBuild
-      Condition=" '@(WorkerRoleReferences)' != '' "
-      Projects="@(WorkerRoleReferences)"
-      Targets="GetTargetPath"
-      Properties="Configuration=$(Configuration); Platform=$(Platform)"
+      Condition=" '@(WorkerRoleProjects)' != '' "
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="ResolveSingleWorkerRoleReference"
+      Properties="WorkerRoleProject=%(Identity);WorkerRoleProjectName=%(Name)"
       ContinueOnError="false"
       >
-
-      <Output TaskParameter="TargetOutputs" ItemName="WorkerTargetPathItem" />
+      <Output TaskParameter="TargetOutputs" ItemName="WorkerRoleReferences" />
     </MSBuild>
-    
-    <!-- Add the metadata OutputDir to WorkerRoleReferences into the new item group WorkerRoleReferences2 -->
-    <ItemGroupsOrderedMerge
-      Condition=" '@(WorkerRoleReferences)' != '' "
-      MainList="@(WorkerRoleReferences)"
-      Values="@(WorkerTargetPathItem->'%(RootDir)%(Directory)')"
-      MetadataName="OutputDir"
-      >
-      <Output TaskParameter="OutputList" ItemName="WorkerRoleReferences2" />
-    </ItemGroupsOrderedMerge>
 
-    <!-- Add the metadata EntryPoint to WorkerRoleReferences2 into the new item group WorkerRoleReferences3 -->
-    <ItemGroupsOrderedMerge
-      Condition=" '@(WorkerRoleReferences2)' != '' "
-      MainList="@(WorkerRoleReferences2)"
-      Values="@(WorkerTargetPathItem->'%(FileName)%(Extension)')"
-      MetadataName="EntryPoint"
-      >
-      <Output TaskParameter="OutputList" ItemName="WorkerRoleReferences3" />
-    </ItemGroupsOrderedMerge>
+    <Message Text="WorkerRoleReferences=@(WorkerRoleReferences) %(RoleType), %(RoleName), %(ProjectName), %(Platform), %(OutputDir), %(EntryPoint)" />
 
-    <!-- Set WebRoleReferences from WorkerRoleReferences3 -->
-    <ItemGroup Condition=" '@(WorkerRoleReferences)' != '' " >
-      <WorkerRoleReferences Remove="@(WorkerRoleReferences)" />
-      <WorkerRoleReferences Include="@(WorkerRoleReferences3)">
-        <!-- worker doesn't use SourceDir, set it to empty as default -->
-        <SourceDir></SourceDir>
-      </WorkerRoleReferences>
+    <!-- Register intermediate published worker role for Clean -->
+    <ItemGroup Condition=" '@(WorkerRoleReferences)' != '' ">
+      <FileWrites Include="%(WorkerRoleReferences.OutputDir)**\*.*" />
     </ItemGroup>
-    
-    <!-- Combine WebRoleReferences and WorkerRoleReferences -->
-    <ItemGroup>
-      <RoleReferences Include="@(WebRoleReferences); @(WorkerRoleReferences)" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <RoleReferencesFiles Include="%(RoleReferences.OutputDir)**\*.*" />
-    </ItemGroup>
-
-    <Message Text="Role = @(RoleReferences), role=%(RoleType), projname=%(ProjectName), output=%(OutputDir)" />
 
   </Target>
 
-  <!-- =============== RetrieveRoleNames ========================================
-       Gets the role names from the service definition file. It updates the 
-       RoleReferences item group with the roleName metadata.
+  <!-- =============== ResolveSingleWorkerRoleReference ======================== 
+       Resolves a single worker role reference. This target publishes the worker
+       role into an intermediate folder making it ready for CSPack.
+       
+       [IN]
+       
+       WorkerRoleProject: (property) the propject of worker role
+       WorkerRoleProjectName: (property) the project name of the worker role
 
+       [OUT]
+       
+       WorkerRoleReference: (item) Contains information about the worker role
+              - @         : Path to the project file, same as $(WorkerRoleProject)
+              - RoleType  : The type of the role: Worker
+              - RoleName  : The name of the role.
+              - ProjectName: The project name of the role, same as $(WorkerRoleProjectName)
+              - Platform  : CPU Platform of the role project.
+              - OutputDir : The path where we can find the outputs of the role.
+              - EntryPoint: The entry point assembly file name for the role.
+              - SourceDir : not used
+              
       ========================================================================== -->
-  <Target Name="RetrieveRoleNames">
+  <Target 
+      Name="ResolveSingleWorkerRoleReference"
+      Condition=" '$(WorkerRoleProject)' != '' and '$(WorkerRoleProjectName)' != '' "
+      Outputs="@(WorkerRoleReference)">
 
-    <Message Text="Role = @(RoleReferences), role=%(RoleType), projname=%(ProjectName), output=%(OutputDir)" />
+    <Message Text="WorkerRoleProject=$(WorkerRoleProject)" />
 
     <ItemGroup>
-      <Namespaces Include="$(ServiceDefinitionNamespace)">
-        <Prefix>csd</Prefix>
-      </Namespaces>
+      <WorkerRoleReference Include="$(WorkerRoleProject)">
+        <RoleType>Worker</RoleType>
+        <RoleName>$(WorkerRoleProjectName)</RoleName>
+        <ProjectName>$(WorkerRoleProjectName)</ProjectName>
+        <!-- worker doesn't use SourceDir, set it to empty as default -->
+        <SourceDir></SourceDir>
+      </WorkerRoleReference>
     </ItemGroup>
 
-    <!-- Find the web role name -->
+    <AssociatePlatformWithRoleReferences
+      RoleReferences="@(WorkerRoleReference)"
+      PlatformList="$(WorkerRoleTargetPlatform)"
+      DefaultPlatform="$(Platform)"
+      >
+      <Output TaskParameter="RoleReferencesWithPlatform" ItemName="WorkerRoleReferenceWithPlatform" />
+    </AssociatePlatformWithRoleReferences>
+    <ItemGroup>
+      <WorkerRoleReference Remove="@(WorkerRoleReference)" />
+      <WorkerRoleReference Include="@(WorkerRoleReferenceWithPlatform)" />
+    </ItemGroup>
 
-    <XPathQuery
-        Condition=" '@(WebRoleReferences)' != '' "
-        Namespaces="@(Namespaces)"
-        XPath="csd:ServiceDefinition/csd:WebRole[1]/@name"
-        XmlFile="@(ServiceDefinition)"
-        >
-
-      <Output TaskParameter="QueryResult" ItemName="WebRoleNames" />
-    </XPathQuery>
-
-    <Message Condition=" '@(WebRoleReferences)' != '' " Text="WebRoleNames = @(WebRoleNames)" />
-
-    <PropertyGroup Condition=" '@(WebRoleReferences)' != '' ">
-      <WebRoleName>@(WebRoleNames)</WebRoleName>
+    <!-- Setup the intermediate path where we want to publish the worker role -->
+    <ItemGroup>
+      <IntermediateWorkerOutputPathItem Include="$(IntermediateOutputPath)%(WorkerRoleReference.ProjectName)\" />
+    </ItemGroup>
+    <PropertyGroup>
+      <IntermediateWorkerOutputPath>@(IntermediateWorkerOutputPathItem->'%(Fullpath)')</IntermediateWorkerOutputPath>
     </PropertyGroup>
 
-    <ItemGroup>
-      <RoleReferences Condition=" '%(RoleType)' == 'Web' ">
-        <RoleName>$(WebRoleName)</RoleName>
-      </RoleReferences>
-    </ItemGroup>
+    <!-- ===============================
+         Get the target path for the role 
+         =============================== -->
+    <MSBuild
+      Projects="@(WorkerRoleReference)"
+      Targets="GetTargetPath"
+      Properties="Configuration=$(Configuration); Platform=%(Platform)"
+      ContinueOnError="false"
+      >
+      <Output TaskParameter="TargetOutputs" ItemName="WorkerTargetPathItem" />
+    </MSBuild>
 
-    <!-- Find the worker role name -->
-
-    <XPathQuery
-        Condition=" '@(WorkerRoleReferences)' != '' "
-        Namespaces="@(Namespaces)"
-        XPath="csd:ServiceDefinition/csd:WorkerRole[1]/@name"
-        XmlFile="@(ServiceDefinition)"
-        >
-
-      <Output TaskParameter="QueryResult" ItemName="WorkerRoleNames" />
-    </XPathQuery>
-
-    <Message Condition=" '@(WorkerRoleReferences)' != '' " Text="WorkerRoleNames = @(WorkerRoleNames)" />
-
-    <PropertyGroup Condition=" '@(WorkerRoleReferences)' != '' ">
-      <WorkerRoleName>@(WorkerRoleNames)</WorkerRoleName>
+    <PropertyGroup>
+      <!-- Stores the worker target directory -->
+      <WorkerTargetDir Condition="'@(WorkerTargetPathItem)'!=''">%(RootDir)%(Directory)</WorkerTargetDir>
+      <!-- Stores the assembly file name (no path) of the worker role -->
+      <WorkerEntryPoint Condition="'@(WorkerTargetPathItem)'!=''">%(Filename)%(Extension)</WorkerEntryPoint>
     </PropertyGroup>
 
+    <!--  =============================== 
+          Get all the output groups for the role 
+           =============================== -->
+    <MSBuild
+      Projects="@(WorkerRoleReference)"
+      Targets="
+        BuiltProjectOutputGroup;
+        DebugSymbolsProjectOutputGroup;
+        DocumentationProjectOutputGroup;
+        SatelliteDllsProjectOutputGroup;
+        SGenFilesOutputGroup"
+      Properties="Configuration=$(Configuration); Platform=%(Platform)"
+      ContinueOnError="false"
+      >
+      <Output TaskParameter="TargetOutputs" ItemName="OutputGroups" />
+    </MSBuild>
+
+    <Message Text="Output=%(OutputGroups.Identity) -> %(TargetPath)" />
+
     <ItemGroup>
-      <RoleReferences Condition=" '%(RoleType)' == 'Worker' ">
-        <RoleName>$(WorkerRoleName)</RoleName>
-      </RoleReferences>
+      <WorkerFiles Include="@(OutputGroups)" Condition=" '@(OutputGroups)' != '' " >
+        <TargetPath>%(TargetPath)</TargetPath>
+      </WorkerFiles>
     </ItemGroup>
 
-    <Message Text="Role = @(RoleReferences), role=%(RoleType), projname=%(ProjectName), output=%(OutputDir), roleName=%(RoleName)" />
+    <!-- ===============================
+         Get all the dependency output groups for the role 
+         =============================== -->
+    <MSBuild
+      Projects="@(WorkerRoleReference)"
+      Targets="
+        BuiltProjectOutputGroupDependencies;
+        DebugSymbolsProjectOutputGroupDependencies;
+        DocumentationProjectOutputGroupDependencies;
+        SGenFilesOutputGroupDependencies"
+      Properties="Configuration=$(Configuration); Platform=%(Platform)"
+      ContinueOnError="false"
+      >
+      <Output TaskParameter="TargetOutputs" ItemName="OutputGroupsDependencies" />
+    </MSBuild>
+
+    <Message Text="OutputDependencies=%(OutputGroupsDependencies.Identity)" />
+
+    <!-- Figure out the dependencies that need to be copied by checking if the dependency exists
+         in the worker target directory. -->
+    <ItemGroup>
+      <CopyLocalDependencies Include="@(OutputGroupsDependencies)" Condition="Exists('$(WorkerTargetDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+    <Message Text="CopyLocalDependencies=%(CopyLocalDependencies.Identity)" />
+    <ItemGroup>
+      <WorkerFiles Include="@(CopyLocalDependencies)" Condition=" '@(CopyLocalDependencies)' != '' " >
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+      </WorkerFiles>
+    </ItemGroup>
+
+    <!--  ===============================
+          Get all Satellite dependecies 
+          =============================== -->
+    <MSBuild
+      Projects="@(WorkerRoleReference)"
+      Targets="
+        SatelliteDllsProjectOutputGroupDependencies"
+      Properties="Configuration=$(Configuration); Platform=%(Platform)"
+      ContinueOnError="false"
+      >
+      <Output TaskParameter="TargetOutputs" ItemName="SatelliteOutputGroupsDependencies" />
+    </MSBuild>
+
+    <FindTargetPath
+      Files="@(SatelliteOutputGroupsDependencies)"
+      FindUnderTargetDir="$(WorkerTargetDir)"
+      >
+      <Output TaskParameter="ItemWithTargetPath" ItemName="SatelliteOutputGroupsDependenciesWithTargetPath" />
+    </FindTargetPath>
+
+    <Message Text="SatelliteOutputGroupsDependenciesWithTargetPath=@(SatelliteOutputGroupsDependenciesWithTargetPath), %(TargetPath)" />
+
+    <ItemGroup>
+      <WorkerFiles Include="@(SatelliteOutputGroupsDependenciesWithTargetPath)" Condition=" '@(SatelliteOutputGroupsDependenciesWithTargetPath)' != '' ">
+        <TargetPath>%(TargetPath)</TargetPath>
+      </WorkerFiles>
+    </ItemGroup>
+
+    <!-- ===============================
+         Get all the CopyToOutput items from the role 
+         =============================== -->
+    <MSBuild
+      Projects="@(WorkerRoleReference)"
+      Targets="
+        GetCopyToOutputDirectoryItems"
+      Properties="Configuration=$(Configuration); Platform=%(Platform)"
+      ContinueOnError="false"
+      >
+      <Output TaskParameter="TargetOutputs" ItemName="CopyToOutputItems" />
+    </MSBuild>
+
+    <Message Text="CopyToOutputItems=%(CopyToOutputItems.Identity) -> %(TargetPath)" />
+
+    <ItemGroup>
+      <WorkerFiles Include="@(CopyToOutputItems)" Condition=" '@(CopyToOutputItems)' != '' ">
+        <TargetPath>%(TargetPath)</TargetPath>
+      </WorkerFiles>
+    </ItemGroup>
+
+    <Message Text="WorkerFiles=%(WorkerFiles.Identity) -> %(TargetPath)" />
+
+    <!-- ===============================
+         At this point the WorkerFiles list is ready, just publish the Worker
+         =============================== -->
+
+    <!-- Make sure the intermediate worker ouput folder is created -->
+    <MakeDir Directories="$(IntermediateWorkerOutputPath)" />
+
+    <!-- Remove the files located under the intermediate output folder that are orphaned.
+         In other words, remove those files that are not part of the worker project anymore.
+         For example, the user renamed a file from test1.dll to test2.dll.
+    -->
+    <ItemGroup>
+      <OrphanedWorkerFiles Include="$(IntermediateWorkerOutputPath)**\*.*" Exclude="@(WorkerFiles->'$(IntermediateWorkerOutputPath)%(TargetPath)')" />
+    </ItemGroup>
+    <Delete Files="@(OrphanedWorkerFiles)" ContinueOnError="true" />
+
+    <!-- Publish the worker to the intermediate folder -->
+    <Copy
+      Condition=" '@(WorkerFiles)' != '' "
+      SourceFiles="@(WorkerFiles)"
+      DestinationFiles="@(WorkerFiles->'$(IntermediateWorkerOutputPath)%(TargetPath)')"
+      SkipUnchangedFiles="true" />
+
+    <!-- Add OutputDir and EntryPoint metadata to the WorkerRoleReference item group -->
+    <ItemGroup>
+      <WorkerRoleReference>
+        <OutputDir>$(IntermediateWorkerOutputPath)</OutputDir>
+        <EntryPoint>$(WorkerEntryPoint)</EntryPoint>
+      </WorkerRoleReference>
+    </ItemGroup>
+
+    <Message Text="WorkerRoleReference=@(WorkerRoleReference) %(RoleType), %(RoleName), %(ProjectName), %(Platform), %(OutputDir), %(EntryPoint)" />
 
   </Target>
 
@@ -528,15 +710,17 @@
       ValidateServiceFiles;
     </ValidateComputeProjectDependsOn>
   </PropertyGroup>
-  <Target Name="ValidateComputeProject"
-          DependsOnTargets="$(ValidateComputeProjectDependsOn)">
+  <Target 
+      Name="ValidateComputeProject"
+      DependsOnTargets="$(ValidateComputeProjectDependsOn)">
   </Target>
 
   <!-- =============== ValidateRoleProjects ======================================= 
        Validates that we have the right number of role projects to match the 
        declared application architecture. Generates errors if these are not correct
        ============================================================================ -->
-  <Target Name="ValidateRoleProjects">
+  <Target 
+      Name="ValidateRoleProjects">
 
     <CreateItem Include="@(ProjectReference)" Condition=" '%(RoleType)' == 'Web' " >
       <Output TaskParameter="Include" ItemName="WebRoles" />
@@ -554,11 +738,12 @@
 
   </Target>
 
-  
+
   <!-- =============== ValidateServiceFiles ========================================= 
        Validates the integrity of both the definition file and the configuration files.       
        ============================================================================== -->
-  <Target Name="ValidateServiceFiles">
+  <Target 
+      Name="ValidateServiceFiles">
 
     <ValidateServiceFiles
         ServiceDefinitionFile="@(ServiceDefinition)"
@@ -567,7 +752,7 @@
 
   </Target>
 
-  
+
   <!-- =============== CreateManifestResourceNames ================================ 
        The IDE is calling into this target. We don't have any resource files. 
        So, implement this target to do nothing
@@ -590,9 +775,10 @@
     </PublishDependsOn>
   </PropertyGroup>
 
-  <Target Name="CorePublish" DependsOnTargets="Build">
+  <Target 
+      Name="CorePublish" 
+      DependsOnTargets="Build">
 
-    
     <Message Text="Publishing starting..." />
 
     <Message Text="Publishing to '$(OutDir)Publish'" />
@@ -624,7 +810,9 @@
        This target runs the tool DevtableGen.exe to generate the dev storage tables
        ============================================================================ -->
 
-  <Target Name="_CreateDevStorageTable" DependsOnTargets="Build">
+  <Target 
+      Name="_CreateDevStorageTable" 
+      DependsOnTargets="Build">
 
     <Message Text="DevTableStorageDatabaseName = $(DevTableStorageDatabaseName)" />
 
@@ -641,7 +829,7 @@
 
     <Message Text="Launching DevtableGen Tool:" Importance="high" />
     <Exec Command='"$(DevTableGenPath)" /forceCreate "/database:$(DevTableStorageDatabaseName)" "@(TableAssemblies)"' />
-    
+
   </Target>
 
 </Project>
