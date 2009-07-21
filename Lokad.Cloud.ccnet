@@ -1,21 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Project DefaultTargets="Release" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<Import Project="$(MSBuildProjectName).build" />
-	<!--Requires "ExternalPublicationRoot"-->
+	<!--Requires "ExternalPackageDirectory"-->
 	<!--Grab the CC.NET values-->
 	<PropertyGroup>
 		<!--Grab external version if present, default otherwise-->
 		<Version Condition="$(CCNetLabel)!=''">$(CCNetLabel)</Version>
-
-
-		<DeployRelease Condition="($(CCNetBuildCondition)=='ForceBuild') AND ($(CCNetRequestSource)!='Dashboard')">True</DeployRelease>
-		<DeployPackages Condition="$(CCNetBuildCondition)=='ForceBuild'">True</DeployPackages>	
-		
 		<!--Grab external package dir, if forced, default otherwise-->
-		<PublicationRoot Condition="$(DeployRelease)!=''">$(ExternalPublicationRoot)</PublicationRoot>
-		<ConfigProfile Condition="$(DeployRelease)!=''">$(ExternalConfigProfile)</ConfigProfile>
-		
-		<PackageDirectory Condition="$(DeployPackages)!=''">$(ExternalPublicationRoot)\Package\$(Version)</PackageDirectory>
-		
+		<PublicationRoot Condition="$(CCNetBuildCondition)=='ForceBuild'">$(ExternalPackageDirectory)</PublicationRoot>
+		<PackageDirectory Condition="$(CCNetBuildCondition)=='ForceBuild'">$(ExternalPackageDirectory)\$(Version)</PackageDirectory>
 	</PropertyGroup>
+	<Import Project="$(MSBuildProjectName).build" />
 </Project>

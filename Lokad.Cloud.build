@@ -8,12 +8,13 @@
 		<BuildPath Condition="$(BuildPath)==''">$(MSBuildProjectDirectory)\Build</BuildPath>
 		<Configuration Condition="$(Configuration)==''">Release</Configuration>
 		<ArtifactDirectory Condition="$(ArtifactDirectory)==''">$(BuildPath)\Artifact</ArtifactDirectory>
-		<PublicationRoot Condition="$(PublicationRoot)==''">$(BuildPath)\_Package</PublicationRoot>
-		<PackageDirectory Condition="$(PackageDirectory)==''">$(BuildPath)\_Package\Package\$(Version)</PackageDirectory>
-	
+		<PackageDirectory Condition="$(PackageDirectory)==''">$(BuildPath)\_Package\$(Version)</PackageDirectory>
+
 		<!--Derived-->
 		<ProjectName>$(MSBuildProjectName)</ProjectName>
-		<CloudPath>$(BuildPath)\Publish.Lokad.Cloud</CloudPath>
+
+		<CloudReadyPath>$(BuildPath)\CloudReady</CloudReadyPath>
+		<CloudSource>Source/Lokad.Cloud/bin/$(Configuration)/Publish</CloudSource>
 
 		<TestPath>$(BuildPath)\Test</TestPath>
 		<ProjectName>$(MSBuildProjectName)</ProjectName>
@@ -53,7 +54,7 @@
 			<Output ItemName="_binaryFiles" TaskParameter="Include"/>
 		</CreateItem>
 		<Delete Files="@(_binaryFiles)" TreatErrorsAsWarnings="true"/>
-		<RemoveDir Directories="$(BuildPath)" />
+		<RemoveDir Directories="$(BuildPath)"  ContinueOnError="true"/>
 	</Target>
 
 	<Target Name="Rebuild" DependsOnTargets="Clean;Build;" />
@@ -115,6 +116,10 @@
 		</CreateItem>
 		<Copy SourceFiles="@(testSources)" DestinationFolder="$(TestPath)" />
 
+		<CreateItem Include="$(CloudSource)\*.*;Lokad.Cloud.*.txt">
+			<Output ItemName="cloudSources" TaskParameter="Include" />
+		</CreateItem>
+		<Copy SourceFiles="@(cloudSources)" DestinationFolder="$(CloudReadyPath)" />
 	</Target>
 
 	<Target Name="GenerateHelp" DependsOnTargets="Build;Copy">
@@ -126,12 +131,12 @@
 		<!-- placeholder for now, need to be reviewed -->
 
 		<!-- Cloud package -->
-		<MakeDir Directories="$(PublicationRoot);$(PackageDirectory)" />
+		<MakeDir Directories="$(PackageDirectory)" />
 
-		<CreateItem Include="$(CloudPath)\**\*.*;Lokad.Cloud.*.txt">
-			<Output ItemName="cloudPublishedFiles" TaskParameter="Include" />
+		<CreateItem Include="$(CloudReadyPath)\*.*">
+			<Output ItemName="cloudReadyFiles" TaskParameter="Include" />
 		</CreateItem>
-		<Copy SourceFiles="@(cloudPublishedFiles)" DestinationFolder="$(PublicationRoot)\%(cloudPublishedFiles.SubFolder)%(cloudPublishedFiles.RecursiveDir)"  ContinueOnError="true"/>
+		<Zip Files="@(cloudReadyFiles)" ZipFileName="$(PackageDirectory)\$(ProjectName)-Deploy-$(Version).zip" Flatten="true" />
 
 		<!--Source.zip-->
 		<CreateItem Include="**\*.*" Exclude="Resource\Tool\**\*.*;Build\**\*.*;$(SourceExclusions)">
