@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ServiceConfiguration serviceName="Lokad.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration">
-  <Role name="LokadCloudWebRole">
+  <Role name="Lokad.Cloud.WebRole">
     <Instances count="1"/>
     <ConfigurationSettings>
 			<!--Wired down to the Autofac's modules-->
@@ -13,7 +13,7 @@
 			<Setting name="Admins" value="http://myopenid.example.com/"/>
     </ConfigurationSettings>
   </Role>
-  <Role name="LokadCloudWorkerRole">
+  <Role name="Lokad.Cloud.WorkerRole">
     <Instances count="1"/>
     <ConfigurationSettings>
 			<!--Wired down to the Autofac's modules-->
