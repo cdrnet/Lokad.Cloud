@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
+    <ProductVersion>1.0.0</ProductVersion>
     <ProjectGuid>{2852690a-742a-4c43-8c54-411fe4f7c31e}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -35,17 +35,19 @@
     <ServiceConfiguration Include="ServiceConfiguration.cscfg" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Lokad.Cloud.WorkerRole\Lokad.Cloud.WorkerRole.csproj">
-      <Name>Lokad.Cloud.WorkerRole</Name>
-      <Project>{78ec3b0c-6c2b-4919-a986-658a40a34825}</Project>
-      <Private>True</Private>
-      <RoleType>Worker</RoleType>
-    </ProjectReference>
     <ProjectReference Include="..\Lokad.Cloud.WebRole\Lokad.Cloud.WebRole.csproj">
       <Name>Lokad.Cloud.WebRole</Name>
       <Project>{2f00bd58-de46-4fd0-8a64-32520f86ef4d}</Project>
       <Private>True</Private>
       <RoleType>Web</RoleType>
+      <RoleName>Lokad.Cloud.WebRole</RoleName>
+    </ProjectReference>
+    <ProjectReference Include="..\Lokad.Cloud.WorkerRole\Lokad.Cloud.WorkerRole.csproj">
+      <Name>Lokad.Cloud.WorkerRole</Name>
+      <Project>{78ec3b0c-6c2b-4919-a986-658a40a34825}</Project>
+      <Private>True</Private>
+      <RoleType>Worker</RoleType>
+      <RoleName>Lokad.Cloud.WorkerRole</RoleName>
     </ProjectReference>
   </ItemGroup>
   <!-- Import the target files for this project template -->
