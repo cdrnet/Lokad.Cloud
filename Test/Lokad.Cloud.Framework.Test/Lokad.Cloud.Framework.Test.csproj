@@ -58,8 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BlobSetTests.cs" />
-    <Compile Include="CuidTests.cs" />
-    <Compile Include="LockTests.cs" />
+    <None Include="CuidTests.cs" />
+    <None Include="LockTests.cs" />
     <Compile Include="MessageWrapperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

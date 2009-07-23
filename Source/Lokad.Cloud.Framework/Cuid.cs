@@ -6,6 +6,10 @@ using System;
 using System.Collections.Generic;
 using Lokad.Cloud.Core;
 
+// TODO: [vermorel] 2009-07-23, excluded from the built
+// Focusing on a minimal amount of feature for the v0.1
+// will be reincluded later on.
+
 namespace Lokad.Cloud.Framework
 {
 	/// <summary>Compact unique identier class that provides unique values (incremented) in 
@@ -24,12 +28,12 @@ namespace Lokad.Cloud.Framework
 		/// <summary>
 		/// The name of the container used to store CUID data.
 		/// </summary>
-		public static readonly string ContainerName = "lokad-cloud-cuids";
+		public const string ContainerName = "lokad-cloud-cuids";
 
-		private static readonly TimeSpan DefaultLockDuration = 15.Seconds();
+		static readonly TimeSpan DefaultLockDuration = 15.Seconds();
 
 		// 10 (initial) counters should be enough for everyone
-		private static Dictionary<string, Counter> _allocatedCuids = new Dictionary<string, Counter>(10);
+		static readonly Dictionary<string, Counter> AllocatedCuids = new Dictionary<string, Counter>(10);
 
 		/// <summary>Returns a unique identifier.</summary>
 		/// <param name="counterId">Name of the counter being incremented.</param>
@@ -63,13 +67,13 @@ namespace Lokad.Cloud.Framework
 			//     1.2.1. If the blob exists, go to 1.1.2 and return
 			//     1.2.2. If not, create the blob with "initial" data and return 1 (using lock)
 
-			string blobName = counterId;
-			Counter currentCounter = null;
+			var blobName = counterId;
+			Counter currentCounter;
 
 			// False means that the container already exists, not that the creation failed
 			provider.CreateContainer(ContainerName);
 
-			if (_allocatedCuids.TryGetValue(counterId, out currentCounter))
+			if (AllocatedCuids.TryGetValue(counterId, out currentCounter))
 			{
 				// 1.1 - counter is cached
 				if (currentCounter.AllocatedCuids > 0)
@@ -77,58 +81,48 @@ namespace Lokad.Cloud.Framework
 					// 1.1.1 - ID available
 					return UpdateCounterAndReturnResult(currentCounter);
 				}
-				else
-				{
-					// 1.1.2 - ID not available, must update blob
-					PerformAllocationWithLock(provider, counterId, blobName, currentCounter);
+				
+				// 1.1.2 - ID not available, must update blob
+				PerformAllocationWithLock(provider, counterId, blobName, currentCounter);
 
-					return UpdateCounterAndReturnResult(currentCounter);
-				}
+				return UpdateCounterAndReturnResult(currentCounter);
 			}
-			else
+			
+			// 1.2 - no cached counter
+			using (new Lock(provider, GetLockId(counterId), TimeSpan.MaxValue, DefaultLockDuration))
 			{
-				// 1.2 - no cached counter
-				using (new Lock(provider, GetLockId(counterId), TimeSpan.MaxValue, DefaultLockDuration))
+				var firstFreeId = provider.GetBlob<long>(ContainerName, blobName);
+				if (firstFreeId > 0)
 				{
-					long firstFreeId = provider.GetBlob<long>(ContainerName, blobName);
-					if (firstFreeId > 0)
-					{
-						// 1.2.1 - same as 1.1.2
-						currentCounter = new Counter()
+					// 1.2.1 - same as 1.1.2
+					currentCounter = new Counter
 						{
 							AllocatedCuids = 0,
 							AllocationCount = 0,
 							FirstFreeCuid = firstFreeId
 						};
-						PerformAllocation(provider, counterId, blobName, currentCounter);
-						_allocatedCuids.Add(counterId, currentCounter);
+					PerformAllocation(provider, counterId, blobName, currentCounter);
+					AllocatedCuids.Add(counterId, currentCounter);
 
-						return UpdateCounterAndReturnResult(currentCounter);
-					}
-					else
-					{
-						// 1.2.2 - create blob with standard data, update cache and issue 1
-						currentCounter = new Counter()
-						{
-							AllocatedCuids = 0,
-							AllocationCount = 1,
-							FirstFreeCuid = 1
-						};
-						_allocatedCuids.Add(counterId, currentCounter);
-						provider.PutBlob<long>(ContainerName, blobName, 2);
-						return 1;
-					}
+					return UpdateCounterAndReturnResult(currentCounter);
 				}
+				
+				// 1.2.2 - create blob with standard data, update cache and issue 1
+				currentCounter = new Counter
+					{
+						AllocatedCuids = 0,
+						AllocationCount = 1,
+						FirstFreeCuid = 1
+					};
+				AllocatedCuids.Add(counterId, currentCounter);
+				provider.PutBlob<long>(ContainerName, blobName, 2);
+				return 1;
 			}
 		}
 
 		/// <summary>
 		/// Performs CUID allocation, internally acquiring a lock.
 		/// </summary>
-		/// <param name="provider">The blob provider.</param>
-		/// <param name="counterId">The counter ID.</param>
-		/// <param name="blobName">The blob name.</param>
-		/// <param name="counter">The counter object to be updated.</param>
 		private static void PerformAllocationWithLock(
 			IBlobStorageProvider provider, string counterId, string blobName, Counter counter)
 		{
@@ -141,9 +135,6 @@ namespace Lokad.Cloud.Framework
 		/// <summary>
 		/// Performs CUID allocation.
 		/// </summary>
-		/// <param name="provider">The blob provider.</param>
-		/// <param name="blobName">The blob name.</param>
-		/// <param name="counter">The counter object to be updated.</param>
 		private static void PerformAllocation(IBlobStorageProvider provider, string counterId, string blobName, Counter counter)
 		{
 			// Strategy
@@ -152,7 +143,7 @@ namespace Lokad.Cloud.Framework
 			// 3. Update counter
 			// 4. Update blob with the first free CUID (which is current_from_blob + num_of_allocated_cuids)
 
-			long firstFreeCuid = provider.GetBlob<long>(ContainerName, blobName);
+			var firstFreeCuid = provider.GetBlob<long>(ContainerName, blobName);
 			if (firstFreeCuid <= 0) throw new InvalidOperationException("The blob is supposed to contain a value greater than zero");
 
 			counter.AllocationCount++; 
@@ -162,7 +153,7 @@ namespace Lokad.Cloud.Framework
 			if (long.MaxValue - firstFreeCuid < counter.AllocatedCuids) throw new InvalidOperationException("CUID space on counter " + counterId + " is exhausted");
 			firstFreeCuid += counter.AllocatedCuids;
 			// Update by overwriting (resource already locked)
-			bool updated = provider.PutBlob<long>(ContainerName, blobName, firstFreeCuid, true);
+			var updated = provider.PutBlob(ContainerName, blobName, firstFreeCuid, true);
 			if (!updated) throw new InvalidOperationException("Could not update blob content");
 		}
 
@@ -175,7 +166,7 @@ namespace Lokad.Cloud.Framework
 		{
 			if (currentCounter.AllocatedCuids <= 0) throw new InvalidOperationException("No available CUID");
 
-			long result = currentCounter.FirstFreeCuid;
+			var result = currentCounter.FirstFreeCuid;
 			currentCounter.FirstFreeCuid++;
 			currentCounter.AllocatedCuids--;
 			return result;
@@ -204,35 +195,22 @@ namespace Lokad.Cloud.Framework
 		/// <summary>
 		/// Contains information about a counter status.
 		/// </summary>
-		internal class Counter
+		class Counter
 		{
 			/// <summary>
 			/// Gets or sets the first available CUID.
 			/// </summary>
-			internal long FirstFreeCuid
-			{
-				get;
-				set;
-			}
+			internal long FirstFreeCuid { get; set; }
 
 			/// <summary>
 			/// Gets or sets the number of allocated CUIDs.
 			/// </summary>
-			internal long AllocatedCuids
-			{
-				get;
-				set;
-			}
+			internal long AllocatedCuids { get; set; }
 
 			/// <summary>
 			/// Gets or sets the number of allocations done so far.
 			/// </summary>
-			internal int AllocationCount
-			{
-				get;
-				set;
-			}
-
+			internal int AllocationCount { get; set; }
 		}
 
 	}

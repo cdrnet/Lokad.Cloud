@@ -5,6 +5,10 @@
 using System;
 using Lokad.Cloud.Core;
 
+// TODO: [vermorel] 2009-07-23, excluded from the built
+// Focusing on a minimal amount of feature for the v0.1
+// will be reincluded later on.
+
 namespace Lokad.Cloud.Framework
 {
 	/// <summary><para>Cloud locks are used to synchronize access to resources.
@@ -51,13 +55,13 @@ namespace Lokad.Cloud.Framework
 		/// </summary>
 		public static readonly int MinimumLockDurationInMS = 500;
 
-		internal const int IterationIntervalInMS = 500;
+		const int IterationIntervalInMS = 500;
 
 		// Locks are stored as blobs whose *contents* are:
 		// - UTC date/time at which they are acquired/refreshed (yyMMddHHmmssFFF format, which is easily comparable)
 		// - a pipe |
 		// - the expected duration of the lock in ms
-		internal const string LockDateTimeFormat = "yyMMddHHmmssFFF";
+		const string LockDateTimeFormat = "yyMMddHHmmssFFF";
 
 		/// <summary>
 		/// The default lock duration.
@@ -81,9 +85,6 @@ namespace Lokad.Cloud.Framework
 
 		/// <summary>Try to acquire the lock with the specified timespan. If the lock
 		/// could not be acquired a <see cref="TimeoutException" /> is thrown.</summary>
-		/// <param name="provider">The blob storage provider.</param>
-		/// <param name="lockId">Unique lock identifier.</param>
-		/// <param name="timeout">The timeout value.</param>
 		public Lock(IBlobStorageProvider provider, string lockId, TimeSpan timeout, TimeSpan expectedLockDuration)
 		{
 			if (provider == null) throw new ArgumentNullException("provider");
@@ -92,12 +93,13 @@ namespace Lokad.Cloud.Framework
 			if (timeout.TotalMilliseconds < MinimumTimeoutInMS)
 			{
 				throw new ArgumentException("Specified timeout is too short, must be greater than or equal to " +
-					MinimumTimeoutInMS.ToString() + "ms", "timeout");
+					MinimumTimeoutInMS + "ms", "timeout");
 			}
 			if (expectedLockDuration.TotalMilliseconds < MinimumLockDurationInMS)
 			{
-				throw new ArgumentException("Specified lock duration is too short, must be greater than or equal to " +
-					MinimumLockDurationInMS.ToString() + "ms", "timeout");
+				throw new ArgumentException(
+					string.Format("Specified lock duration is too short, must be greater than or equal to {0}ms", 
+									MinimumLockDurationInMS), "timeout");
 			}
 
 			// Strategy
@@ -120,8 +122,8 @@ namespace Lokad.Cloud.Framework
 			else
 			{
 				// Wait for lock to be released (until timeout)
-				DateTime waitBegin = DateTime.Now;
-				bool waitAgain = false;
+				var waitBegin = DateTime.Now;
+				bool waitAgain;
 				do
 				{
 					System.Threading.Thread.Sleep(IterationIntervalInMS);
@@ -167,11 +169,11 @@ namespace Lokad.Cloud.Framework
 		/// </summary>
 		private void AcquireLock()
 		{
-			bool done = false;
+			bool done;
 			_lastLockRefresh = DateTime.Now.ToUniversalTime();
-			done = _provider.PutBlob<string>(ContainerName, _blobName,
+			done = _provider.PutBlob(ContainerName, _blobName,
 				_lastLockRefresh.ToString(LockDateTimeFormat) +
-				"|" + _expectedLockDurationInMS.ToString(), true);
+				"|" + _expectedLockDurationInMS, true);
 
 			if (!done) throw new InvalidOperationException("Could not store lock information");
 		}
@@ -182,26 +184,23 @@ namespace Lokad.Cloud.Framework
 		/// <returns><b>True</b> if the lock can be acquired, <b>false</b> otherwise.</returns>
 		private bool CanAcquireLock()
 		{
-			string lockCreatedOnString = null;
-			int expectedDurationInMs = 0;
-			bool exists = ReadBlobContents(out lockCreatedOnString, out expectedDurationInMs);
+			string lockCreatedOnString;
+			int expectedDurationInMs;
+			var exists = ReadBlobContents(out lockCreatedOnString, out expectedDurationInMs);
 
 			if(!exists) return true;
-			else
-			{
-				// Lock acquisition date/time must equal the one in the blob
-				string temp = _lastLockRefresh.ToString(LockDateTimeFormat);
-				if (lockCreatedOnString.CompareTo(temp) <= 0) return true;
+			
+			// Lock acquisition date/time must equal the one in the blob
+			var temp = _lastLockRefresh.ToString(LockDateTimeFormat);
+			if (lockCreatedOnString.CompareTo(temp) <= 0) return true;
 
-				// Check duration of the lock
-				DateTime maxPastDate = DateTime.Now.ToUniversalTime().AddMilliseconds(-expectedDurationInMs);
-				string maxPastDateString = maxPastDate.ToString(LockDateTimeFormat);
+			// Check duration of the lock
+			var maxPastDate = DateTime.Now.ToUniversalTime().AddMilliseconds(-expectedDurationInMs);
+			var maxPastDateString = maxPastDate.ToString(LockDateTimeFormat);
 
-				// If lockCreatedOnString < maxPastDateString, i.e. the lock was
-				// acquired before Now-ExpectedDuration, assume the lock as inexistent
-				if (lockCreatedOnString.CompareTo(maxPastDateString) < 0) return true;
-				else return false;
-			}
+			// If lockCreatedOnString < maxPastDateString, i.e. the lock was
+			// acquired before Now-ExpectedDuration, assume the lock as inexistent
+			return lockCreatedOnString.CompareTo(maxPastDateString) < 0;
 		}
 
 		/// <summary>
@@ -212,7 +211,7 @@ namespace Lokad.Cloud.Framework
 		/// <returns><b>True</b> if the blob exists, <b>false</b> otherwise.</returns>
 		private bool ReadBlobContents(out string lockAcquisitionDateTimeString, out int expectedDurationInMs)
 		{
-			string content = _provider.GetBlob<string>(ContainerName, _blobName);
+			var content = _provider.GetBlob<string>(ContainerName, _blobName);
 
 			if (content == null)
 			{
@@ -220,13 +219,11 @@ namespace Lokad.Cloud.Framework
 				expectedDurationInMs = 0;
 				return false;
 			}
-			else
-			{
-				string[] pieces = content.Split('|');
-				lockAcquisitionDateTimeString = pieces[0];
-				expectedDurationInMs = int.Parse(pieces[1]);
-				return true;
-			}
+			
+			var pieces = content.Split('|');
+			lockAcquisitionDateTimeString = pieces[0];
+			expectedDurationInMs = int.Parse(pieces[1]);
+			return true;
 		}
 
 		/// <summary>
@@ -234,13 +231,12 @@ namespace Lokad.Cloud.Framework
 		/// </summary>
 		/// <param name="lockId">The lock ID.</param>
 		/// <returns>The normalized lock ID.</returns>
-		private string NormalizeLockId(string lockId)
+		private static string NormalizeLockId(string lockId)
 		{
 			// Blob names can be pretty much any character, just replace spaces
 			return lockId.Replace(" ", "_");
 		}
 
-		#region Factory Methods
 
 		/// <summary>
 		/// Resolves the blob storage provider through IoC container.
@@ -271,7 +267,7 @@ namespace Lokad.Cloud.Framework
 		/// <returns>The lock object (dispose of properly).</returns>
 		public static Lock TryAcquire(string lockId, TimeSpan timeout)
 		{
-			return new Lock(ResolveProvider(), lockId, timeout, Lock.DefaultLockDuration);
+			return new Lock(ResolveProvider(), lockId, timeout, DefaultLockDuration);
 		}
 
 		/// <summary>
@@ -286,8 +282,6 @@ namespace Lokad.Cloud.Framework
 		{
 			return new Lock(ResolveProvider(), lockId, timeout, expectedLockDuration);
 		}
-
-		#endregion
 
 	}
 

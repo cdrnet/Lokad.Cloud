@@ -9,6 +9,10 @@ using Lokad.Cloud.Core;
 using NUnit.Framework;
 using NUnit.Framework.Extensions;
 
+// TODO: [vermorel] 2009-07-23, excluded from the built
+// Focusing on a minimal amount of feature for the v0.1
+// will be reincluded later on.
+
 namespace Lokad.Cloud.Framework.Test
 {
 	[TestFixture]
