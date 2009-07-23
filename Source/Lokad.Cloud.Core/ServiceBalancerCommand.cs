@@ -4,7 +4,6 @@
 #endregion
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using Lokad.Cloud.Framework;
 
@@ -38,7 +37,7 @@ namespace Lokad.Cloud.Core
 
 		public void Execute()
 		{
-			int index = 0;
+			var index = 0;
 
 			// number of allowed runs before going to sleep
 			var runCount = _services.Length;

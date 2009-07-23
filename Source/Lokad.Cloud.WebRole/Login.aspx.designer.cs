@@ -20,6 +20,6 @@ namespace Lokad.Cloud.Web {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::DotNetOpenId.RelyingParty.OpenIdLogin _openIdLogin;
+        protected global::DotNetOpenAuth.OpenId.RelyingParty.OpenIdLogin _openIdLogin;
     }
 }

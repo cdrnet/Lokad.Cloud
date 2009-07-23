@@ -4,7 +4,7 @@
 #endregion
 using System;
 using System.Configuration;
-using DotNetOpenId.RelyingParty;
+using DotNetOpenAuth.OpenId.RelyingParty;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
