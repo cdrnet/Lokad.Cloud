@@ -9,6 +9,9 @@ using Lokad.Cloud.Core;
 // Focusing on a minimal amount of feature for the v0.1
 // will be reincluded later on.
 
+// TODO: lock should be refreshed 'in the background' as long the process is running
+// (too much a pain for the client to manually refresh the lock otherwise).
+
 namespace Lokad.Cloud.Framework
 {
 	/// <summary><para>Cloud locks are used to synchronize access to resources.
@@ -118,6 +121,8 @@ namespace Lokad.Cloud.Framework
 			// False means that the container already exists, not that the creation failed
 			_provider.CreateContainer(ContainerName);
 
+			// TODO: wrong pattern, don't do 'canAcquire' followed by 'Acquire'
+			// (it does not look atomic)
 			if (CanAcquireLock()) AcquireLock();
 			else
 			{
@@ -145,6 +150,9 @@ namespace Lokad.Cloud.Framework
 		/// </summary>
 		public void Refresh()
 		{
+			// TODO: lock should be refreshed 'in the background' as long the process is running
+			// (too much a pain for the client to manually refresh the lock otherwise).
+
 			// Refresh is like a "blind" lock acquisition
 			if (CanAcquireLock())
 			{
@@ -169,6 +177,8 @@ namespace Lokad.Cloud.Framework
 		/// </summary>
 		private void AcquireLock()
 		{
+			// TODO: Use IBlobStorageProvider.UpdateIfNotModified here instead
+
 			bool done;
 			_lastLockRefresh = DateTime.Now.ToUniversalTime();
 			done = _provider.PutBlob(ContainerName, _blobName,

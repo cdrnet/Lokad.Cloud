@@ -6,9 +6,15 @@ using System;
 using System.Collections.Generic;
 using Lokad.Cloud.Core;
 
+// TODO: [vermorel] instanciation pattern to access the storage providers is still unclear.
+
 // TODO: [vermorel] 2009-07-23, excluded from the built
 // Focusing on a minimal amount of feature for the v0.1
 // will be reincluded later on.
+
+// TODO: [vermorel] DO NOT assume the Azure worker to be single threaded. 
+// - 1) there can be multiple threads on a single processor.
+// - 2) multi-procs instances are on their way to Windows Azure.
 
 namespace Lokad.Cloud.Framework
 {
@@ -17,7 +23,8 @@ namespace Lokad.Cloud.Framework
 	/// to provide much more compact identifier.</summary>
 	/// <remarks>
 	/// <para>Scalability is achieved through an exponential identifier allocation pattern.</para>
-	/// <para>All members of the <see cref="Cuid" /> class are <b>not</b> thread-safe (Azure workers are single-threaded).</para>
+	/// <para>All members of the <see cref="Cuid" /> class are <b>not</b> thread-safe 
+	/// (Azure workers are single-threaded).</para>
 	/// </remarks>
 	public static class Cuid
 	{
@@ -126,6 +133,7 @@ namespace Lokad.Cloud.Framework
 		private static void PerformAllocationWithLock(
 			IBlobStorageProvider provider, string counterId, string blobName, Counter counter)
 		{
+			// TODO: do not use a Lock here, go directly for atomic update
 			using (new Lock(provider, GetLockId(counterId), TimeSpan.MaxValue, DefaultLockDuration))
 			{
 				PerformAllocation(provider, counterId, blobName, counter);
