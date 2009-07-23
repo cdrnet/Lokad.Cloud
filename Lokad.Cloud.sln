@@ -32,6 +32,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{1C6763CC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.Framework.Test", "Test\Lokad.Cloud.Framework.Test\Lokad.Cloud.Framework.Test.csproj", "{93D4C481-3265-42F3-BF63-C06106AE016F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{50709B8F-2F9A-4D2B-A46D-0DD01E159BC1}"
+	ProjectSection(SolutionItems) = preProject
+		Resource\Template\index.template.htm = Resource\Template\index.template.htm
+		Resource\Template\lokad-ccf.jpg = Resource\Template\lokad-ccf.jpg
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +87,7 @@ Global
 		{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29} = {58865F1A-F33E-419A-ABF0-871911E20D4C}
 		{ADB1677C-FFDB-41EE-A6E4-DE6B40FBB879} = {58865F1A-F33E-419A-ABF0-871911E20D4C}
 		{C6F30C10-E1C2-4327-BB6B-3160B479CCA1} = {58865F1A-F33E-419A-ABF0-871911E20D4C}
+		{50709B8F-2F9A-4D2B-A46D-0DD01E159BC1} = {CF8E9359-9AE9-46E8-B52E-E99B12663AEE}
 		{1E7651A2-C942-40AB-873A-1EA1BDDA2730} = {A4EE85F0-A2E1-4516-8B4E-F4BA7DA67968}
 		{93D4C481-3265-42F3-BF63-C06106AE016F} = {A4EE85F0-A2E1-4516-8B4E-F4BA7DA67968}
 	EndGlobalSection

@@ -9,6 +9,7 @@
 		<Configuration Condition="$(Configuration)==''">Release</Configuration>
 		<ArtifactDirectory Condition="$(ArtifactDirectory)==''">$(BuildPath)\Artifact</ArtifactDirectory>
 		<PackageDirectory Condition="$(PackageDirectory)==''">$(BuildPath)\_Package\$(Version)</PackageDirectory>
+		<PublicationRoot Condition="$(PublicationRoot)==''">$(BuildPath)\_Package</PublicationRoot>
 
 		<!--Derived-->
 		<ProjectName>$(MSBuildProjectName)</ProjectName>
@@ -25,15 +26,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Tokens Include="CloudPackage">
-			<ReplacementValue>Package/$(Version)/$(ProjectName)-Cspkg-$(Version).zip</ReplacementValue>
-		</Tokens>
-		<Tokens Include="SourcePackage">
-			<ReplacementValue>Package/$(Version)/$(ProjectName)-Source-$(Version).zip</ReplacementValue>
-		</Tokens>
-		<Tokens Include="Version">
-			<ReplacementValue>$(Version)</ReplacementValue>
-		</Tokens>
+		<Tokens Include="CloudPackage"><ReplacementValue>$(ProjectName)-Deploy-$(Version).zip</ReplacementValue></Tokens>
+		<Tokens Include="SourcePackage"><ReplacementValue>$(ProjectName)-Source-$(Version).zip</ReplacementValue></Tokens>
+		<Tokens Include="Version"><ReplacementValue>$(Version)</ReplacementValue></Tokens>
 	</ItemGroup>
 
 	<Target Name="Build">
@@ -145,8 +140,10 @@
 		</CreateItem>
 		<Zip Files="@(sourceFiles)" ZipFileName="$(PackageDirectory)\$(ProjectName)-Source-$(Version).zip" Flatten="false" />
 
-		<!--Index, TODO: add index page later on -->
-		
+		<!--Index-->
+		<Copy SourceFiles="Resource\Template\index.template.htm" DestinationFolder="$(TempPath)" />
+		<TemplateFile Template="$(TempPath)\index.template.htm" OutputFile="index" Tokens="@(Tokens)" />
+		<Copy SourceFiles="$(TempPath)\index.template.out" DestinationFiles="$(PublicationRoot)\index.htm" />
 	</Target>
 
 	<!--For Continuous integration and automated releases-->
