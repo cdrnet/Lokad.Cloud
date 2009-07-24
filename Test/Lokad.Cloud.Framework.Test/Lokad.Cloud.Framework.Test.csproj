@@ -81,10 +81,6 @@
       <Project>{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}</Project>
       <Name>Lokad.Cloud.Framework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Source\Microsoft.StorageClient\StorageClient.csproj">
-      <Project>{C6F30C10-E1C2-4327-BB6B-3160B479CCA1}</Project>
-      <Name>StorageClient</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

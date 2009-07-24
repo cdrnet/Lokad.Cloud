@@ -46,9 +46,14 @@
     </Reference>
     <Reference Include="Microsoft.ServiceHosting.ServiceRuntime, Version=0.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data.Services.Client">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -88,15 +93,19 @@
     <Compile Include="Services\BlobSetMapService.cs" />
     <Compile Include="Services\BlobSetReduceService.cs" />
     <Compile Include="Services\QueueOverflowCollectorService.cs" />
+    <Compile Include="StorageClient\Authentication.cs" />
+    <Compile Include="StorageClient\BlobStorage.cs" />
+    <Compile Include="StorageClient\Errors.cs" />
+    <Compile Include="StorageClient\Queue.cs" />
+    <Compile Include="StorageClient\RestBlobStorage.cs" />
+    <Compile Include="StorageClient\RestHelpers.cs" />
+    <Compile Include="StorageClient\RestQueue.cs" />
+    <Compile Include="StorageClient\StorageAccountInfo.cs" />
+    <Compile Include="StorageClient\TableStorage.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Azure\ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.StorageClient\StorageClient.csproj">
-      <Project>{C6F30C10-E1C2-4327-BB6B-3160B479CCA1}</Project>
-      <Name>StorageClient</Name>
-    </ProjectReference>
+    <Content Include="StorageClient\ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

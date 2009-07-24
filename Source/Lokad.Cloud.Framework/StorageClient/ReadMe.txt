@@ -1,4 +1,4 @@
-StorageClient is a cut-and-paste from the March 2009 CTP of the Windows Azure SDK.
+StorageClient is a cut-and-paste from the July 2009 CTP of the Windows Azure SDK.
 
 StorageClient
 --------------
