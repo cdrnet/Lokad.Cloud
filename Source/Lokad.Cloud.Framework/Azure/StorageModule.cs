@@ -98,7 +98,6 @@ namespace Lokad.Cloud.Azure
 					return (IQueueStorageProvider)new QueueStorageProvider(
 						c.Resolve<QueueStorage>(),
 						c.Resolve<BlobStorage>(),
-						c.Resolve<ActionPolicy>(),
 						formatter);
 				});
 			}

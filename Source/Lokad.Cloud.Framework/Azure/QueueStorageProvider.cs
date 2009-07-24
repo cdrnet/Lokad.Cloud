@@ -39,20 +39,24 @@ namespace Lokad.Cloud.Azure
 
 		readonly QueueStorage _queueStorage;
 		readonly BlobStorage _blobStorage; // needed for overflowing messages
-		readonly ActionPolicy _policy;
 		readonly IFormatter _formatter;
+
+		readonly ActionPolicy _policy; // needed to deal with delayed queue or container creation
 
 		// messages currently being processed (boolean property indicates if the message is overflowing)
 		private readonly Dictionary<object, Tuple<Message, bool>> _inprocess;
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
-			QueueStorage queueStorage, BlobStorage blobStorage, ActionPolicy policy, IFormatter formatter)
+			QueueStorage queueStorage, BlobStorage blobStorage, IFormatter formatter)
 		{
 			_queueStorage = queueStorage;
 			_blobStorage = blobStorage;
-			_policy = policy;
 			_formatter = formatter;
+
+			// retry policy for delayed queue or container creation
+			_policy = ActionPolicy.With(ex => ex is StorageClientException)
+				.Retry(30, (e, i) => SystemUtil.Sleep((100 * i).Milliseconds()));
 
 			_inprocess = new Dictionary<object, Tuple<Message, bool>>();
 		}

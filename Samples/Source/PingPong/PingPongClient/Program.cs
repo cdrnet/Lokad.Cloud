@@ -8,6 +8,7 @@ using Autofac.Configuration;
 using Lokad;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Core;
+using Microsoft.Samples.ServiceHosting.StorageClient;
 using ILog=log4net.ILog;
 
 namespace PingPongClient
@@ -24,13 +25,14 @@ namespace PingPongClient
 
 			for(int i = 0; i < 10; i++)
 			{
-				Console.Write("sleep 1000ms. ");
-				System.Threading.Thread.Sleep(1000);
-
 				foreach(var x in provider.Get<double>("ping", 10))
 				{
 					Console.Write("deq={0} ", x);
 				}
+
+				Console.Write("sleep 1000ms. ");
+				System.Threading.Thread.Sleep(1000);
+
 				Console.WriteLine();
 			}
 		}
@@ -54,8 +56,8 @@ namespace PingPongClient
 
 		static bool HandleException(Exception ex)
 		{
-			//if (ex is StorageServerException)
-			//	return true;
+			if (ex is StorageServerException)
+				return true;
 
 			return false;
 		}
