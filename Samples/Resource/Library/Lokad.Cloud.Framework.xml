@@ -590,7 +590,7 @@
             Caution: do not hold the lock while performing operations on the cloud
             storage.</summary>
         </member>
-        <member name="M:Lokad.Cloud.Azure.QueueStorageProvider.#ctor(Microsoft.Samples.ServiceHosting.StorageClient.QueueStorage,Microsoft.Samples.ServiceHosting.StorageClient.BlobStorage,Lokad.ActionPolicy,System.Runtime.Serialization.IFormatter)">
+        <member name="M:Lokad.Cloud.Azure.QueueStorageProvider.#ctor(Microsoft.Samples.ServiceHosting.StorageClient.QueueStorage,Microsoft.Samples.ServiceHosting.StorageClient.BlobStorage,System.Runtime.Serialization.IFormatter)">
             <summary>IoC constructor.</summary>
         </member>
         <member name="M:Lokad.Cloud.Azure.QueueStorageProvider.GetNewBlobName(System.String)">

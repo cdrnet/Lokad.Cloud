@@ -56,7 +56,7 @@ namespace PingPongClient
 
 		static bool HandleException(Exception ex)
 		{
-			if (ex is StorageServerException)
+			if (ex is StorageServerException || ex is StorageClientException)
 				return true;
 
 			return false;

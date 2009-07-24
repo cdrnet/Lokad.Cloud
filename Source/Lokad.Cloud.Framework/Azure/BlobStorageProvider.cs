@@ -29,7 +29,7 @@ namespace Lokad.Cloud.Azure
 			_formatter = formatter;
 
 			// retry policy for delayed queue or container creation
-			_policy = ActionPolicy.With(ex => true)
+			_policy = ActionPolicy.With(ex => ex is StorageServerException || ex is StorageClientException)
 				.Retry(30, (e, i) => SystemUtil.Sleep((100 * i).Milliseconds()));
 		}
 
