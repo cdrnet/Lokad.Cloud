@@ -20,7 +20,7 @@ namespace Lokad.Cloud.Core.Test
 			if(!File.Exists(path))
 			{
 				// special casing the integration server
-				path = @"..\..\Test\Lokad.Cloud.Core.Test\Sample\sample.dll.zip";
+				path = @"..\..\Test\Lokad.Cloud.Framework.Test\Sample\sample.dll.zip";
 			}
 
 			byte[] buffer;

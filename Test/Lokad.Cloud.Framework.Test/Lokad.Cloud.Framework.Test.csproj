@@ -35,6 +35,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Resource\Library\Lokad.Shared.dll</HintPath>
     </Reference>
+    <Reference Include="Lokad.Stack, Version=1.2.47.0, Culture=neutral, PublicKeyToken=43f0664b2b4db1fc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resource\Library\Lokad.Stack.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.4.6.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Resource\Library\nunit.framework.dll</HintPath>
@@ -57,7 +61,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Azure\AssemblyLoadCommandTests.cs" />
+    <Compile Include="Azure\BlobStorageProviderTests.cs" />
+    <Compile Include="Azure\CloudLoggerTests.cs" />
+    <Compile Include="Azure\GlobalSetup.cs" />
+    <Compile Include="Azure\QueueStorageProviderTests.cs" />
+    <Compile Include="Azure\ServiceBalancerCommandTests.cs" />
+    <Compile Include="Azure\TypeMapperProviderTests.cs" />
     <Compile Include="BlobSetTests.cs" />
+    <None Include="App.config" />
+    <None Include="App.template.config" />
     <None Include="CuidTests.cs" />
     <None Include="LockTests.cs" />
     <Compile Include="MessageWrapperTests.cs" />
@@ -67,6 +80,10 @@
     <ProjectReference Include="..\..\Source\Lokad.Cloud.Framework\Lokad.Cloud.Framework.csproj">
       <Project>{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}</Project>
       <Name>Lokad.Cloud.Framework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Source\Microsoft.StorageClient\StorageClient.csproj">
+      <Project>{C6F30C10-E1C2-4327-BB6B-3160B479CCA1}</Project>
+      <Name>StorageClient</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

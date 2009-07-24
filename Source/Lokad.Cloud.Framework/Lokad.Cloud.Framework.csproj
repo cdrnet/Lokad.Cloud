@@ -32,6 +32,10 @@
     <DocumentationFile>bin\Release\Lokad.Cloud.Framework.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resource\Library\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="Lokad.Shared, Version=1.2.5.0, Culture=neutral, PublicKeyToken=43f0664b2b4db1fc, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Resource\Library\Lokad.Shared.dll</HintPath>
@@ -40,6 +44,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Resource\Library\Lokad.Stack.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ServiceHosting.ServiceRuntime, Version=0.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -57,6 +62,14 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Azure\AssemblyLoadCommand.cs" />
+    <Compile Include="Azure\BlobStorageProvider.cs" />
+    <Compile Include="Azure\CloudLogger.cs" />
+    <Compile Include="Azure\DBAPI.cs" />
+    <Compile Include="Azure\QueueStorageProvider.cs" />
+    <Compile Include="Azure\ServiceBalancerCommand.cs" />
+    <Compile Include="Azure\StorageModule.cs" />
+    <Compile Include="Azure\TypeMapperProvider.cs" />
     <Compile Include="BlobSet.cs" />
     <Compile Include="CloudService.cs" />
     <Compile Include="CloudServiceSettingsAttribute.cs" />
@@ -75,6 +88,15 @@
     <Compile Include="Services\BlobSetMapService.cs" />
     <Compile Include="Services\BlobSetReduceService.cs" />
     <Compile Include="Services\QueueOverflowCollectorService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Azure\ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.StorageClient\StorageClient.csproj">
+      <Project>{C6F30C10-E1C2-4327-BB6B-3160B479CCA1}</Project>
+      <Name>StorageClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
