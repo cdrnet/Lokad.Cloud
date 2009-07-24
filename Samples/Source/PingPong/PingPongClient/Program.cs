@@ -16,7 +16,23 @@ namespace PingPongClient
 	{
 		static void Main(string[] args)
 		{
-			// TODO: no logic implemented yet
+			var container = Setup();
+
+			var provider = container.Resolve<IQueueStorageProvider>();
+
+			provider.Put("ping", new [] { 0.0, 1.0, 2.0 });
+
+			for(int i = 0; i < 10; i++)
+			{
+				Console.Write("sleep 1000ms. ");
+				System.Threading.Thread.Sleep(1000);
+
+				foreach(var x in provider.Get<double>("ping", 10))
+				{
+					Console.Write("deq={0} ", x);
+				}
+				Console.WriteLine();
+			}
 		}
 
 		static Autofac.IContainer Setup()
