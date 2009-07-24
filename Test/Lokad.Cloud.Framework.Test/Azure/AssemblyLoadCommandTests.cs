@@ -6,9 +6,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using Lokad.Cloud.Core;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Core.Test
+namespace Lokad.Cloud.Azure.Test
 {
 	[TestFixture]
 	public class AssemblyLoadCommandTests

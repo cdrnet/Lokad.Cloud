@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Core.Test
+namespace Lokad.Cloud.Azure.Test
 {
 	[TestFixture]
 	public class ServiceBalancerCommandTests

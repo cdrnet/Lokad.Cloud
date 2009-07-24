@@ -7,11 +7,12 @@ using System;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;
+using Lokad.Cloud.Core;
 using Lokad.Quality;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Azure
 {
 	/// <summary>IoC module that auto-load <see cref="StorageAccountInfo"/>, 
 	/// <see cref="BlobStorage"/> and <see cref="QueueStorage"/> from the 

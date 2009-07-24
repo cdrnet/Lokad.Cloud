@@ -8,6 +8,7 @@ using System.Web.Security;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
+using Lokad.Cloud.Azure;
 using Lokad.Cloud.Core;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;

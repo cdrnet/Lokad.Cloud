@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using Lokad.Cloud.Framework;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Azure
 {
 	/// <summary>Organize the executions of the services.</summary>
 	public class ServiceBalancerCommand : ICommand

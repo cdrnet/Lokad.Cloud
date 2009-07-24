@@ -6,11 +6,12 @@ using System;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
+using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Core.Test
+namespace Lokad.Cloud.Azure.Test
 {
 	[SetUpFixture]
 	public sealed class GlobalSetup

@@ -5,11 +5,12 @@
 
 using System;
 using System.Linq;
+using Lokad.Cloud.Core;
 using NUnit.Framework;
 
 // TODO: refactor tests so that containers do not have to be created each time.
 
-namespace Lokad.Cloud.Core.Test
+namespace Lokad.Cloud.Azure.Test
 {
 	[TestFixture]
 	public class BlobStorageProviderTests

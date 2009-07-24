@@ -4,7 +4,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using Lokad.Cloud.Core;
+using Lokad.Cloud.Azure;
 
 // TODO: only most recent logs gets displayed for now.
 // It's not possible (yet) to browse all logs.

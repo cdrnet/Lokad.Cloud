@@ -7,9 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using Lokad.Cloud.Core;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Azure
 {
 	/// <summary>Provides access to the Blob Storage.</summary>
 	/// <remarks>

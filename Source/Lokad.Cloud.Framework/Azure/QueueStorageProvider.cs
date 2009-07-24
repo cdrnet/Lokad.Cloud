@@ -8,12 +8,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
 using QueueService = Lokad.Cloud.Framework.QueueService<object>;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Azure
 {
 	/// <summary>Provides access to the Queue Storage (plus the Blob Storage when
 	/// messages are overflowing).</summary>

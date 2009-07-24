@@ -3,8 +3,9 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
+using Lokad.Cloud.Core;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Azure
 {
 	/// <summary>Maps types to storage names, and vice-versa.</summary>
 	/// <remarks>

@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Lokad.Quality;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Azure
 {
 	/// <summary>
 	/// Encrypts and decrypts data using DPAPI functions.
