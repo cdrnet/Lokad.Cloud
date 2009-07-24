@@ -3,20 +3,21 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
+using System.Collections.Generic;
 using System.Configuration;
-using DotNetOpenAuth.OpenId.RelyingParty;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
 {
-	public partial class Login : System.Web.UI.Page
+	public partial class Home: System.Web.UI.Page
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			
+			AdminsView.DataSource = GetAdmins();
+			AdminsView.DataBind();
 		}
 
-		protected void OpenIdLogin_OnLoggingIn(object sender, OpenIdEventArgs e)
+		IEnumerable<object> GetAdmins()
 		{
 			// HACK: logic to retrieve admins is duplicated with 'Default.aspx'
 			var admins = string.Empty;
@@ -28,17 +29,14 @@ namespace Lokad.Cloud.Web
 			{
 				admins = ConfigurationManager.AppSettings["Admins"];
 			}
-			
+
 			foreach(var admin in admins.Split(new [] {" "}, StringSplitOptions.RemoveEmptyEntries))
 			{
-				if(e.ClaimedIdentifier == admin)
-				{
-					return;
-				}
+				yield return new
+					{
+						Credential = admin
+					};
 			}
-
-			// if the user isn't listed as an administrator, cancel the login
-			e.Cancel = true;
 		}
 	}
 }

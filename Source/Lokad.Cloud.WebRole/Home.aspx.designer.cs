@@ -11,15 +11,15 @@
 namespace Lokad.Cloud.Web {
     
     
-    public partial class Login {
+    public partial class Home {
         
         /// <summary>
-        /// _openIdLogin control.
+        /// AdminsView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::DotNetOpenAuth.OpenId.RelyingParty.OpenIdLogin _openIdLogin;
+        protected global::System.Web.UI.WebControls.GridView AdminsView;
     }
 }

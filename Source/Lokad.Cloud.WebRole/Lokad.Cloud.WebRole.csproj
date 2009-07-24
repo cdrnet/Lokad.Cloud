@@ -77,7 +77,6 @@
   <ItemGroup>
     <Content Include="Assemblies.aspx" />
     <Content Include="Default.aspx" />
-    <Content Include="Login.aspx" />
     <Content Include="Logs.aspx" />
     <Content Include="ReadMe.txt" />
     <Content Include="Web.config" />
@@ -96,20 +95,20 @@
     <Compile Include="Assemblies.aspx.designer.cs">
       <DependentUpon>Assemblies.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Default.aspx.cs">
+    <Compile Include="Home.aspx.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Home.aspx.designer.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="GlobalSetup.cs" />
+    <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="GlobalSetup.cs" />
-    <Compile Include="Login.aspx.cs">
-      <DependentUpon>Login.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Login.aspx.designer.cs">
-      <DependentUpon>Login.aspx</DependentUpon>
     </Compile>
     <Compile Include="Logs.aspx.cs">
       <DependentUpon>Logs.aspx</DependentUpon>
@@ -184,6 +183,7 @@
     <Content Include="App_Themes\Lokad\Images\ico_frontlist.gif" />
     <Content Include="App_Themes\Lokad\Images\logo.gif" />
     <Content Include="App_Themes\Lokad\Lokad.skin" />
+    <Content Include="Home.aspx" />
     <Content Include="Scheduler.aspx" />
   </ItemGroup>
   <ItemGroup>
