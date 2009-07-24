@@ -127,12 +127,23 @@ namespace Lokad.Cloud.Framework
 			return new BlobSet<T>(_providers, prefixName);
 		}
 
-		/// <summary>Put messages into the queue implicitely associated to the
-		/// type <c>T</c>.</summary>
+		/// <summary>Put one message into the queue implicitly associated to the type <c>T</c>.</summary>
 		/// <remarks>
 		/// The implementation is not constrained by the 8kb limit for <c>T</c> messages.
 		/// If messages are larger, the framework will wrap them into the cloud storage.
 		/// </remarks>
+		public void Put<T>(T message)
+		{
+			Put(new[] { message });
+		}
+
+		/// <summary>Put one message into the queue identified by <c>queueName</c>.</summary>
+		public void Put<T>(T message, string queueName)
+		{
+			Put(new[] { message }, queueName);
+		}
+
+		/// <summary>Put messages into the queue implicitely associated to the type <c>T</c>.</summary>
 		public void Put<T>(IEnumerable<T> messages)
 		{
 			Put(messages, _providers.TypeMapper.GetStorageName(typeof(T)));
