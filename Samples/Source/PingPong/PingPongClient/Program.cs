@@ -20,12 +20,13 @@ namespace PingPongClient
 			var provider = container.Resolve<IQueueStorageProvider>();
 
 			provider.Put("ping", new [] { 0.0, 1.0, 2.0 });
+			Console.WriteLine("Queued 3 items in 'ping'.");
 
-			for(int i = 0; i < 10; i++) // TODO: dequeue from 'pong'
+			for(int i = 0; i < 100; i++) 
 			{
-				foreach(var x in provider.Get<double>("ping", 10))
+				foreach(var x in provider.Get<double>("pong", 10))
 				{
-					Console.Write("deq={0} ", x);
+					Console.Write("pong={0} ", x);
 				}
 
 				Console.Write("sleep 1000ms. ");

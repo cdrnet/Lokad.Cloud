@@ -13,7 +13,7 @@ namespace Lokad.Cloud.Azure
 	public class ServiceBalancerCommand : ICommand
 	{
 		/// <summary>Resting duration expressed in seconds.</summary>
-		const int IdleSleep = 60;
+		const int IdleSleep = 5;
 
 		readonly object _sync = new object();
 

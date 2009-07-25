@@ -134,13 +134,13 @@ namespace Lokad.Cloud.Framework
 		/// </remarks>
 		public void Put<T>(T message)
 		{
-			Put(new[] { message });
+			Put((IEnumerable<T>)new[] { message });
 		}
 
 		/// <summary>Put one message into the queue identified by <c>queueName</c>.</summary>
 		public void Put<T>(T message, string queueName)
 		{
-			Put(new[] { message }, queueName);
+			Put((IEnumerable<T>)new[] { message }, queueName);
 		}
 
 		/// <summary>Put messages into the queue implicitely associated to the type <c>T</c>.</summary>

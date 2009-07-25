@@ -8,7 +8,7 @@ using Lokad.Cloud.Framework;
 
 namespace PingPong
 {
-	[QueueServiceSettings(QueueName = "ping")]
+	[QueueServiceSettings(AutoStart = true, QueueName = "ping")]
 	public class PingPongService : QueueService<double>
 	{
 		public PingPongService(ProvidersForCloudStorage providers) : base(providers)
