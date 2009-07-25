@@ -9,6 +9,7 @@ using System.Web.UI.WebControls;
 using ICSharpCode.SharpZipLib.Zip;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Core;
+using Microsoft.Samples.ServiceHosting.StorageClient;
 
 namespace Lokad.Cloud.Web
 {
@@ -25,8 +26,11 @@ namespace Lokad.Cloud.Web
 		IEnumerable<object> GetZipEntries()
 		{
 			var buffer = _provider.GetBlob<byte[]>(
-				AssemblyLoadCommand.DefaultContainerName,
-				AssemblyLoadCommand.DefaultBlobName);
+					AssemblyLoadCommand.DefaultContainerName,
+					AssemblyLoadCommand.DefaultBlobName);
+
+			// do not return anything is no assembly is loaded
+			if(null == buffer) yield break;
 
 			using (var zipStream = new ZipInputStream(new MemoryStream(buffer)))
 			{
@@ -34,13 +38,14 @@ namespace Lokad.Cloud.Web
 				while ((entry = zipStream.GetNextEntry()) != null)
 				{
 					yield return new
-						{
-							entry.Name, 
-							entry.DateTime, 
-							entry.Size
+					{
+						entry.Name,
+						entry.DateTime,
+						entry.Size
 					};
 				}
 			}
+
 		}
 
 		protected void UploadButton_Click(object sender, EventArgs e)

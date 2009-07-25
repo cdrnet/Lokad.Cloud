@@ -38,6 +38,8 @@ namespace Lokad.Cloud.Azure
 		{
 			var buffer = _provider.GetBlob<byte[]>(ContainerName, BlobName);
 
+			// TODO: at first launch ZIP has not been uploaded yet
+			// current design is crashing here
 			using(var zipStream = new ZipInputStream(new MemoryStream(buffer)))
 			{
 				ZipEntry entry;

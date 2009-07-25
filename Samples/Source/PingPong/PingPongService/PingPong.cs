@@ -20,7 +20,7 @@ namespace PingPong
 			foreach(var x in messages)
 			{
 				var y = x * x; // square operation
-				Put(y, "pong");
+				Put(new[]{y}, "pong");
 			}
 		}
 	}

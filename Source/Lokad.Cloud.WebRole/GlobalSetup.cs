@@ -33,26 +33,10 @@ namespace Lokad.Cloud.Web
 				builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 			}
 
-			var policy = ActionPolicy
-				.With(HandleException)
-				.Retry(10, (e, i) => SystemUtil.Sleep(5.Seconds()));
-
-			builder.Register(policy);
-
 			builder.Register(c => (ITypeMapperProvider) new TypeMapperProvider());
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
 
 			Container = builder.Build();
-		}
-
-		static bool HandleException(Exception ex)
-		{
-			if (ex is StorageServerException)
-			{
-				return true;
-			}
-
-			return false;
 		}
 	}
 }
