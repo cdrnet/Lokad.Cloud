@@ -21,6 +21,7 @@ namespace PingPong
 			{
 				var y = x * x; // square operation
 				Put(new[]{y}, "pong");
+				Delete(new[]{x});
 			}
 		}
 	}
