@@ -22,12 +22,6 @@ namespace Lokad.Cloud.Azure.Test
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
-			var policy = ActionPolicy
-				.With(HandleException)
-				.Retry(10, (e, i) => SystemUtil.Sleep(5.Seconds()));
-
-			builder.Register(policy);
-
 			builder.Register(c => (ITypeMapperProvider)new TypeMapperProvider());
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
 
@@ -40,13 +34,5 @@ namespace Lokad.Cloud.Azure.Test
 
 		/// <summary>Gets the IoC container as initiliazed by the setup.</summary>
 		public static IContainer Container { get; set; }
-
-		static bool HandleException(Exception ex)
-		{
-			if (ex is StorageServerException)
-				return true;
-
-			return false;
-		}
 	}
 }

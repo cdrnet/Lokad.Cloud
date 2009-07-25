@@ -5,11 +5,9 @@
 using System;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Core;
-using Microsoft.Samples.ServiceHosting.StorageClient;
-using ILog=log4net.ILog;
+using ILog=Lokad.ILog;
 
 namespace PingPongClient
 {
@@ -23,7 +21,7 @@ namespace PingPongClient
 
 			provider.Put("ping", new [] { 0.0, 1.0, 2.0 });
 
-			for(int i = 0; i < 10; i++)
+			for(int i = 0; i < 10; i++) // TODO: dequeue from 'pong'
 			{
 				foreach(var x in provider.Get<double>("ping", 10))
 				{
@@ -42,24 +40,10 @@ namespace PingPongClient
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
-			var policy = ActionPolicy
-				.With(HandleException)
-				.Retry(10, (e, i) => SystemUtil.Sleep(5.Seconds()));
-
-			builder.Register(policy);
-
 			builder.Register(c => (ITypeMapperProvider)new TypeMapperProvider());
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
 
 			return builder.Build();
-		}
-
-		static bool HandleException(Exception ex)
-		{
-			if (ex is StorageServerException)
-				return true;
-
-			return false;
 		}
 	}
 }

@@ -126,7 +126,12 @@ namespace Lokad.Cloud.Azure
 					if(innerMessage is T)
 					{
 						messages.Add((T)innerMessage);
-						_inprocess.Add(innerMessage, new Tuple<Message, bool>(rawMessage, false));
+
+						// message could already have been retrieved (the the raw message will be identical)
+						if (!_inprocess.ContainsKey(innerMessage))
+						{
+							_inprocess.Add(innerMessage, new Tuple<Message, bool>(rawMessage, false));
+						}
 					}
 					else
 					{

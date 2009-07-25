@@ -12,8 +12,6 @@ using Lokad.Quality;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
-// TODO: add here a default exception policy (too complex to be figured out in client code).
-
 namespace Lokad.Cloud.Azure
 {
 	/// <summary>IoC module that auto-load <see cref="StorageAccountInfo"/>, 
@@ -52,10 +50,12 @@ namespace Lokad.Cloud.Azure
 					var queueService = QueueStorage.Create(accountInfo);
 
 					ActionPolicy policy;
-					if (c.TryResolve(out policy))
+					if (!c.TryResolve(out policy))
 					{
-						queueService.RetryPolicy = policy.Do;
+						policy = DefaultPolicy();	
 					}
+
+					queueService.RetryPolicy = policy.Do;
 
 					return queueService;
 				});
@@ -69,7 +69,13 @@ namespace Lokad.Cloud.Azure
 				builder.Register(c =>
 				{
 					var storage = BlobStorage.Create(accountInfo);
-					var policy = c.Resolve<ActionPolicy>();
+					
+					ActionPolicy policy;
+					if (!c.TryResolve(out policy))
+					{
+						policy = DefaultPolicy();
+					}
+
 					storage.RetryPolicy = policy.Do;
 					return storage;
 				});
@@ -103,6 +109,18 @@ namespace Lokad.Cloud.Azure
 						formatter);
 				});
 			}
+		}
+
+		static ActionPolicy DefaultPolicy()
+		{
+			return ActionPolicy
+				.With(HandleException)
+				.Retry(10, (e, i) => SystemUtil.Sleep(5.Seconds()));
+		}
+
+		static bool HandleException(Exception ex)
+		{
+			return ex is StorageServerException;
 		}
 
 		string GetAccountKey()
