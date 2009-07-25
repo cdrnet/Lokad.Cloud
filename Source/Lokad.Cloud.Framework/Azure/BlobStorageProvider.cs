@@ -67,13 +67,16 @@ namespace Lokad.Cloud.Azure
 				// if the container does not exist, it gets created
 				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
 				{
-					container.CreateContainer();
-
+					// caution the container might have been freshly deleted
 					var flag = false;
 					_policy.Do(() => 
+					{
+						container.CreateContainer();
+
 						flag = container.CreateBlob(
-									new BlobProperties(blobName), 
-									new BlobContents(buffer), overwrite));
+							new BlobProperties(blobName),
+							new BlobContents(buffer), overwrite);
+					});
 
 					return flag;
 				}

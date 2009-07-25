@@ -12,6 +12,8 @@ using Lokad.Quality;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
+// TODO: add here a default exception policy (too complex to be figured out in client code).
+
 namespace Lokad.Cloud.Azure
 {
 	/// <summary>IoC module that auto-load <see cref="StorageAccountInfo"/>, 

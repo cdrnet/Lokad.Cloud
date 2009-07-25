@@ -25,7 +25,9 @@ namespace Lokad.Cloud.Azure.Test
 
 			var message = new MyMessage();
 
-			provider.Clear(QueueName);
+			provider.DeleteQueue(QueueName); // deleting queue on purpose 
+			// (it's slow but necessary to really validate the retry policy)
+
 			provider.Put(QueueName, new [] {message});
 			var retrieved = provider.Get<MyMessage>(QueueName, 1).First();
 

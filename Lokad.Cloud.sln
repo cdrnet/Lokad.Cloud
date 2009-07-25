@@ -32,6 +32,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{
 		Resource\Template\lokad-ccf.jpg = Resource\Template\lokad-ccf.jpg
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}"
+	ProjectSection(SolutionItems) = preProject
+		Samples\Source\PingPong\ReadMe.PingPong.txt = Samples\Source\PingPong\ReadMe.PingPong.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingPongClient", "Samples\Source\PingPong\PingPongClient\PingPongClient.csproj", "{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingPongService", "Samples\Source\PingPong\PingPongService\PingPongService.csproj", "{EF63B21A-0390-4DB3-8573-21BE5931CD5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +67,14 @@ Global
 		{93D4C481-3265-42F3-BF63-C06106AE016F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93D4C481-3265-42F3-BF63-C06106AE016F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93D4C481-3265-42F3-BF63-C06106AE016F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF63B21A-0390-4DB3-8573-21BE5931CD5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF63B21A-0390-4DB3-8573-21BE5931CD5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF63B21A-0390-4DB3-8573-21BE5931CD5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF63B21A-0390-4DB3-8573-21BE5931CD5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,5 +86,7 @@ Global
 		{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29} = {58865F1A-F33E-419A-ABF0-871911E20D4C}
 		{50709B8F-2F9A-4D2B-A46D-0DD01E159BC1} = {CF8E9359-9AE9-46E8-B52E-E99B12663AEE}
 		{93D4C481-3265-42F3-BF63-C06106AE016F} = {A4EE85F0-A2E1-4516-8B4E-F4BA7DA67968}
+		{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
+		{EF63B21A-0390-4DB3-8573-21BE5931CD5E} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 	EndGlobalSection
 EndGlobal

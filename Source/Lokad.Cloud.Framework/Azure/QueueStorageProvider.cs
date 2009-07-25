@@ -55,10 +55,30 @@ namespace Lokad.Cloud.Azure
 			_formatter = formatter;
 
 			// retry policy for delayed queue or container creation
-			_policy = ActionPolicy.With(ex => ex is StorageServerException || ex is StorageClientException)
+			// client exceptions are also intercepted (waiting for the instantiation)
+			_policy = ActionPolicy.With(HandleSlowInstantiationException)
 				.Retry(30, (e, i) => SystemUtil.Sleep((100 * i).Milliseconds()));
 
 			_inprocess = new Dictionary<object, Tuple<Message, bool>>();
+		}
+
+		static bool HandleSlowInstantiationException(Exception ex)
+		{
+			if (ex is StorageServerException)
+				return true;
+
+			if (ex is StorageClientException)
+			{
+				var exc = ex as StorageClientException;
+
+				if (exc.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound ||
+					exc.ErrorCode == StorageErrorCode.ContainerNotFound)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		public IEnumerable<string> List(string prefix)
@@ -188,10 +208,14 @@ namespace Lokad.Cloud.Azure
 					{
 						if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
 						{
-							container.CreateContainer();
-
-							// It usually takes time before the container gets available
-							_policy.Do(() => container.CreateBlob(blobProperties, blobContents, false));
+							// It usually takes time before the container gets available.
+							// Note that the container might been freshly deleted.
+							_policy.Do(() =>
+								{
+									container.CreateContainer();
+									container.CreateBlob(blobProperties, blobContents, false);
+								});
+							
 						}
 						else
 						{
@@ -220,10 +244,13 @@ namespace Lokad.Cloud.Azure
 					// HACK: not storage status error code yet
 					if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
 					{
-						queue.CreateQueue();
-
 						// It usually takes time before the queue gets available
-						_policy.Do(() => queue.PutMessage(new Message(buffer)));
+						// Note that the queue might also have been freshly deleted.
+						_policy.Do(() =>
+							{
+								queue.CreateQueue();
+								queue.PutMessage(new Message(buffer));
+							});
 					}
 					else
 					{
@@ -237,7 +264,7 @@ namespace Lokad.Cloud.Azure
 		{
 			try
 			{
-				// TODO: not sure what with the return code of 'Clear'
+				// HACK: not sure what is the return code of 'Clear'
 				_queueStorage.GetQueue(queueName).Clear();
 			}
 			catch (StorageClientException ex)
