@@ -1,4 +1,6 @@
 ﻿<%@ Page Language="C#" MasterPageFile="~/Nav.Master" AutoEventWireup="true" CodeBehind="Home.aspx.cs" Inherits="Lokad.Cloud.Web.Home" %>
+<%@ Import Namespace="Lokad.Cloud.Azure"%>
+<%@ Import Namespace="Lokad.Cloud.Web"%>
 
 <asp:Content ContentPlaceHolderID="HeadPlaceHolder" runat="server">
 	<title>Home - Lokad.Cloud administration console</title>
@@ -14,4 +16,9 @@
 	<br />
 	<p>List of the users having access to this console.<br /> 
 	(use the service configuration file to modify this list).</p>
+	
+	<h2 class="separator">WebRole cache</h2>
+	<div class="warning">
+		Purge the cache of the current webrole (other instances unaffected): 
+		<asp:Button runat="server" OnClick="ClearCache_Click" Text="Clear" /></div>
 </asp:Content>

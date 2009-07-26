@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using Lokad.Cloud.Azure;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
@@ -15,6 +16,10 @@ namespace Lokad.Cloud.Web
 		{
 			AdminsView.DataSource = GetAdmins();
 			AdminsView.DataBind();
+
+			//_accountNameLabel.DataBind();
+
+			var str = ((StorageModule) GlobalSetup.Container.Resolve(typeof (StorageModule))).AccountName;
 		}
 
 		IEnumerable<object> GetAdmins()
@@ -36,6 +41,26 @@ namespace Lokad.Cloud.Web
 					{
 						Credential = admin
 					};
+			}
+		}
+
+		protected void ClearCache_Click(object sender, EventArgs e)
+		{
+			var keys = new List<string>();
+
+			// retrieve application Cache enumerator
+			var enumerator = Cache.GetEnumerator();
+
+			// copy all keys that currently exist in Cache
+			while (enumerator.MoveNext())
+			{
+				keys.Add(enumerator.Key.ToString());
+			}
+
+			// delete every key from cache
+			for (int i = 0; i < keys.Count; i++)
+			{
+				Cache.Remove(keys[i]);
 			}
 		}
 	}

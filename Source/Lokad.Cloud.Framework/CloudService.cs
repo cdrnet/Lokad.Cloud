@@ -11,10 +11,19 @@ using System.Reflection;
 namespace Lokad.Cloud.Framework
 {
 	/// <summary>Status flag for <see cref="CloudService"/>s.</summary>
+	/// <remarks>Starting / stopping services isn't a synchronous operation,
+	/// it can take a little while before all the workers notice an update 
+	/// on the service state.</remarks>
 	[Serializable]
 	public enum CloudServiceState
 	{
+		/// <summary>
+		/// Indicates that the service should be running.</summary>
 		Started = 0,
+
+		/// <summary>
+		/// Indicates that the service should be stopped.
+		/// </summary>
 		Stopped = 1
 	}
 
@@ -36,7 +45,10 @@ namespace Lokad.Cloud.Framework
 		internal protected ProvidersForCloudStorage _providers;
 
 		/// <summary>Indicates the frequency where the service is actually checking for its state.</summary>
-		public TimeSpan StateCheckInterval { get; set; }
+		public static TimeSpan StateCheckInterval
+		{
+			get { return 1.Minutes(); }
+		}
 
 		/// <summary>Error logger.</summary>
 		public ILog Log
@@ -55,7 +67,6 @@ namespace Lokad.Cloud.Framework
 		protected CloudService(ProvidersForCloudStorage providers)
 		{
 			_providers = providers;
-			StateCheckInterval = 60.Seconds();
 			_state = CloudServiceState.Started;
 		}
 

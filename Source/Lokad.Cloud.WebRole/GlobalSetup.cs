@@ -12,7 +12,7 @@ using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
 {
-	internal static class GlobalSetup
+	public static class GlobalSetup
 	{
 		public static readonly IContainer Container;
 

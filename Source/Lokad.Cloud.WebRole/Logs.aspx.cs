@@ -30,7 +30,7 @@ namespace Lokad.Cloud.Web
 		IEnumerable<object> GetRecentLogs()
 		{
 			// HACK: cache logic is completely custom and would probably need to
-			// be abstracted away.
+			// be abstracted away from the webrole project itself.
 
 			var cachedLogs = Cache[LogsCacheKey] as List<LogEntry> ?? new List<LogEntry>();
 
