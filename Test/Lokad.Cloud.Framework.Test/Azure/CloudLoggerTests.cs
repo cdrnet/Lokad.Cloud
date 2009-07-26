@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
+using Lokad.Cloud.Framework;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Azure.Test
@@ -18,6 +19,8 @@ namespace Lokad.Cloud.Azure.Test
 			logger.Error(
 				new InvalidOperationException("CloudLoggerTests.Log"), 
 				"My message with CloudLoggerTests.Log.");
+
+			logger.Info(new TriggerRestartException("CloudLoggerTests.Log"), "Not a restart, just a test.");
 		}
 
 		[Test]

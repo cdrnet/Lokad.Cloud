@@ -16,10 +16,6 @@ namespace Lokad.Cloud.Web
 		{
 			AdminsView.DataSource = GetAdmins();
 			AdminsView.DataBind();
-
-			//_accountNameLabel.DataBind();
-
-			var str = ((StorageModule) GlobalSetup.Container.Resolve(typeof (StorageModule))).AccountName;
 		}
 
 		IEnumerable<object> GetAdmins()
