@@ -87,17 +87,24 @@ namespace Lokad.Cloud.Azure
 
 		public T GetBlob<T>(string containerName, string blobName)
 		{
+			string ignoredEtag;
+			return GetBlob<T>(containerName, blobName, out ignoredEtag);
+		}
+
+		public T GetBlob<T>(string containerName, string blobName, out string etag)
+		{
 			var blobContents = new BlobContents(new MemoryStream());
 			var container = _blobStorage.GetBlobContainer(containerName);
-			
+			etag = null;
+
 			// no such container, return default
 			try
 			{
 				var properties = container.GetBlob(blobName, blobContents, false);
-
 				if (null == properties) return default(T);
+				etag = properties.ETag;
 			}
-			catch(StorageClientException ex)
+			catch (StorageClientException ex)
 			{
 				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
 					|| ex.ErrorCode == StorageErrorCode.BlobNotFound)
@@ -110,6 +117,25 @@ namespace Lokad.Cloud.Azure
 			var stream = blobContents.AsStream;
 			stream.Position = 0;
 			return (T)_formatter.Deserialize(stream);
+		}
+
+		public string GetBlobEtag(string containerName, string blobName)
+		{
+			var container = _blobStorage.GetBlobContainer(containerName);
+
+			try
+			{
+				var properties = container.GetBlobProperties(blobName);
+				return null == properties ? null : properties.ETag;
+			}
+			catch (StorageClientException ex)
+			{
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+				{
+					return null;
+				}
+				throw;
+			}
 		}
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)

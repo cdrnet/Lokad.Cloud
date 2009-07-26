@@ -33,6 +33,21 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.IsTrue(provider.List(ContainerName, "myprefix").Contains(BlobName), "#A02");
 			Assert.IsTrue(!provider.List(ContainerName, "notmyprefix").Contains(BlobName), "#A03");
 
+			// testing ETag
+			provider.DeleteBlob(ContainerName, BlobName);
+			var etag = provider.GetBlobEtag(ContainerName, BlobName);
+			Assert.IsNull(etag, "Deleted blob has no etag.");
+
+			provider.PutBlob(ContainerName, BlobName, 1);
+			etag = provider.GetBlobEtag(ContainerName, BlobName);
+			Assert.IsNotNull(etag, "Blob should have etag.");
+
+			var newEtag = provider.GetBlobEtag(ContainerName, BlobName);
+			Assert.AreEqual(etag, newEtag, "Etag should be unchanged.");
+
+			provider.PutBlob(ContainerName, BlobName, 2);
+			newEtag = provider.GetBlobEtag(ContainerName, BlobName);
+			Assert.AreNotEqual(etag, newEtag, "Etag should be changed.");
 
 			// testing UpdateIfNotModified
 			provider.PutBlob(ContainerName, BlobName, 1);

@@ -102,6 +102,7 @@
     <Compile Include="StorageClient\RestQueue.cs" />
     <Compile Include="StorageClient\StorageAccountInfo.cs" />
     <Compile Include="StorageClient\TableStorage.cs" />
+    <Compile Include="TriggerRestartException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Azure\ReadMe.txt" />

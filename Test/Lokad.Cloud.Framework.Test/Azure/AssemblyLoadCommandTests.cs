@@ -32,11 +32,11 @@ namespace Lokad.Cloud.Azure.Test
 			}
 
 			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
-			provider.CreateContainer(AssemblyLoadCommand.DefaultContainerName);
+			provider.CreateContainer(AssemblyLoadCommand.ContainerName);
 
 			// put the sample assembly
 			provider.PutBlob(
-				AssemblyLoadCommand.DefaultContainerName, AssemblyLoadCommand.DefaultBlobName, buffer);
+				AssemblyLoadCommand.ContainerName, AssemblyLoadCommand.BlobName, buffer);
 
 			var command = GlobalSetup.Container.Resolve<AssemblyLoadCommand>();
 

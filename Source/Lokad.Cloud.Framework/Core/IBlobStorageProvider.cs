@@ -35,10 +35,53 @@ namespace Lokad.Cloud.Core
 		/// exists but could not be overwritten.</returns>
 		bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite);
 
+		// TODO: 'PutBlob' with etag not implemented for now (but planned)
+		///// <summary>Puts a blob and optionally overwrite.</summary>
+		///// <param name="containerName">Name of the container.</param>
+		///// <param name="blobName">Name of the blob.</param>
+		///// <param name="item">Item to be put.</param>
+		///// <param name="overwrite">Indicates whether existing blob should be overwritten
+		///// if it exists.</param>
+		///// <param name="etag">New etag (identifier used to track for blob change) if
+		///// the blob is written, or <c>null</c> if no blob is written.</param>
+		///// <remarks>Creates the container if it does not exist beforehand.</remarks>
+		///// <returns><c>true</c> if the blob has been put and false if the blob already
+		///// exists but could not be overwritten.</returns>
+		//bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite, out string etag);
+
 		/// <summary>Gets a blob.</summary>
 		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
 		/// returned.</returns>
 		T GetBlob<T>(string containerName, string blobName);
+
+		/// <summary>Gets a blob.</summary>
+		/// <typeparam name="T">Blob type.</typeparam>
+		/// <param name="containerName">Name of the container.</param>
+		/// <param name="blobName">Name of the blob.</param>
+		/// <param name="etag">Identifier assigned by the storage to the blob
+		/// that can be used to distinguish be successive version of the blob 
+		/// (useful to check for blob update).</param>
+		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
+		/// returned.</returns>
+		T GetBlob<T>(string containerName, string blobName, out string etag);
+
+		// TODO: GetBlobIfModified not implemented for now (but planned)
+		///// <summary>Gets a blob only if the etag has changed meantime.</summary>
+		///// <typeparam name="T">Type of the blob.</typeparam>
+		///// <param name="containerName">Name of the container.</param>
+		///// <param name="blobName">Name of the blob.</param>
+		///// <param name="oldEtag">Old etag value. If this value is null, the blob will always
+		///// be retrieved (except if the blob does not exist anymore).</param>
+		///// <param name="newEtag">New etag value. Will be <c>null</c> if the blob no more exist,
+		///// otherwise will be set to the current etag value of the blob.</param>
+		///// <returns> If the blob has not been modified, a <c>null</c> (or a default value) is returned.
+		///// If there is no such blob, a <c>null</c> (or a default value) is  returned.</returns>
+		//T GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag);
+
+		/// <summary>
+		/// Gets the current etag of the blob, or <c>null</c> if the blob does not exists.
+		/// </summary>
+		string GetBlobEtag(string containerName, string blobName);
 
 		/// <summary>Update a blob while garantying an atomic update process.</summary>
 		/// <param name="containerName"></param>
