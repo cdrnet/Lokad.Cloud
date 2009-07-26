@@ -13,5 +13,19 @@ namespace Lokad.Cloud.Framework
 	///<summary>Throw this exception in order to force a worker restart.</summary>
 	public class TriggerRestartException : ApplicationException
 	{
+		/// <summary>Empty constructor.</summary>
+		public TriggerRestartException()
+		{
+		}
+
+		/// <summary>Constructor with message.</summary>
+		public TriggerRestartException(string message) : base(message)
+		{
+		}
+
+		/// <summary>Constructor with message and inner exception.</summary>
+		public TriggerRestartException(string message, Exception inner) : base(message, inner)
+		{	
+		}
 	}
 }

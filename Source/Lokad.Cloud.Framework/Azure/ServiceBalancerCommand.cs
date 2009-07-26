@@ -17,26 +17,34 @@ namespace Lokad.Cloud.Azure
 
 		readonly object _sync = new object();
 
-		readonly CloudService[] _services;
+		readonly ProvidersForCloudStorage _providers;
 		readonly ILog _logger;
+		readonly AssemblyLoader _loader;
+
+		CloudService[] _services;
 
 		bool _isStopRequested;
 		bool _isStopped;
 
+		/// <summary>Get services actually loaded.</summary>
 		public CloudService[] Services
 		{
 			get { return _services; }
 		}
 
+		/// <summary>IoC constructor.</summary>
 		public ServiceBalancerCommand(ILog logger, ProvidersForCloudStorage providers)
 		{
-			_services = null;
+			_providers = providers;
 			_logger = logger;
-			_services = CloudService.GetAllServices(providers).ToArray();
+			_loader = new AssemblyLoader(providers.BlobStorage);
 		}
 
 		public void Execute()
 		{
+			_loader.Load();
+			_services = CloudService.GetAllServices(_providers).ToArray();
+
 			var index = 0;
 
 			// number of allowed runs before going to sleep
@@ -46,7 +54,23 @@ namespace Lokad.Cloud.Azure
 			{
 				// TODO: need to implement here a naive bandit pattern to run services
 				var service = _services[index++%_services.Length];
-				var isRun = service.Start();
+				
+				var isRun = false;
+				
+				try
+				{
+					isRun = service.Start();
+				}
+				catch(TriggerRestartException ex)
+				{
+					// services can cause overall restart
+					_logger.Info(ex, string.Format("Restart requested by service {0}.", service));
+					throw;
+				}
+				catch(Exception ex)
+				{
+					_logger.Error(ex, string.Format("Service {0} has failed.", service));
+				}
 
 				runCount += isRun ? _services.Length : -1;
 				runCount = Math.Max(0, runCount);
@@ -65,6 +89,9 @@ namespace Lokad.Cloud.Azure
 						Monitor.Wait(_sync, IdleSleep.Seconds());
 					}
 				}
+
+				// throws a 'TriggerRestartException' if a new package is detected.
+				_loader.CheckUpdate(true);
 			}
 
 			lock(_sync)

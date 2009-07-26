@@ -7,15 +7,16 @@ using System;
 using System.IO;
 using System.Linq;
 using Lokad.Cloud.Core;
+using Lokad.Cloud.Framework;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Azure.Test
 {
 	[TestFixture]
-	public class AssemblyLoadCommandTests
+	public class AssemblyLoaderTests
 	{
 		[Test]
-		public void Execute()
+		public void LoadCheck()
 		{
 			var path = @"..\..\Sample\sample.dll.zip";
 			if(!File.Exists(path))
@@ -32,19 +33,42 @@ namespace Lokad.Cloud.Azure.Test
 			}
 
 			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
-			provider.CreateContainer(AssemblyLoadCommand.ContainerName);
+			provider.CreateContainer(AssemblyLoader.ContainerName);
 
 			// put the sample assembly
-			provider.PutBlob(
-				AssemblyLoadCommand.ContainerName, AssemblyLoadCommand.BlobName, buffer);
+			provider.PutBlob(AssemblyLoader.ContainerName, AssemblyLoader.BlobName, buffer);
 
-			var command = GlobalSetup.Container.Resolve<AssemblyLoadCommand>();
-
-			command.Execute();
+			var loader = new AssemblyLoader(provider);
+			loader.Load();
 
 			// validate that 'sample.dll' has been loaded
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			Assert.That(assemblies.Any(a => a.ManifestModule.ScopeName == "sample.dll"));
+
+			// no update, checking
+			try
+			{
+				loader.CheckUpdate(false);
+			}
+			catch (TriggerRestartException)
+			{
+				Assert.Fail("Package has not been updated yet.");
+			}
+
+			// forcing update
+			provider.PutBlob(AssemblyLoader.ContainerName, AssemblyLoader.BlobName, buffer);
+
+			// update, re-checking
+			try
+			{
+				loader.CheckUpdate(false);
+				Assert.Fail("Update should have been detected.");
+			}
+			catch (TriggerRestartException)
+			{
+				// do nothing
+			}
+
 		}
 	}
 }

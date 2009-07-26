@@ -67,7 +67,7 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Azure\AssemblyLoadCommand.cs" />
+    <Compile Include="Azure\AssemblyLoader.cs" />
     <Compile Include="Azure\BlobStorageProvider.cs" />
     <Compile Include="Azure\CloudLogger.cs" />
     <Compile Include="Azure\DBAPI.cs" />

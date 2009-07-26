@@ -61,7 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Azure\AssemblyLoadCommandTests.cs" />
+    <Compile Include="Azure\AssemblyLoaderTests.cs" />
     <Compile Include="Azure\BlobStorageProviderTests.cs" />
     <Compile Include="Azure\CloudLoggerTests.cs" />
     <Compile Include="Azure\GlobalSetup.cs" />

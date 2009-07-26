@@ -26,8 +26,8 @@ namespace Lokad.Cloud.Web
 		IEnumerable<object> GetZipEntries()
 		{
 			var buffer = _provider.GetBlob<byte[]>(
-					AssemblyLoadCommand.ContainerName,
-					AssemblyLoadCommand.BlobName);
+					AssemblyLoader.ContainerName,
+					AssemblyLoader.BlobName);
 
 			// do not return anything is no assembly is loaded
 			if(null == buffer) yield break;
@@ -57,8 +57,8 @@ namespace Lokad.Cloud.Web
 
 			// pushing new archive to storage
 			_provider.PutBlob(
-				AssemblyLoadCommand.ContainerName,
-				AssemblyLoadCommand.BlobName, 
+				AssemblyLoader.ContainerName,
+				AssemblyLoader.BlobName, 
 				AssemblyFileUpload.FileBytes, true);
 
 			AssembliesView.DataBind();

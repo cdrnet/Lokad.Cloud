@@ -26,7 +26,7 @@ namespace Lokad.Cloud.Azure.Test
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
 
 			builder.Register(typeof (ProvidersForCloudStorage));
-			builder.Register(typeof (AssemblyLoadCommand));
+			builder.Register(typeof (AssemblyLoader));
 			builder.Register(typeof (ServiceBalancerCommand));
 
 			Container = builder.Build();
