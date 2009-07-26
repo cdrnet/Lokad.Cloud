@@ -2,13 +2,12 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-using System;
+
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
-using Microsoft.Samples.ServiceHosting.StorageClient;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Azure.Test
@@ -26,13 +25,12 @@ namespace Lokad.Cloud.Azure.Test
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
 
 			builder.Register(typeof (ProvidersForCloudStorage));
-			builder.Register(typeof (AssemblyLoader));
 			builder.Register(typeof (ServiceBalancerCommand));
 
 			Container = builder.Build();
 		}
 
 		/// <summary>Gets the IoC container as initiliazed by the setup.</summary>
-		public static IContainer Container { get; set; }
+		public static IContainer Container { get; private set; }
 	}
 }
