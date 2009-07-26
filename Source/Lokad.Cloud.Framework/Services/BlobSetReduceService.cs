@@ -14,11 +14,14 @@ using BlobSet = Lokad.Cloud.Framework.BlobSet<object>;
 
 namespace Lokad.Cloud.Services
 {
+	/// <summary>Message for an elementary map operation in a map-reduce process.</summary>
 	[Serializable]
 	public class BlobSetReduceMessage
 	{
+		/// <summary>Source blobset used as input.</summary>
 		public string SourcePrefix { get; set; }
 
+		/// <summary>Blob settings suffix.</summary>
 		public string SettingsSuffix { get; set; }
 	}
 
@@ -29,6 +32,7 @@ namespace Lokad.Cloud.Services
 	{
 		public const string QueueName = "lokad-cloud-blobsets-reduce";
 
+		/// <summary>IoC constructor.</summary>
 		public BlobSetReduceService(ProvidersForCloudStorage providers) : base(providers)
 		{
 		}
@@ -48,7 +52,7 @@ namespace Lokad.Cloud.Services
 				// cleanup has already been performed, reduction is complete.
 				if(null == settings)
 				{
-					Delete(message);
+					Delete(new[]{message});
 					continue;
 				}
 
@@ -111,7 +115,7 @@ namespace Lokad.Cloud.Services
 					Put(new[] { message }, QueueName);
 				}
 
-				Delete(message);
+				Delete(new[]{message});
 			}
 		}
 	}

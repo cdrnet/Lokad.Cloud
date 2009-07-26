@@ -93,12 +93,6 @@ namespace Lokad.Cloud.Framework
 			return _providers.QueueStorage.Get<U>(_queueName, count);
 		}
 
-		/// <seealso cref="Delete(IEnumerable{U})"/>
-		public void Delete<U>(U message)
-		{
-			Delete(new[]{message});
-		}
-
 		/// <summary>Delete messages retrieved either through <see cref="StartImpl"/>
 		/// or through <see cref="GetMore"/>.</summary>
 		public void Delete<U>(IEnumerable<U> messages)
