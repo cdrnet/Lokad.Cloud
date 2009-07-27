@@ -36,14 +36,19 @@ namespace Lokad.Cloud
 					var balancer = build.Resolve<ServiceBalancerCommand>();
 					balancer.Execute();
 				}
-				catch (TriggerRestartException)
+				catch (TriggerRestartException ex)
 				{
+					var logger = build.Resolve<ILog>();
+					logger.Log(LogLevel.Info, ex, "Restarting worker.");
+
 					throw;
 				}
 				catch(Exception ex)
 				{
 					var logger = build.Resolve<ILog>();
 					logger.Log(LogLevel.Error, ex, "Executor level exception (probably a Lokad.Cloud issue).");
+
+					throw;
 				}
 				
 			}
