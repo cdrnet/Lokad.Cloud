@@ -16,7 +16,7 @@
 	<asp:GridView ID="AssembliesView" runat="server" EmptyDataText="No file in archive yet." />
 	
 	<br />
-	<p>Upload a new assembly archive:
+	<p>Upload a new ZIP archive (containing your .NET assemblies):
 	</p>
 	<p>
 		<asp:FileUpload ID="AssemblyFileUpload" runat="server" />

@@ -9,7 +9,6 @@ using System.Web.UI.WebControls;
 using ICSharpCode.SharpZipLib.Zip;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Core;
-using Microsoft.Samples.ServiceHosting.StorageClient;
 
 namespace Lokad.Cloud.Web
 {

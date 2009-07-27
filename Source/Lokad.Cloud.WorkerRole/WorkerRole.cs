@@ -38,7 +38,7 @@ namespace Lokad.Cloud
 				}
 				catch (TriggerRestartException)
 				{
-					// ignore on purpose in order to enable restart.
+					throw;
 				}
 				catch(Exception ex)
 				{
