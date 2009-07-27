@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 
 // IDEA: the message of the exception could be logged in to the cloud logs.
 // (issue: how to avoid N identical messages to be logged through all workers)
@@ -11,6 +12,7 @@ using System;
 namespace Lokad.Cloud.Framework
 {
 	///<summary>Throw this exception in order to force a worker restart.</summary>
+	[Serializable]
 	public class TriggerRestartException : ApplicationException
 	{
 		/// <summary>Empty constructor.</summary>
@@ -26,6 +28,11 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Constructor with message and inner exception.</summary>
 		public TriggerRestartException(string message, Exception inner) : base(message, inner)
 		{	
+		}
+
+		/// <summary>Deserialization constructor.</summary>
+		public TriggerRestartException(SerializationInfo info, StreamingContext context) : base(info, context)
+		{
 		}
 	}
 }
