@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using Autofac.Builder;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Core;
@@ -29,15 +30,27 @@ namespace Lokad.Cloud
 
 			using (var build = builder.Build())
 			{
-				// balancer endlessly keeps pinging queues for pending work
-				var balancer = build.Resolve<ServiceBalancerCommand>();
-				balancer.Execute();
+				try
+				{
+					// balancer endlessly keeps pinging queues for pending work
+					var balancer = build.Resolve<ServiceBalancerCommand>();
+					balancer.Execute();
+				}
+				catch (TriggerRestartException)
+				{
+					// ignore on purpose in order to enable restart.
+				}
+				catch(Exception ex)
+				{
+					var logger = build.Resolve<ILog>();
+					logger.Log(LogLevel.Error, ex, "Executor level exception (probably a Lokad.Cloud issue).");
+				}
+				
 			}
 		}
 
 		public override RoleStatus GetHealthStatus()
 		{
-			// This is a sample worker implementation. Replace with your logic.
 			return RoleStatus.Healthy;
 		}
 	}

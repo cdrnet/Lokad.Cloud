@@ -36,14 +36,18 @@ http://code.google.com/p/lokad-cloud/wiki/GettingStarted
 
 STORAGE SCHEMAS
 
+Lokad.Cloud autogenerates a couple of storage items. All system items get prefixed 
+by "lokad-cloud" in order to facilitate identification and eventually removal.
+
 Blob containers part of the framework:
 
-lokad-cloud-locks
-lokad-cloud-logs
+lokad-cloud-assemblies
+lokad-cloud-cuids [planned]
+lokad-cloud-locks [planned]
+lokad-cloud-logs 
 lokad-cloud-overflowing-queues
 lokad-cloud-services
 lokad-cloud-schedule
-lokad-cloud-cuids
 
 Queue containers part of the framework:
 
