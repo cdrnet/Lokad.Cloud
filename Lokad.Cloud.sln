@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Source\GlobalAssemblyInfo.cs = Source\GlobalAssemblyInfo.cs
 		Lokad.Cloud.build = Lokad.Cloud.build
 		Lokad.Cloud.ccnet = Lokad.Cloud.ccnet
-		Lokad.Cloud.ReadMe.txt = Lokad.Cloud.ReadMe.txt
+		ReadMe.txt = ReadMe.txt
 		Source\VersionAssemblyInfo.cs = Source\VersionAssemblyInfo.cs
 	EndProjectSection
 EndProject

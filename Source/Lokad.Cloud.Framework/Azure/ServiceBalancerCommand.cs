@@ -12,6 +12,9 @@ namespace Lokad.Cloud.Azure
 	/// <summary>Organize the executions of the services.</summary>
 	public class ServiceBalancerCommand : ICommand
 	{
+		/// <summary>Duration to keep pinging the same cloud service if service is active.</summary>
+		const int MoreOfTheSame = 60;
+
 		/// <summary>Resting duration expressed in seconds.</summary>
 		const int IdleSleep = 5;
 
@@ -47,40 +50,47 @@ namespace Lokad.Cloud.Azure
 
 			var index = 0;
 
-			// number of allowed runs before going to sleep
-			var runCount = _services.Length;
+			// numbers of services that did not execute in a row
+			var noRunCount = 0;
 
 			while(!_isStopRequested)
 			{
 				// TODO: need to implement here a naive bandit pattern to run services
 				var service = _services[index++%_services.Length];
 				
-				var isRun = false;
-				
-				try
+				var isRunOnce = false;
+				var isRun = true;
+
+				// 'more of the same pattern'
+				// as long the service is active, keep triggering the same service
+				// for at least 1min (in order to avoid a single service to monopolize CPU)
+				var start = DateTime.Now;
+				while (DateTime.Now.Subtract(start) < MoreOfTheSame.Seconds() && isRun && !_isStopRequested)
 				{
-					isRun = service.Start();
-				}
-				catch(TriggerRestartException ex)
-				{
-					// services can cause overall restart
-					_logger.Info(ex, string.Format("Restart requested by service {0}.", service));
-					throw;
-				}
-				catch(Exception ex)
-				{
-					_logger.Error(ex, string.Format("Service {0} has failed.", service));
+					try
+					{
+						isRun = service.Start();
+						isRunOnce |= isRun;
+					}
+					catch (TriggerRestartException ex)
+					{
+						// services can cause overall restart
+						_logger.Info(ex, string.Format("Restart requested by service {0}.", service));
+						throw;
+					}
+					catch (Exception ex)
+					{
+						_logger.Error(ex, string.Format("Service {0} has failed.", service));
+					}
 				}
 
-				runCount += isRun ? _services.Length : -1;
-				runCount = Math.Max(0, runCount);
+				noRunCount = isRunOnce ? 0 : noRunCount + 1;
 
-				// TODO: we need here a exponential sleeping pattern, gradually
-				// increasing the sleep durations
+				// TODO: we need here a exponential sleeping pattern (increasing sleep durations)
 
 				// when there is nothing to do, it's important not to massively
 				// stress all queues for nothing, thus we go to sleep.
-				if(runCount == 0)
+				if(noRunCount >= _services.Length)
 				{
 					// We are not using 'Thread.Sleep' because we want the worker
 					// to terminate fast if 'Stop' is requested.
@@ -88,6 +98,8 @@ namespace Lokad.Cloud.Azure
 					{
 						Monitor.Wait(_sync, IdleSleep.Seconds());
 					}
+
+					noRunCount = 0;
 				}
 
 				// throws a 'TriggerRestartException' if a new package is detected.

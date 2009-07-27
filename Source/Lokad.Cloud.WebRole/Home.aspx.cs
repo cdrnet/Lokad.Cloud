@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using Lokad.Cloud.Azure;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
@@ -16,6 +15,7 @@ namespace Lokad.Cloud.Web
 		{
 			AdminsView.DataSource = GetAdmins();
 			AdminsView.DataBind();
+			LokadCloudVersion.DataBind();
 		}
 
 		IEnumerable<object> GetAdmins()

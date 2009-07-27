@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System.Reflection;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
@@ -35,5 +36,11 @@ namespace Lokad.Cloud.Web
 
 			Container = builder.Build();
 		}
+
+		/// <summary>
+		/// Assembly version, cached on startup.
+		/// </summary>
+		public static readonly string AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
 	}
 }

@@ -112,7 +112,7 @@
 		</CreateItem>
 		<Copy SourceFiles="@(testSources)" DestinationFolder="$(TestPath)" />
 
-		<CreateItem Include="$(CloudSource)\*.*;Lokad.Cloud.*.txt">
+		<CreateItem Include="$(CloudSource)\*.*;ReadMe.txt;Source\Lokad.Cloud.Framework\bin\Release\Lokad.Cloud.Framework.*">
 			<Output ItemName="cloudSources" TaskParameter="Include" />
 		</CreateItem>
 		<Copy SourceFiles="@(cloudSources)" DestinationFolder="$(CloudReadyPath)" />
@@ -124,7 +124,6 @@
 	</Target>
 
 	<Target Name="Distrib" DependsOnTargets="Clean;Build;Copy;GenerateHelp">
-		<!-- placeholder for now, need to be reviewed -->
 
 		<!-- Cloud package -->
 		<MakeDir Directories="$(PackageDirectory)" />

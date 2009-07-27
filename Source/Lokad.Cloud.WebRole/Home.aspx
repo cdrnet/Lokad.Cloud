@@ -26,4 +26,8 @@
 	<div class="warning">
 		Purge the cache of the current webrole (other instances unaffected): 
 		<asp:Button runat="server" OnClick="ClearCache_Click" Text="Clear" /></div>
+	<br />
+	
+	<h2 class="separator">System status</h2>
+	<pre><asp:Label ID="LokadCloudVersion" runat="server" Text='<%# "Lokad.Cloud " + GlobalSetup.AssemblyVersion %>' /></pre>
 </asp:Content>
