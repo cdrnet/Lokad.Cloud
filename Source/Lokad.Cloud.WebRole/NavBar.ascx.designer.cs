@@ -11,51 +11,60 @@
 namespace Lokad.Cloud.Web {
     
     
-    public partial class Nav {
+    public partial class NavBar {
         
         /// <summary>
-        /// HeadPlaceHolder control.
+        /// Home control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ContentPlaceHolder HeadPlaceHolder;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Home;
         
         /// <summary>
-        /// _LoginName control.
+        /// Assemblies control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LoginName _LoginName;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Assemblies;
         
         /// <summary>
-        /// _LoginStatus control.
+        /// Logs control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LoginStatus _LoginStatus;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Logs;
         
         /// <summary>
-        /// NavPlaceHolder control.
+        /// Services control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ContentPlaceHolder NavPlaceHolder;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Services;
         
         /// <summary>
-        /// BodyPlaceHolder control.
+        /// Scheduler control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ContentPlaceHolder BodyPlaceHolder;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Scheduler;
+        
+        /// <summary>
+        /// Workloads control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Workloads;
     }
 }

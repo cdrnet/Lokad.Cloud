@@ -124,6 +124,13 @@
     <Compile Include="Nav.Master.designer.cs">
       <DependentUpon>Nav.Master</DependentUpon>
     </Compile>
+    <Compile Include="NavBar.ascx.cs">
+      <DependentUpon>NavBar.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="NavBar.ascx.designer.cs">
+      <DependentUpon>NavBar.ascx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scheduler.aspx.cs">
       <DependentUpon>Scheduler.aspx</DependentUpon>
@@ -176,6 +183,7 @@
     <Content Include="App_Themes\Lokad\Images\logo.gif" />
     <Content Include="App_Themes\Lokad\Lokad.skin" />
     <Content Include="Home.aspx" />
+    <Content Include="NavBar.ascx" />
     <Content Include="Scheduler.aspx" />
   </ItemGroup>
   <ItemGroup>

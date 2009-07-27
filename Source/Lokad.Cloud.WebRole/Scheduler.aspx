@@ -1,7 +1,12 @@
 <%@ Page Language="C#" MasterPageFile="~/Nav.Master" AutoEventWireup="true" CodeBehind="Scheduler.aspx.cs" Inherits="Lokad.Cloud.Web.Scheduler" %>
+<%@ Register Src="NavBar.ascx" TagName="NavBar" TagPrefix="uc" %>
 
 <asp:Content ContentPlaceHolderID="HeadPlaceHolder" runat="server">
 	<title>Scheduler - Lokad.Cloud Administration Console</title>
+</asp:Content>
+
+<asp:Content ContentPlaceHolderID="NavPlaceHolder" runat="server">
+	<uc:NavBar runat="server" Selected="Scheduler" />
 </asp:Content>
 
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">

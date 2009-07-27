@@ -31,14 +31,7 @@
 		</div>
 		<div id="Visual"><h2>Lokad.Cloud - Administration Console</h2></div>
 		<div id="TopNav">
-			<ul>
-				<li><asp:HyperLink runat="server" NavigateUrl="~/Home.aspx" Text="Home" /></li>
-				<li><asp:HyperLink runat="server" NavigateUrl="~/Assemblies.aspx" Text="Assemblies" /></li>
-				<li><asp:HyperLink runat="server" NavigateUrl="~/Logs.aspx" Text="Error Logs" /></li>
-				<li><asp:HyperLink runat="server" NavigateUrl="~/Services.aspx" Text="Services" /></li>
-				<li><asp:HyperLink runat="server" NavigateUrl="~/Scheduler.aspx" Text="Scheduler" /></li>
-				<li><asp:HyperLink runat="server" NavigateUrl="~/Workloads.aspx" Text="Queues" /></li>
-			</ul>
+			<asp:ContentPlaceHolder ID="NavPlaceHolder" runat="server"></asp:ContentPlaceHolder>
 		</div>
 	</div>
 	

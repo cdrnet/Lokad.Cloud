@@ -1,9 +1,14 @@
 ﻿<%@ Page Language="C#" MasterPageFile="~/Nav.Master" AutoEventWireup="true" CodeBehind="Home.aspx.cs" Inherits="Lokad.Cloud.Web.Home" %>
+<%@ Register Src="NavBar.ascx" TagName="NavBar" TagPrefix="uc" %>
 <%@ Import Namespace="Lokad.Cloud.Azure"%>
 <%@ Import Namespace="Lokad.Cloud.Web"%>
 
 <asp:Content ContentPlaceHolderID="HeadPlaceHolder" runat="server">
 	<title>Home - Lokad.Cloud administration console</title>
+</asp:Content>
+
+<asp:Content ContentPlaceHolderID="NavPlaceHolder" runat="server">
+	<uc:NavBar runat="server" Selected="Home" />
 </asp:Content>
 
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
