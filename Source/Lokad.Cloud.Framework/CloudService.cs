@@ -159,9 +159,10 @@ namespace Lokad.Cloud.Framework
 				.Where(t => t.IsSubclassOf(typeof(CloudService)) && !t.IsAbstract && !t.IsGenericType);
 
 			// assuming that a default constructor is available
+			// ToArray needed to avoid lazy enumeration that mess-up the side effect the next line
 			var services = serviceTypes.Select(t =>
 				(CloudService)t.InvokeMember("_ctor", 
-				BindingFlags.CreateInstance, null, null, new object[0]));
+				BindingFlags.CreateInstance, null, null, new object[0])).ToArray();
 
 			services.ForEach(s => s.Providers = providers);
 

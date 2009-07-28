@@ -8,7 +8,7 @@ using Lokad.Cloud.Framework;
 
 namespace PingPong
 {
-	/// <summary>Retrieving messages from </summary>
+	/// <summary>Retrieving messages from 'ping' and put them in 'pong'.</summary>
 	[QueueServiceSettings(AutoStart = true, QueueName = "ping")]
 	public class PingPongService : QueueService<double>
 	{
@@ -19,7 +19,7 @@ namespace PingPong
 				var y = x * x; // square operation
 				Put(new[]{y}, "pong");
 				
-				// Optionnaly, we could manually delete incoming messages,
+				// Optionaly, we could manually delete incoming messages,
 				// but here, we let the framework deal with that.
  
 				// Delete(new[]{x});

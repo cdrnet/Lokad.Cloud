@@ -18,6 +18,7 @@ namespace Lokad.Cloud.Framework
 	/// <summary>This cloud service is automatically called by the framework
 	/// on scheduled basis. Scheduling options are provided through the
 	/// <see cref="ScheduledServiceSettingsAttribute"/>.</summary>
+	/// <remarks>A empty constructor is needed for instantiation through reflection.</remarks>
 	public abstract class ScheduledService : CloudService
 	{
 		public const string ScheduleStateContainer = "lokad-cloud-schedule";

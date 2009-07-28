@@ -17,6 +17,7 @@ namespace Lokad.Cloud.Framework
 	/// If the intances are larger, the framework will wrap them into the cloud storage.</para>
 	/// <para>Whenever possible, we suggest to design the service logic to be idempotent
 	/// in order to make the service reliable and ultimately consistent.</para>
+	/// <para>A empty constructor is needed for instantiation through reflection.</para>
 	/// </remarks>
 	public abstract class QueueService<T> : CloudService
 	{
