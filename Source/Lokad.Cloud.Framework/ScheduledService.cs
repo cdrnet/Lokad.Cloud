@@ -26,31 +26,12 @@ namespace Lokad.Cloud.Framework
 		bool _isInitialized;
 		TimeSpan _triggerInterval;
 
-		public TimeSpan TriggerInterval
-		{
-			get
-			{
-				return _triggerInterval;
-			}
-			set
-			{
-				_isInitialized = true;
-				_triggerInterval = value;
-			}
-		}
-
-		/// <summary>IoC constructor.</summary>
-		protected ScheduledService(ProvidersForCloudStorage providers) : base(providers)
-		{
-			// nothing	
-		}
-
 		/// <seealso cref="CloudService.StartImpl"/>
 		protected sealed override bool StartImpl()
 		{
 			// retrieving the state info if any
 			var stateName = ScheduleStatePrefix + Delimiter + Name;
-			var state = _providers.BlobStorage.GetBlob<ScheduledServiceState>(ScheduleStateContainer, stateName);
+			var state = Providers.BlobStorage.GetBlob<ScheduledServiceState>(ScheduleStateContainer, stateName);
 
 			if(!_isInitialized)
 			{
@@ -67,13 +48,16 @@ namespace Lokad.Cloud.Framework
 					// recording a fresh schedule state in the cloud
 					_triggerInterval = settings.TriggerInterval.Seconds();
 
-					_providers.BlobStorage.PutBlob(
+					var writeSucceeded = Providers.BlobStorage.PutBlob(
 						ScheduleStateContainer, stateName, 
 						new ScheduledServiceState
 							{
 								LastExecuted = DateTime.MinValue,
 								TriggerInterval = _triggerInterval
-							});
+							}, false);
+
+					// if write fails, another worker is concurrently executing
+					if(!writeSucceeded) return false;
 				}
 				else
 				{
@@ -83,12 +67,13 @@ namespace Lokad.Cloud.Framework
 				_isInitialized = true;
 			}
 
-			// checking if the last update is not too fresh, and eventually
+			// checking if the last update is not too recent, and eventually
 			// update this value if it's old enough. When the update fails,
 			// it simply means that another worker is already on its ways
 			// to execute the service.
-			var updated = _providers.BlobStorage.UpdateIfNotModified<ScheduledServiceState>(
-				ScheduleStateContainer, stateName, currentState =>
+			var updated = Providers.BlobStorage.UpdateIfNotModified<ScheduledServiceState>(
+				ScheduleStateContainer, stateName, 
+				currentState =>
 					{
 						var now = DateTime.Now;
 

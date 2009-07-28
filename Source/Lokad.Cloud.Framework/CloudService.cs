@@ -37,12 +37,12 @@ namespace Lokad.Cloud.Framework
 		public const string Delimiter = "/";
 
 		/// <summary>Indicates the state of the service, as retrieved during the last check.</summary>
-		CloudServiceState _state;
+		CloudServiceState _state = CloudServiceState.Started;
 
 		/// <summary>Indicates the last time the service has checked its excution status.</summary>
 		DateTime _lastStateCheck = DateTime.MinValue;
 
-		internal protected ProvidersForCloudStorage _providers;
+		ProvidersForCloudStorage _providers;
 
 		/// <summary>Indicates the frequency where the service is actually checking for its state.</summary>
 		public static TimeSpan StateCheckInterval
@@ -63,11 +63,11 @@ namespace Lokad.Cloud.Framework
 			get { return GetType().FullName; }
 		}
 
-		/// <summary>IoC constructor.</summary>
-		protected CloudService(ProvidersForCloudStorage providers)
+		/// <summary>Providers used by the cloud service to access the storage.</summary>
+		public ProvidersForCloudStorage Providers
 		{
-			_providers = providers;
-			_state = CloudServiceState.Started;
+			get { return _providers; }
+			set { _providers = value; }
 		}
 
 		/// <summary>Wrapper method for the <see cref="StartImpl"/> method. Checks
@@ -151,16 +151,21 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>Get all services instantiated through reflection.</summary>
-		public static IEnumerable<CloudService> GetAllServices(ProvidersForCloudStorage providers)
+		internal static IEnumerable<CloudService> GetAllServices(ProvidersForCloudStorage providers)
 		{
 			// invoking all loaded services through reflexion
 			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
 				.Select(a => a.GetExportedTypes()).SelectMany(x => x)
 				.Where(t => t.IsSubclassOf(typeof(CloudService)) && !t.IsAbstract && !t.IsGenericType);
 
-			return serviceTypes.Select(t =>
+			// assuming that a default constructor is available
+			var services = serviceTypes.Select(t =>
 				(CloudService)t.InvokeMember("_ctor", 
-				BindingFlags.CreateInstance, null, null, new object[] { providers }));
+				BindingFlags.CreateInstance, null, null, new object[0]));
+
+			services.ForEach(s => s.Providers = providers);
+
+			return services;
 		}
 	}
 }

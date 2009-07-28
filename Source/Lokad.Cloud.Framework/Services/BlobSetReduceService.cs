@@ -32,11 +32,6 @@ namespace Lokad.Cloud.Services
 	{
 		public const string QueueName = "lokad-cloud-blobsets-reduce";
 
-		/// <summary>IoC constructor.</summary>
-		public BlobSetReduceService(ProvidersForCloudStorage providers) : base(providers)
-		{
-		}
-
 		protected override void Start(IEnumerable<BlobSetReduceMessage> messages)
 		{
 			const string containerName = BlobSet.ContainerName;
@@ -46,7 +41,7 @@ namespace Lokad.Cloud.Services
 			{
 				var settingsBlobName = message.SourcePrefix + delimiter + message.SettingsSuffix;
 				
-				var settings = _providers.BlobStorage.
+				var settings = Providers.BlobStorage.
 					GetBlob<BlobSetReduceSettings>(containerName, settingsBlobName);
 
 				// cleanup has already been performed, reduction is complete.
@@ -60,7 +55,7 @@ namespace Lokad.Cloud.Services
 
 				var reductionCounterBlobName = message.SourcePrefix + delimiter + settings.ReductionCounter;
 
-				var items = _providers.QueueStorage.Get<object>(settings.WorkQueue, 2);
+				var items = Providers.QueueStorage.Get<object>(settings.WorkQueue, 2);
 
 				// if there are at least two items, then reduce them
 				if (items.Count() >= 2)
@@ -72,10 +67,10 @@ namespace Lokad.Cloud.Services
 					{
 						var reducted = BlobSet.InvokeAsDelegate(settings.Reducer, current, next);
 
-						_providers.QueueStorage.Put(settings.WorkQueue, new[] {reducted});
-						_providers.QueueStorage.Delete(settings.WorkQueue, new []{current, next});
+						Providers.QueueStorage.Put(settings.WorkQueue, new[] {reducted});
+						Providers.QueueStorage.Delete(settings.WorkQueue, new []{current, next});
 
-						BlobSet.RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
+						BlobSet.RetryUpdate(() => Providers.BlobStorage.UpdateIfNotModified(
 							containerName,
 							reductionCounterBlobName,
 							x => x - 1,
@@ -87,25 +82,25 @@ namespace Lokad.Cloud.Services
 						// in batches here.
 
 						// retrieving the next item and keep up with the reduction
-						var nextItems = _providers.QueueStorage.Get<object>(settings.WorkQueue, 1);
+						var nextItems = Providers.QueueStorage.Get<object>(settings.WorkQueue, 1);
 						next = nextItems.Any() ? nextItems.First() : null;
 					}
 
 					if (remainingReductions == 0)
 					{
-						_providers.QueueStorage.Put(settings.ReductionQueue, new[] { current });
+						Providers.QueueStorage.Put(settings.ReductionQueue, new[] { current });
 
 						// performing cleanup
-						_providers.BlobStorage.DeleteBlob(containerName, settingsBlobName);
-						_providers.BlobStorage.DeleteBlob(containerName, reductionCounterBlobName);
-						_providers.QueueStorage.DeleteQueue(settings.WorkQueue);
+						Providers.BlobStorage.DeleteBlob(containerName, settingsBlobName);
+						Providers.BlobStorage.DeleteBlob(containerName, reductionCounterBlobName);
+						Providers.QueueStorage.DeleteQueue(settings.WorkQueue);
 					}
 				}
 				else
 				{
 					// not enough items retrieved for reduction
 					remainingReductions = 
-						_providers.BlobStorage.GetBlob<long>(containerName, reductionCounterBlobName);
+						Providers.BlobStorage.GetBlob<long>(containerName, reductionCounterBlobName);
                 }
 
 				// reduction is still under way

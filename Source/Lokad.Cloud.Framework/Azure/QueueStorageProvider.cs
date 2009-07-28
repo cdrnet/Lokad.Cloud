@@ -296,7 +296,10 @@ namespace Lokad.Cloud.Azure
  
 				lock(_sync)
 				{
-					var tuple = _inprocess[message];
+					// ignoring message if already deleted
+					Tuple<Message, bool> tuple;
+					if(!_inprocess.TryGetValue(message, out tuple)) break;
+
 					rawMessage = tuple.Item1;
 					isOverflowing = tuple.Item2;
 				}

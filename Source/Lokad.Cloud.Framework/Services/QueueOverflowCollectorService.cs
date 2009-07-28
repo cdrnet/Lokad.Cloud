@@ -27,16 +27,12 @@ namespace Lokad.Cloud.Framework.Services
 			get { return "lokad-cloud-queue-overflow-collector"; }
 		}
 
-		public QueueOverflowCollectorService(ProvidersForCloudStorage providers) : base(providers)
-		{
-		}
-
 		protected override void StartOnSchedule()
 		{
 			var cn = QueueService.OverflowingContainer;
 			
 			// lazy enumeration over the overflowing messages
-			foreach(var blobName in _providers.BlobStorage.List(cn, null))
+			foreach(var blobName in Providers.BlobStorage.List(cn, null))
 			{
 				// 19 because of custom datetime format, see below
 				var prefix = blobName.Substring(0, 19); 
@@ -48,7 +44,7 @@ namespace Lokad.Cloud.Framework.Services
 				// if the overflowing message is expired, delete it
 				if(DateTime.Now > expiration)
 				{
-					_providers.BlobStorage.DeleteBlob(cn, blobName);
+					Providers.BlobStorage.DeleteBlob(cn, blobName);
 				}
 				else
 				{

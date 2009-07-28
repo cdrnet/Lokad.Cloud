@@ -33,10 +33,6 @@ namespace Lokad.Cloud.Services
 	{
 		public const string QueueName = "lokad-cloud-blobsets-map";
 
-		public BlobSetMapService(ProvidersForCloudStorage providers) : base(providers)
-		{
-		}
-
 		protected override void Start(IEnumerable<BlobSetMapMessage> messages)
 		{
 			const string containerName = BlobSet.ContainerName;
@@ -53,21 +49,21 @@ namespace Lokad.Cloud.Services
 
 				// TODO: need to support caching for the mapper
                 // retrieving the mapper
-            	var mapSettings = _providers.BlobStorage.
+            	var mapSettings = Providers.BlobStorage.
 					GetBlob<BlobSetMapSettings>(containerName, settingsBlobName);
 
 				// retrieving the input
-            	var input = _providers.BlobStorage.GetBlob<object>(containerName, inputBlobName);
+            	var input = Providers.BlobStorage.GetBlob<object>(containerName, inputBlobName);
 
 				// map
             	var output = BlobSet.InvokeAsDelegate(mapSettings.Mapper, input);
 
 				// saving the output
-				_providers.BlobStorage.PutBlob(containerName, outputBlobName, output);
+				Providers.BlobStorage.PutBlob(containerName, outputBlobName, output);
 
 				// Decrementing the counter once the operation is completed
             	var remainingMappings = long.MaxValue;
-				BlobSet.RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified(
+				BlobSet.RetryUpdate(() => Providers.BlobStorage.UpdateIfNotModified(
 					containerName,
 					counterBlobName, 
 					x => x - 1, 
@@ -80,7 +76,7 @@ namespace Lokad.Cloud.Services
 				if(remainingMappings == 0)
 				{
 					// pushing the message as a completion signal
-					_providers.QueueStorage.Put(
+					Providers.QueueStorage.Put(
 						mapSettings.OnCompletedQueueName, new[]{mapSettings.OnCompleted});
 				}
             }

@@ -8,20 +8,21 @@ using Lokad.Cloud.Framework;
 
 namespace PingPong
 {
+	/// <summary>Retrieving messages from </summary>
 	[QueueServiceSettings(AutoStart = true, QueueName = "ping")]
 	public class PingPongService : QueueService<double>
 	{
-		public PingPongService(ProvidersForCloudStorage providers) : base(providers)
-		{
-		}
-
 		protected override void Start(IEnumerable<double> messages)
 		{
 			foreach(var x in messages)
 			{
 				var y = x * x; // square operation
 				Put(new[]{y}, "pong");
-				Delete(new[]{x});
+				
+				// Optionnaly, we could manually delete incoming messages,
+				// but here, we let the framework deal with that.
+ 
+				// Delete(new[]{x});
 			}
 		}
 	}

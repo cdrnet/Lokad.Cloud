@@ -33,9 +33,8 @@ namespace Lokad.Cloud.Framework
 			get { return _queueName; }
 		}
 
-		/// <summary>IoC constructor.</summary>
-		protected QueueService(ProvidersForCloudStorage providers)
-			: base(providers)
+		/// <summary>Default constructor</summary>
+		public QueueService()
 		{
 			var settings = GetType().GetAttribute<QueueServiceSettingsAttribute>(true);
 
@@ -46,19 +45,23 @@ namespace Lokad.Cloud.Framework
 			}
 			else // default setting
 			{
-				_queueName = _providers.TypeMapper.GetStorageName(typeof (T));
+				_queueName = Providers.TypeMapper.GetStorageName(typeof (T));
 				_batchSize = 1;
 			}
 		}
 
-		/// <summary>Do not override this method, use <see cref="Start(IEnumerable{T})"/>
+		/// <summary>Do not try to override this method, use <see cref="Start(IEnumerable{T})"/>
 		/// instead.</summary>
-		protected override bool StartImpl()
+		protected sealed override bool StartImpl()
 		{
-			var messages = _providers.QueueStorage.Get<T>(_queueName, _batchSize);
+			var messages = Providers.QueueStorage.Get<T>(_queueName, _batchSize);
 
 			var count = messages.Count();
 			if (count > 0) Start(messages);
+
+			// Messages might have already been deleted by the 'Start' method.
+			// It's OK, 'Delete' is idempotent.
+			Delete(messages);
 
 			return count > 0;
 		}
@@ -80,7 +83,7 @@ namespace Lokad.Cloud.Framework
 		/// before asking for more.</remarks>
 		public IEnumerable<T> GetMore(int count)
 		{
-			return _providers.QueueStorage.Get<T>(_queueName, count);
+			return Providers.QueueStorage.Get<T>(_queueName, count);
 		}
 
 		/// <summary>Get more message from an arbitrary queue.</summary>
@@ -90,14 +93,14 @@ namespace Lokad.Cloud.Framework
 		/// <returns>Retrieved message (enumeration might be empty).</returns>
 		public IEnumerable<U> GetMore<U>(int count, string queueName)
 		{
-			return _providers.QueueStorage.Get<U>(_queueName, count);
+			return Providers.QueueStorage.Get<U>(_queueName, count);
 		}
 
 		/// <summary>Delete messages retrieved either through <see cref="StartImpl"/>
 		/// or through <see cref="GetMore"/>.</summary>
 		public void Delete<U>(IEnumerable<U> messages)
 		{
-			_providers.QueueStorage.Delete(_queueName, messages);
+			Providers.QueueStorage.Delete(_queueName, messages);
 		}
 	}
 }
