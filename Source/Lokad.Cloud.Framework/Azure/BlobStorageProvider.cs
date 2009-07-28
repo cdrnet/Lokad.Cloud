@@ -21,16 +21,10 @@ namespace Lokad.Cloud.Azure
 		readonly BlobStorage _blobStorage;
 		readonly IFormatter _formatter;
 
-		readonly ActionPolicy _policy; // needed to deal with delayed queue or container creations
-
 		public BlobStorageProvider(BlobStorage blobStorage, IFormatter formatter)
 		{
 			_blobStorage = blobStorage;
 			_formatter = formatter;
-
-			// retry policy for delayed queue or container creation
-			_policy = ActionPolicy.With(ex => ex is StorageServerException || ex is StorageClientException)
-				.Retry(30, (e, i) => SystemUtil.Sleep((100 * i).Milliseconds()));
 		}
 
 		public bool CreateContainer(string containerName)
@@ -69,7 +63,7 @@ namespace Lokad.Cloud.Azure
 				{
 					// caution the container might have been freshly deleted
 					var flag = false;
-					_policy.Do(() => 
+					PolicyHelper.SlowInstantiation.Do(() => 
 					{
 						container.CreateContainer();
 
@@ -181,6 +175,9 @@ namespace Lokad.Cloud.Azure
 				{
 					input = default(T);
 					container.CreateContainer();
+
+					// HACK: if the container has just been deleted,
+					// creation could be delayed and would need a proper handling.
 				}
 				else
 				{

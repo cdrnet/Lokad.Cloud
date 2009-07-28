@@ -41,8 +41,6 @@ namespace Lokad.Cloud.Azure
 		readonly BlobStorage _blobStorage; // needed for overflowing messages
 		readonly IFormatter _formatter;
 
-		readonly ActionPolicy _policy; // needed to deal with delayed queue or container creation
-
 		// messages currently being processed (boolean property indicates if the message is overflowing)
 		private readonly Dictionary<object, Tuple<Message, bool>> _inprocess;
 
@@ -54,31 +52,7 @@ namespace Lokad.Cloud.Azure
 			_blobStorage = blobStorage;
 			_formatter = formatter;
 
-			// retry policy for delayed queue or container creation
-			// client exceptions are also intercepted (waiting for the instantiation)
-			_policy = ActionPolicy.With(HandleSlowInstantiationException)
-				.Retry(30, (e, i) => SystemUtil.Sleep((100 * i).Milliseconds()));
-
 			_inprocess = new Dictionary<object, Tuple<Message, bool>>();
-		}
-
-		static bool HandleSlowInstantiationException(Exception ex)
-		{
-			if (ex is StorageServerException)
-				return true;
-
-			if (ex is StorageClientException)
-			{
-				var exc = ex as StorageClientException;
-
-				if (exc.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound ||
-					exc.ErrorCode == StorageErrorCode.ContainerNotFound)
-				{
-					return true;
-				}
-			}
-
-			return false;
 		}
 
 		public IEnumerable<string> List(string prefix)
@@ -214,8 +188,8 @@ namespace Lokad.Cloud.Azure
 						if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
 						{
 							// It usually takes time before the container gets available.
-							// Note that the container might been freshly deleted.
-							_policy.Do(() =>
+							// (the container might have been freshly deleted).
+							PolicyHelper.SlowInstantiation.Do(() =>
 								{
 									container.CreateContainer();
 									container.CreateBlob(blobProperties, blobContents, false);
@@ -250,8 +224,8 @@ namespace Lokad.Cloud.Azure
 					if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
 					{
 						// It usually takes time before the queue gets available
-						// Note that the queue might also have been freshly deleted.
-						_policy.Do(() =>
+						// (the queue might also have been freshly deleted).
+						PolicyHelper.SlowInstantiation.Do(() =>
 							{
 								queue.CreateQueue();
 								queue.PutMessage(new Message(buffer));

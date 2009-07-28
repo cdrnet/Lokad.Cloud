@@ -71,6 +71,7 @@
     <Compile Include="Azure\BlobStorageProvider.cs" />
     <Compile Include="Azure\CloudLogger.cs" />
     <Compile Include="Azure\DBAPI.cs" />
+    <Compile Include="Azure\PolicyHelper.cs" />
     <Compile Include="Azure\QueueStorageProvider.cs" />
     <Compile Include="Azure\ServiceBalancerCommand.cs" />
     <Compile Include="Azure\StorageModule.cs" />
