@@ -22,7 +22,7 @@ namespace PingPongClient
 			var input = new[] {0.0, 1.0, 2.0};
 
 			// pushing item to the 'ping' queue
-			provider.Put("ping", input);
+			provider.PutRange("ping", input);
 			foreach(var x in input)
 			{
 				Console.Write("ping={0} ", x);
@@ -38,7 +38,7 @@ namespace PingPongClient
 				foreach(var x in provider.Get<double>("pong", 10))
 				{
 					Console.Write("pong={0} ", x);
-					provider.Delete("pong", new[] {x});
+					provider.DeleteRange("pong", new[] {x});
 				}
 
 				Console.Write("sleep 1000ms. ");

@@ -17,7 +17,7 @@ namespace PingPong
 			foreach(var x in messages)
 			{
 				var y = x * x; // square operation
-				Put(new[]{y}, "pong");
+				PutRange(new[]{y}, "pong");
 				
 				// Optionaly, we could manually delete incoming messages,
 				// but here, we let the framework deal with that.

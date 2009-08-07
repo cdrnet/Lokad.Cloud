@@ -31,7 +31,7 @@ namespace Lokad.Cloud.Core
 		/// <param name="queueName">Identifier of the queue where messages are put.</param>
 		/// <param name="messages">Messages to be put.</param>
 		/// <remarks>If the queue does not exist, it gets created.</remarks>
-		void Put<T>(string queueName, IEnumerable<T> messages);
+		void PutRange<T>(string queueName, IEnumerable<T> messages);
 
 		/// <summary>Clear all the messages from the specified queue.</summary>
 		void Clear(string queueName);
@@ -42,7 +42,7 @@ namespace Lokad.Cloud.Core
 		/// <param name="messages">Messages to be removed.</param>
 		/// <returns>The number of messages actually deleted.</returns>
 		/// <remarks>Messages must have first been retrieved through <see cref="Get{T}"/>.</remarks>
-		int Delete<T>(string queueName, IEnumerable<T> messages);
+		int DeleteRange<T>(string queueName, IEnumerable<T> messages);
 
 		/// <summary>Deletes a queue.</summary>
 		/// <remarks><c>true</c> if the queue name has been actually deleted.</remarks>

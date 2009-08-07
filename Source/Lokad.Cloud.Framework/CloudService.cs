@@ -162,29 +162,29 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>Put messages into the queue implicitely associated to the type <c>T</c>.</summary>
-		public void Put<T>(IEnumerable<T> messages)
+		public void PutRange<T>(IEnumerable<T> messages)
 		{
-			Put(messages, _providers.TypeMapper.GetStorageName(typeof(T)));
+			PutRange(messages, _providers.TypeMapper.GetStorageName(typeof(T)));
 		}
 
 		/// <summary>Put messages into the queue identified by <c>queueName</c>.</summary>
-		public void Put<T>(IEnumerable<T> messages, string queueName)
+		public void PutRange<T>(IEnumerable<T> messages, string queueName)
 		{
-			_providers.QueueStorage.Put(queueName, messages);
+			_providers.QueueStorage.PutRange(queueName, messages);
 		}
 
 		/// <summary>Put message into the queue implicitly associated to the type <c>T</c> at the
 		/// time specified by the <c>triggerTime</c>.</summary>
-		public void PutWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime)
+		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime)
 		{
-			PutWithDelay(messages, _providers.TypeMapper.GetStorageName(typeof(T)), triggerTime);
+			PutRangeWithDelay(messages, _providers.TypeMapper.GetStorageName(typeof(T)), triggerTime);
 		}
 
 		/// <summary>Put message into the queue identified by <c>queueName</c> at the
 		/// time specified by the <c>triggerTime</c>.</summary>
 		/// <remarks>This method acts as a delayed put operation, the message not being put
 		/// before the <c>triggerTime</c> is reached.</remarks>
-		public void PutWithDelay<T>(IEnumerable<T> messages, string queueName, DateTime triggerTime)
+		public void PutRangeWithDelay<T>(IEnumerable<T> messages, string queueName, DateTime triggerTime)
 		{
 			foreach (var message in messages)
 			{

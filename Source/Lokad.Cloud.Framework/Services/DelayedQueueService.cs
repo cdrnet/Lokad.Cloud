@@ -40,7 +40,7 @@ namespace Lokad.Cloud.Services
 				if (DateTime.Now > expiration)
 				{
 					var dm = Providers.BlobStorage.GetBlob<DelayedMessage>(cn, blobName);
-					Providers.QueueStorage.Put(dm.QueueName, new []{ dm.InnerMessage});
+					Providers.QueueStorage.PutRange(dm.QueueName, new []{ dm.InnerMessage});
 					Providers.BlobStorage.DeleteBlob(cn, blobName);
 				}
 				else

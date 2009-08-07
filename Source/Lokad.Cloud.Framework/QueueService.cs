@@ -101,7 +101,7 @@ namespace Lokad.Cloud.Framework
 		/// or through <see cref="GetMore"/>.</summary>
 		public void Delete<U>(IEnumerable<U> messages)
 		{
-			Providers.QueueStorage.Delete(_queueName, messages);
+			Providers.QueueStorage.DeleteRange(_queueName, messages);
 		}
 	}
 }

@@ -77,7 +77,7 @@ namespace Lokad.Cloud.Services
 				if(remainingMappings == 0)
 				{
 					// pushing the message as a completion signal
-					Providers.QueueStorage.Put(
+					Providers.QueueStorage.PutRange(
 						mapSettings.OnCompletedQueueName, new[]{mapSettings.OnCompleted});
 				}
             }
