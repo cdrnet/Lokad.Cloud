@@ -148,6 +148,11 @@ namespace Lokad.Cloud.Framework
 		public void MapToBlobSet<U, M>(
 			string destPrefix, Func<T, U> mapper, M onCompleted, string onCompletedQueueName)
 		{
+			if(Prefix.Equals(destPrefix))
+			{
+				throw new ArgumentException("Can't map BlobSet to itself, a different destination is needed.");
+			}
+
 			// HACK: sequential iteration over the BlobSet (not scalable)
 
 			var settings = new BlobSetMapSettings
