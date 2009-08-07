@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -27,12 +28,34 @@ namespace Lokad.Cloud.Framework
 		Stopped = 1
 	}
 
+	/// <summary>Used as a wrapper for delayed messages (stored in the
+	/// blob storage waiting to be pushed into a queue).</summary>
+	/// <seealso cref="CloudService.PutWithDelay{T}"/>
+	[Serializable]
+	public class DelayedMessage
+	{
+		/// <summary>Name of the queue where the inner message will be put
+		/// once the delay is expired.</summary>
+		public string QueueName { get; set; }
+
+		/// <summary>Inner message.</summary>
+		public object InnerMessage { get; set; }
+
+		/// <summary>Full constructor.</summary>
+		public DelayedMessage(string queueName, object innerMessage)
+		{
+			QueueName = queueName;
+			InnerMessage = innerMessage;
+		}
+	}
+
 	/// <summary>Base class for cloud services.</summary>
 	/// <remarks>Do not inherit directly from <see cref="CloudService"/>, inherit from
 	/// <see cref="QueueService{T}"/> or <see cref="ScheduledService"/> instead.</remarks>
 	public abstract class CloudService
 	{
 		public const string ServiceStateContainer = "lokad-cloud-services";
+		public const string DelayedMessageContainer = "lokad-cloud-messages";
 		public const string ServiceStatePrefix = "state";
 		public const string Delimiter = "/";
 
@@ -148,6 +171,32 @@ namespace Lokad.Cloud.Framework
 		public void Put<T>(IEnumerable<T> messages, string queueName)
 		{
 			_providers.QueueStorage.Put(queueName, messages);
+		}
+
+		/// <summary>Put message into the queue implicitly associated to the type <c>T</c> at the
+		/// time specified by the <c>triggerTime</c>.</summary>
+		public void PutWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime)
+		{
+			PutWithDelay(messages, _providers.TypeMapper.GetStorageName(typeof(T)), triggerTime);
+		}
+
+		/// <summary>Put message into the queue identified by <c>queueName</c> at the
+		/// time specified by the <c>triggerTime</c>.</summary>
+		/// <remarks>This method acts as a delayed put operation, the message not being put
+		/// before the <c>triggerTime</c> is reached.</remarks>
+		public void PutWithDelay<T>(IEnumerable<T> messages, string queueName, DateTime triggerTime)
+		{
+			foreach (var message in messages)
+			{
+				var expirationPrefix = triggerTime.ToString(
+					"yyyy/MM/dd/hh/mm/ss/ffff/", CultureInfo.InvariantCulture);
+
+				// GUID avoids blob name collisions
+				var blobName = expirationPrefix + Guid.NewGuid().ToString("N");
+
+				_providers.BlobStorage.PutBlob(DelayedMessageContainer,
+					blobName, new DelayedMessage(queueName, message));
+			}
 		}
 
 		/// <summary>Get all services instantiated through reflection.</summary>

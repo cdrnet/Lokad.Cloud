@@ -28,7 +28,8 @@ namespace Lokad.Cloud.Services
 
 	/// <summary>Framework service part of Lokad.Cloud. This service is used to
 	/// perform map operations between <see cref="BlobSet{T}"/>.</summary>
-	[QueueServiceSettings(AutoStart = true, QueueName = QueueName)]
+	[QueueServiceSettings(AutoStart = true, QueueName = QueueName,
+		Description = "Performs Map operations on BlobSets.")]
 	public class BlobSetMapService : QueueService<BlobSetMapMessage>
 	{
 		public const string QueueName = "lokad-cloud-blobsets-map";

@@ -27,7 +27,8 @@ namespace Lokad.Cloud.Services
 
 	/// <summary>Framework service part of Lokad.Cloud. This service is used to
 	/// perform reduce operations starting from a <see cref="BlobSet{T}"/>.</summary>
-	[QueueServiceSettings(AutoStart = true, QueueName = QueueName, BatchSize = 1)]
+	[QueueServiceSettings(AutoStart = true, QueueName = QueueName, BatchSize = 1,
+		Description = "Perfoms reduce operation on BlobSets.")]
 	public class BlobSetReduceService : QueueService<BlobSetReduceMessage>
 	{
 		public const string QueueName = "lokad-cloud-blobsets-reduce";

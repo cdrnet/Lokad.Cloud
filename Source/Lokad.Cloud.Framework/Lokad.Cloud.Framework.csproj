@@ -93,6 +93,7 @@
     <Compile Include="ScheduledServiceSettingsAttribute.cs" />
     <Compile Include="Services\BlobSetMapService.cs" />
     <Compile Include="Services\BlobSetReduceService.cs" />
+    <Compile Include="Services\DelayedQueueService.cs" />
     <Compile Include="Services\QueueOverflowCollectorService.cs" />
     <Compile Include="StorageClient\Authentication.cs" />
     <Compile Include="StorageClient\BlobStorage.cs" />

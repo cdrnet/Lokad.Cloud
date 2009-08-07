@@ -17,8 +17,8 @@ namespace Lokad.Cloud.Framework.Services
 {
 	[ScheduledServiceSettings(
 		AutoStart = true, 
-		Description = "Garbage collect overflowing queue items after 7 days",
-		TriggerInterval = 24 * 60 * 60)] // 1 execution a day by default
+		Description = "Garbage collect overflowing queue items after 7 days.",
+		TriggerInterval = 24 * 60 * 60)] // 1 execution per day by default
 	public class QueueOverflowCollectorService : ScheduledService
 	{
 		/// <remarks>Name is override for consistency in the framework.</remarks>
@@ -29,8 +29,8 @@ namespace Lokad.Cloud.Framework.Services
 
 		protected override void StartOnSchedule()
 		{
-			var cn = QueueService.OverflowingContainer;
-			
+			const string cn = QueueService.OverflowingContainer;
+
 			// lazy enumeration over the overflowing messages
 			foreach(var blobName in Providers.BlobStorage.List(cn, null))
 			{
@@ -39,7 +39,8 @@ namespace Lokad.Cloud.Framework.Services
 
 				// Prefix pattern used for the storage is yyyy/MM/dd/...
 				// The prefix is encoding the expiration date of the overflowing message.
-				var expiration = DateTime.ParseExact(prefix, "yyyy/MM/dd/hh/mm/ss", CultureInfo.InvariantCulture);
+				var expiration = DateTime.ParseExact(prefix, 
+					"yyyy/MM/dd/hh/mm/ss", CultureInfo.InvariantCulture);
 
 				// if the overflowing message is expired, delete it
 				if(DateTime.Now > expiration)
@@ -48,7 +49,7 @@ namespace Lokad.Cloud.Framework.Services
 				}
 				else
 				{
-					// overflowing message are iterated in date-increasing order
+					// overflowing messages are iterated in date-increasing order
 					// as soon a non-expired overflowing message is encountered
 					// just stop the process.
 					break;
