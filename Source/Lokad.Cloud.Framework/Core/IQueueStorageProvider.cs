@@ -26,6 +26,9 @@ namespace Lokad.Cloud.Core
 		/// <returns>Enumeration of messages, possibly empty.</returns>
 		IEnumerable<T> Get<T>(string queueName, int count);
 
+		/// <summary>Put a message on a queue.</summary>
+		void Put<T>(string queueName, T message);
+
 		/// <summary>Put messages on a queue.</summary>
 		/// <typeparam name="T">Type of the messages.</typeparam>
 		/// <param name="queueName">Identifier of the queue where messages are put.</param>
@@ -35,6 +38,10 @@ namespace Lokad.Cloud.Core
 
 		/// <summary>Clear all the messages from the specified queue.</summary>
 		void Clear(string queueName);
+
+		/// <summary>Deletes a message from a queue.</summary>
+		/// <returns><c>True</c> if the message has been deleted.</returns>
+		bool Delete<T>(string queueName, T message);
 
 		/// <summary>Deletes messages from a queue.</summary>
 		/// <typeparam name="T">Type of the messages.</typeparam>

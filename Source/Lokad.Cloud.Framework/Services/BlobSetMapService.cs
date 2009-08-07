@@ -71,7 +71,7 @@ namespace Lokad.Cloud.Services
 					out remainingMappings));
 
 				// deleting message
-				Delete(new[]{message});
+				DeleteRange(new[]{message});
 
 				// HACK: failing processes could generate retry, and eventually negative values here.
 				if(remainingMappings == 0)

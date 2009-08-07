@@ -160,6 +160,11 @@ namespace Lokad.Cloud.Azure
 			return messages;
 		}
 
+		public void Put<T>(string queueName, T message)
+		{
+			PutRange(queueName, new[]{message});
+		}
+
 		public void PutRange<T>(string queueName, IEnumerable<T> messages)
 		{
 			var queue = _queueStorage.GetQueue(queueName);
@@ -255,6 +260,11 @@ namespace Lokad.Cloud.Azure
 				}
 				throw;
 			}
+		}
+
+		public bool Delete<T>(string queueName, T message)
+		{
+			return DeleteRange(queueName, new[] {message}) > 0;
 		}
 
 		public int DeleteRange<T>(string queueName, IEnumerable<T> messages)

@@ -62,7 +62,7 @@ namespace Lokad.Cloud.Framework
 
 			// Messages might have already been deleted by the 'Start' method.
 			// It's OK, 'Delete' is idempotent.
-			Delete(messages);
+			DeleteRange(messages);
 
 			return count > 0;
 		}
@@ -71,7 +71,7 @@ namespace Lokad.Cloud.Framework
 		/// available for processing.</summary>
 		/// <param name="messages">Messages to be processed.</param>
 		/// <remarks>
-		/// We suggest to make messages deleted asap through the <see cref="Delete"/>
+		/// We suggest to make messages deleted asap through the <see cref="DeleteRange{U}"/>
 		/// method. Otherwise, messages will be automatically deleted when the method
 		/// returns (except if an exception is thrown obviously).
 		/// </remarks>
@@ -80,7 +80,7 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Get more messages from the underlying queue.</summary>
 		/// <param name="count">Maximal number of messages to be retrieved.</param>
 		/// <returns>Retrieved messages (enumeration might be empty).</returns>
-		/// <remarks>It is suggested to <see cref="Delete"/> messages first
+		/// <remarks>It is suggested to <see cref="DeleteRange{U}"/> messages first
 		/// before asking for more.</remarks>
 		public IEnumerable<T> GetMore(int count)
 		{
@@ -97,9 +97,16 @@ namespace Lokad.Cloud.Framework
 			return Providers.QueueStorage.Get<U>(_queueName, count);
 		}
 
-		/// <summary>Delete messages retrieved either through <see cref="StartImpl"/>
+		/// <summary>Delete message retrieved either through <see cref="Start"/>
 		/// or through <see cref="GetMore"/>.</summary>
-		public void Delete<U>(IEnumerable<U> messages)
+		public void Delete<U>(U message)
+		{
+			Providers.QueueStorage.Delete(_queueName, message);
+		}
+
+		/// <summary>Delete messages retrieved either through <see cref="Start"/>
+		/// or through <see cref="GetMore"/>.</summary>
+		public void DeleteRange<U>(IEnumerable<U> messages)
 		{
 			Providers.QueueStorage.DeleteRange(_queueName, messages);
 		}

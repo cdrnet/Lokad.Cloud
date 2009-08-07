@@ -161,6 +161,18 @@ namespace Lokad.Cloud.Framework
 			return new BlobSet<T>(_providers, prefixName);
 		}
 
+		/// <summary>Put a message into the queue implicitely associated to the type <c>T</c>.</summary>
+		public void Put<T>(T message)
+		{
+			PutRange(new[]{message});
+		}
+
+		/// <summary>Put a message into the queue identified by <c>queueName</c>.</summary>
+		public void Put<T>(T message, string queueName)
+		{
+			PutRange(new[] { message }, queueName);
+		}
+
 		/// <summary>Put messages into the queue implicitely associated to the type <c>T</c>.</summary>
 		public void PutRange<T>(IEnumerable<T> messages)
 		{
@@ -173,18 +185,32 @@ namespace Lokad.Cloud.Framework
 			_providers.QueueStorage.PutRange(queueName, messages);
 		}
 
-		/// <summary>Put message into the queue implicitly associated to the type <c>T</c> at the
+		/// <summary>Put a message into the queue implicitly associated to the type <c>T</c> at the
+		/// time specified by the <c>triggerTime</c>.</summary>
+		public void PutWithDelay<T>(T message, DateTime triggerTime)
+		{
+			PutRangeWithDelay(new[]{message}, triggerTime);
+		}
+
+		/// <summary>Put a message into the queue identified by <c>queueName</c> at the
+		/// time specified by the <c>triggerTime</c>.</summary>
+		public void PutWithDelay<T>(T message, DateTime triggerTime, string queueName)
+		{
+			PutRangeWithDelay(new[] { message }, triggerTime, queueName);
+		}
+
+		/// <summary>Put messages into the queue implicitly associated to the type <c>T</c> at the
 		/// time specified by the <c>triggerTime</c>.</summary>
 		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime)
 		{
-			PutRangeWithDelay(messages, _providers.TypeMapper.GetStorageName(typeof(T)), triggerTime);
+			PutRangeWithDelay(messages, triggerTime, _providers.TypeMapper.GetStorageName(typeof(T)));
 		}
 
-		/// <summary>Put message into the queue identified by <c>queueName</c> at the
+		/// <summary>Put messages into the queue identified by <c>queueName</c> at the
 		/// time specified by the <c>triggerTime</c>.</summary>
 		/// <remarks>This method acts as a delayed put operation, the message not being put
 		/// before the <c>triggerTime</c> is reached.</remarks>
-		public void PutRangeWithDelay<T>(IEnumerable<T> messages, string queueName, DateTime triggerTime)
+		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime, string queueName)
 		{
 			foreach (var message in messages)
 			{

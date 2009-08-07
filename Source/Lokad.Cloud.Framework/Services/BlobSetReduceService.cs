@@ -48,7 +48,7 @@ namespace Lokad.Cloud.Services
 				// cleanup has already been performed, reduction is complete.
 				if(null == settings)
 				{
-					Delete(new[]{message});
+					DeleteRange(new[]{message});
 					continue;
 				}
 
@@ -111,7 +111,7 @@ namespace Lokad.Cloud.Services
 					PutRange(new[] { message }, QueueName);
 				}
 
-				Delete(new[]{message});
+				DeleteRange(new[]{message});
 			}
 		}
 	}
