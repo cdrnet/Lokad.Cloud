@@ -180,7 +180,7 @@ namespace Lokad.Cloud.Framework
 						SourcePrefix = _prefix
 					};
 
-				_providers.QueueStorage.PutRange(BlobSetMapService.QueueName, new[]{message});
+				_providers.QueueStorage.Put(BlobSetMapService.QueueName, message);
 				itemCount++;
 			}
 
@@ -231,7 +231,7 @@ namespace Lokad.Cloud.Framework
 			{
 				// listing directly the wrappers (to avoid retrieving items).
 				var wrapper = new MessageWrapper {ContainerName = ContainerName, BlobName = blobName};
-				_providers.QueueStorage.PutRange(workQueue, new[] { wrapper });
+				_providers.QueueStorage.Put(workQueue, wrapper);
 				itemCount++;
 			}
 
@@ -244,7 +244,7 @@ namespace Lokad.Cloud.Framework
 			// HACK: naive parallelization here using at most SQRT(N) workers
 			for (int i = 0; i < Math.Sqrt(itemCount); i++)
 			{
-				_providers.QueueStorage.PutRange(BlobSetReduceService.QueueName, new[] {message});
+				_providers.QueueStorage.Put(BlobSetReduceService.QueueName, message);
 			}
 
 			// -1 because there are only N-1 reductions for N items.

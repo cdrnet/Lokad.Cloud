@@ -71,14 +71,14 @@ namespace Lokad.Cloud.Services
 					out remainingMappings));
 
 				// deleting message
-				DeleteRange(new[]{message});
+				Delete(message);
 
 				// HACK: failing processes could generate retry, and eventually negative values here.
 				if(remainingMappings == 0)
 				{
 					// pushing the message as a completion signal
-					Providers.QueueStorage.PutRange(
-						mapSettings.OnCompletedQueueName, new[]{mapSettings.OnCompleted});
+					Providers.QueueStorage.Put(
+						mapSettings.OnCompletedQueueName, mapSettings.OnCompleted);
 				}
             }
 		}

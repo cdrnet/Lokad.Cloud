@@ -28,12 +28,12 @@ namespace Lokad.Cloud.Azure.Test
 			provider.DeleteQueue(QueueName); // deleting queue on purpose 
 			// (it's slow but necessary to really validate the retry policy)
 
-			provider.PutRange(QueueName, new[]{message});
+			provider.Put(QueueName, message);
 			var retrieved = provider.Get<MyMessage>(QueueName, 1).First();
 
 			Assert.AreEqual(message.MyGuid, retrieved.MyGuid, "#A01");
 
-			provider.DeleteRange(QueueName, new[]{retrieved});
+			provider.Delete(QueueName, retrieved);
 		}
 
 		[Test]
@@ -51,7 +51,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			provider.Clear(QueueName);
 
-			provider.PutRange(QueueName, new[] { message });
+			provider.Put(QueueName, message);
 			var retrieved = provider.Get<MyMessage>(QueueName, 1).First();
 
 			Assert.AreEqual(message.MyGuid, retrieved.MyGuid, "#A01");
@@ -62,7 +62,7 @@ namespace Lokad.Cloud.Azure.Test
 				Assert.AreEqual(message.MyBuffer[i], retrieved.MyBuffer[i], "#A02-" + i);	
 			}
 
-			provider.DeleteRange(QueueName, new[] { retrieved });
+			provider.Delete(QueueName, retrieved);
 		}
 	}
 

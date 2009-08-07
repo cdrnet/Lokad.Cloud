@@ -48,7 +48,7 @@ namespace Lokad.Cloud.Services
 				// cleanup has already been performed, reduction is complete.
 				if(null == settings)
 				{
-					DeleteRange(new[]{message});
+					Delete(message);
 					continue;
 				}
 
@@ -68,7 +68,7 @@ namespace Lokad.Cloud.Services
 					{
 						var reducted = BlobSet.InvokeAsDelegate(settings.Reducer, current, next);
 
-						Providers.QueueStorage.PutRange(settings.WorkQueue, new[] {reducted});
+						Providers.QueueStorage.Put(settings.WorkQueue, reducted);
 						Providers.QueueStorage.DeleteRange(settings.WorkQueue, new []{current, next});
 
 						BlobSet.RetryUpdate(() => Providers.BlobStorage.UpdateIfNotModified(
@@ -89,7 +89,7 @@ namespace Lokad.Cloud.Services
 
 					if (remainingReductions == 0)
 					{
-						Providers.QueueStorage.PutRange(settings.ReductionQueue, new[] { current });
+						Providers.QueueStorage.Put(settings.ReductionQueue, current );
 
 						// performing cleanup
 						Providers.BlobStorage.DeleteBlob(containerName, settingsBlobName);
@@ -108,10 +108,10 @@ namespace Lokad.Cloud.Services
 				if (remainingReductions > 0)
 				{
 					// same message is queued again, for later processing.
-					PutRange(new[] { message }, QueueName);
+					Put(message , QueueName);
 				}
 
-				DeleteRange(new[]{message});
+				Delete(message);
 			}
 		}
 	}
