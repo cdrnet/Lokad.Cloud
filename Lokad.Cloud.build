@@ -18,6 +18,9 @@
 		<CloudSource>Source/Lokad.Cloud/bin/$(Configuration)/Publish</CloudSource>
 		<CloudTargets>$(MSBuildProjectDirectory)\Resource\Build\</CloudTargets>
 
+		<CloudApiPath>$(BuildPath)/CloudApi</CloudApiPath>
+		<CloudApiSource>Source/Lokad.Cloud.Framework/bin/$(Configuration)</CloudApiSource>
+
 		<TestPath>$(BuildPath)\Test</TestPath>
 		<ProjectName>$(MSBuildProjectName)</ProjectName>
 		<SampleSource>Sample</SampleSource>
@@ -126,6 +129,11 @@
 			<Output ItemName="cloudSources" TaskParameter="Include" />
 		</CreateItem>
 		<Copy SourceFiles="@(cloudSources)" DestinationFolder="$(CloudReadyPath)" />
+
+		<CreateItem Include="$(CloudApiSource)\*.*">
+			<Output ItemName="apiSources" TaskParameter="Include"/>
+		</CreateItem>
+		<Copy SourceFiles="@(apiSources)" DestinationFolder="$(CloudApiPath)" />
 	</Target>
 
 	<Target Name="GenerateHelp" DependsOnTargets="Build;Copy">
