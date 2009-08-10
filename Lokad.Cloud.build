@@ -95,6 +95,7 @@
 			MinimumCoverage="75"
 			Sort="FunctionCoverageAscending"
 			CoverageFiles="$(ArtifactDirectory)\$(ProjectName)-coverage.xml"
+			Exclusions="Namespace=Microsoft.Samples.ServiceHosting.*"
 		/>
 	</Target>
 	
