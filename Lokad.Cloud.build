@@ -26,9 +26,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Tokens Include="CloudPackage"><ReplacementValue>$(ProjectName)-Deploy-$(Version).zip</ReplacementValue></Tokens>
-		<Tokens Include="SourcePackage"><ReplacementValue>$(ProjectName)-Source-$(Version).zip</ReplacementValue></Tokens>
-		<Tokens Include="Version"><ReplacementValue>$(Version)</ReplacementValue></Tokens>
+		<Tokens Include="CloudPackage">
+			<ReplacementValue>$(ProjectName)-Deploy-$(Version).zip</ReplacementValue>
+		</Tokens>
+		<Tokens Include="SourcePackage">
+			<ReplacementValue>$(ProjectName)-Source-$(Version).zip</ReplacementValue>
+		</Tokens>
+		<Tokens Include="Version">
+			<ReplacementValue>$(Version)</ReplacementValue>
+		</Tokens>
+		<Tokens Include="BuildTime">
+			<ReplacementValue>$(BuildTime)</ReplacementValue>
+		</Tokens>
 	</ItemGroup>
 
 	<Target Name="Build">

@@ -8,6 +8,7 @@
 		<!--Grab external package dir, if forced, default otherwise-->
 		<PublicationRoot Condition="$(CCNetBuildCondition)=='ForceBuild'">$(ExternalPackageDirectory)</PublicationRoot>
 		<PackageDirectory Condition="$(CCNetBuildCondition)=='ForceBuild'">$(ExternalPackageDirectory)\$(Version)</PackageDirectory>
+		<BuildTime Condition="$(CCNetBuildDate)!=''">$(CCNetBuildDate) $(CCNetBuildTime)</BuildTime>
 	</PropertyGroup>
 	<Import Project="$(MSBuildProjectName).build" />
 </Project>
