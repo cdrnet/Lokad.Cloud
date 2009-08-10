@@ -87,6 +87,18 @@
       <param name="decorators">
       </param>
     </member>
+    <member name="T:Autofac.PendingAutofacExtensions">
+      <summary>
+            Pending extensions. To be pulled upstream to Autofac, if they prove useful in multiple projects
+            </summary>
+    </member>
+    <member name="M:Autofac.PendingAutofacExtensions.Build(Autofac.IContainer,System.Action{Autofac.Builder.ContainerBuilder})">
+      <summary>
+            Builds the specified registration into the container.
+            </summary>
+      <param name="container">The container.</param>
+      <param name="registration">The registration.</param>
+    </member>
     <member name="T:Lokad.Logging.LoggingModule">
       <summary>
             Autofac extension module that provides integration with the log4net

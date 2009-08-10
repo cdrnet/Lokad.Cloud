@@ -117,6 +117,154 @@
             </summary>
       <value>The text.</value>
     </member>
+    <member name="T:Lokad.Rand">
+      <summary>
+            Helper class that allows to implement non-deterministic 
+            reproducible testing.
+            </summary>
+      <remarks>
+            Keep in mind, that this implementation is not thread-safe.
+            </remarks>
+    </member>
+    <member name="T:Lokad.Rand.String">
+      <summary>
+            Helper random methods related to strings
+            </summary>
+    </member>
+    <member name="M:Lokad.Rand.String.NextSentence(System.Int32,System.Int32)">
+      <summary>
+            Gets the Lorem Ipsum sentence with random word count.
+            </summary>
+      <param name="lowerBound">The lower bound for the word count (inclusive).</param>
+      <param name="upperBound">The upper bound for the word count (exclusive).</param>
+      <returns>random sentence of Lorem ipsum</returns>
+    </member>
+    <member name="M:Lokad.Rand.String.NextWord">
+      <summary>
+            Gets random word from the Lorem Ipsum dictionary.
+            </summary>
+      <returns>random word from the Lorem Ipsum dictionary</returns>
+    </member>
+    <member name="M:Lokad.Rand.String.NextText(System.Int32,System.Int32)">
+      <summary>
+            Gets the Lorem ipsum text with the random word count.
+            </summary>
+      <param name="lowerBound">The lower bound for the word count (inclusive).</param>
+      <param name="upperBound">The upper bound for the word count (exclusive).</param>
+      <returns>random text of Lorem Ipsum</returns>
+    </member>
+    <member name="M:Lokad.Rand.ResetToDefault">
+      <summary>
+            Resets everything to the default, using <see cref="T:System.Random" /> generator and random seed. 
+            </summary>
+    </member>
+    <member name="M:Lokad.Rand.ResetToDefault(System.Int32)">
+      <summary>
+            Resets everything to the default, using <see cref="T:System.Random" /> generator and the specified
+            rand seed.
+            </summary>
+      <param name="randSeed">The rand seed.</param>
+    </member>
+    <member name="M:Lokad.Rand.Reset">
+      <summary>
+            Resets the random generator, using the provided activator
+            </summary>
+    </member>
+    <member name="M:Lokad.Rand.Reset(System.Func{System.Func{System.Int32,System.Int32}})">
+      <summary>
+            Overrides with the current activator
+            </summary>
+      <param name="activator">The activator.</param>
+    </member>
+    <member name="M:Lokad.Rand.Next">
+      <summary>
+            Generates random value between 0 and <see cref="F:System.Int32.MaxValue" /> (exclusive)
+            </summary>
+      <returns>random integer</returns>
+    </member>
+    <member name="M:Lokad.Rand.Next(System.Int32)">
+      <summary>
+            Generates random value between 0 and <paramref name="upperBound" /> (exclusive)
+            </summary>
+      <param name="upperBound">The upper bound.</param>
+      <returns>random integer</returns>
+    </member>
+    <member name="M:Lokad.Rand.Next(System.Int32,System.Int32)">
+      <summary>
+            Generates random value between <paramref name="lowerBound" />
+            and <paramref name="upperBound" /> (exclusive)
+            </summary>
+      <param name="lowerBound">The lower bound.</param>
+      <param name="upperBound">The upper bound.</param>
+      <returns>random integer</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextItem``1(``0[])">
+      <summary> Picks random item from the provided array </summary>
+      <typeparam name="TItem">The type of the item.</typeparam>
+      <param name="items">The items.</param>
+      <returns>random item from the array</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextEnum``1">
+      <summary> Picks random <see cref="T:System.Enum" /></summary>
+      <typeparam name="TEnum">The type of the enum.</typeparam>
+      <returns>random Enum value</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextBool(System.Double)">
+      <summary>
+            Returns <em>true</em> with the specified probability.
+            </summary>
+      <param name="probability">The probability (between 0 and 1).</param>
+      <returns>
+        <em>true</em> with the specified probability</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextBool">
+      <summary>
+            Returns either <em>true</em> or <em>false</em></summary>
+      <returns>either <em>true</em> or <em>false</em></returns>
+    </member>
+    <member name="M:Lokad.Rand.NextGuid">
+      <summary>
+            Picks random <see cref="T:System.Guid" /></summary>
+      <returns>random value</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextDouble">
+      <summary> Returns random double value with lowered precision </summary>
+      <returns>random double value</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextDate">
+      <summary>
+            Returns a random date between 1700-01-01 and 2100-01-01
+            </summary>
+      <returns>random value</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextDate(System.Int32,System.Int32)">
+      <summary>
+            Returns a random date between the specified range.
+            </summary>
+      <param name="minYear">The min year.</param>
+      <param name="maxYear">The max year.</param>
+      <returns>new random date</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextString(System.Int32,System.Int32)">
+      <summary>
+            Generates random string with the length between 
+            <paramref name="lowerBound" /> and <paramref name="upperBound" /> (exclusive)
+            </summary>
+      <param name="lowerBound">The lower bound for the string length.</param>
+      <param name="upperBound">The upper bound for the string length.</param>
+      <returns>new random string</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextItems``1(``0[],System.Int32)">
+      <summary>
+            Gets a random subset from the array
+            </summary>
+      <typeparam name="TValue">The type of the value.</typeparam>
+      <param name="items">The items.</param>
+      <param name="count">The count.</param>
+      <returns>array that contains <paramref name="count" /> items from the original array</returns>
+      <exception cref="T:System.ArgumentOutOfRangeException">when <paramref name="count" /> 
+            is bigger than the length of <paramref name="items" /></exception>
+    </member>
     <member name="T:Lokad.Testing.Equatable">
       <summary>
             Helper extensions for the <see cref="T:System.IEquatable`1" /> used in testing of models.
@@ -675,6 +823,11 @@
               Looks up a localized string similar to String should be a valid email address..
             </summary>
     </member>
+    <member name="P:Lokad.Rules.RuleResources.String_must_be_valid_host">
+      <summary>
+              Looks up a localized string similar to String should be a valid host name..
+            </summary>
+    </member>
     <member name="P:Lokad.Rules.RuleResources.Value_cant_be_equal_to_X">
       <summary>
               Looks up a localized string similar to Value should not be equal to '{0}'..
@@ -682,12 +835,12 @@
     </member>
     <member name="P:Lokad.Rules.RuleResources.Value_cant_be_greater_than_X">
       <summary>
-              Looks up a localized string similar to Value should not be less than '{0}'..
+              Looks up a localized string similar to Value should not be greater than '{0}'..
             </summary>
     </member>
     <member name="P:Lokad.Rules.RuleResources.Value_cant_be_less_than_X">
       <summary>
-              Looks up a localized string similar to Value should not be greater than '{0}'..
+              Looks up a localized string similar to Value should not be less than '{0}'..
             </summary>
     </member>
     <member name="P:Lokad.Rules.RuleResources.Value_must_be_equal_to_X">
@@ -974,6 +1127,35 @@
       <typeparam name="T3">The type of the third item.</typeparam>
       <typeparam name="T4">The type of the fourth item.</typeparam>
       <typeparam name="T5">The type of the fifth item.</typeparam>
+      <param name="tuple">The tuple to append to.</param>
+      <param name="item">The item to append.</param>
+      <returns>New tuple instance</returns>
+    </member>
+    <member name="M:Lokad.TupleExtensions.Append``6(Lokad.Tuple{``0,``1,``2,``3,``4},``5)">
+      <summary>
+            Appends the specified <paramref name="item" /> to the <paramref name="tuple" />.
+            </summary>
+      <typeparam name="T1">The type of the first item.</typeparam>
+      <typeparam name="T2">The type of the second item.</typeparam>
+      <typeparam name="T3">The type of the third item.</typeparam>
+      <typeparam name="T4">The type of the fourth item.</typeparam>
+      <typeparam name="T5">The type of the fifth item.</typeparam>
+      <typeparam name="T6">The type of the sixth item.</typeparam>
+      <param name="tuple">The tuple to append to.</param>
+      <param name="item">The item to append.</param>
+      <returns>New tuple instance</returns>
+    </member>
+    <member name="M:Lokad.TupleExtensions.Append``7(Lokad.Tuple{``0,``1,``2,``3,``4,``5},``6)">
+      <summary>
+            Appends the specified <paramref name="item" /> to the <paramref name="tuple" />.
+            </summary>
+      <typeparam name="T1">The type of the first item.</typeparam>
+      <typeparam name="T2">The type of the second item.</typeparam>
+      <typeparam name="T3">The type of the third item.</typeparam>
+      <typeparam name="T4">The type of the fourth item.</typeparam>
+      <typeparam name="T5">The type of the fifth item.</typeparam>
+      <typeparam name="T6">The type of the sixth item.</typeparam>
+      <typeparam name="T7">The type of the seventh item.</typeparam>
       <param name="tuple">The tuple to append to.</param>
       <param name="item">The item to append.</param>
       <returns>New tuple instance</returns>
@@ -1821,99 +2003,6 @@
       <param name="third">The third item.</param>
       <param name="fourth">The fourth item.</param>
     </member>
-    <member name="T:Lokad.Rand">
-      <summary>
-            Helper class that allows to implement non-deterministic 
-            reproducible testing.
-            </summary>
-      <remarks>
-            Keep in mind, that this implementation is not thread-safe.
-            </remarks>
-    </member>
-    <member name="M:Lokad.Rand.ResetToDefault">
-      <summary>
-            Resets everything to the default.
-            </summary>
-    </member>
-    <member name="M:Lokad.Rand.Reset">
-      <summary>
-            Resets the random generator, using the provided activator
-            </summary>
-    </member>
-    <member name="M:Lokad.Rand.Reset(System.Func{System.Func{System.Int32,System.Int32}})">
-      <summary>
-            Overrides with the current activator
-            </summary>
-      <param name="activator">The activator.</param>
-    </member>
-    <member name="M:Lokad.Rand.Next">
-      <summary>
-            Generates random value between 0 and <see cref="F:System.Int32.MaxValue" /> (exclusive)
-            </summary>
-      <returns>random integer</returns>
-    </member>
-    <member name="M:Lokad.Rand.Next(System.Int32)">
-      <summary>
-            Generates random value between 0 and <paramref name="upperBound" /> (exclusive)
-            </summary>
-      <param name="upperBound">The upper bound.</param>
-      <returns>random integer</returns>
-    </member>
-    <member name="M:Lokad.Rand.Next(System.Int32,System.Int32)">
-      <summary>
-            Generates random value between <paramref name="lowerBound" />
-            and <paramref name="upperBound" /> (exclusive)
-            </summary>
-      <param name="lowerBound">The lower bound.</param>
-      <param name="upperBound">The upper bound.</param>
-      <returns>random integer</returns>
-    </member>
-    <member name="M:Lokad.Rand.NextItem``1(``0[])">
-      <summary> Picks random item from the provided array </summary>
-      <typeparam name="TItem">The type of the item.</typeparam>
-      <param name="items">The items.</param>
-      <returns>random item from the array</returns>
-    </member>
-    <member name="M:Lokad.Rand.NextEnum``1">
-      <summary> Picks random <see cref="T:System.Enum" /></summary>
-      <typeparam name="TEnum">The type of the enum.</typeparam>
-      <returns>random Enum value</returns>
-    </member>
-    <member name="M:Lokad.Rand.NextGuid">
-      <summary>
-            Picks random <see cref="T:System.Guid" /></summary>
-      <returns>random value</returns>
-    </member>
-    <member name="M:Lokad.Rand.NextDouble">
-      <summary> Returns random double value with lowered precision </summary>
-      <returns>random double value</returns>
-    </member>
-    <member name="M:Lokad.Rand.NextDate">
-      <summary>
-            Returns a random date between 1700-01-01 and 2100-01-01
-            </summary>
-      <returns>random value</returns>
-    </member>
-    <member name="M:Lokad.Rand.NextString(System.Int32,System.Int32)">
-      <summary>
-            Generates random string with the length between 
-            <paramref name="lowerBound" /> and <paramref name="upperBound" /> (exclusive)
-            </summary>
-      <param name="lowerBound">The lower bound for the string length.</param>
-      <param name="upperBound">The upper bound for the string length.</param>
-      <returns>new random string</returns>
-    </member>
-    <member name="M:Lokad.Rand.NextItems``1(``0[],System.Int32)">
-      <summary>
-            Gets a random subset from the array
-            </summary>
-      <typeparam name="TValue">The type of the value.</typeparam>
-      <param name="items">The items.</param>
-      <param name="count">The count.</param>
-      <returns>array that contains <paramref name="count" /> items from the original array</returns>
-      <exception cref="T:System.ArgumentOutOfRangeException">when <paramref name="count" /> 
-            is bigger than the length of <paramref name="items" /></exception>
-    </member>
     <member name="T:Lokad.Range">
       <summary>
             Helper class with shortcut methods for managing enumerations.
@@ -2458,6 +2547,14 @@
     <member name="T:Lokad.Rules.RuleMessage">
       <summary> Rule message </summary>
     </member>
+    <member name="M:Lokad.Rules.RuleMessage.#ctor(System.String,Lokad.Rules.RuleLevel,System.String)">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Rules.RuleMessage" /> class.
+            </summary>
+      <param name="path">The path.</param>
+      <param name="level">The level.</param>
+      <param name="message">The message.</param>
+    </member>
     <member name="M:Lokad.Rules.RuleMessage.ToString">
       <summary>
             Returns a <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
@@ -2489,7 +2586,7 @@
             Common string rules
             </summary>
     </member>
-    <member name="F:Lokad.Rules.StringIs._emailRegex">
+    <member name="F:Lokad.Rules.StringIs.EmailRegex">
       <summary>
             Originally http://fightingforalostcause.net/misc/2006/compare-email-regex.php,
             but modified to have less negative results 
@@ -2521,6 +2618,13 @@
       <param name="email">string to validate</param>
       <param name="scope">validation scope.</param>
     </member>
+    <member name="M:Lokad.Rules.StringIs.ValidServerConnection(System.String,Lokad.Rules.IScope)">
+      <summary>
+            Determines whether the string is valid server connection (with optional port)
+            </summary>
+      <param name="host">The host name to validate.</param>
+      <param name="scope">The validation scope.</param>
+    </member>
     <member name="M:Lokad.Rules.StringIs.Limited(System.Int32,System.Int32)">
       <summary>
             Composes the string validator ensuring string length is within the supplied rangs
@@ -2546,6 +2650,11 @@
     <member name="T:Lokad.Rules.Scope">
       <summary>
             Helper class that invokes different scopes
+            </summary>
+    </member>
+    <member name="F:Lokad.Rules.Scope.RulePathSeprator">
+      <summary>
+            Rule path separator char
             </summary>
     </member>
     <member name="M:Lokad.Rules.Scope.WhenError(Lokad.Rules.RuleLevel)">
@@ -3297,6 +3406,44 @@
       <param name="fifth">The fifth item.</param>
       <returns>New instance</returns>
     </member>
+    <member name="M:Lokad.Tuple.From``6(``0,``1,``2,``3,``4,``5)">
+      <summary>
+            Creates <see cref="T:Lokad.Tuple`4" /> out of four arguments
+            </summary>
+      <typeparam name="T1">The type of the first item.</typeparam>
+      <typeparam name="T2">The type of the second item.</typeparam>
+      <typeparam name="T3">The type of the third item.</typeparam>
+      <typeparam name="T4">The type of the fourth item.</typeparam>
+      <typeparam name="T5">The type of the fifth item.</typeparam>
+      <typeparam name="T6">The type of the sixth item.</typeparam>
+      <param name="first">The first item.</param>
+      <param name="second">The second item.</param>
+      <param name="third">The third item.</param>
+      <param name="fourth">The fourth item.</param>
+      <param name="fifth">The fifth item.</param>
+      <param name="sixth">The sixth item.</param>
+      <returns>New instance</returns>
+    </member>
+    <member name="M:Lokad.Tuple.From``7(``0,``1,``2,``3,``4,``5,``6)">
+      <summary>
+            Creates <see cref="T:Lokad.Tuple`4" /> out of four arguments
+            </summary>
+      <typeparam name="T1">The type of the first item.</typeparam>
+      <typeparam name="T2">The type of the second item.</typeparam>
+      <typeparam name="T3">The type of the third item.</typeparam>
+      <typeparam name="T4">The type of the fourth item.</typeparam>
+      <typeparam name="T5">The type of the fifth item.</typeparam>
+      <typeparam name="T6">The type of the sixth item.</typeparam>
+      <typeparam name="T7">The type of the seventh item.</typeparam>
+      <param name="first">The first item.</param>
+      <param name="second">The second item.</param>
+      <param name="third">The third item.</param>
+      <param name="fourth">The fourth item.</param>
+      <param name="fifth">The fifth item.</param>
+      <param name="sixth">The sixth item.</param>
+      <param name="seventh">The seventh item.</param>
+      <returns>New instance</returns>
+    </member>
     <member name="T:Lokad.Tuple`5">
       <summary>
             Tuple class with 5 items (also called <em>Quintuple</em>)
@@ -3305,7 +3452,7 @@
       <typeparam name="T2">The type of the second item.</typeparam>
       <typeparam name="T3">The type of the third item.</typeparam>
       <typeparam name="T4">The type of the fourth item.</typeparam>
-      <typeparam name="T5">The type of the fifthi item.</typeparam>
+      <typeparam name="T5">The type of the fifth item.</typeparam>
     </member>
     <member name="M:Lokad.Tuple`5.#ctor(`0,`1,`2,`3,`4)">
       <summary>
@@ -3402,6 +3549,242 @@
             Gets or sets the item5.
             </summary>
       <value>The item5.</value>
+    </member>
+    <member name="T:Lokad.Tuple`6">
+      <summary>
+            Tuple class with 6 items
+            </summary>
+      <typeparam name="T1">The type of the first item.</typeparam>
+      <typeparam name="T2">The type of the second item.</typeparam>
+      <typeparam name="T3">The type of the third item.</typeparam>
+      <typeparam name="T4">The type of the fourth item.</typeparam>
+      <typeparam name="T5">The type of the fifth item.</typeparam>
+      <typeparam name="T6">The type of the sixth item.</typeparam>
+    </member>
+    <member name="M:Lokad.Tuple`6.#ctor(`0,`1,`2,`3,`4,`5)">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Tuple`6" /> class.
+            </summary>
+      <param name="first">The first item.</param>
+      <param name="second">The second item.</param>
+      <param name="third">The third item.</param>
+      <param name="fourth">The fourth item.</param>
+      <param name="fifth">The fifth item.</param>
+      <param name="sixth">The sixth item.</param>
+    </member>
+    <member name="M:Lokad.Tuple`6.ToString">
+      <summary>
+            Returns a <see cref="T:System.String" /> that represents the current <see cref="T:Lokad.Tuple`6" />.
+            </summary>
+      <returns>
+            A <see cref="T:System.String" /> that represents the current <see cref="T:Lokad.Tuple`6" />.
+            </returns>
+    </member>
+    <member name="M:Lokad.Tuple`6.Equals(System.Object)">
+      <summary>
+            Determines whether the specified <see cref="T:System.Object" /> is equal to the current <see cref="T:Lokad.Tuple`6" />.
+            </summary>
+      <param name="obj">The <see cref="T:System.Object" /> to compare with the current <see cref="T:Lokad.Tuple`6" />.</param>
+      <returns>
+            true if the specified <see cref="T:System.Object" /> is equal to the current <see cref="T:Lokad.Tuple`6" />; otherwise, false.
+            </returns>
+      <exception cref="T:System.NullReferenceException">
+            The <paramref name="obj" /> parameter is null.
+            </exception>
+    </member>
+    <member name="M:Lokad.Tuple`6.Equals(Lokad.Tuple{`0,`1,`2,`3,`4,`5})">
+      <summary>
+            Indicates whether the current object is equal to another object of the same type.
+            </summary>
+      <returns>
+            true if the current object is equal to the <paramref name="obj" /> parameter; otherwise, false.
+            </returns>
+      <param name="obj">
+            An object to compare with this object.
+            </param>
+    </member>
+    <member name="M:Lokad.Tuple`6.GetHashCode">
+      <summary>
+            Serves as a hash function for a particular type. 
+            </summary>
+      <returns>
+            A hash code for the current <see cref="T:Lokad.Tuple`6" />.
+            </returns>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Lokad.Tuple`6.op_Equality(Lokad.Tuple{`0,`1,`2,`3,`4,`5},Lokad.Tuple{`0,`1,`2,`3,`4,`5})">
+      <summary>
+            Implements the operator ==.
+            </summary>
+      <param name="left">The left.</param>
+      <param name="right">The right.</param>
+      <returns>The result of the operator.</returns>
+    </member>
+    <member name="M:Lokad.Tuple`6.op_Inequality(Lokad.Tuple{`0,`1,`2,`3,`4,`5},Lokad.Tuple{`0,`1,`2,`3,`4,`5})">
+      <summary>
+            Implements the operator !=.
+            </summary>
+      <param name="left">The left.</param>
+      <param name="right">The right.</param>
+      <returns>The result of the operator.</returns>
+    </member>
+    <member name="P:Lokad.Tuple`6.Item1">
+      <summary>
+            Gets the item1.
+            </summary>
+      <value>The item1.</value>
+    </member>
+    <member name="P:Lokad.Tuple`6.Item2">
+      <summary>
+            Gets the item2.
+            </summary>
+      <value>The item2.</value>
+    </member>
+    <member name="P:Lokad.Tuple`6.Item3">
+      <summary>
+            Gets the item3.
+            </summary>
+      <value>The item3.</value>
+    </member>
+    <member name="P:Lokad.Tuple`6.Item4">
+      <summary>
+            Gets the item4.
+            </summary>
+      <value>The item4.</value>
+    </member>
+    <member name="P:Lokad.Tuple`6.Item5">
+      <summary>
+            Gets the item5.
+            </summary>
+      <value>The item5.</value>
+    </member>
+    <member name="P:Lokad.Tuple`6.Item6">
+      <summary>
+            Gets the item6.
+            </summary>
+      <value>The item6.</value>
+    </member>
+    <member name="T:Lokad.Tuple`7">
+      <summary>
+            Tuple class with 7 items
+            </summary>
+      <typeparam name="T1">The type of the first item.</typeparam>
+      <typeparam name="T2">The type of the second item.</typeparam>
+      <typeparam name="T3">The type of the third item.</typeparam>
+      <typeparam name="T4">The type of the fourth item.</typeparam>
+      <typeparam name="T5">The type of the fifth item.</typeparam>
+      <typeparam name="T6">The type of the sixth item.</typeparam>
+      <typeparam name="T7">The type of the seventh item.</typeparam>
+    </member>
+    <member name="M:Lokad.Tuple`7.#ctor(`0,`1,`2,`3,`4,`5,`6)">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Tuple`7" /> class.
+            </summary>
+      <param name="first">The first item.</param>
+      <param name="second">The second item.</param>
+      <param name="third">The third item.</param>
+      <param name="fourth">The fourth item.</param>
+      <param name="fifth">The fifth item.</param>
+      <param name="sixth">The sixth item.</param>
+      <param name="seventh">The seventh item.</param>
+    </member>
+    <member name="M:Lokad.Tuple`7.ToString">
+      <summary>
+            Returns a <see cref="T:System.String" /> that represents the current <see cref="T:Lokad.Tuple`7" />.
+            </summary>
+      <returns>
+            A <see cref="T:System.String" /> that represents the current <see cref="T:Lokad.Tuple`7" />.
+            </returns>
+    </member>
+    <member name="M:Lokad.Tuple`7.Equals(System.Object)">
+      <summary>
+            Determines whether the specified <see cref="T:System.Object" /> is equal to the current <see cref="T:Lokad.Tuple`7" />.
+            </summary>
+      <param name="obj">The <see cref="T:System.Object" /> to compare with the current <see cref="T:Lokad.Tuple`7" />.</param>
+      <returns>
+            true if the specified <see cref="T:System.Object" /> is equal to the current <see cref="T:Lokad.Tuple`7" />; otherwise, false.
+            </returns>
+      <exception cref="T:System.NullReferenceException">
+            The <paramref name="obj" /> parameter is null.
+            </exception>
+    </member>
+    <member name="M:Lokad.Tuple`7.Equals(Lokad.Tuple{`0,`1,`2,`3,`4,`5,`6})">
+      <summary>
+            Indicates whether the current object is equal to another object of the same type.
+            </summary>
+      <returns>
+            true if the current object is equal to the <paramref name="obj" /> parameter; otherwise, false.
+            </returns>
+      <param name="obj">
+            An object to compare with this object.
+            </param>
+    </member>
+    <member name="M:Lokad.Tuple`7.GetHashCode">
+      <summary>
+            Serves as a hash function for a particular type. 
+            </summary>
+      <returns>
+            A hash code for the current <see cref="T:Lokad.Tuple`7" />.
+            </returns>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Lokad.Tuple`7.op_Equality(Lokad.Tuple{`0,`1,`2,`3,`4,`5,`6},Lokad.Tuple{`0,`1,`2,`3,`4,`5,`6})">
+      <summary>
+            Implements the operator ==.
+            </summary>
+      <param name="left">The left.</param>
+      <param name="right">The right.</param>
+      <returns>The result of the operator.</returns>
+    </member>
+    <member name="M:Lokad.Tuple`7.op_Inequality(Lokad.Tuple{`0,`1,`2,`3,`4,`5,`6},Lokad.Tuple{`0,`1,`2,`3,`4,`5,`6})">
+      <summary>
+            Implements the operator !=.
+            </summary>
+      <param name="left">The left.</param>
+      <param name="right">The right.</param>
+      <returns>The result of the operator.</returns>
+    </member>
+    <member name="P:Lokad.Tuple`7.Item1">
+      <summary>
+            Gets the item1.
+            </summary>
+      <value>The item1.</value>
+    </member>
+    <member name="P:Lokad.Tuple`7.Item2">
+      <summary>
+            Gets the item2.
+            </summary>
+      <value>The item2.</value>
+    </member>
+    <member name="P:Lokad.Tuple`7.Item3">
+      <summary>
+            Gets the item3.
+            </summary>
+      <value>The item3.</value>
+    </member>
+    <member name="P:Lokad.Tuple`7.Item4">
+      <summary>
+            Gets the item4.
+            </summary>
+      <value>The item4.</value>
+    </member>
+    <member name="P:Lokad.Tuple`7.Item5">
+      <summary>
+            Gets the item5.
+            </summary>
+      <value>The item5.</value>
+    </member>
+    <member name="P:Lokad.Tuple`7.Item6">
+      <summary>
+            Gets the item6.
+            </summary>
+      <value>The item6.</value>
+    </member>
+    <member name="P:Lokad.Tuple`7.Item7">
+      <summary>
+            Gets the item7.
+            </summary>
+      <value>The item7.</value>
     </member>
     <member name="T:Lokad.TypeExtensions">
       <summary>
@@ -3690,6 +4073,17 @@
       <summary>
             Throws exception if the check does not pass.
             </summary>
+      <param name="check">if set to <c>true</c> then check will pass.</param>
+      <param name="name">The name of the assertion.</param>
+      <exception cref="T:System.InvalidOperationException">If the assertion has failed.</exception>
+    </member>
+    <member name="M:Lokad.Enforce.That(System.Boolean,System.String,System.Object[])">
+      <summary>
+            Throws exception if the check does not pass.
+            </summary>
+      <param name="check">if set to <c>true</c> then check will pass.</param>
+      <param name="message">The message.</param>
+      <param name="arguments">The format arguments.</param>
       <exception cref="T:System.InvalidOperationException">If the assertion has failed.</exception>
     </member>
     <member name="M:Lokad.Enforce.That(System.Boolean)">
@@ -4458,18 +4852,6 @@
     <member name="F:Lokad.Diagnostics.DebugLog.Provider">
       <summary>
             Named provider for the <see cref="T:Lokad.Diagnostics.DebugLog" /></summary>
-    </member>
-    <member name="T:Lokad.Diagnostics.ExceptionLogDecorator">
-      <summary>
-            Simple decorator for <see cref="T:Lokad.ILog" /> that saves 
-            all incoming exceptions to the <see cref="T:Lokad.Diagnostics.ExceptionCounters" /></summary>
-    </member>
-    <member name="M:Lokad.Diagnostics.ExceptionLogDecorator.#ctor(Lokad.ILog,Lokad.Diagnostics.ExceptionCounters)">
-      <summary>
-            Initializes a new instance of the <see cref="T:Lokad.Diagnostics.ExceptionLogDecorator" /> class.
-            </summary>
-      <param name="log">The log.</param>
-      <param name="counter">The counter.</param>
     </member>
     <member name="T:Lokad.Diagnostics.NullLog">
       <summary>
