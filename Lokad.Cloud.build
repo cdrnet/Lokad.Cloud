@@ -18,7 +18,7 @@
 		<CloudSource>Source/Lokad.Cloud/bin/$(Configuration)/Publish</CloudSource>
 		<CloudTargets>$(MSBuildProjectDirectory)\Resource\Build\</CloudTargets>
 
-		<CloudApiPath>$(BuildPath)/CloudApi</CloudApiPath>
+		<CloudApiPath>$(BuildPath)/Cloud.Dev</CloudApiPath>
 		<CloudApiSource>Source/Lokad.Cloud.Framework/bin/$(Configuration)</CloudApiSource>
 
 		<TestPath>$(BuildPath)\Test</TestPath>
