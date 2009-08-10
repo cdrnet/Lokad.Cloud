@@ -45,18 +45,16 @@
 
 	<Target Name="Build">
 		<MSBuild Projects="$(ProjectName).sln" 
-				 Targets="Build" 
-						 Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(CloudTargets)"/>
+				Targets="Build" 
+				Properties="Configuration=$(Configuration);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(CloudTargets)"/>
 
 		<MSBuild Projects="$(ProjectName).sln" 
-				 Targets="publish"
-				 Properties="Configuration=$(Configuration);ApplicationVersion=$(Version);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(CloudTargets)" />
+				Targets="publish"
+				Properties="Configuration=$(Configuration);ApplicationVersion=$(Version);ConfigProfile=$(ConfigProfile);CloudExtensionsDir=$(CloudTargets)" />
 	</Target>
 
 	<Target Name="Clean">
-		<MSBuild Projects="$(ProjectName).sln" 
-			Targets="Clean" 
-			Properties="Configuration=$(Configuration)"/>
+		<MSBuild Projects="$(ProjectName).sln" Targets="Clean" Properties="Configuration=$(Configuration)"/>
 
 		<CreateItem Include="**/Debug/**/*.*;**/Release/**/*.*">
 			<Output ItemName="_binaryFiles" TaskParameter="Include"/>
