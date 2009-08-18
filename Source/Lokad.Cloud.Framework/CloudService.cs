@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Autofac;
 
 namespace Lokad.Cloud.Framework
 {
@@ -30,7 +31,7 @@ namespace Lokad.Cloud.Framework
 
 	/// <summary>Used as a wrapper for delayed messages (stored in the
 	/// blob storage waiting to be pushed into a queue).</summary>
-	/// <seealso cref="CloudService.PutWithDelay{T}"/>
+	/// <seealso cref="CloudService.PutWithDelay{T}(T,System.DateTime)"/>
 	[Serializable]
 	public class DelayedMessage
 	{
@@ -226,7 +227,7 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>Get all services instantiated through reflection.</summary>
-		internal static IEnumerable<CloudService> GetAllServices(ProvidersForCloudStorage providers)
+		internal static IEnumerable<CloudService> GetAllServices(IContainer container)
 		{
 			// invoking all loaded services through reflexion
 			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -239,7 +240,7 @@ namespace Lokad.Cloud.Framework
 				(CloudService)t.InvokeMember("_ctor", 
 				BindingFlags.CreateInstance, null, null, new object[0])).ToArray();
 
-			services.ForEach(s => s.Providers = providers);
+			services.ForEach(s => container.InjectProperties(s));
 
 			return services;
 		}

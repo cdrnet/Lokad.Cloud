@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Autofac;
 using Lokad.Cloud.Framework;
 
 namespace Lokad.Cloud.Azure
@@ -22,31 +23,29 @@ namespace Lokad.Cloud.Azure
 
 		readonly ProvidersForCloudStorage _providers;
 		readonly ILog _logger;
-		readonly AssemblyLoader _loader;
 
 		CloudService[] _services;
 
 		bool _isStopRequested;
 		bool _isStopped;
 
-		/// <summary>Get services actually loaded.</summary>
-		public CloudService[] Services
-		{
-			get { return _services; }
-		}
+		/// <summary>Container used to populate cloud service properties.</summary>
+		public IContainer Container { get; set; }
 
 		/// <summary>IoC constructor.</summary>
 		public ServiceBalancerCommand(ILog logger, ProvidersForCloudStorage providers)
 		{
 			_providers = providers;
 			_logger = logger;
-			_loader = new AssemblyLoader(providers.BlobStorage);
+			;
 		}
 
 		public void Execute()
 		{
-			_loader.Load();
-			_services = CloudService.GetAllServices(_providers).ToArray();
+			var loader = new AssemblyLoader(_providers.BlobStorage);
+
+			loader.Load();
+			_services = CloudService.GetAllServices(Container).ToArray();
 
 			var index = 0;
 
@@ -103,7 +102,7 @@ namespace Lokad.Cloud.Azure
 				}
 
 				// throws a 'TriggerRestartException' if a new package is detected.
-				_loader.CheckUpdate(true);
+				loader.CheckUpdate(true);
 			}
 
 			lock(_sync)

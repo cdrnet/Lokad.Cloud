@@ -28,24 +28,26 @@ namespace Lokad.Cloud
 			builder.Register(typeof(ProvidersForCloudStorage));
 			builder.Register(typeof(ServiceBalancerCommand));
 
-			using (var build = builder.Build())
+			using (var container = builder.Build())
 			{
 				try
-				{
+				{	
+					var balancer = container.Resolve<ServiceBalancerCommand>();
+					balancer.Container = container;
+
 					// balancer endlessly keeps pinging queues for pending work
-					var balancer = build.Resolve<ServiceBalancerCommand>();
 					balancer.Execute();
 				}
 				catch (TriggerRestartException ex)
 				{
-					var logger = build.Resolve<ILog>();
+					var logger = container.Resolve<ILog>();
 					logger.Log(LogLevel.Info, ex, "Restarting worker.");
 
 					throw;
 				}
 				catch(Exception ex)
 				{
-					var logger = build.Resolve<ILog>();
+					var logger = container.Resolve<ILog>();
 					logger.Log(LogLevel.Error, ex, "Executor level exception (probably a Lokad.Cloud issue).");
 
 					throw;
