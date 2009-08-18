@@ -189,10 +189,9 @@ namespace Lokad.Cloud.Framework
 				itemCount++;
 			}
 
-			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified<long>(
-				ContainerName, 
-				destPrefix + Delimiter + MapCounterSuffix, 
-				x => x + itemCount - CounterInitialShift));
+			var counterBlobName = destPrefix + Delimiter + MapCounterSuffix;
+			var counter = new BlobCounter(_providers, ContainerName, counterBlobName);
+			counter.Increment(itemCount - CounterInitialShift);
 		}
 
 		/// <summary>Apply a reducing function and outputs to the queue
@@ -253,10 +252,8 @@ namespace Lokad.Cloud.Framework
 			}
 
 			// -1 because there are only N-1 reductions for N items.
-			RetryUpdate(() => _providers.BlobStorage.UpdateIfNotModified<long>(
-				ContainerName,
-				counterBlobName,
-				x => x + itemCount - 1 - CounterInitialShift));
+			var counter = new BlobCounter(_providers, ContainerName, counterBlobName);
+			counter.Increment(itemCount - 1 - CounterInitialShift);
 		}
 
 		/// <summary>Retrieves an item based on the blob identifier.</summary>
@@ -342,27 +339,6 @@ namespace Lokad.Cloud.Framework
 			builder.Append(Guid.NewGuid().ToString("N"));
 
 			return builder.ToString();
-		}
-
-		/// <summary>Retry an update method until it succeeds. Timing
-		/// increases to avoid overstressing the storage for nothing.</summary>
-		/// <param name="func"></param>
-		public static void RetryUpdate(Func<bool> func)
-		{
-			// HACK: hard-code constants, the whole counter system have to be perfected.
-			const int InitMaxSleepInMs = 50;
-			const int MaxSleepInMs = 2000;
-
-			var maxSleepInMs = InitMaxSleepInMs;
-
-			while(!func())
-			{
-				var sleepTime = _rand.Next(maxSleepInMs).Milliseconds();
-				Thread.Sleep(sleepTime);
-
-				maxSleepInMs += 50;
-				maxSleepInMs = Math.Min(maxSleepInMs, MaxSleepInMs);
-			}
 		}
 
 		/// <summary>Use reflection to invoke a delegate.</summary>

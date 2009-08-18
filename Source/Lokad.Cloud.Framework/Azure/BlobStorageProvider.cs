@@ -200,7 +200,7 @@ namespace Lokad.Cloud.Azure
 			blobContents = new BlobContents(buffer);
 
 			return null == properties ? 
-				container.CreateBlob(properties, blobContents, false) : 
+				container.CreateBlob(new BlobProperties(blobName), blobContents, false) : 
 				container.UpdateBlobIfNotModified(properties, blobContents);
 		}
 

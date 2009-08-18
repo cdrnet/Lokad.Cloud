@@ -63,12 +63,8 @@ namespace Lokad.Cloud.Services
 				Providers.BlobStorage.PutBlob(containerName, outputBlobName, output);
 
 				// Decrementing the counter once the operation is completed
-            	var remainingMappings = long.MaxValue;
-				BlobSet.RetryUpdate(() => Providers.BlobStorage.UpdateIfNotModified(
-					containerName,
-					counterBlobName, 
-					x => x - 1, 
-					out remainingMappings));
+            	var counter = new BlobCounter(Providers, containerName, counterBlobName);
+            	var remainingMappings = (long) counter.Increment(-1);
 
 				// deleting message
 				Delete(message);
@@ -76,6 +72,8 @@ namespace Lokad.Cloud.Services
 				// HACK: failing processes could generate retry, and eventually negative values here.
 				if(remainingMappings == 0)
 				{
+					counter.Delete();
+
 					// pushing the message as a completion signal
 					Providers.QueueStorage.Put(
 						mapSettings.OnCompletedQueueName, mapSettings.OnCompleted);

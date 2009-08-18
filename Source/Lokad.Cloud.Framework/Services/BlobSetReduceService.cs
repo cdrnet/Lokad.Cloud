@@ -53,8 +53,8 @@ namespace Lokad.Cloud.Services
 				}
 
 				var remainingReductions = long.MaxValue;
-
-				var reductionCounterBlobName = message.SourcePrefix + delimiter + settings.ReductionCounter;
+				var counterBlobName = message.SourcePrefix + delimiter + settings.ReductionCounter;
+				var counter = new BlobCounter(Providers, containerName, counterBlobName);
 
 				var items = Providers.QueueStorage.Get<object>(settings.WorkQueue, 2);
 
@@ -71,11 +71,7 @@ namespace Lokad.Cloud.Services
 						Providers.QueueStorage.Put(settings.WorkQueue, reducted);
 						Providers.QueueStorage.DeleteRange(settings.WorkQueue, new []{current, next});
 
-						BlobSet.RetryUpdate(() => Providers.BlobStorage.UpdateIfNotModified(
-							containerName,
-							reductionCounterBlobName,
-							x => x - 1,
-							out remainingReductions));
+						remainingReductions = (long) counter.Increment(-1);
 
 						current = reducted;
 
@@ -93,7 +89,7 @@ namespace Lokad.Cloud.Services
 
 						// performing cleanup
 						Providers.BlobStorage.DeleteBlob(containerName, settingsBlobName);
-						Providers.BlobStorage.DeleteBlob(containerName, reductionCounterBlobName);
+						counter.Delete();
 						Providers.QueueStorage.DeleteQueue(settings.WorkQueue);
 					}
 				}
@@ -101,7 +97,7 @@ namespace Lokad.Cloud.Services
 				{
 					// not enough items retrieved for reduction
 					remainingReductions = 
-						Providers.BlobStorage.GetBlob<long>(containerName, reductionCounterBlobName);
+						Providers.BlobStorage.GetBlob<long>(containerName, counterBlobName);
                 }
 
 				// reduction is still under way
