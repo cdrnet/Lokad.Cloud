@@ -81,7 +81,8 @@ namespace Lokad.Cloud.Services
 					next = nextItems.Any() ? nextItems.First() : null;
 				}
 
-				if (remainingReductions == 0)
+				// iteration beyond zero are possible through rare condition
+				if (remainingReductions <= 0)
 				{
 					Providers.QueueStorage.Put(settings.ReductionQueue, current);
 

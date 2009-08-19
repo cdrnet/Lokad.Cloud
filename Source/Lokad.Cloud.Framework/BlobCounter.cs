@@ -19,6 +19,12 @@ namespace Lokad.Cloud.Framework
 		readonly string _containerName;
 		readonly string _blobName;
 
+		/// <summary>Constant value provided for the cloud enueration pattern
+		/// over a queue.</summary>
+		/// <remarks>The constant value is <c>2^48</c>, expected to be sufficiently
+		/// large to avoid any arithmetic overflow with <c>long</c> values.</remarks>
+		public const long Aleph = 2l << 48;
+
 		/// <summary>Container that is storing the counter.</summary>
 		public string ContainerName { get { return _containerName; } }
 

@@ -70,7 +70,7 @@ namespace Lokad.Cloud.Services
 				Delete(message);
 
 				// HACK: failing processes could generate retry, and eventually negative values here.
-				if(remainingMappings == 0)
+				if(remainingMappings <= 0)
 				{
 					counter.Delete();
 

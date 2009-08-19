@@ -94,9 +94,6 @@ namespace Lokad.Cloud.Framework
 		/// a map operation.</summary>
 		public const string MapCounterSuffix = "map-counter";
 
-		// used as a heuristic for counter initialization in map operation
-		const long CounterInitialShift = 2l ^ 48;
-
 		readonly ProvidersForCloudStorage _providers;
 		readonly string _prefix;
 
@@ -155,18 +152,12 @@ namespace Lokad.Cloud.Framework
 					OnCompletedQueueName = onCompletedQueueName
 				};
 
-			// settings are put in the destination blobset, so that many mappings
-			// can take place simultaneously
 			_providers.BlobStorage.PutBlob(
 				ContainerName, destPrefix + Delimiter + MapSettingsSuffix, settings);
 
-			var isModified = _providers.BlobStorage.UpdateIfNotModified<long>(
-				ContainerName, 
-				destPrefix + Delimiter + MapCounterSuffix, 
-				x => x + CounterInitialShift);
-
-			if(!isModified) throw new InvalidOperationException(
-				"MapToBlobSet can't be executed twice on the same destination BlobSet.");
+			var counterBlobName = destPrefix + Delimiter + MapCounterSuffix;
+			var counter = new BlobCounter(_providers, ContainerName, counterBlobName);
+			counter.Reset(BlobCounter.Aleph);
 
 			var itemCount = 0l;
 			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
@@ -182,9 +173,16 @@ namespace Lokad.Cloud.Framework
 				itemCount++;
 			}
 
-			var counterBlobName = destPrefix + Delimiter + MapCounterSuffix;
-			var counter = new BlobCounter(_providers, ContainerName, counterBlobName);
-			counter.Increment(itemCount - CounterInitialShift);
+			var res = (long)counter.Increment(itemCount - BlobCounter.Aleph);
+
+			// rare race condition  (but possible in theory)
+			if(0l == res)
+			{
+				counter.Delete();
+
+				// pushing the message as a completion signal
+				_providers.QueueStorage.Put(onCompletedQueueName, onCompleted);
+			}
 		}
 
 		/// <summary>Apply a reducing function and outputs to the queue
@@ -218,16 +216,14 @@ namespace Lokad.Cloud.Framework
 
 			_providers.BlobStorage.PutBlob(ContainerName, settingsBlobName, settings);
 
-			_providers.BlobStorage.UpdateIfNotModified<long>(
-				ContainerName,
-				counterBlobName,
-				x => x + CounterInitialShift);
+			var counter = new BlobCounter(_providers, ContainerName, counterBlobName);
+			counter.Reset(BlobCounter.Aleph);
 
 			var itemCount = 0l;
 			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
 			{
 				// listing directly the wrappers (to avoid retrieving items).
-				var wrapper = new MessageWrapper {ContainerName = ContainerName, BlobName = blobName};
+				var wrapper = new MessageWrapper { ContainerName = ContainerName, BlobName = blobName };
 				_providers.QueueStorage.Put(workQueue, wrapper);
 				itemCount++;
 			}
@@ -245,8 +241,7 @@ namespace Lokad.Cloud.Framework
 			}
 
 			// -1 because there are only N-1 reductions for N items.
-			var counter = new BlobCounter(_providers, ContainerName, counterBlobName);
-			counter.Increment(itemCount - 1 - CounterInitialShift);
+			counter.Increment(itemCount - 1 - BlobCounter.Aleph);
 		}
 
 		/// <summary>Retrieves an item based on the blob identifier.</summary>
