@@ -5,9 +5,8 @@
 using System;
 using System.Threading;
 using Lokad.Cloud.Core;
-using Lokad.Cloud.Framework;
 
-namespace Lokad.Cloud
+namespace Lokad.Cloud.Framework
 {
 	/// <summary>Simple non-sharded counter.</summary>
 	/// <remarks>The content of the counter is stored in a single blob value.</remarks>
