@@ -51,14 +51,14 @@ namespace Lokad.Cloud.Framework
 			}
 		}
 
-		/// <summary>Do not try to override this method, use <see cref="Start(IEnumerable{T})"/>
+		/// <summary>Do not try to override this method, use <see cref="StartRange"/>
 		/// instead.</summary>
 		protected sealed override bool StartImpl()
 		{
 			var messages = Providers.QueueStorage.Get<T>(_queueName, _batchSize);
 
 			var count = messages.Count();
-			if (count > 0) Start(messages);
+			if (count > 0) StartRange(messages);
 
 			// Messages might have already been deleted by the 'Start' method.
 			// It's OK, 'Delete' is idempotent.
@@ -67,15 +67,32 @@ namespace Lokad.Cloud.Framework
 			return count > 0;
 		}
 
-		/// <summary>Method called by the <c>Lokad.Cloud</c> framework when messages are
-		/// available for processing.</summary>
+		/// <summary>Method called first by the <c>Lokad.Cloud</c> framework when messages are
+		/// available for processing. Defaut implementation is naively calling <see cref="Start"/>.
+		/// </summary>
 		/// <param name="messages">Messages to be processed.</param>
 		/// <remarks>
 		/// We suggest to make messages deleted asap through the <see cref="DeleteRange{U}"/>
 		/// method. Otherwise, messages will be automatically deleted when the method
 		/// returns (except if an exception is thrown obviously).
 		/// </remarks>
-		protected abstract void Start(IEnumerable<T> messages);
+		protected virtual void StartRange(IEnumerable<T> messages)
+		{
+			foreach(var message in messages)
+			{
+				Start(message);
+			}
+		}
+
+		/// <summary>Method called by <see cref="StartRange"/>, passing the message.</summary>
+		/// <remarks>
+		/// This method is a syntactic sugar for <see cref="QueueService{T}"/> inheritors
+		/// dealing only with 1 message at a time.
+		/// </remarks>
+		protected virtual void Start(T message)
+		{
+			throw new NotImplementedException("Start or StartRange method must overriden by inheritor.");
+		}
 
 		/// <summary>Get more messages from the underlying queue.</summary>
 		/// <param name="count">Maximal number of messages to be retrieved.</param>
@@ -97,14 +114,14 @@ namespace Lokad.Cloud.Framework
 			return Providers.QueueStorage.Get<U>(_queueName, count);
 		}
 
-		/// <summary>Delete message retrieved either through <see cref="Start"/>
+		/// <summary>Delete message retrieved either through <see cref="StartRange"/>
 		/// or through <see cref="GetMore"/>.</summary>
 		public void Delete<U>(U message)
 		{
 			Providers.QueueStorage.Delete(_queueName, message);
 		}
 
-		/// <summary>Delete messages retrieved either through <see cref="Start"/>
+		/// <summary>Delete messages retrieved either through <see cref="StartRange"/>
 		/// or through <see cref="GetMore"/>.</summary>
 		public void DeleteRange<U>(IEnumerable<U> messages)
 		{

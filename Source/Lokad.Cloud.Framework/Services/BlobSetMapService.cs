@@ -34,7 +34,7 @@ namespace Lokad.Cloud.Services
 	{
 		public const string QueueName = "lokad-cloud-blobsets-map";
 
-		protected override void Start(IEnumerable<BlobSetMapMessage> messages)
+		protected override void StartRange(IEnumerable<BlobSetMapMessage> messages)
 		{
 			const string containerName = BlobSet.ContainerName;
 			const string delimiter = BlobSet.Delimiter;

@@ -33,82 +33,79 @@ namespace Lokad.Cloud.Services
 	{
 		public const string QueueName = "lokad-cloud-blobsets-reduce";
 
-		protected override void Start(IEnumerable<BlobSetReduceMessage> messages)
+		protected override void Start(BlobSetReduceMessage message)
 		{
 			const string containerName = BlobSet.ContainerName;
 			const string delimiter = BlobSet.Delimiter;
 
-			foreach(var message in messages)
+			var settingsBlobName = message.SourcePrefix + delimiter + message.SettingsSuffix;
+
+			var settings = Providers.BlobStorage.
+				GetBlob<BlobSetReduceSettings>(containerName, settingsBlobName);
+
+			// cleanup has already been performed, reduction is complete.
+			if (null == settings)
 			{
-				var settingsBlobName = message.SourcePrefix + delimiter + message.SettingsSuffix;
-				
-				var settings = Providers.BlobStorage.
-					GetBlob<BlobSetReduceSettings>(containerName, settingsBlobName);
-
-				// cleanup has already been performed, reduction is complete.
-				if(null == settings)
-				{
-					Delete(message);
-					continue;
-				}
-
-				var remainingReductions = long.MaxValue;
-				var counterBlobName = message.SourcePrefix + delimiter + settings.ReductionCounter;
-				var counter = new BlobCounter(Providers, containerName, counterBlobName);
-
-				var items = Providers.QueueStorage.Get<object>(settings.WorkQueue, 2);
-
-				// if there are at least two items, then reduce them
-				if (items.Count() >= 2)
-				{
-					var current = items.First();
-					var next = items.Skip(1).First();
-
-					while (next != null)
-					{
-						var reducted = BlobSet.InvokeAsDelegate(settings.Reducer, current, next);
-
-						Providers.QueueStorage.Put(settings.WorkQueue, reducted);
-						Providers.QueueStorage.DeleteRange(settings.WorkQueue, new []{current, next});
-
-						remainingReductions = (long) counter.Increment(-1);
-
-						current = reducted;
-
-						// HACK: if the items are small, we would need to retrieve them
-						// in batches here.
-
-						// retrieving the next item and keep up with the reduction
-						var nextItems = Providers.QueueStorage.Get<object>(settings.WorkQueue, 1);
-						next = nextItems.Any() ? nextItems.First() : null;
-					}
-
-					if (remainingReductions == 0)
-					{
-						Providers.QueueStorage.Put(settings.ReductionQueue, current );
-
-						// performing cleanup
-						Providers.BlobStorage.DeleteBlob(containerName, settingsBlobName);
-						counter.Delete();
-						Providers.QueueStorage.DeleteQueue(settings.WorkQueue);
-					}
-				}
-				else
-				{
-					// not enough items retrieved for reduction
-					remainingReductions = 
-						Providers.BlobStorage.GetBlob<long>(containerName, counterBlobName);
-                }
-
-				// reduction is still under way
-				if (remainingReductions > 0)
-				{
-					// same message is queued again, for later processing.
-					Put(message , QueueName);
-				}
-
 				Delete(message);
+				return;
 			}
+
+			var remainingReductions = long.MaxValue;
+			var counterBlobName = message.SourcePrefix + delimiter + settings.ReductionCounter;
+			var counter = new BlobCounter(Providers, containerName, counterBlobName);
+
+			var items = Providers.QueueStorage.Get<object>(settings.WorkQueue, 2);
+
+			// if there are at least two items, then reduce them
+			if (items.Count() >= 2)
+			{
+				var current = items.First();
+				var next = items.Skip(1).First();
+
+				while (next != null)
+				{
+					var reducted = BlobSet.InvokeAsDelegate(settings.Reducer, current, next);
+
+					Providers.QueueStorage.Put(settings.WorkQueue, reducted);
+					Providers.QueueStorage.DeleteRange(settings.WorkQueue, new[] { current, next });
+
+					remainingReductions = (long)counter.Increment(-1);
+
+					current = reducted;
+
+					// HACK: if the items are small, we would need to retrieve them
+					// in batches here.
+
+					// retrieving the next item and keep up with the reduction
+					var nextItems = Providers.QueueStorage.Get<object>(settings.WorkQueue, 1);
+					next = nextItems.Any() ? nextItems.First() : null;
+				}
+
+				if (remainingReductions == 0)
+				{
+					Providers.QueueStorage.Put(settings.ReductionQueue, current);
+
+					// performing cleanup
+					Providers.BlobStorage.DeleteBlob(containerName, settingsBlobName);
+					counter.Delete();
+					Providers.QueueStorage.DeleteQueue(settings.WorkQueue);
+				}
+			}
+			else
+			{
+				// not enough items retrieved for reduction
+				remainingReductions =
+					Providers.BlobStorage.GetBlob<long>(containerName, counterBlobName);
+			}
+
+			// reduction is still under way
+			if (remainingReductions > 0)
+			{
+				// same message is queued again, for later processing.
+				Put(message, QueueName);
+			}
+
+			Delete(message);
 		}
 	}
 }

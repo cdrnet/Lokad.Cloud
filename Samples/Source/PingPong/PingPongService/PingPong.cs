@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System.Collections.Generic;
 using Lokad.Cloud.Framework;
 
 namespace PingPong
@@ -12,18 +11,15 @@ namespace PingPong
 	[QueueServiceSettings(AutoStart = true, QueueName = "ping")]
 	public class PingPongService : QueueService<double>
 	{
-		protected override void Start(IEnumerable<double> messages)
+		protected override void Start(double x)
 		{
-			foreach(var x in messages)
-			{
-				var y = x * x; // square operation
-				Put(y, "pong");
-				
-				// Optionaly, we could manually delete incoming messages,
-				// but here, we let the framework deal with that.
- 
-				// Delete(x);
-			}
+			var y = x * x; // square operation
+			Put(y, "pong");
+
+			// Optionaly, we could manually delete incoming messages,
+			// but here, we let the framework deal with that.
+
+			// Delete(x);
 		}
 	}
 }
