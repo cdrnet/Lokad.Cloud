@@ -21,18 +21,23 @@ namespace Lokad.Cloud.Azure
 	public sealed class StorageModule : Module
 	{
 		/// <summary>Account name of the Azure Storage.</summary>
+		[UsedImplicitly]
 		public string AccountName { get; set; }
 
 		/// <summary>Key to access the Azure Storage.</summary>
+		[UsedImplicitly]
 		public string AccountKey { get; set; }
 
 		/// <summary>Indicates whether the account key is encrypted with DBAPI.</summary>
+		[UsedImplicitly]
 		public string IsStorageKeyEncrypted { get; set; }
 
 		/// <summary>URL of the Blob Storage.</summary>
+		[UsedImplicitly]
 		public string BlobEndpoint { get; set; }
 
 		/// <summary>URL of the Queue Storage.</summary>
+		[UsedImplicitly]
 		public string QueueEndpoint { get; set; }
 
 		protected override void Load(ContainerBuilder builder)

@@ -37,7 +37,6 @@ namespace Lokad.Cloud.Azure
 		{
 			_providers = providers;
 			_logger = logger;
-			;
 		}
 
 		public void Execute()

@@ -2,7 +2,7 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-using System;
+
 using Lokad.Cloud.Core;
 
 namespace Lokad.Cloud.Framework
@@ -16,16 +16,16 @@ namespace Lokad.Cloud.Framework
 	public class ProvidersForCloudStorage
 	{
 		/// <summary>Abstracts the Blob Storage.</summary>
-		public IBlobStorageProvider BlobStorage { get; set; }
+		public IBlobStorageProvider BlobStorage { get; private set; }
 
 		/// <summary>Abstracts the Queue Storage.</summary>
-		public IQueueStorageProvider QueueStorage { get; set; }
+		public IQueueStorageProvider QueueStorage { get; private set; }
 
 		/// <summary>Error Logger</summary>
-		public ILog Log { get; set; }
+		public ILog Log { get; private set; }
 
 		/// <summary>Type mapper for implicit cloud storage.</summary>
-		public ITypeMapperProvider TypeMapper { get; set; }
+		public ITypeMapperProvider TypeMapper { get; private set; }
 
 		/// <summary>IoC constructor.</summary>
 		public ProvidersForCloudStorage(

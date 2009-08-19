@@ -49,7 +49,7 @@ namespace Lokad.Cloud.Azure
 		public const string ContainerName = "lokad-cloud-logs";
 		public const string Delimiter = "/";
 
-		IBlobStorageProvider _provider;
+		readonly IBlobStorageProvider _provider;
 		LogLevel _logLevelThreshold;
 
 		/// <summary>Minimal log level (inclusive), below this level,

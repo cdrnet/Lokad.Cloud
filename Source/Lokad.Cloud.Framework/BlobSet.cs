@@ -56,9 +56,6 @@ namespace Lokad.Cloud.Framework
 
 		/// <summary>Suffix of the blob that contains the reduction counter.</summary>
 		public string ReductionCounter { get; set; }
-
-		/// <summary>Suffix of the blob that contains a counter of number of worker.</summary>
-		public string ReducerInQueueCounter { get; set; }
 	}
 
 	/// <summary>The <c>BlobSet</c> is a blob-based scalable collection that
@@ -96,10 +93,6 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Blob name used to store the number of remaining mappings during
 		/// a map operation.</summary>
 		public const string MapCounterSuffix = "map-counter";
-
-		/// <summary>Blob name used to store the number of remaining reductions during
-		/// a reduce operation.</summary>
-		public const string ReduceCounterSuffix = "reduce-counter";
 
 		// used as a heuristic for counter initialization in map operation
 		const long CounterInitialShift = 2l ^ 48;
@@ -288,6 +281,7 @@ namespace Lokad.Cloud.Framework
 		/// </remarks>
 		public void Clear()
 		{
+			// TODO: BlobSet.Clear must be implemented
 			throw new NotImplementedException();
 		}
 

@@ -64,6 +64,12 @@ namespace Lokad.Cloud.Framework
 			return counter;
 		}
 
+		/// <summary>Reset the counter at the given value.</summary>
+		public void Reset(decimal value)
+		{
+			_provider.PutBlob(_containerName, _blobName, value);
+		}
+
 		/// <summary>Deletes the counter.</summary>
 		/// <returns><c>true</c> if the counter has actually been deleted by the call,
 		/// and <c>false</c> otherwise.</returns>

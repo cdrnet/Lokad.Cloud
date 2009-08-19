@@ -35,7 +35,7 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>Default constructor</summary>
-		public QueueService()
+		protected QueueService()
 		{
 			var settings = GetType().GetAttribute<QueueServiceSettingsAttribute>(true);
 
