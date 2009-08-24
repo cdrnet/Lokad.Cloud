@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Autofac;
+using Lokad.Threading;
 
 namespace Lokad.Cloud.Framework
 {
@@ -60,6 +61,13 @@ namespace Lokad.Cloud.Framework
 		public const string ServiceStatePrefix = "state";
 		public const string Delimiter = "/";
 
+		/// <summary>Timeout set at 1h58.</summary>
+		/// <remarks>The timeout provided by Windows Azure for message consumption
+		/// on queue is set at 2h. Yet, in order to avoid race condition between
+		/// message silent re-inclusion in queue and message deletion, the timeout here
+		/// is shortened at 1h58.</remarks>
+		public static TimeSpan ExecutionTimeout { get { return new TimeSpan(1, 58, 0); } }
+
 		/// <summary>Indicates the state of the service, as retrieved during the last check.</summary>
 		CloudServiceState _state = CloudServiceState.Started;
 
@@ -96,7 +104,9 @@ namespace Lokad.Cloud.Framework
 
 		/// <summary>Wrapper method for the <see cref="StartImpl"/> method. Checks
 		/// that the service status before executing the inner start.</summary>
-		/// <returns></returns>
+		/// <returns>See <seealso cref="StartImpl"/> for the semantic of the return value.</returns>
+		/// <remarks>If the execution does not complete within <see cref="ExecutionTimeout"/>,
+		/// then a <see cref="TimeoutException"/> is thrown.</remarks>
 		public bool Start()
 		{
 			var now = DateTime.Now;
@@ -130,8 +140,9 @@ namespace Lokad.Cloud.Framework
 			{
 				return false;
 			}
-            
-			return StartImpl();
+
+			var waitFor = new WaitFor<bool>(ExecutionTimeout);
+			return waitFor.Run(StartImpl);
 		}
 
 		/// <summary>Called when the service is launched.</summary>
