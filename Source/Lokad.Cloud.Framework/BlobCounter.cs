@@ -60,12 +60,8 @@ namespace Lokad.Cloud.Framework
 		/// <remarks>If the counter does not exist before hand, it gets created with a zero value.</remarks>
 		public decimal Increment(decimal increment)
 		{
-			var counter = decimal.MaxValue; // dummy initialization
-
-			RetryUpdate(() => _provider.UpdateIfNotModified(
-				_containerName,
-				_blobName,
-				x => x + increment, out counter));
+			decimal counter;
+			_provider.AtomicUpdate(_containerName, _blobName, x => x + increment, out counter);
 
 			return counter;
 		}
@@ -82,27 +78,6 @@ namespace Lokad.Cloud.Framework
 		public bool Delete()
 		{
 			return _provider.DeleteBlob(_containerName, _blobName);
-		}
-
-		/// <summary>Retry an update method until it succeeds. Timing
-		/// increases to avoid overstressing the storage for nothing.</summary>
-		/// <param name="func"></param>
-		static void RetryUpdate(Func<bool> func)
-		{
-			// HACK: hard-coded constants, the whole counter system have to be perfected.
-			const int InitMaxSleepInMs = 50;
-			const int MaxSleepInMs = 2000;
-
-			var maxSleepInMs = InitMaxSleepInMs;
-
-			while (!func())
-			{
-				var sleepTime = _rand.Next(maxSleepInMs).Milliseconds();
-				Thread.Sleep(sleepTime);
-
-				maxSleepInMs += 50;
-				maxSleepInMs = Math.Min(maxSleepInMs, MaxSleepInMs);
-			}
 		}
 	}
 }
