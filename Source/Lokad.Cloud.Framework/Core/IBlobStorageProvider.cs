@@ -87,7 +87,7 @@ namespace Lokad.Cloud.Core
 		/// <param name="containerName"></param>
 		/// <param name="blobName"></param>
 		/// <param name="updater">The function takes a <c>T</c> object to update
-		/// and returns a <see cref="Result{T}"/> if update has succeed.
+		/// and returns a <see cref="Result{T}"/> if update has succeed,
 		/// because the updater can optionally decide not to succeed with the update
 		/// (in case where the update no more relevant for example.</param>
 		/// <param name="result">Result returned by the updated.</param>
