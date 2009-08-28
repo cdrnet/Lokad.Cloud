@@ -23,7 +23,7 @@ namespace Lokad.Cloud.Mock
 		/// <summary>naive global lock to make methods thread-safe.</summary>
 		readonly object _syncRoot;
 
-		MockStorageProvider()
+		public MockStorageProvider()
 		{
 			_containers = new Dictionary<string, MockContainer>();
 			_syncRoot = new object();
