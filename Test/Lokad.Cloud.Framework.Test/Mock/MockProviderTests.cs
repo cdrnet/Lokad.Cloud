@@ -35,9 +35,7 @@ namespace Lokad.Cloud.Framework.Test.Mock
 			storage.PutBlob(containerName1, blobPrefix + "/" + "blob1", new DateTime(2009,08,27));
 			storage.PutBlob(containerName1, blobPrefix + "/" + "blob2", new DateTime(2009, 08, 28));
 			storage.PutBlob(containerName1, blobPrefix + "/" + "blob3", new DateTime(2009, 08, 29));
-
 			storage.PutBlob(containerName2, blobPrefix + "/" + "blob2", new DateTime(1984, 07, 06));
-
 			storage.PutBlob(containerName1, secondBlobPrefix + "/" + "blob1", new DateTime(2009, 08, 30));
 
 			var blobNames = storage.List(containerName1, blobPrefix);
@@ -62,12 +60,13 @@ namespace Lokad.Cloud.Framework.Test.Mock
 			const string blobPrefix = "mockBlobPrefix";
 
 			var storage = new MockStorageProvider();
-
 			storage.CreateContainer(containerNamePrefix+1);
 			storage.CreateContainer(containerNamePrefix+2);
 
-
-			var threads = Enumerable.Range(0, 32).Select(i=> new Thread(new ParameterizedThreadStart(AddValueToContainer))).ToArray();
+			var threads = Enumerable.Range(0, 32)
+									.Select(i=> 
+										new Thread(new ParameterizedThreadStart(AddValueToContainer)))
+									.ToArray();
 			var threadParameters = Enumerable.Range(0, 32).Select(i => 
 				i<=15 
 				? new ThreadParameters("threadId" + i, "Container-1", storage)
