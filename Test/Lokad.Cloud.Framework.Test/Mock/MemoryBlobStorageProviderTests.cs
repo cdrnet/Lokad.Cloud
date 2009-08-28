@@ -4,9 +4,7 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using NUnit.Framework;
 
@@ -15,7 +13,7 @@ using Lokad.Cloud.Mock;
 namespace Lokad.Cloud.Framework.Test.Mock
 {
 	[TestFixture]
-	public class MockProviderTests
+	public class MemoryBlobStorageProviderTests
 	{
 		[Test]
 		public void BlobsGetCreatedMonoThread()
@@ -26,7 +24,7 @@ namespace Lokad.Cloud.Framework.Test.Mock
 			const string blobPrefix = "mockBlobPrefix";
 			const string secondBlobPrefix = "sndBlobPrefix";
 
-			var storage = new MockBlobStorageProvider();
+			var storage = new MemoryBlobStorageProvider();
 
 			storage.CreateContainer(containerName1);
 			storage.CreateContainer(containerName2);
@@ -59,7 +57,7 @@ namespace Lokad.Cloud.Framework.Test.Mock
 			
 			const string blobPrefix = "mockBlobPrefix";
 
-			var storage = new MockBlobStorageProvider();
+			var storage = new MemoryBlobStorageProvider();
 			storage.CreateContainer(containerNamePrefix+1);
 			storage.CreateContainer(containerNamePrefix+2);
 
@@ -102,11 +100,11 @@ namespace Lokad.Cloud.Framework.Test.Mock
 
 		class ThreadParameters
 		{
-			public MockBlobStorageProvider BlobStorage { get; set; }
+			public MemoryBlobStorageProvider BlobStorage { get; set; }
 			public string ThreadId { get; set; }
 			public string ContainerName { get; set; }
 
-			public ThreadParameters(string threadId, string containerName, MockBlobStorageProvider blobStorage)
+			public ThreadParameters(string threadId, string containerName, MemoryBlobStorageProvider blobStorage)
 			{
 				BlobStorage = blobStorage;
 				ThreadId = threadId;

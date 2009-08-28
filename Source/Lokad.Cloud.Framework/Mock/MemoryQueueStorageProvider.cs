@@ -5,13 +5,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Lokad.Cloud.Core;
 
 namespace Lokad.Cloud.Mock
 {
-	class MockQueueStorageProvider : IQueueStorageProvider
+	/// <summary>Mock in-memory Queue Storage.</summary>
+	public class MemoryQueueStorageProvider : IQueueStorageProvider
 	{
 		IEnumerable<string> IQueueStorageProvider.List(string prefix)
 		{

@@ -95,8 +95,8 @@
     <Compile Include="Core\ITypeMapperProvider.cs" />
     <None Include="Cuid.cs" />
     <Compile Include="MessageWrapper.cs" />
-    <Compile Include="Mock\MockBlobStorageProvider.cs" />
-    <Compile Include="Mock\MockQueueStorageProvider.cs" />
+    <Compile Include="Mock\MemoryBlobStorageProvider.cs" />
+    <Compile Include="Mock\MemoryQueueStorageProvider.cs" />
     <Compile Include="ProvidersForCloudStorage.cs" />
     <Compile Include="QueueServiceSettingsAttribute.cs" />
     <None Include="Lock.cs" />

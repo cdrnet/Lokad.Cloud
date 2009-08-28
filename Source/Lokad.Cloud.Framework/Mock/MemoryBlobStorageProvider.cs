@@ -10,11 +10,11 @@ using Lokad.Cloud.Core;
 
 namespace Lokad.Cloud.Mock
 {
-	/// <summary>Provides access to a Mock Blob Storage.</summary>
+	/// <summary>Mock in-memory Blob Storage.</summary>
 	/// <remarks>
-	/// All the methods of <see cref="MockBlobStorageProvider"/> are thread-safe.
+	/// All the methods of <see cref="MemoryBlobStorageProvider"/> are thread-safe.
 	/// </remarks>
-	public class MockBlobStorageProvider : IBlobStorageProvider
+	public class MemoryBlobStorageProvider : IBlobStorageProvider
 	{
 		/// <summary> Containers Property.</summary>
 		Dictionary<string, MockContainer> Containers { get { return _containers;} }
@@ -23,7 +23,7 @@ namespace Lokad.Cloud.Mock
 		/// <summary>naive global lock to make methods thread-safe.</summary>
 		readonly object _syncRoot;
 
-		public MockBlobStorageProvider()
+		public MemoryBlobStorageProvider()
 		{
 			_containers = new Dictionary<string, MockContainer>();
 			_syncRoot = new object();
