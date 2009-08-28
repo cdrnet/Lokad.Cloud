@@ -26,7 +26,7 @@ namespace Lokad.Cloud.Framework.Test.Mock
 			const string blobPrefix = "mockBlobPrefix";
 			const string secondBlobPrefix = "sndBlobPrefix";
 
-			var storage = new MockStorageProvider();
+			var storage = new MockBlobStorageProvider();
 
 			storage.CreateContainer(containerName1);
 			storage.CreateContainer(containerName2);
@@ -59,7 +59,7 @@ namespace Lokad.Cloud.Framework.Test.Mock
 			
 			const string blobPrefix = "mockBlobPrefix";
 
-			var storage = new MockStorageProvider();
+			var storage = new MockBlobStorageProvider();
 			storage.CreateContainer(containerNamePrefix+1);
 			storage.CreateContainer(containerNamePrefix+2);
 
@@ -77,10 +77,12 @@ namespace Lokad.Cloud.Framework.Test.Mock
 			Thread.Sleep(60000);
 
 			var blobNames = storage.List("Container-1", blobPrefix);
-			Assert.AreEqual(16000, blobNames.Count(), "first container with corresponding prefix does not hold 3 blobs");
+			Assert.AreEqual(16000, blobNames.Count(), 
+				"first container with corresponding prefix does not hold 3 blobs");
 
 			blobNames = storage.List("Container-2", blobPrefix);
-			Assert.AreEqual(16000, blobNames.Count(), "second container with corresponding prefix does not hold 1 blobs");
+			Assert.AreEqual(16000, blobNames.Count(), 
+				"second container with corresponding prefix does not hold 1 blobs");
 
 		}
 
@@ -92,20 +94,21 @@ namespace Lokad.Cloud.Framework.Test.Mock
 				var random = new Random();
 				for (int i = 0; i < 1000; i++)
 				{
-					castedParameters.Storage.PutBlob(castedParameters.ContainerName, "mockBlobPrefix" + castedParameters.ThreadId + "/blob" + i, random.NextDouble());
+					castedParameters.BlobStorage.PutBlob(castedParameters.ContainerName, 
+						"mockBlobPrefix" + castedParameters.ThreadId + "/blob" + i, random.NextDouble());
 				}
 			}
 		}
 
 		class ThreadParameters
 		{
-			public MockStorageProvider Storage { get; set; }
+			public MockBlobStorageProvider BlobStorage { get; set; }
 			public string ThreadId { get; set; }
 			public string ContainerName { get; set; }
 
-			public ThreadParameters(string threadId, string containerName, MockStorageProvider storage)
+			public ThreadParameters(string threadId, string containerName, MockBlobStorageProvider blobStorage)
 			{
-				Storage = storage;
+				BlobStorage = blobStorage;
 				ThreadId = threadId;
 				ContainerName = containerName;
 			}
