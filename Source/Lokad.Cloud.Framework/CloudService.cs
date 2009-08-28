@@ -56,6 +56,10 @@ namespace Lokad.Cloud.Framework
 	/// <see cref="QueueService{T}"/> or <see cref="ScheduledService"/> instead.</remarks>
 	public abstract class CloudService
 	{
+		/// <summary>Name fo the container associated to temporary items. Each blob
+		/// is prefixed with his lifetime expiration date.</summary>
+		public const string TemporaryContainer = "lokad-cloud-temporary";
+
 		public const string ServiceStateContainer = "lokad-cloud-services";
 		public const string DelayedMessageContainer = "lokad-cloud-messages";
 		public const string ServiceStatePrefix = "state";

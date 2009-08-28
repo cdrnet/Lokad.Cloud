@@ -178,7 +178,7 @@ namespace Lokad.Cloud.Azure
 
 				if(buffer.Length >= Message.MaxMessageSize)
 				{
-					var container = _blobStorage.GetBlobContainer(QueueService.OverflowingContainer);
+					var container = _blobStorage.GetBlobContainer(CloudService.TemporaryContainer);
 					var blobName = GetNewBlobName(queueName);
 
 					var blobContents = new BlobContents(buffer);
@@ -209,7 +209,7 @@ namespace Lokad.Cloud.Azure
 
 					var mw = new MessageWrapper
 						{
-							ContainerName = QueueService.OverflowingContainer, 
+							ContainerName = CloudService.TemporaryContainer, 
 							BlobName = blobName
 						};
 					stream = new MemoryStream();

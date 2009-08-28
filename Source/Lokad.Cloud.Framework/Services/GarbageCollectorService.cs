@@ -6,30 +6,35 @@ using System;
 using System.Globalization;
 using QueueService = Lokad.Cloud.Framework.QueueService<object>;
 
-// HACK: we are currently assuming that the amount of overflowing items is low.
+// HACK: we are currently assuming that the amount of garbage items is low.
 // Yet, in some circumstances (service failures for example), the amount of overflowing
 // messages could be large, and would need a more scalable implementation pattern.
 
-// TODO: we should not silently delete overflowing items, but instead log aggregated error
-// message (typically the number of items deleted for each queue).
-
 namespace Lokad.Cloud.Framework.Services
 {
+	/// <summary>
+	/// Garbage collects temporary items stored in the <see cref="CloudService.TemporaryContainer"/>.
+	/// </summary>
+	/// <remarks>
+	/// The container <see cref="CloudService.TemporaryContainer"/> is handy to
+	/// store non-persistent data, typically state information concerning ongoing
+	/// processing.
+	/// </remarks>
 	[ScheduledServiceSettings(
 		AutoStart = true, 
-		Description = "Garbage collect overflowing queue items after 7 days.",
+		Description = "Garbage collects temporary items.",
 		TriggerInterval = 24 * 60 * 60)] // 1 execution per day by default
-	public class QueueOverflowCollectorService : ScheduledService
+	public class GarbageCollectorService : ScheduledService
 	{
 		/// <remarks>Name is override for consistency in the framework.</remarks>
 		public override string Name
 		{
-			get { return "lokad-cloud-queue-overflow-collector"; }
+			get { return "lokad-cloud-garbage-collector"; }
 		}
 
 		protected override void StartOnSchedule()
 		{
-			const string cn = QueueService.OverflowingContainer;
+			const string cn = TemporaryContainer;
 
 			// lazy enumeration over the overflowing messages
 			foreach(var blobName in Providers.BlobStorage.List(cn, null))

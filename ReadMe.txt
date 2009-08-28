@@ -46,9 +46,9 @@ lokad-cloud-cuids [planned]
 lokad-cloud-locks [planned]
 lokad-cloud-logs 
 lokad-cloud-messages
-lokad-cloud-overflowing-queues
 lokad-cloud-services
 lokad-cloud-schedule
+lokad-cloud-temporary
 
 Queue containers part of the framework:
 

@@ -21,10 +21,6 @@ namespace Lokad.Cloud.Framework
 	/// </remarks>
 	public abstract class QueueService<T> : CloudService
 	{
-		/// <summary>Name of the blob container used to hold overflowing messages
-		/// from the queues.</summary>
-		public const string OverflowingContainer = "lokad-cloud-overflowing-queues";
-
 		readonly string _queueName;
 		readonly int _batchSize;
 
