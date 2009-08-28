@@ -7,8 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lokad.Cloud.Core;
-using Lokad.Cloud.Framework;
-using Microsoft.Samples.ServiceHosting.StorageClient;
 
 namespace Lokad.Cloud.Mock
 {
@@ -41,7 +39,7 @@ namespace Lokad.Cloud.Mock
 				}
 				else
 				{
-					Containers.Add(containerName, new MockContainer(containerName));
+					Containers.Add(containerName, new MockContainer());
 					return true;
 				}		
 			}	
@@ -92,7 +90,7 @@ namespace Lokad.Cloud.Mock
 				}
 				else
 				{
-					Containers.Add(containerName, new MockContainer(containerName));
+					Containers.Add(containerName, new MockContainer());
 					Containers[containerName].AddBlob(blobName, item);
 					return true;
 				}
@@ -103,41 +101,88 @@ namespace Lokad.Cloud.Mock
 		{
 			string ignoredEtag;
 			return GetBlob<T>(containerName, blobName, out ignoredEtag);
-			
 		}
 
 		public T GetBlob<T>(string containerName, string blobName, out string etag)
 		{
 			lock (_syncRoot)
 			{
-				etag = Guid.NewGuid().ToString();
-				return (T)Containers[containerName].GetBlob(blobName);
+				if ( !Containers.ContainsKey(containerName) ||
+					 !Containers[containerName].BlobNames.Contains(blobName) )
+				{
+					etag = null;
+					return default(T);
+				}
+				else
+				{
+					etag = Containers[containerName].BlobsEtag[blobName];
+					return (T)Containers[containerName].GetBlob(blobName);
+				}
 			}
 		}
 
 		public string GetBlobEtag(string containerName, string blobName)
 		{
-			throw new NotImplementedException();
+			lock (_syncRoot)
+			{
+				return (Containers.ContainsKey(containerName) && Containers[containerName].BlobNames.Contains(blobName))
+					? Containers[containerName].BlobsEtag[blobName]
+					: null;
+			}
 		}
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater, out Result<T> result)
 		{
-			throw new NotImplementedException();
+			lock (_syncRoot)
+			{
+				T input;
+				if (Containers.ContainsKey(containerName) )
+				{
+					if (Containers[containerName].BlobNames.Contains(blobName))
+					{
+						input = (T)Containers[containerName].GetBlob(blobName);
+					}
+					else
+					{
+						input = default(T);
+					}
+				}
+				else
+				{
+					Containers.Add(containerName, new MockContainer());
+					input = default(T);
+				}
+
+				// updating the item
+				result = updater(input);
+
+				if (!result.IsSuccess)
+				{
+					return false;
+				}
+				Containers[containerName].SetBlob(blobName, result.Value);
+				return true;
+			}
 		}
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result)
 		{
-			throw new NotImplementedException();
+			Result<T> rresult;
+			var flag = UpdateIfNotModified(containerName, blobName, x => Result.Success(updater(x)), out rresult);
+
+			result = rresult.Value;
+			return flag;
 		}
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater)
 		{
-			throw new NotImplementedException();
+			Result<T> ignored;
+			return UpdateIfNotModified(containerName, blobName, updater, out ignored);
 		}
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)
 		{
-			throw new NotImplementedException();
+			return UpdateIfNotModified<T>(containerName, blobName, x => Result.Success(updater(x)));
 		}
 
 		public bool DeleteBlob(string containerName, string blobName)
@@ -169,7 +214,6 @@ namespace Lokad.Cloud.Mock
 
 		class MockContainer
 		{
-			readonly string _containerName;
 			readonly Dictionary<string, object> _blobSet;
 			readonly Dictionary<string, string> _blobsEtag;
 
@@ -177,9 +221,8 @@ namespace Lokad.Cloud.Mock
 
 			public Dictionary<string, string> BlobsEtag { get { return _blobsEtag; } }
 
-			public MockContainer(string containerName)
+			public MockContainer()
 			{
-				_containerName = containerName;
 				_blobSet = new Dictionary<string, object>();
 				_blobsEtag = new Dictionary<string, string>();
 			}
