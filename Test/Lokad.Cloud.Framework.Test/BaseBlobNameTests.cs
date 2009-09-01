@@ -65,6 +65,18 @@ namespace Lokad.Cloud.Framework.Test
 			Assert.AreEqual(original.ChunkSize, parsed.ChunkSize);
 		}
 
+		[Test]
+		public void Two_Patterns()
+		{
+			// actually ensures that the implementation supports two patterns
+
+			var date = new DateTime(2009, 1, 1, 3, 4, 5);
+			var pa = new PatternA(date, 12000, Guid.NewGuid(), 120);
+			var pb = new PatternB(Guid.NewGuid(), 1000);
+
+			Assert.AreNotEqual(pa.ToString(), pb.ToString());
+		}
+
 		[Test, ExpectedException(typeof(ArgumentException))]
 		public void Wrong_type_is_detected()
 		{

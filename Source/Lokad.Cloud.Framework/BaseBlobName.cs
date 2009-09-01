@@ -17,6 +17,10 @@ namespace Lokad.Cloud.Framework
 	[Serializable]
 	public abstract class BaseBlobName
 	{
+		/// <summary>Sortable pattern for date times.</summary>
+		/// <remarks>Hyphens can be eventually used to refine further the iteration.</remarks>
+		public const string DateFormatInBlobName = "yyyy-MM-dd-HH-mm-ss";
+
 		static readonly Dictionary<Type, Func<string, object>> Parsers = new Dictionary<Type, Func<string, object>>();
 		static readonly Dictionary<Type, Func<object, string>> Printers = new Dictionary<Type, Func<object, string>>();
 
@@ -34,13 +38,26 @@ namespace Lokad.Cloud.Framework
 			// GUID does not have default converter
 			Parsers.Add(typeof(Guid), s => new Guid(s));
 
-			// We want sortable pattern on date-time 
-			// (using only hyphens to eventually refine the iteration on DateTime)
-			const string dateFormat = "yyyy-MM-dd-HH-mm-ss";
-			Parsers.Add(typeof(DateTime), s => DateTime.ParseExact(s, dateFormat, CultureInfo.InvariantCulture));
+			Parsers.Add(typeof(DateTime), s => 
+				DateTime.ParseExact(s, DateFormatInBlobName, CultureInfo.InvariantCulture));
 
-			Printers.Add(typeof(DateTime), o => ((DateTime)o).ToString(dateFormat, CultureInfo.InvariantCulture));
+			Printers.Add(typeof(DateTime), 
+				o => ((DateTime)o).ToString(DateFormatInBlobName, CultureInfo.InvariantCulture));
+
 			Printers.Add(typeof(Guid), o => ((Guid)o).ToString("N"));
+		}
+
+		public override string ToString()
+		{
+			// Invoke a Static Generic Method using Reflection
+			var method = typeof (BaseBlobName).GetMethod("Print", BindingFlags.Static | BindingFlags.Public);
+
+			// Binding the method info to generic arguments
+			method = method.MakeGenericMethod(new[] { GetType() });
+
+			// Invoking the method and passing parameters
+			// The null parameter is the object to call the method from. Since the method is static, pass null.
+			return (string) method.Invoke(null, new object[] { this });
 		}
 
 		static object InternalParse(string value, Type type)
@@ -106,7 +123,7 @@ namespace Lokad.Cloud.Framework
 			}
 		}
 
-		/// <summary>Print a hierarchical blob name.</summary>
+		/// <summary>Do not use directly, call <see cref="ToString"/> instead.</summary>
 		public static string Print<T>(T instance)
 		{
 			return ConverterTypeCache<T>.Print(instance);

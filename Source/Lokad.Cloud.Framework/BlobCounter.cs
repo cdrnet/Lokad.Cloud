@@ -36,7 +36,7 @@ namespace Lokad.Cloud.Framework
 
 		/// <summary>Shorthand constructor.</summary>
 		public BlobCounter(IBlobStorageProvider provider, BaseBlobName fullName)
-            : this(provider, fullName.ContainerName, BaseBlobName.Print(fullName))
+            : this(provider, fullName.ContainerName, fullName.ToString())
 		{
 		}
 

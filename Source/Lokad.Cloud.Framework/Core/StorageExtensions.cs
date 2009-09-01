@@ -79,17 +79,17 @@ namespace Lokad.Cloud.Core
 
 		public static T GetBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName)
 		{
-			return provider.GetBlob<T>(fullName.ContainerName, BaseBlobName.Print(fullName));
+			return provider.GetBlob<T>(fullName.ContainerName, fullName.ToString());
 		}
 
 		public static void PutBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName, T item)
 		{
-			provider.PutBlob(fullName.ContainerName, BaseBlobName.Print(fullName), item);
+			provider.PutBlob(fullName.ContainerName, fullName.ToString(), item);
 		}
 
 		public static bool PutBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName, T item, bool overwrite)
 		{
-			return provider.PutBlob(fullName.ContainerName, BaseBlobName.Print(fullName), item, overwrite);
+			return provider.PutBlob(fullName.ContainerName, fullName.ToString(), item, overwrite);
 		}
 	}
 }

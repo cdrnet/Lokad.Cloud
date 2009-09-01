@@ -4,15 +4,12 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
-
-using QueueService = Lokad.Cloud.Framework.QueueService<object>;
 
 namespace Lokad.Cloud.Azure
 {
@@ -178,11 +175,14 @@ namespace Lokad.Cloud.Azure
 
 				if(buffer.Length >= Message.MaxMessageSize)
 				{
-					var container = _blobStorage.GetBlobContainer(CloudService.TemporaryContainer);
-					var blobName = GetNewBlobName(queueName);
+					
+					// 7 days = maximal processing duration for messages in queue
+					var blobName = TemporaryBlobName.GetNew(DateTime.Now.AddDays(7), queueName);
 
 					var blobContents = new BlobContents(buffer);
-					var blobProperties = new BlobProperties(blobName);
+					var blobProperties = new BlobProperties(blobName.ToString());
+
+					var container = _blobStorage.GetBlobContainer(blobName.ContainerName);
 
 					try
 					{
@@ -210,7 +210,7 @@ namespace Lokad.Cloud.Azure
 					var mw = new MessageWrapper
 						{
 							ContainerName = CloudService.TemporaryContainer, 
-							BlobName = blobName
+							BlobName = blobName.ToString()
 						};
 					stream = new MemoryStream();
 					_formatter.Serialize(stream, mw);
@@ -330,24 +330,6 @@ namespace Lokad.Cloud.Azure
 
 				throw;
 			}
-		}
-
-		/// <summary>
-		/// Naming is following a date pattern to facilitate cleaning later on.
-		/// </summary>
-		/// <remarks>
-		/// The date specified by the blob name prefix correspond to the expiration
-		/// date of the overflowing message.
-		/// </remarks>
-		string GetNewBlobName(string queueName)
-		{
-			// HACK: [vermorel] the message life-time is hard-coded to 7 days for now.
-			// In the future, we might consider a more modular approach where lifetime
-			// can be adjusted depending on the queue settings.
-			return DateTime.Now.ToUniversalTime().AddDays(7)
-				.ToString("yyyy/MM/dd/hh/mm/ss/", CultureInfo.InvariantCulture) 
-				+ queueName + "/"
-				+ Guid.NewGuid();
 		}
 	}
 }

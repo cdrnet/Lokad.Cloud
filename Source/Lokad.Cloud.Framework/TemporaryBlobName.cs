@@ -11,6 +11,7 @@ namespace Lokad.Cloud.Framework
 	/// <summary>Used in conjunction with the <see cref="GarbageCollectorService"/>.</summary>
 	/// <remarks>Use the method <see cref="GetNew"/> to instantiate a new instance
 	/// direcly linked to the garbage collected container.</remarks>
+	[Serializable]
 	public class TemporaryBlobName : BaseBlobName
 	{
 		public override string ContainerName
@@ -33,9 +34,16 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>Gets a full name for a temporary blob.</summary>
-		public TemporaryBlobName GetNew(DateTime expiration)
+		public static TemporaryBlobName GetNew(DateTime expiration)
 		{
 			return new TemporaryBlobName(expiration, Guid.NewGuid().ToString("N"));
+		}
+
+		/// <summary>Gets a full name for a temporary blob.</summary>
+		public static TemporaryBlobName GetNew(DateTime expiration, string prefix)
+		{
+			// hyphen used on purpose, not to interfere with parsing later on.
+			return new TemporaryBlobName(expiration, prefix + "-" + Guid.NewGuid().ToString("N"));
 		}
 	}
 }
