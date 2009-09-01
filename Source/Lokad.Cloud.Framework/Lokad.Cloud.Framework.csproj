@@ -86,6 +86,7 @@
     <Compile Include="Azure\StorageModule.cs" />
     <Compile Include="Azure\TypeMapperProvider.cs" />
     <Compile Include="BlobCounter.cs" />
+    <Compile Include="BlobRef.cs" />
     <Compile Include="BlobSet.cs" />
     <Compile Include="CloudService.cs" />
     <Compile Include="CloudServiceSettingsAttribute.cs" />

@@ -2,8 +2,7 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-using System;
-using System.Threading;
+
 using Lokad.Cloud.Core;
 
 namespace Lokad.Cloud.Framework
@@ -12,8 +11,6 @@ namespace Lokad.Cloud.Framework
 	/// <remarks>The content of the counter is stored in a single blob value.</remarks>
 	public class BlobCounter
 	{
-		static Random _rand = new Random();
-
 		readonly IBlobStorageProvider _provider;
 
 		readonly string _containerName;

@@ -1,0 +1,111 @@
+﻿#region Copyright (c) Lokad 2009
+// This code is released under the terms of the new BSD licence.
+// URL: http://www.lokad.com/
+#endregion
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using Lokad.Quality;
+
+namespace Lokad.Cloud
+{
+	/// <summary>Helper class to facilite the manipulation of blob names and
+	/// to avoid ad-hoc string concatenation and parsing scheme.</summary>
+	public static class BlobRef
+	{
+		static readonly Dictionary<Type, Func<string, object>> Parsers = new Dictionary<Type, Func<string, object>>();
+		static readonly Dictionary<Type, Func<object, string>> Printers = new Dictionary<Type, Func<object, string>>();
+
+		static BlobRef()
+		{
+			// adding overrides
+
+			// GUID does not have default converter
+			Parsers.Add(typeof(Guid), s => new Guid(s));
+
+			// We want sortable pattern on date-time 
+			// (using only hyphens to eventually refine the iteration on DateTime)
+			const string dateFormat = "yyyy-MM-dd-HH-mm-ss";
+			Parsers.Add(typeof(DateTime), s => DateTime.ParseExact(s, dateFormat, CultureInfo.InvariantCulture));
+			Printers.Add(typeof(DateTime), o => ((DateTime)o).ToString(dateFormat, CultureInfo.InvariantCulture));
+		}
+
+		static object InternalParse(string value, Type type)
+		{
+			var func = Parsers.GetValue(type, s => Convert.ChangeType(s, type));
+			return func(value);
+		}
+
+
+		static string InternalPrint(object value, Type type)
+		{
+			var func = Printers.GetValue(type, o => o.ToString());
+			return func(value);
+		}
+
+		[UsedImplicitly]
+		class ConverterTypeCache<T>
+		{
+			static readonly FieldInfo[] Fields;
+			const string Delimeter = "/";
+
+			static readonly ConstructorInfo FirstCtor;
+
+			static ConverterTypeCache()
+			{
+				// HACK: optimize this to IL code, if needed
+				// NB: this approach could be used to generate F# style objects!
+				Fields = typeof(T).GetFields();
+				FirstCtor = typeof(T).GetConstructors().First();
+			}
+
+			public static string Print(T instance)
+			{
+				var sb = new StringBuilder();
+				for (int i = 0; i < Fields.Length; i++)
+				{
+					var info = Fields[i];
+					var s = InternalPrint(info.GetValue(instance), info.FieldType);
+					sb.Append(s);
+					if(i < Fields.Length - 1) sb.Append(Delimeter);
+				}
+				return sb.ToString();
+			}
+
+			public static T Parse(string value)
+			{
+				if (string.IsNullOrEmpty(value))
+					throw new ArgumentNullException("value");
+
+				var split = value.Split(new[] { Delimeter }, StringSplitOptions.RemoveEmptyEntries);
+
+				if (split.Length != Fields.Length)
+					throw new ArgumentException("Number of items in the string is invalid. Are you missing something?", "value");
+
+				var parameters = new object[Fields.Length];
+
+				for (int i = 0; i < parameters.Length; i++)
+				{
+					parameters[i] = InternalParse(split[i], Fields[i].FieldType);
+				}
+
+				return (T)FirstCtor.Invoke(parameters);
+			}
+		}
+
+		/// <summary>Print a hierarchical blob name.</summary>
+		public static string Print<T>(T instance)
+		{
+			return ConverterTypeCache<T>.Print(instance);
+		}
+
+		/// <summary>Parse a hierarchical blob name.</summary>
+		public static T Parse<T>(string value)
+		{
+			return ConverterTypeCache<T>.Parse(value);
+		}
+	}
+}
