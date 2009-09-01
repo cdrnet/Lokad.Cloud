@@ -38,7 +38,9 @@ namespace Lokad.Cloud.Framework
 			// (using only hyphens to eventually refine the iteration on DateTime)
 			const string dateFormat = "yyyy-MM-dd-HH-mm-ss";
 			Parsers.Add(typeof(DateTime), s => DateTime.ParseExact(s, dateFormat, CultureInfo.InvariantCulture));
+
 			Printers.Add(typeof(DateTime), o => ((DateTime)o).ToString(dateFormat, CultureInfo.InvariantCulture));
+			Printers.Add(typeof(Guid), o => ((Guid)o).ToString("N"));
 		}
 
 		static object InternalParse(string value, Type type)
