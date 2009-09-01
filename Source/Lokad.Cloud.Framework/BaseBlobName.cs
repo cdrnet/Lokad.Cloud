@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using Lokad.Cloud.Core;
 using Lokad.Quality;
@@ -19,7 +20,7 @@ namespace Lokad.Cloud.Framework
 	{
 		/// <summary>Sortable pattern for date times.</summary>
 		/// <remarks>Hyphens can be eventually used to refine further the iteration.</remarks>
-		public const string DateFormatInBlobName = "yyyy-MM-dd-HH-mm-ss";
+		public const string DateFormatInBlobName = "yyyy-MM-dd-HH-mm-ss-ffff";
 
 		static readonly Dictionary<Type, Func<string, object>> Parsers = new Dictionary<Type, Func<string, object>>();
 		static readonly Dictionary<Type, Func<object, string>> Printers = new Dictionary<Type, Func<object, string>>();
@@ -124,15 +125,23 @@ namespace Lokad.Cloud.Framework
 		}
 
 		/// <summary>Do not use directly, call <see cref="ToString"/> instead.</summary>
-		public static string Print<T>(T instance)
+		public static string Print<T>(T instance) where T : BaseBlobName
 		{
 			return ConverterTypeCache<T>.Print(instance);
 		}
 
 		/// <summary>Parse a hierarchical blob name.</summary>
-		public static T Parse<T>(string value)
+		public static T Parse<T>(string value) where T : BaseBlobName
 		{
 			return ConverterTypeCache<T>.Parse(value);
+		}
+
+		/// <summary>Returns the <see cref="ContainerName"/> value without
+		/// having an instance at hand.</summary>
+		public static string GetContainerName<T>() where T : BaseBlobName
+		{
+			// HACK: that's a heavy way of getting the thing done
+			return ((T) FormatterServices.GetUninitializedObject(typeof (T))).ContainerName;
 		}
 	}
 

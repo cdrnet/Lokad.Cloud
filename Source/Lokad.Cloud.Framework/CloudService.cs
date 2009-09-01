@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using Autofac;
 using Lokad.Threading;
+using Lokad.Cloud.Core;
 
 namespace Lokad.Cloud.Framework
 {
@@ -34,7 +35,7 @@ namespace Lokad.Cloud.Framework
 	/// blob storage waiting to be pushed into a queue).</summary>
 	/// <seealso cref="CloudService.PutWithDelay{T}(T,System.DateTime)"/>
 	[Serializable]
-	public class DelayedMessage
+	class DelayedMessage
 	{
 		/// <summary>Name of the queue where the inner message will be put
 		/// once the delay is expired.</summary>
@@ -48,6 +49,25 @@ namespace Lokad.Cloud.Framework
 		{
 			QueueName = queueName;
 			InnerMessage = innerMessage;
+		}
+	}
+
+	[Serializable]
+	class DelayedMessageName : BaseBlobName
+	{
+		public override string ContainerName
+		{
+			get { return CloudService.DelayedMessageContainer; }
+		}
+
+		public readonly DateTime TriggerTime;
+
+		public readonly Guid Identifier;
+
+		public DelayedMessageName(DateTime triggerTime, Guid identifier)
+		{
+			TriggerTime = triggerTime;
+			Identifier = identifier;
 		}
 	}
 
@@ -230,14 +250,8 @@ namespace Lokad.Cloud.Framework
 		{
 			foreach (var message in messages)
 			{
-				var expirationPrefix = triggerTime.ToString(
-					"yyyy/MM/dd/hh/mm/ss/ffff/", CultureInfo.InvariantCulture);
-
-				// GUID avoids blob name collisions
-				var blobName = expirationPrefix + Guid.NewGuid().ToString("N");
-
-				_providers.BlobStorage.PutBlob(DelayedMessageContainer,
-					blobName, new DelayedMessage(queueName, message));
+				var blobName = new DelayedMessageName(triggerTime, Guid.NewGuid());
+				_providers.BlobStorage.PutBlob(blobName, message);
 			}
 		}
 

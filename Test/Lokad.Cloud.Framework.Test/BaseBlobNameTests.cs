@@ -66,6 +66,13 @@ namespace Lokad.Cloud.Framework.Test
 		}
 
 		[Test]
+		public void Get_ContainerName()
+		{
+			var name = BaseBlobName.GetContainerName<PatternA>();
+			Assert.AreEqual("my-test-container", name);
+		}
+
+		[Test]
 		public void Two_Patterns()
 		{
 			// actually ensures that the implementation supports two patterns

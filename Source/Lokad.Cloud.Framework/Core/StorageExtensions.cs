@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Lokad.Cloud.Framework;
@@ -77,6 +78,11 @@ namespace Lokad.Cloud.Core
 
 		// TODO: add missing overload for 'BaseBlobName'.
 
+		public static bool DeleteBlob(this IBlobStorageProvider provider, BaseBlobName fullName)
+		{
+			return provider.DeleteBlob(fullName.ContainerName, fullName.ToString());
+		}
+
 		public static T GetBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName)
 		{
 			return provider.GetBlob<T>(fullName.ContainerName, fullName.ToString());
@@ -90,6 +96,12 @@ namespace Lokad.Cloud.Core
 		public static bool PutBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName, T item, bool overwrite)
 		{
 			return provider.PutBlob(fullName.ContainerName, fullName.ToString(), item, overwrite);
+		}
+
+		public static IEnumerable<string> List<N>(this IBlobStorageProvider provider, string prefix) 
+			where N : BaseBlobName
+		{
+			return provider.List(BaseBlobName.GetContainerName<N>(), prefix);
 		}
 	}
 }

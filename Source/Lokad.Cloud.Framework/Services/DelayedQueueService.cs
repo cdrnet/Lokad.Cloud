@@ -3,11 +3,11 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Globalization;
+using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
 // HACK: the delayed queue service does not provide a scalable iteration pattern.
-// (one instance max iterating over the delayed message)
+// (single instance iterating over the delayed message)
 
 namespace Lokad.Cloud.Services
 {
@@ -21,27 +21,19 @@ namespace Lokad.Cloud.Services
 	{
 		protected override void StartOnSchedule()
 		{
-			const string cn = DelayedMessageContainer;
+			var blobStorage = Providers.BlobStorage; // short-hand
 
 			// lazy enumeration over the delayed messages
-			foreach (var blobName in Providers.BlobStorage.List(cn, null))
+			foreach (var blobName in blobStorage.List<DelayedMessageName>(null))
 			{
-				// 24 because of custom datetime format, see below
-				var prefix = blobName.Substring(0, 24);
-
-				// Prefix pattern used for the storage is yyyy/MM/dd/...
-				// The prefix is encoding the expiration date of the overflowing message.
-				var expiration = DateTime.ParseExact(prefix, 
-					"yyyy/MM/dd/hh/mm/ss/ffff", CultureInfo.InvariantCulture);
-
-				// HACK: duplicated logic with the queue overflow collector
+				var parsedName = BaseBlobName.Parse<DelayedMessageName>(blobName);
 
 				// if the overflowing message is expired, delete it
-				if (DateTime.Now > expiration)
+				if (DateTime.Now > parsedName.TriggerTime)
 				{
-					var dm = Providers.BlobStorage.GetBlob<DelayedMessage>(cn, blobName);
+					var dm = blobStorage.GetBlob<DelayedMessage>(parsedName);
 					Providers.QueueStorage.Put(dm.QueueName, dm.InnerMessage);
-					Providers.BlobStorage.DeleteBlob(cn, blobName);
+					blobStorage.DeleteBlob(parsedName);
 				}
 				else
 				{
