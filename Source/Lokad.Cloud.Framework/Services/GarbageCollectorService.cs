@@ -26,7 +26,7 @@ namespace Lokad.Cloud.Framework.Services
 		TriggerInterval = 24 * 60 * 60)] // 1 execution per day by default
 	public class GarbageCollectorService : ScheduledService
 	{
-		/// <remarks>Name is override for consistency in the framework.</remarks>
+		/// <remarks>Name is overriden for consistency in the framework.</remarks>
 		public override string Name
 		{
 			get { return "lokad-cloud-garbage-collector"; }

@@ -5,31 +5,18 @@
 using System;
 using System.Reflection;
 using System.Text;
-using System.Threading;
+using Lokad.Cloud.Core;
 using Lokad.Cloud.Services;
+using Lokad.Quality;
 
 // TODO: [vermorel] The algorithm that enables fast iteration is subtle (and not implemented yet)
 // and will be provided as a white paper along with the Lokad.Cloud documentation.
 
+// TODO: logic of 'GetTmpQueueName' is incorrect, must use the garbage collected container
+// TODO: logic of 'GetTmpBlobName' is incorrect, must use the garbage collected container
+
 namespace Lokad.Cloud.Framework
 {
-	/// <summary>Item locator for <see cref="BlobSet{T}"/> collection.</summary>
-	[Serializable]
-	public class BlobLocator
-	{
-		readonly string _name;
-
-		public string Name
-		{
-			get { return _name; }
-		}
-
-		public BlobLocator(string name)
-		{
-			_name = name;
-		}
-	}
-
 	/// <summary>Settings of a map operation.</summary>
 	[Serializable]
 	public class BlobSetMapSettings
@@ -39,6 +26,27 @@ namespace Lokad.Cloud.Framework
 
 		public object OnCompleted { get; set; }
 		public string OnCompletedQueueName { get; set; }
+	}
+
+	// caution: field order DOES matter with 'BaseBlobName'
+	class BlobSetMapName : BaseBlobName
+	{
+		public override string ContainerName
+		{
+			get { return BlobSet<object>.ContainerName; }
+		}
+
+		[UsedImplicitly]
+		public readonly string Prefix;
+
+		[UsedImplicitly]
+		public readonly string Suffix;
+
+		public BlobSetMapName(string prefix, string suffix)
+		{
+			Prefix = prefix;
+			Suffix = suffix;
+		}
 	}
 
 	/// <summary>Settings of a reduce operation.</summary>
@@ -77,10 +85,6 @@ namespace Lokad.Cloud.Framework
 	/// </remarks>
 	public class BlobSet<T>
 	{
-		static Random _rand = new Random();
-		static readonly char[] HexDigits = "0123456789abcdef".ToCharArray();
-		const int HexDepth = 8;
-
 		/// <summary>Name of the container for all the blobsets.</summary>
 		public const string ContainerName = "lokad-blobsets";
 
@@ -131,6 +135,7 @@ namespace Lokad.Cloud.Framework
 		/// <typeparam name="U">Output type of the mapped items.</typeparam>
 		/// <typeparam name="M">Output type of the termination message.</typeparam>
 		/// <param name="mapper">Mapping function (should be serializable).</param>
+		/// <param name="onCompleted">Termination message.</param>
 		/// <param name="onCompletedQueueName">Identifier of the queue where the termination message is put.</param>
 		/// <remarks>
 		/// This method is asynchronous.
@@ -152,11 +157,14 @@ namespace Lokad.Cloud.Framework
 					OnCompletedQueueName = onCompletedQueueName
 				};
 
-			_providers.BlobStorage.PutBlob(
-				ContainerName, destPrefix + Delimiter + MapSettingsSuffix, settings);
+			var blobStorage = _providers.BlobStorage; // short-hand
 
-			var counterBlobName = destPrefix + Delimiter + MapCounterSuffix;
-			var counter = new BlobCounter(_providers, ContainerName, counterBlobName);
+			var settingName = new BlobSetMapName(destPrefix, MapSettingsSuffix);
+			blobStorage.PutBlob(settingName, settings);
+
+			var counterBlobName = new BlobSetMapName(destPrefix, MapCounterSuffix);
+			var counter = new BlobCounter(blobStorage, counterBlobName);
+
 			counter.Reset(BlobCounter.Aleph);
 
 			var itemCount = 0l;
@@ -244,30 +252,6 @@ namespace Lokad.Cloud.Framework
 			counter.Increment(itemCount - 1 - BlobCounter.Aleph);
 		}
 
-		/// <summary>Retrieves an item based on the blob identifier.</summary>
-		public T this[BlobLocator locator]
-		{
-			get
-			{
-				return _providers.BlobStorage.GetBlob<T>(ContainerName, locator.Name);
-			}
-		}
-
-		/// <summary>Adds an item and returns the corresponding blob identifier.</summary>
-		public BlobLocator Add(T item)
-		{
-			var blobName = GetNewItemBlobName();
-			_providers.BlobStorage.PutBlob(ContainerName, blobName, item);
-			return new BlobLocator(blobName);
-		}
-
-		/// <summary>Removes an item based on its identifier.</summary>
-		/// <returns><c>true</c> if the blob was successfully removed and <c>false</c> otherwise.</returns>
-		public bool Remove(BlobLocator locator)
-		{
-			return _providers.BlobStorage.DeleteBlob(ContainerName, locator.Name);
-		}
-
 		/// <summary>Remove all items from within the collection. Method is asynchronous,
 		/// it returns immediately once the deletion task is queued.</summary>
 		/// <remarks>Considering that the <see cref="BlobSet{T}"/> is nothing
@@ -278,27 +262,6 @@ namespace Lokad.Cloud.Framework
 		{
 			// TODO: BlobSet.Clear must be implemented
 			throw new NotImplementedException();
-		}
-
-		/// <summary>Get a new blob name including the prefix, the pseudo-random pattern plus
-		/// the Guid. Those names are choosen to avoid collision and facilitate fast iteration.
-		/// </summary>
-		string GetNewItemBlobName()
-		{
-			var builder = new StringBuilder();
-			builder.Append(_prefix);
-			builder.Append(Delimiter);
-            
-			// Required for fast iteration
-			for(int i = 0; i < HexDepth; i++)
-			{
-				builder.Append(HexDigits[_rand.Next(16)]);
-				builder.Append(Delimiter);
-			}
-
-			builder.Append(Guid.NewGuid().ToString());
-
-			return builder.ToString();
 		}
 
 		string GetTmpQueueName()

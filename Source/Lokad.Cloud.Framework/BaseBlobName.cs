@@ -8,18 +8,26 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Lokad.Cloud.Core;
 using Lokad.Quality;
 
-namespace Lokad.Cloud
+namespace Lokad.Cloud.Framework
 {
-	/// <summary>Helper class to facilite the manipulation of blob names and
-	/// to avoid ad-hoc string concatenation and parsing scheme.</summary>
-	public static class BlobRef
+	/// <summary>Base class to strong-type hierarchical blob names.</summary>
+	[Serializable]
+	public abstract class BaseBlobName
 	{
 		static readonly Dictionary<Type, Func<string, object>> Parsers = new Dictionary<Type, Func<string, object>>();
 		static readonly Dictionary<Type, Func<object, string>> Printers = new Dictionary<Type, Func<object, string>>();
 
-		static BlobRef()
+		/// <summary>Name of the container (to be used as a short-hand while
+		/// operating with the <see cref="IBlobStorageProvider"/>).</summary>
+		/// <remarks>Do not introduce an extra field for the property as
+		/// it would be incorporated in the blob name. Instead, just
+		/// return a constant string.</remarks>
+		public abstract string ContainerName { get; }
+
+		static BaseBlobName()
 		{
 			// adding overrides
 
@@ -108,4 +116,5 @@ namespace Lokad.Cloud
 			return ConverterTypeCache<T>.Parse(value);
 		}
 	}
+
 }

@@ -4,11 +4,13 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
 using BlobSet = Lokad.Cloud.Framework.BlobSet<object>;
 
 // TODO: need to use a custom queue
+// TODO: need to support caching for the mapper
 
 namespace Lokad.Cloud.Services
 {
@@ -36,34 +38,32 @@ namespace Lokad.Cloud.Services
 
 		protected override void StartRange(IEnumerable<BlobSetMapMessage> messages)
 		{
-			const string containerName = BlobSet.ContainerName;
-			const string delimiter = BlobSet.Delimiter;
+			var blobStorage = Providers.BlobStorage; // short-hand
+
 			const string mapSettingsSuffix = BlobSet.MapSettingsSuffix;
 			const string mapCounterSuffix = BlobSet.MapCounterSuffix;
 
             foreach(var message in messages)
             {
-            	var settingsBlobName = message.DestinationPrefix + delimiter + mapSettingsSuffix;
-            	var counterBlobName = message.DestinationPrefix + delimiter + mapCounterSuffix;
-            	var inputBlobName = message.SourcePrefix + delimiter + message.ItemSuffix;
-            	var outputBlobName = message.DestinationPrefix + delimiter + message.ItemSuffix;
+            	var settingsBlobName = new BlobSetMapName(message.DestinationPrefix, mapSettingsSuffix);
+            	var counterBlobName = new BlobSetMapName(message.DestinationPrefix, mapCounterSuffix);
+            	var inputBlobName = new BlobSetMapName(message.SourcePrefix, message.ItemSuffix);
+            	var outputBlobName = new BlobSetMapName(message.DestinationPrefix, message.ItemSuffix);
 
-				// TODO: need to support caching for the mapper
                 // retrieving the mapper
-            	var mapSettings = Providers.BlobStorage.
-					GetBlob<BlobSetMapSettings>(containerName, settingsBlobName);
+            	var mapSettings = blobStorage.GetBlob<BlobSetMapSettings>(settingsBlobName);
 
 				// retrieving the input
-            	var input = Providers.BlobStorage.GetBlob<object>(containerName, inputBlobName);
+            	var input = blobStorage.GetBlob<object>(inputBlobName);
 
 				// map
             	var output = BlobSet.InvokeAsDelegate(mapSettings.Mapper, input);
 
 				// saving the output
-				Providers.BlobStorage.PutBlob(containerName, outputBlobName, output);
+				blobStorage.PutBlob(outputBlobName, output);
 
 				// Decrementing the counter once the operation is completed
-            	var counter = new BlobCounter(Providers, containerName, counterBlobName);
+            	var counter = new BlobCounter(blobStorage, counterBlobName);
             	var remainingMappings = (long) counter.Increment(-1);
 
 				// deleting message

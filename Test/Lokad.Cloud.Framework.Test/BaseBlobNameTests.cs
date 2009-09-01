@@ -9,12 +9,15 @@ using NUnit.Framework;
 namespace Lokad.Cloud.Framework.Test
 {
 	[TestFixture]
-	public class BlobRefTests
+	public class BaseBlobNameTests
 	{
 		// ReSharper disable InconsistentNaming
 
-		sealed class PatternA
+		sealed class PatternA : BaseBlobName
 		{
+			// not a field
+			public override string ContainerName { get { return "my-test-container"; } }
+
 			public readonly DateTime Timestamp;
 			public readonly long AccountHRID;
 			public readonly Guid ChunkID;
@@ -29,8 +32,11 @@ namespace Lokad.Cloud.Framework.Test
 			}
 		}
 
-		sealed class PatternB
+		sealed class PatternB : BaseBlobName
 		{
+			// not a field
+			public override string ContainerName { get { return "my-test-container"; } }
+
 			public readonly long AccountHRID;
 			public readonly Guid ChunkID;
 
@@ -47,11 +53,11 @@ namespace Lokad.Cloud.Framework.Test
 			var date = new DateTime(2009, 1, 1, 3, 4, 5);
 			var original = new PatternA(date, 12000, Guid.NewGuid(), 120);
 
-			var name = BlobRef.Print(original);
+			var name = BaseBlobName.Print(original);
 
 			Console.WriteLine(name);
 
-			var parsed = BlobRef.Parse<PatternA>(name);
+			var parsed = BaseBlobName.Parse<PatternA>(name);
 			Assert.AreNotSame(original, parsed);
 			Assert.AreEqual(original.Timestamp, parsed.Timestamp);
 			Assert.AreEqual(original.AccountHRID, parsed.AccountHRID);
@@ -63,8 +69,8 @@ namespace Lokad.Cloud.Framework.Test
 		public void Wrong_type_is_detected()
 		{
 			var original = new PatternB(Guid.NewGuid(), 1000);
-			var name = BlobRef.Print(original);
-			BlobRef.Parse<PatternA>(name);
+			var name = BaseBlobName.Print(original);
+			BaseBlobName.Parse<PatternA>(name);
 		}
 	}
 }

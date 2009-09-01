@@ -28,11 +28,16 @@ namespace Lokad.Cloud.Framework
 		/// <summary>Blob that is storing the counter.</summary>
 		public string BlobName { get { return _blobName; } }
 
-		/// <summary>Shorthand constructors.</summary>
+		/// <summary>Shorthand constructor.</summary>
 		public BlobCounter(ProvidersForCloudStorage providers, string containerName, string blobName)
 			: this(providers.BlobStorage, containerName, blobName)
 		{
-			
+		}
+
+		/// <summary>Shorthand constructor.</summary>
+		public BlobCounter(IBlobStorageProvider provider, BaseBlobName fullName)
+            : this(provider, fullName.ContainerName, BaseBlobName.Print(fullName))
+		{
 		}
 
 		/// <summary>Full constructor.</summary>

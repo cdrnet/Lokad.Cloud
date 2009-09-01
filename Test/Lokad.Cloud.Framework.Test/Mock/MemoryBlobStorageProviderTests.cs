@@ -63,8 +63,9 @@ namespace Lokad.Cloud.Framework.Test.Mock
 
 			var threads = Enumerable.Range(0, 32)
 									.Select(i=> 
-										new Thread(new ParameterizedThreadStart(AddValueToContainer)))
+										new Thread(AddValueToContainer))
 									.ToArray();
+			
 			var threadParameters = Enumerable.Range(0, 32).Select(i => 
 				i<=15 
 				? new ThreadParameters("threadId" + i, "Container-1", storage)
@@ -72,14 +73,14 @@ namespace Lokad.Cloud.Framework.Test.Mock
 
 			Enumerable.Range(0,32).ForEach(i=> threads[i].Start(threadParameters[i]));
 			
-			Thread.Sleep(60000);
+			Thread.Sleep(2000);
 
 			var blobNames = storage.List("Container-1", blobPrefix);
-			Assert.AreEqual(16000, blobNames.Count(), 
+			Assert.AreEqual(1600, blobNames.Count(), 
 				"first container with corresponding prefix does not hold 3 blobs");
 
 			blobNames = storage.List("Container-2", blobPrefix);
-			Assert.AreEqual(16000, blobNames.Count(), 
+			Assert.AreEqual(1600, blobNames.Count(), 
 				"second container with corresponding prefix does not hold 1 blobs");
 
 		}
@@ -90,7 +91,7 @@ namespace Lokad.Cloud.Framework.Test.Mock
 			{
 				var castedParameters = (ThreadParameters)parameters;
 				var random = new Random();
-				for (int i = 0; i < 1000; i++)
+				for (int i = 0; i < 100; i++)
 				{
 					castedParameters.BlobStorage.PutBlob(castedParameters.ContainerName, 
 						"mockBlobPrefix" + castedParameters.ThreadId + "/blob" + i, random.NextDouble());
