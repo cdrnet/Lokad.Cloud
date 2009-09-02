@@ -49,6 +49,9 @@ namespace Lokad.Cloud.Web
 
 		protected void UploadButton_Click(object sender, EventArgs e)
 		{
+			Page.Validate("Upload");
+			if(!Page.IsValid) return;
+
 			if(!AssemblyFileUpload.HasFile) // defensive design, the validator should prevent this
 			{
 				return;
@@ -67,25 +70,34 @@ namespace Lokad.Cloud.Web
 
 		protected void UploadValidator_Validate(object source, ServerValidateEventArgs args)
 		{
+			args.IsValid = true;
+
 			// file must exists
 			args.IsValid &= AssemblyFileUpload.HasFile;
 
-			// checking that the archive can be decompressed correctly.
-			try
+			// Extension must be ".zip"
+			string extension = Path.GetExtension(AssemblyFileUpload.FileName);
+			args.IsValid &= !string.IsNullOrEmpty(extension) && extension.ToLowerInvariant() == ".zip";
+
+			if(args.IsValid)
 			{
-				using (var zipStream = new ZipInputStream(new MemoryStream(AssemblyFileUpload.FileBytes)))
+				// checking that the archive can be decompressed correctly.
+				try
 				{
-					ZipEntry entry;
-					while ((entry = zipStream.GetNextEntry()) != null)
+					using(var zipStream = new ZipInputStream(new MemoryStream(AssemblyFileUpload.FileBytes)))
 					{
-						var buffer = new byte[entry.Size]; 
-						zipStream.Read(buffer, 0, buffer.Length);
+						ZipEntry entry;
+						while((entry = zipStream.GetNextEntry()) != null)
+						{
+							var buffer = new byte[entry.Size];
+							zipStream.Read(buffer, 0, buffer.Length);
+						}
 					}
 				}
-			}
-			catch (Exception)
-			{
-				args.IsValid = false;
+				catch(Exception)
+				{
+					args.IsValid = false;
+				}
 			}
 		}
 	}
