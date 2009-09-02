@@ -9,8 +9,16 @@ using Lokad.Cloud.Core;
 using Lokad.Cloud.Services;
 using Lokad.Quality;
 
-// TODO: [vermorel] The algorithm that enables fast iteration is subtle (and not implemented yet)
+// HACK: [vermorel] The algorithm that enables fast iteration is subtle (and not implemented yet)
 // and will be provided as a white paper along with the Lokad.Cloud documentation.
+
+// TODO: #46 need to cache mapper, but there are several constrainsts
+// - mapper should be written to unique (and temporary) location using TemporaryBlobName
+//	--> if the cloud app gets shut down, there will be no left over later on.
+//	--> storage is unique, blob name can be used as cache key to figure out wether mapper is already in cache.
+// - mapper is put in cache, should be invalidated after a while. I suggest a duration of 30min or so.
+// - the real challenge, at some point, will be to manage some worker affinity
+//	--> considering the case where several distinct blobset mapping are taking place.
 
 // TODO: logic of 'GetTmpQueueName' is incorrect, must use the garbage collected container
 // TODO: logic of 'GetTmpBlobName' is incorrect, must use the garbage collected container
