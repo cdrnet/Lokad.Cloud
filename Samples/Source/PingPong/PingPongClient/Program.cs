@@ -6,7 +6,7 @@ using System;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Azure;
-using Lokad.Cloud.Core;
+using Lokad.Cloud.Framework;
 using ILog=Lokad.ILog;
 
 namespace PingPongClient

@@ -3,8 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using Lokad.Cloud.Core;
-
 namespace Lokad.Cloud.Framework
 {
 	/// <summary>Simple non-sharded counter.</summary>

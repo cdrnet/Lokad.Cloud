@@ -6,7 +6,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 using NUnit.Framework;
 

@@ -5,7 +5,7 @@
 
 using System;
 using System.Linq;
-using Lokad.Cloud.Core;
+using Lokad.Cloud.Framework;
 using NUnit.Framework;
 
 // TODO: refactor tests so that containers do not have to be created each time.

@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Lokad.Cloud.Core;
+using Lokad.Cloud.Framework;
 using NUnit.Framework;
 using NUnit.Framework.Extensions;
 

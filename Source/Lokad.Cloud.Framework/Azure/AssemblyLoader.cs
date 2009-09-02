@@ -7,7 +7,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using ICSharpCode.SharpZipLib.Zip;
-using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
 // HACK: the current impl just loads all the assemblies in the current AppDomain.

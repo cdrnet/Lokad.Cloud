@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Framework
 {
 	/// <summary>Abstraction for the Blob Storage.</summary>
 	/// <remarks>

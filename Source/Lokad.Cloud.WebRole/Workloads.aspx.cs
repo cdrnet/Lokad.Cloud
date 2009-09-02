@@ -4,7 +4,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using Lokad.Cloud.Core;
+using Lokad.Cloud.Framework;
 
 namespace Lokad.Cloud.Web
 {

@@ -3,8 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using Lokad.Cloud.Core;
-
 namespace Lokad.Cloud.Framework
 {
 	/// <summary>IoC argument for <see cref="CloudService"/> and other

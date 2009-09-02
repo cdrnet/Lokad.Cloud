@@ -8,7 +8,7 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Azure;
-using Lokad.Cloud.Core;
+using Lokad.Cloud.Framework;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Web

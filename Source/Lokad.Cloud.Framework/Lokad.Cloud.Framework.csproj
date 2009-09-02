@@ -90,10 +90,10 @@
     <Compile Include="BlobSet.cs" />
     <Compile Include="CloudService.cs" />
     <Compile Include="CloudServiceSettingsAttribute.cs" />
-    <Compile Include="Core\StorageExtensions.cs" />
-    <Compile Include="Core\IBlobStorageProvider.cs" />
-    <Compile Include="Core\IQueueStorageProvider.cs" />
-    <Compile Include="Core\ITypeMapperProvider.cs" />
+    <Compile Include="StorageExtensions.cs" />
+    <Compile Include="IBlobStorageProvider.cs" />
+    <Compile Include="IQueueStorageProvider.cs" />
+    <Compile Include="ITypeMapperProvider.cs" />
     <None Include="Cuid.cs" />
     <Compile Include="MessageWrapper.cs" />
     <Compile Include="Mock\MemoryBlobStorageProvider.cs" />

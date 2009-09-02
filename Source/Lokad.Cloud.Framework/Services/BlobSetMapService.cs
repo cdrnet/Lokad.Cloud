@@ -4,7 +4,6 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
 using BlobSet = Lokad.Cloud.Framework.BlobSet<object>;

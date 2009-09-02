@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using Lokad.Cloud.Framework;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Framework
 {
 	/// <summary>Helper extensions methods for storage providers.</summary>
 	public static class StorageExtensions

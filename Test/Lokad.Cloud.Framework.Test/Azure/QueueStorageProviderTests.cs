@@ -4,8 +4,8 @@
 #endregion
 using System;
 using System.Linq;
-using Lokad.Cloud.Core;
 using NUnit.Framework;
+using Lokad.Cloud.Framework;
 
 namespace Lokad.Cloud.Azure.Test
 {

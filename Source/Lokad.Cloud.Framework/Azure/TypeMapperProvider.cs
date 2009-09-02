@@ -3,7 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using Lokad.Cloud.Core;
+using Lokad.Cloud.Framework;
 
 namespace Lokad.Cloud.Azure
 {

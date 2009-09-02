@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI.WebControls;
-using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
 // TODO: blobs are sequentially enumerated, performance issue

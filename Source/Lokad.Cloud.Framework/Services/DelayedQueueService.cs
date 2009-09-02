@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
 // HACK: the delayed queue service does not provide a scalable iteration pattern.

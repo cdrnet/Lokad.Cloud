@@ -5,12 +5,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Autofac;
 using Lokad.Threading;
-using Lokad.Cloud.Core;
 
 namespace Lokad.Cloud.Framework
 {

@@ -5,7 +5,6 @@
 using System;
 using System.Reflection;
 using System.Text;
-using Lokad.Cloud.Core;
 using Lokad.Cloud.Services;
 using Lokad.Quality;
 

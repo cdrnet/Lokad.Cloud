@@ -10,7 +10,7 @@ using System.IO;
 using System.Security;
 using System.Text;
 using System.Xml.XPath;
-using Lokad.Cloud.Core;
+using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
 // TODO: [vermorel] This class will most probably be reimplemented using Azure logger instead

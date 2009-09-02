@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using Lokad.Cloud.Core;
 
 // TODO: [vermorel] 2009-07-23, excluded from the built
 // Focusing on a minimal amount of feature for the v0.1

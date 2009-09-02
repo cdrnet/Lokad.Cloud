@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 
 namespace Lokad.Cloud.Web

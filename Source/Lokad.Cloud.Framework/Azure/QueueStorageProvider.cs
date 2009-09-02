@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 

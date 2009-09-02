@@ -4,7 +4,7 @@
 #endregion
 using System.Collections.Generic;
 
-namespace Lokad.Cloud.Core
+namespace Lokad.Cloud.Framework
 {
 	/// <summary>Abstraction of the Queue Storage.</summary>
 	/// <remarks>

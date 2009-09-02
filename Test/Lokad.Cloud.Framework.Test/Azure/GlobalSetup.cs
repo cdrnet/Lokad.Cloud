@@ -6,9 +6,7 @@
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad.Cloud.Core;
 using Lokad.Cloud.Framework;
-using NUnit.Framework;
 
 namespace Lokad.Cloud.Azure.Test
 {

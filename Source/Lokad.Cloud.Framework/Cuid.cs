@@ -4,7 +4,6 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using Lokad.Cloud.Core;
 
 // TODO: [vermorel] instanciation pattern to access the storage providers is still unclear.
 
