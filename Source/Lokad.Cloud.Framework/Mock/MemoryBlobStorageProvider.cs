@@ -66,15 +66,23 @@ namespace Lokad.Cloud.Mock
 
 		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite)
 		{
-			lock (_syncRoot)
+			string ignored = null;
+			return PutBlob<T>(containerName, blobName, item, overwrite, out ignored);
+		}
+
+		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite, out string etag)
+		{
+			lock(_syncRoot)
 			{
-				if (Containers.ContainsKey(containerName))
+				etag = null;
+				if(Containers.ContainsKey(containerName))
 				{
-					if (Containers[containerName].BlobNames.Contains(blobName))
+					if(Containers[containerName].BlobNames.Contains(blobName))
 					{
-						if (overwrite)
+						if(overwrite)
 						{
 							Containers[containerName].SetBlob(blobName, item);
+							etag = Containers[containerName].BlobsEtag[blobName];
 							return true;
 						}
 						else
@@ -85,6 +93,7 @@ namespace Lokad.Cloud.Mock
 					else
 					{
 						Containers[containerName].AddBlob(blobName, item);
+						etag = Containers[containerName].BlobsEtag[blobName];
 						return true;
 					}
 				}
@@ -92,6 +101,7 @@ namespace Lokad.Cloud.Mock
 				{
 					Containers.Add(containerName, new MockContainer());
 					Containers[containerName].AddBlob(blobName, item);
+					etag = Containers[containerName].BlobsEtag[blobName];
 					return true;
 				}
 			}
@@ -117,6 +127,25 @@ namespace Lokad.Cloud.Mock
 				{
 					etag = Containers[containerName].BlobsEtag[blobName];
 					return (T)Containers[containerName].GetBlob(blobName);
+				}
+			}
+		}
+
+		public T GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag)
+		{
+			lock(_syncRoot)
+			{
+				string currentEtag = GetBlobEtag(containerName, blobName);
+
+				if(currentEtag == oldEtag)
+				{
+					newEtag = null;
+					return default(T);
+				}
+				else
+				{
+					newEtag = currentEtag;
+					return GetBlob<T>(containerName, blobName);
 				}
 			}
 		}

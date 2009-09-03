@@ -46,36 +46,63 @@ namespace Lokad.Cloud.Azure
 
 		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite)
 		{
+			string ignored = null;
+			return PutBlob<T>(containerName, blobName, item, overwrite, out ignored);
+		}
+
+		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite, out string etag)
+		{
 			var stream = new MemoryStream();
 			_formatter.Serialize(stream, item);
 			var buffer = stream.GetBuffer();
 
+			etag = null;
+
 			// StorageClient already deals with spliting large items
 			var container = _blobStorage.GetBlobContainer(containerName);
+			BlobProperties blobProperties = new BlobProperties(blobName);
+
 			try
 			{
-				return container.CreateBlob(new BlobProperties(blobName), new BlobContents(buffer), overwrite);
+				bool created = container.CreateBlob(blobProperties, new BlobContents(buffer), overwrite);
+
+				if(created) etag = blobProperties.ETag;
+
+				return created;
 			}
-			catch (StorageClientException ex)
+			catch(StorageClientException ex)
 			{
 				// if the container does not exist, it gets created
-				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+				if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
 				{
 					// caution the container might have been freshly deleted
 					var flag = false;
-					PolicyHelper.SlowInstantiation.Do(() => 
+					PolicyHelper.SlowInstantiation.Do(() =>
 					{
 						container.CreateContainer();
 
 						flag = container.CreateBlob(
-							new BlobProperties(blobName),
+							blobProperties,
 							new BlobContents(buffer), overwrite);
 					});
 
+					if(flag) etag = blobProperties.ETag;
+
 					return flag;
 				}
-				
-				return container.CreateBlob(new BlobProperties(blobName), new BlobContents(buffer), overwrite);
+				if(ex.ErrorCode == StorageErrorCode.BlobAlreadyExists && !overwrite)
+				{
+					// See http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/fff78a35-3242-4186-8aee-90d27fbfbfd4
+					// and http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/86b9f184-c329-4c30-928f-2991f31e904b/
+
+					return false;
+				}
+
+				bool created = container.CreateBlob(blobProperties, new BlobContents(buffer), overwrite);
+
+				if(created) etag = blobProperties.ETag;
+
+				return created;
 			}
 		}
 
@@ -101,6 +128,36 @@ namespace Lokad.Cloud.Azure
 			catch (StorageClientException ex)
 			{
 				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
+					|| ex.ErrorCode == StorageErrorCode.BlobNotFound)
+				{
+					return default(T);
+				}
+				throw;
+			}
+
+			var stream = blobContents.AsStream;
+			stream.Position = 0;
+			return (T)_formatter.Deserialize(stream);
+		}
+
+		public T GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag)
+		{
+			var blobContents = new BlobContents(new MemoryStream());
+			var container = _blobStorage.GetBlobContainer(containerName);
+			newEtag = null;
+
+			// no such container, return default
+			try
+			{
+				BlobProperties props = new BlobProperties(blobName);
+				props.ETag = oldEtag;
+				bool available = container.GetBlobIfModified(props, blobContents, true);
+				if(!available) return default(T);
+				newEtag = props.ETag;
+			}
+			catch(StorageClientException ex)
+			{
+				if(ex.ErrorCode == StorageErrorCode.ContainerNotFound
 					|| ex.ErrorCode == StorageErrorCode.BlobNotFound)
 				{
 					return default(T);

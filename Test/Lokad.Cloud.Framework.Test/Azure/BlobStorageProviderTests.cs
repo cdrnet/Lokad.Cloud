@@ -45,9 +45,29 @@ namespace Lokad.Cloud.Azure.Test
 			var newEtag = provider.GetBlobEtag(ContainerName, BlobName);
 			Assert.AreEqual(etag, newEtag, "Etag should be unchanged.");
 
+			// Verify that overwrite flag works as expected
+			Assert.IsFalse(provider.PutBlob(ContainerName, BlobName, blob, false), "Blob should not be overwritten");
+			Assert.IsTrue(provider.PutBlob(ContainerName, BlobName, blob, true), "Blob should be overwritten");
+			string newEtagOut = provider.GetBlobEtag(ContainerName, BlobName);
+			Assert.AreNotEqual(newEtag, newEtagOut, "Etag should be changed");
+			newEtag = newEtagOut;
+
+			// Test that blob is not retrieved because it is unchanged
+			newEtagOut = "dummy";
+			MyBlob output = provider.GetBlobIfModified<MyBlob>(ContainerName, BlobName, newEtag, out newEtagOut);
+			Assert.IsNull(newEtagOut, "Etag should be null because blob is unchanged");
+			Assert.IsNull(output, "Retrieved blob should be null because it is unchanged");
+
 			provider.PutBlob(ContainerName, BlobName, 2);
 			newEtag = provider.GetBlobEtag(ContainerName, BlobName);
 			Assert.AreNotEqual(etag, newEtag, "Etag should be changed.");
+
+			// Test that blob is retrieved because it is changed
+			string myPreviousEtag = newEtagOut;
+			newEtagOut = "dummy";
+			int outputInt = provider.GetBlobIfModified<int>(ContainerName, BlobName, myPreviousEtag, out newEtagOut);
+			Assert.AreNotEqual(myPreviousEtag, newEtagOut, "Etag should be updated");
+			Assert.AreEqual(2, outputInt, "Wrong blob content");
 
 			// testing UpdateIfNotModified
 			provider.PutBlob(ContainerName, BlobName, 1);
@@ -58,6 +78,19 @@ namespace Lokad.Cloud.Azure.Test
 
 			var val = provider.GetBlob<int>(ContainerName, BlobName);
 			Assert.AreEqual(2, val, "#A01");
+
+			// PutBlob with etag out parameter
+			newEtagOut = "dummy";
+			bool isSaved = provider.PutBlob(ContainerName, BlobName, 6, false, out newEtagOut);
+			Assert.IsFalse(isSaved, "Blob should not have been overwritten");
+			Assert.IsNull(newEtagOut, "Etag should be null");
+
+			newEtagOut = "dummy";
+			isSaved = provider.PutBlob(ContainerName, BlobName, 7, true, out newEtagOut);
+			Assert.IsTrue(isSaved, "Blob should have been overwritten");
+			Assert.IsNotNull(newEtagOut, "Etag should be changed");
+
+			Assert.AreEqual(7, provider.GetBlob<int>(ContainerName, BlobName), "Blob was not correctly saved");
 
 			// cleanup
 			Assert.IsTrue(provider.DeleteBlob(ContainerName, BlobName), "#A04");
