@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Lokad.Cloud;
 
 namespace Lokad.Cloud
 {
@@ -78,12 +77,27 @@ namespace Lokad.Cloud
 
 		// TODO: add missing overload for 'BaseBlobName'.
 
+		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseBlobName fullName, Func<T, Result<T>> updater, out Result<T> result)
+		{
+			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
+		}
+
+		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseBlobName fullName, Func<T, T> updater, out T result)
+		{
+			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
+		}
+
 		public static bool DeleteBlob(this IBlobStorageProvider provider, BaseBlobName fullName)
 		{
 			return provider.DeleteBlob(fullName.ContainerName, fullName.ToString());
 		}
 
 		public static T GetBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName)
+		{
+			return provider.GetBlob<T>(fullName.ContainerName, fullName.ToString());
+		}
+
+		public static T GetBlob<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName)
 		{
 			return provider.GetBlob<T>(fullName.ContainerName, fullName.ToString());
 		}
@@ -102,6 +116,11 @@ namespace Lokad.Cloud
 			where N : BaseBlobName
 		{
 			return provider.List(BaseBlobName.GetContainerName<N>(), prefix);
+		}
+
+		public static IEnumerable<string> List(this IBlobStorageProvider provider, BlobNamePrefix prefix)
+		{
+			return provider.List(prefix.Container, prefix.Prefix);
 		}
 	}
 }

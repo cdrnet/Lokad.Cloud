@@ -13,7 +13,7 @@ using Lokad.Quality;
 
 namespace Lokad.Cloud
 {
-	/// <summary>Base class to strong-type hierarchical blob names.</summary>
+	/// <summary>Base class for strong-typed hierarchical blob names.</summary>
 	[Serializable]
 	public abstract class BaseBlobName
 	{
@@ -137,6 +137,11 @@ namespace Lokad.Cloud
 		public static string PartialPrint<T>(T instance, int fieldCount) where T : BaseBlobName
 		{
 			return ConverterTypeCache<T>.PartialPrint(instance, fieldCount);
+		}
+
+		public static BlobNamePrefix Prefix<T>(T instance, int fieldCount) where T : BaseBlobName
+		{
+			return new BlobNamePrefix(GetContainerName<T>(), PartialPrint(instance, fieldCount));
 		}
 
 		/// <summary>Parse a hierarchical blob name.</summary>

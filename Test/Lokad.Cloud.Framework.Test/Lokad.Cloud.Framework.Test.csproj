@@ -8,7 +8,7 @@
     <ProjectGuid>{93D4C481-3265-42F3-BF63-C06106AE016F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Lokad.Cloud.Framework.Test</RootNamespace>
+    <RootNamespace>Lokad.Cloud.Test</RootNamespace>
     <AssemblyName>Lokad.Cloud.Framework.Test</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

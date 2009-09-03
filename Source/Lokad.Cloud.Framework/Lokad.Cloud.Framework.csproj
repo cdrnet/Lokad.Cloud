@@ -85,8 +85,10 @@
     <Compile Include="Azure\ServiceBalancerCommand.cs" />
     <Compile Include="Azure\StorageModule.cs" />
     <Compile Include="Azure\TypeMapperProvider.cs" />
+    <Compile Include="BaseTypedBlobName.cs" />
     <Compile Include="BlobCounter.cs" />
     <Compile Include="BaseBlobName.cs" />
+    <Compile Include="BlobNamePrefix.cs" />
     <Compile Include="BlobSet.cs" />
     <Compile Include="CloudService.cs" />
     <Compile Include="CloudServiceSettingsAttribute.cs" />
