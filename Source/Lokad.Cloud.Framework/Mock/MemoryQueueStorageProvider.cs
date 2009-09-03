@@ -3,58 +3,102 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System;
 using System.Collections.Generic;
-using Lokad.Cloud;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Lokad.Cloud.Mock
 {
 	/// <summary>Mock in-memory Queue Storage.</summary>
 	public class MemoryQueueStorageProvider : IQueueStorageProvider
 	{
-		IEnumerable<string> IQueueStorageProvider.List(string prefix)
+		readonly Dictionary<string, Queue<object>> _queueStorage;
+		readonly Dictionary<string, HashSet<object>> _queuesHashset;
+		readonly IFormatter _formatter;
+
+		public MemoryQueueStorageProvider(IFormatter formatter)
 		{
-			throw new NotImplementedException();
+			_queueStorage = new Dictionary<string, Queue<object>>();
+			_queuesHashset = new Dictionary<string, HashSet<object>>();
+			_formatter = formatter;
 		}
 
-		IEnumerable<T> IQueueStorageProvider.Get<T>(string queueName, int count)
+		public IEnumerable<string> List(string prefix)
 		{
-			throw new NotImplementedException();
+			return _queueStorage.Keys.Where(e => e.StartsWith(prefix));
 		}
 
-		void IQueueStorageProvider.Put<T>(string queueName, T message)
+		public IEnumerable<T> Get<T>(string queueName, int count)
 		{
-			throw new NotImplementedException();
+			var items = new List<T>(count);
+			for (int i = 0 ; i < count; i++)
+			{
+				if (_queueStorage[queueName].Any())
+					items.Add((T)_queueStorage[queueName].Dequeue());
+			}
+			return items;
 		}
 
-		void IQueueStorageProvider.PutRange<T>(string queueName, IEnumerable<T> messages)
+		public void Put<T>(string queueName, T message)
 		{
-			throw new NotImplementedException();
+			PutRange(queueName, new[] { message });
 		}
 
-		void IQueueStorageProvider.Clear(string queueName)
+		public void PutRange<T>(string queueName, IEnumerable<T> messages)
 		{
-			throw new NotImplementedException();
+			var stream = new MemoryStream();
+			messages.ForEach(message => _formatter.Serialize(stream, message) ); //Checking the messages are serializable.
+			messages.ForEach(message => _queueStorage[queueName].Enqueue(message));
+			messages.ForEach(message=> _queuesHashset[queueName].Add(message));
 		}
 
-		bool IQueueStorageProvider.Delete<T>(string queueName, T message)
+		public void Clear(string queueName)
 		{
-			throw new NotImplementedException();
+			_queueStorage[queueName].Clear();
+			_queuesHashset[queueName].Clear();
 		}
 
-		int IQueueStorageProvider.DeleteRange<T>(string queueName, IEnumerable<T> messages)
+		public bool Delete<T>(string queueName, T message)
 		{
-			throw new NotImplementedException();
+			return  DeleteRange(queueName, new[] {message}) == 1 ? true : false;
 		}
 
-		bool IQueueStorageProvider.DeleteQueue(string queueName)
+		public int DeleteRange<T>(string queueName, IEnumerable<T> messages)
 		{
-			throw new NotImplementedException();
+			int counter = messages.Where(e =>
+				{
+					if (_queuesHashset[queueName].Contains(e))
+					{
+						_queuesHashset[queueName].Remove(e);
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}).Count();
+
+			return counter;
 		}
 
-		int IQueueStorageProvider.GetApproximateCount(string queueName)
+		public bool DeleteQueue(string queueName)
 		{
-			throw new NotImplementedException();
+			if (_queueStorage.ContainsKey(queueName))
+			{
+				_queueStorage.Remove(queueName);
+				_queuesHashset.Remove(queueName);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		public int GetApproximateCount(string queueName)
+		{
+			return _queueStorage[queueName].Count;
 		}
 	}
 }
