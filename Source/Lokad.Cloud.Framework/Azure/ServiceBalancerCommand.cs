@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using Autofac;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 
 namespace Lokad.Cloud.Azure
 {

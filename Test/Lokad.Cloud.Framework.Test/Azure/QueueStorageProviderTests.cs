@@ -5,7 +5,7 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 
 namespace Lokad.Cloud.Azure.Test
 {

@@ -8,7 +8,7 @@ using System.IO;
 using System.Web.UI.WebControls;
 using ICSharpCode.SharpZipLib.Zip;
 using Lokad.Cloud.Azure;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 
 namespace Lokad.Cloud.Web
 {

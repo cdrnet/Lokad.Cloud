@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Strongly-type queue service (inheritors are instanciated by
 	/// reflection on the cloud).</summary>

@@ -11,7 +11,7 @@ using System;
 // TODO: lock should be refreshed 'in the background' as long the process is running
 // (too much a pain for the client to manually refresh the lock otherwise).
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary><para>Cloud locks are used to synchronize access to resources.
 	/// Application should associate a lock ID to a specific resource that

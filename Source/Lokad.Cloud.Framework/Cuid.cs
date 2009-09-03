@@ -15,7 +15,7 @@ using System.Collections.Generic;
 // - 1) there can be multiple threads on a single processor.
 // - 2) multi-procs instances are on their way to Windows Azure.
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Compact unique identier class that provides unique values (incremented) in 
 	/// a scalable manner. Compared to <see cref="Guid"/>, this class is intended as a way 

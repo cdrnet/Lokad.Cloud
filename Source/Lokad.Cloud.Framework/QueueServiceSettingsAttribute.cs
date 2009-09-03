@@ -3,7 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Default settings for the <see cref="QueueService{T}"/>. Once the queue
 	/// service is deployed, settings are stored in the <c>lokad-cloud-queues</c> blob

@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using Lokad.Quality;
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Base class to strong-type hierarchical blob names.</summary>
 	[Serializable]

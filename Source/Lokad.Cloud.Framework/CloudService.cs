@@ -10,7 +10,7 @@ using System.Reflection;
 using Autofac;
 using Lokad.Threading;
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Status flag for <see cref="CloudService"/>s.</summary>
 	/// <remarks>Starting / stopping services isn't a synchronous operation,

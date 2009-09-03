@@ -22,7 +22,7 @@ using Lokad.Quality;
 // TODO: logic of 'GetTmpQueueName' is incorrect, must use the garbage collected container
 // TODO: logic of 'GetTmpBlobName' is incorrect, must use the garbage collected container
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Settings of a map operation.</summary>
 	[Serializable]

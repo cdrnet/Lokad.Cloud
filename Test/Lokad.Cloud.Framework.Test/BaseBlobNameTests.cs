@@ -6,7 +6,7 @@
 using System;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Framework.Test
+namespace Lokad.Cloud.Test
 {
 	[TestFixture]
 	public class BaseBlobNameTests

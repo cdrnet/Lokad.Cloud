@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
 namespace Lokad.Cloud.Azure

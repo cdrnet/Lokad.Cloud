@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Configuration state of the <seealso cref="ScheduledService"/>.</summary>
 	[Serializable]

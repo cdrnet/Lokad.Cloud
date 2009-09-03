@@ -3,7 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Azure.Test

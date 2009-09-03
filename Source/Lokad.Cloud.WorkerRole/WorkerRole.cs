@@ -6,7 +6,7 @@
 using System;
 using Autofac.Builder;
 using Lokad.Cloud.Azure;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud

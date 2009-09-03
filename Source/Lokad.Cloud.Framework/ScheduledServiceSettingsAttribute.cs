@@ -4,7 +4,7 @@
 #endregion
 using System;
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Schedule settings for the execution of a <see cref="ScheduledService"/>.</summary>
 	/// <remarks>The implementation is kept very simple for now. Complete scheduling,

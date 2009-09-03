@@ -3,13 +3,13 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using Lokad.Cloud.Framework.Services;
+using Lokad.Cloud.Services;
 using Lokad.Quality;
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Used in conjunction with the <see cref="GarbageCollectorService"/>.</summary>
-	/// <remarks>Use the method <see cref="GetNew"/> to instantiate a new instance
+	/// <remarks>Use the method <see cref="GetNew(System.DateTime)"/> to instantiate a new instance
 	/// direcly linked to the garbage collected container.</remarks>
 	[Serializable]
 	public class TemporaryBlobName : BaseBlobName

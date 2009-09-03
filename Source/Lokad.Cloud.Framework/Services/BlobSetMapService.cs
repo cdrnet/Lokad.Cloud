@@ -4,9 +4,9 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 
-using BlobSet = Lokad.Cloud.Framework.BlobSet<object>;
+using BlobSet = Lokad.Cloud.BlobSet<object>;
 
 // TODO: need to use a custom queue
 // TODO: need to support caching for the mapper

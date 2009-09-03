@@ -10,7 +10,7 @@ using NUnit.Framework;
 
 using Lokad.Cloud.Mock;
 
-namespace Lokad.Cloud.Framework.Test.Mock
+namespace Lokad.Cloud.Test.Mock
 {
 	[TestFixture]
 	public class MemoryBlobStorageProviderTests

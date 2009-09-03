@@ -3,7 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Simple non-sharded counter.</summary>
 	/// <remarks>The content of the counter is stored in a single blob value.</remarks>

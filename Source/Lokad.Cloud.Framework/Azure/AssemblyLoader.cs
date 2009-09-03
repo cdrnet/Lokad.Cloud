@@ -7,7 +7,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using ICSharpCode.SharpZipLib.Zip;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 
 // HACK: the current impl just loads all the assemblies in the current AppDomain.
 // This approach is simple, yet, the only way to reload a new package consists

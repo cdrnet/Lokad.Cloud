@@ -4,7 +4,7 @@
 #endregion
 using System;
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Shared settings for all <see cref="CloudService"/>s.</summary>
 	[AttributeUsageAttribute(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]

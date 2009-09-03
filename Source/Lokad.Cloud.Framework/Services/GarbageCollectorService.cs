@@ -10,7 +10,7 @@ using System;
 
 // TODO: make name pattern here consistent with the TemporaryBlobName
 
-namespace Lokad.Cloud.Framework.Services
+namespace Lokad.Cloud.Services
 {
 	/// <summary>
 	/// Garbage collects temporary items stored in the <see cref="CloudService.TemporaryContainer"/>.

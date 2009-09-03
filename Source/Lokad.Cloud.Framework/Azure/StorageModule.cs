@@ -7,7 +7,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 using Lokad.Quality;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;

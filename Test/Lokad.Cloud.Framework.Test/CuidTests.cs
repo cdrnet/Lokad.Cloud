@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 using NUnit.Framework;
 using NUnit.Framework.Extensions;
 using System.Threading;
@@ -15,7 +15,7 @@ using System.Threading;
 // Focusing on a minimal amount of feature for the v0.1
 // will be reincluded later on.
 
-namespace Lokad.Cloud.Framework.Test
+namespace Lokad.Cloud.Test
 {
 	[TestFixture]
 	public class CuidTests

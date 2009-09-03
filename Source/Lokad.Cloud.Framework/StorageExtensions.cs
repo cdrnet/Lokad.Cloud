@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Lokad.Cloud.Framework;
+using Lokad.Cloud;
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Helper extensions methods for storage providers.</summary>
 	public static class StorageExtensions

@@ -4,7 +4,7 @@
 #endregion
 using System;
 
-namespace Lokad.Cloud.Framework
+namespace Lokad.Cloud
 {
 	/// <summary>Convert types into identifier and vice-versa. The purpose of this 
 	/// interface is to support implicit cloud storage names for processed items.</summary>

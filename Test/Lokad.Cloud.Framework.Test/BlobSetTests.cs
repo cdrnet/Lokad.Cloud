@@ -7,9 +7,9 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using NUnit.Framework;
 
-using BlobSet = Lokad.Cloud.Framework.BlobSet<object>;
+using BlobSet = Lokad.Cloud.BlobSet<object>;
 
-namespace Lokad.Cloud.Framework.Test
+namespace Lokad.Cloud.Test
 {
 	[TestFixture]
 	public class BlobSetTests

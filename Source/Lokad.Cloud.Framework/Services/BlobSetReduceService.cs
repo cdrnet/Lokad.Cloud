@@ -3,11 +3,8 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Lokad.Cloud.Framework;
-
-using BlobSet = Lokad.Cloud.Framework.BlobSet<object>;
+using BlobSet = Lokad.Cloud.BlobSet<object>;
 
 // TODO: a smart reduction process would take into account the size and CPU cost
 // of the reduction to figure out how many item needs to be retrieved at once

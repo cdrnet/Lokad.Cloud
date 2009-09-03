@@ -6,7 +6,7 @@
 using Lokad.Cloud.Azure.Test;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Framework.Test
+namespace Lokad.Cloud.Test
 {
 	[TestFixture]
 	public class BlobCounterTests
