@@ -91,5 +91,16 @@ namespace Lokad.Cloud.Test
 			var name = BaseBlobName.Print(original);
 			BaseBlobName.Parse<PatternA>(name);
 		}
+
+		[Test]
+		public void PartialPrint()
+		{
+			var date = new DateTime(2009, 1, 1, 3, 4, 5);
+			var pattern = new PatternA(date, 12000, Guid.NewGuid(), 120);
+
+			Assert.IsTrue(pattern.ToString().StartsWith(BaseBlobName.PartialPrint(pattern, 1)));
+			Assert.IsTrue(pattern.ToString().StartsWith(BaseBlobName.PartialPrint(pattern, 2)));
+			Assert.IsTrue(pattern.ToString().StartsWith(BaseBlobName.PartialPrint(pattern, 3)));
+		}
 	}
 }

@@ -91,13 +91,18 @@ namespace Lokad.Cloud
 
 			public static string Print(T instance)
 			{
+				return PartialPrint(instance, Fields.Length);
+			}
+
+			public static string PartialPrint(T instance, int fieldCount)
+			{
 				var sb = new StringBuilder();
-				for (int i = 0; i < Fields.Length; i++)
+				for (int i = 0; i < fieldCount; i++)
 				{
 					var info = Fields[i];
 					var s = InternalPrint(info.GetValue(instance), info.FieldType);
 					sb.Append(s);
-					if(i < Fields.Length - 1) sb.Append(Delimeter);
+					if(i < fieldCount - 1) sb.Append(Delimeter);
 				}
 				return sb.ToString();
 			}
@@ -127,6 +132,11 @@ namespace Lokad.Cloud
 		public static string Print<T>(T instance) where T : BaseBlobName
 		{
 			return ConverterTypeCache<T>.Print(instance);
+		}
+
+		public static string PartialPrint<T>(T instance, int fieldCount) where T : BaseBlobName
+		{
+			return ConverterTypeCache<T>.PartialPrint(instance, fieldCount);
 		}
 
 		/// <summary>Parse a hierarchical blob name.</summary>
