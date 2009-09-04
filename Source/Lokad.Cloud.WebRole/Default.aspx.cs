@@ -13,7 +13,12 @@ namespace Lokad.Cloud.Web
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			
+			// Verify storage credentials
+			if(!Page.IsPostBack)
+			{
+				StorageCredentialsVerifier verifier = new StorageCredentialsVerifier(GlobalSetup.Container.Resolve<Microsoft.Samples.ServiceHosting.StorageClient.BlobStorage>());
+				_credentialsWarningPanel.Visible = !verifier.VerifyCredentials();
+			}
 		}
 
 		protected void OpenIdLogin_OnLoggingIn(object sender, OpenIdEventArgs e)
