@@ -92,6 +92,7 @@
     <Compile Include="BlobSet.cs" />
     <Compile Include="CloudService.cs" />
     <Compile Include="CloudServiceSettingsAttribute.cs" />
+    <Compile Include="Mock\MemoryLogger.cs" />
     <Compile Include="StorageCredentialsVerifier.cs" />
     <Compile Include="StorageExtensions.cs" />
     <Compile Include="IBlobStorageProvider.cs" />
