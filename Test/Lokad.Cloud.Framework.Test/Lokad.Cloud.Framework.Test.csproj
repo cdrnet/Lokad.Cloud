@@ -76,6 +76,7 @@
     <None Include="LockTests.cs" />
     <Compile Include="MessageWrapperTests.cs" />
     <Compile Include="Mock\MemoryBlobStorageProviderTests.cs" />
+    <Compile Include="Mock\MemoryQueueStorageProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StorageCredentialsVerifierTests.cs" />
   </ItemGroup>

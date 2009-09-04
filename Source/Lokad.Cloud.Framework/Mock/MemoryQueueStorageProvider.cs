@@ -13,6 +13,10 @@ namespace Lokad.Cloud.Mock
 	/// <summary>Mock in-memory Queue Storage.</summary>
 	public class MemoryQueueStorageProvider : IQueueStorageProvider
 	{
+		/// <summary>Root used to synchronize accesses to <c>_inprocess</c>. 
+		///</summary>
+		readonly object _sync = new object();
+
 		readonly Dictionary<string, Queue<object>> _queueStorage;
 		readonly Dictionary<string, HashSet<object>> _queuesHashset;
 		readonly IFormatter _formatter;
@@ -31,74 +35,102 @@ namespace Lokad.Cloud.Mock
 
 		public IEnumerable<T> Get<T>(string queueName, int count)
 		{
-			var items = new List<T>(count);
-			for (int i = 0 ; i < count; i++)
+			lock (_sync)
 			{
-				if (_queueStorage[queueName].Any())
-					items.Add((T)_queueStorage[queueName].Dequeue());
+				var items = new List<T>(count);
+				for (int i = 0; i < count; i++)
+				{
+					if (_queueStorage[queueName].Any())
+						items.Add((T) _queueStorage[queueName].Dequeue());
+				}
+				return items;
 			}
-			return items;
 		}
 
 		public void Put<T>(string queueName, T message)
 		{
-			PutRange(queueName, new[] { message });
+			lock (_sync)
+			{
+				using (var stream = new MemoryStream())
+				{
+					_formatter.Serialize(stream, message);
+				} //Checking the message is serializable.
+
+				if ( ! _queueStorage.ContainsKey(queueName))
+				{
+					_queueStorage.Add(queueName, new Queue<object>());
+					_queuesHashset.Add(queueName, new HashSet<object>());
+				}
+
+				_queueStorage[queueName].Enqueue(message);
+				_queuesHashset[queueName].Add(message);
+			}
 		}
 
 		public void PutRange<T>(string queueName, IEnumerable<T> messages)
 		{
-			var stream = new MemoryStream();
-			messages.ForEach(message => _formatter.Serialize(stream, message) ); //Checking the messages are serializable.
-			messages.ForEach(message => _queueStorage[queueName].Enqueue(message));
-			messages.ForEach(message=> _queuesHashset[queueName].Add(message));
+			lock (_sync)
+			{
+				messages.ForEach(message => Put(queueName, message));
+			}
 		}
 
 		public void Clear(string queueName)
 		{
-			_queueStorage[queueName].Clear();
-			_queuesHashset[queueName].Clear();
+			lock (_sync)
+			{
+				_queueStorage[queueName].Clear();
+				_queuesHashset[queueName].Clear();
+			}
 		}
 
 		public bool Delete<T>(string queueName, T message)
 		{
-			return  DeleteRange(queueName, new[] {message}) == 1 ? true : false;
+			lock (_sync)
+			{
+				if (_queuesHashset[queueName].Contains(message))
+				{
+					_queuesHashset[queueName].Remove(message);
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
 		}
 
 		public int DeleteRange<T>(string queueName, IEnumerable<T> messages)
 		{
-			int counter = messages.Where(e =>
-				{
-					if (_queuesHashset[queueName].Contains(e))
-					{
-						_queuesHashset[queueName].Remove(e);
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				}).Count();
-
-			return counter;
+			lock (_sync)
+			{
+				return messages.Where(e => Delete(queueName, e)).Count();
+			}
 		}
 
 		public bool DeleteQueue(string queueName)
 		{
-			if (_queueStorage.ContainsKey(queueName))
+			lock (_sync)
 			{
-				_queueStorage.Remove(queueName);
-				_queuesHashset.Remove(queueName);
-				return true;
-			}
-			else
-			{
-				return false;
+				if (_queueStorage.ContainsKey(queueName))
+				{
+					_queueStorage.Remove(queueName);
+					_queuesHashset.Remove(queueName);
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
 		}
 
 		public int GetApproximateCount(string queueName)
 		{
-			return _queueStorage[queueName].Count;
+			lock (_sync)
+			{
+				return _queueStorage[queueName].Count;
+			}
 		}
 	}
 }
