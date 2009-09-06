@@ -11,7 +11,7 @@ namespace Lokad.Cloud
 	/// handle messages that are too large of the queue storage (or messages that happen
 	/// to be already stored in the Blob Storage).</summary>
 	[Serializable]
-	public sealed class MessageWrapper : ISerializable
+	internal sealed class MessageWrapper : ISerializable
 	{
 		public string ContainerName { get; set; }
 
