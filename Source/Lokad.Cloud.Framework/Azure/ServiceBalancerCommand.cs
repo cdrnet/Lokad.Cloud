@@ -6,7 +6,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using Autofac;
-using Lokad.Cloud;
 
 namespace Lokad.Cloud.Azure
 {
@@ -53,7 +52,6 @@ namespace Lokad.Cloud.Azure
 
 			while(!_isStopRequested)
 			{
-				// TODO: need to implement here a naive bandit pattern to run services
 				var service = _services[index++%_services.Length];
 				
 				var isRunOnce = false;
