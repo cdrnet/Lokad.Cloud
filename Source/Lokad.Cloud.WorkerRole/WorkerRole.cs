@@ -44,13 +44,12 @@ namespace Lokad.Cloud
 		/// </summary>
 		public void DoWork()
 		{
-			Dictionary<string, string> overrides = new Dictionary<string, string>();
-			overrides.Add("AccountName", RoleManager.GetConfigurationSetting("AccountName"));
-			overrides.Add("AccountKey", RoleManager.GetConfigurationSetting("AccountKey"));
-			overrides.Add("BlobEndpoint", RoleManager.GetConfigurationSetting("BlobEndpoint"));
-			overrides.Add("QueueEndpoint", RoleManager.GetConfigurationSetting("QueueEndpoint"));
+			// This is necessary to load config values in the main AppDomain because
+			// RoleManager is not properly working when invoked from another AppDomain
+			// These override values are passed to StorageModule living in another AppDomain
+			Dictionary<string, string> overrides = StorageModule.GetPropertiesValuesFromRuntime();
 
-			// This trick is to load this same assembly in another domain, then
+			// The trick is to load this same assembly in another domain, then
 			// instantiate this same class and invoke DoWorkInternal
 
 			AppDomain domain = AppDomain.CreateDomain("WorkerDomain", null, AppDomain.CurrentDomain.SetupInformation);

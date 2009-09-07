@@ -4,14 +4,14 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;
-using Lokad.Cloud;
 using Lokad.Quality;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;
-using System.Collections.Generic;
 
 namespace Lokad.Cloud.Azure
 {
@@ -144,18 +144,48 @@ namespace Lokad.Cloud.Azure
 				DBAPI.Decrypt(AccountKey) : AccountKey;
 		}
 
-		void ApplyOverridesFromRuntime()
+		/// <summary>
+		/// Gets this type's properties whose value can be loaded by the IoC container.
+		/// </summary>
+		/// <returns>The properties.</returns>
+		public static System.Reflection.PropertyInfo[] GetProperties()
 		{
-			// HACK: listing all properties is brittle
 			var properties = typeof(StorageModule).GetProperties();
 
-			foreach (var info in properties)
-			{
-				// HACK: ignoring the encryption property and OverriddenProperties
-				if("IsStorageKeyEncrypted" == info.Name) continue;
-				if("OverriddenProperties" == info.Name) continue;
+			return
+				(from p in properties
+				 where p.Name != "IsStorageKeyEncrypted" && p.Name != "OverriddenProperties"
+				 select p).ToArray();
+		}
 
+		/// <summary>
+		/// Gets the properties values from the Azure runtime.
+		/// </summary>
+		/// <returns>The properties values.</returns>
+		public static Dictionary<string, string> GetPropertiesValuesFromRuntime()
+		{
+			Dictionary<string, string> result = new Dictionary<string, string>(5);
+
+			foreach(var info in GetProperties())
+			{
 				var value = RoleManager.GetConfigurationSetting(info.Name);
+				if(!string.IsNullOrEmpty(value))
+				{
+					result.Add(info.Name, value);
+				}
+			}
+
+			return result;
+		}
+
+		void ApplyOverridesFromRuntime()
+		{
+			Dictionary<string, string> values = GetPropertiesValuesFromRuntime();
+
+			foreach (var info in GetProperties())
+			{
+				string value = null;
+				values.TryGetValue(info.Name, out value);
 				if (!string.IsNullOrEmpty(value))
 				{
 					info.SetValue(this, value, null);
@@ -167,15 +197,8 @@ namespace Lokad.Cloud.Azure
 		{
 			if(OverriddenProperties == null) return;
 
-			// HACK: listing all properties is brittle
-			var properties = typeof(StorageModule).GetProperties();
-
-			foreach(var info in properties)
+			foreach(var info in GetProperties())
 			{
-				// HACK: ignoring the encryption property
-				if("IsStorageKeyEncrypted" == info.Name) continue;
-				if("OverriddenProperties" == info.Name) continue;
-
 				string value = null;
 				OverriddenProperties.TryGetValue(info.Name, out value);
 				if(!string.IsNullOrEmpty(value))
