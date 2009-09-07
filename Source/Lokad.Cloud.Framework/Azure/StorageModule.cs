@@ -41,6 +41,7 @@ namespace Lokad.Cloud.Azure
 		[UsedImplicitly]
 		public string QueueEndpoint { get; set; }
 
+		/// <summary>Provides configuration properties when they are not available from RoleManager.</summary>
 		public Dictionary<string, string> OverriddenProperties { get; set; }
 
 		protected override void Load(ContainerBuilder builder)
