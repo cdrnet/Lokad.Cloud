@@ -11,6 +11,7 @@ using Lokad.Cloud;
 using Lokad.Quality;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 using Microsoft.ServiceHosting.ServiceRuntime;
+using System.Collections.Generic;
 
 namespace Lokad.Cloud.Azure
 {
@@ -40,10 +41,18 @@ namespace Lokad.Cloud.Azure
 		[UsedImplicitly]
 		public string QueueEndpoint { get; set; }
 
+		public Dictionary<string, string> OverriddenProperties { get; set; }
+
 		protected override void Load(ContainerBuilder builder)
 		{
-			if (RoleManager.IsRoleManagerRunning)
+			if(RoleManager.IsRoleManagerRunning)
+			{
 				ApplyOverridesFromRuntime();
+			}
+			else
+			{
+				ApplyOverridesFromInternal();
+			}
 
 			if (!string.IsNullOrEmpty(QueueEndpoint))
 			{
@@ -141,8 +150,9 @@ namespace Lokad.Cloud.Azure
 
 			foreach (var info in properties)
 			{
-				// HACK: ignoring the encryption property
+				// HACK: ignoring the encryption property and OverriddenProperties
 				if("IsStorageKeyEncrypted" == info.Name) continue;
+				if("OverriddenProperties" == info.Name) continue;
 
 				var value = RoleManager.GetConfigurationSetting(info.Name);
 				if (!string.IsNullOrEmpty(value))
@@ -151,5 +161,28 @@ namespace Lokad.Cloud.Azure
 				}
 			}
 		}
+
+		void ApplyOverridesFromInternal()
+		{
+			if(OverriddenProperties == null) return;
+
+			// HACK: listing all properties is brittle
+			var properties = typeof(StorageModule).GetProperties();
+
+			foreach(var info in properties)
+			{
+				// HACK: ignoring the encryption property
+				if("IsStorageKeyEncrypted" == info.Name) continue;
+				if("OverriddenProperties" == info.Name) continue;
+
+				string value = null;
+				OverriddenProperties.TryGetValue(info.Name, out value);
+				if(!string.IsNullOrEmpty(value))
+				{
+					info.SetValue(this, value, null);
+				}
+			}
+		}
+
 	}
 }

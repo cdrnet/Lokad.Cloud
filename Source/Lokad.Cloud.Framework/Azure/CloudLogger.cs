@@ -83,7 +83,7 @@ namespace Lokad.Cloud.Azure
   <error>{1}</error>
 </log>
 ", SecurityElement.Escape(message.ToString()),
-   SecurityElement.Escape(ex.ToString()) ?? string.Empty);
+ ex != null ? SecurityElement.Escape(ex.ToString()) : string.Empty);
 
 
 			// on first execution, container need to be created.
