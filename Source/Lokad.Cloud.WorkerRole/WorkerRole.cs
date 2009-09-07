@@ -22,7 +22,7 @@ namespace Lokad.Cloud
 
 			while(true)
 			{
-				IsolatedWorker worker = new IsolatedWorker();
+				var worker = new IsolatedWorker();
 				worker.DoWork();
 			}
 		}
@@ -38,23 +38,20 @@ namespace Lokad.Cloud
 	/// </summary>
 	public class IsolatedWorker : MarshalByRefObject
 	{
-
-		/// <summary>
-		/// Performs the work.
-		/// </summary>
+		/// <summary>Performs the work. </summary>
 		public void DoWork()
 		{
 			// This is necessary to load config values in the main AppDomain because
 			// RoleManager is not properly working when invoked from another AppDomain
 			// These override values are passed to StorageModule living in another AppDomain
-			Dictionary<string, string> overrides = StorageModule.GetPropertiesValuesFromRuntime();
+			var overrides = StorageModule.GetPropertiesValuesFromRuntime();
 
 			// The trick is to load this same assembly in another domain, then
 			// instantiate this same class and invoke DoWorkInternal
 
-			AppDomain domain = AppDomain.CreateDomain("WorkerDomain", null, AppDomain.CurrentDomain.SetupInformation);
+			var domain = AppDomain.CreateDomain("WorkerDomain", null, AppDomain.CurrentDomain.SetupInformation);
 
-			IsolatedWorker isolatedInstance = (IsolatedWorker)domain.CreateInstanceAndUnwrap(
+			var isolatedInstance = (IsolatedWorker)domain.CreateInstanceAndUnwrap(
 				Assembly.GetExecutingAssembly().FullName, typeof(IsolatedWorker).FullName);
 
 			// This never throws, unless something went wrong with IoC setup and that's fine
@@ -70,8 +67,7 @@ namespace Lokad.Cloud
 		public void DoWorkInternal(Dictionary<string, string> overrides)
 		{
 			var builder = new ContainerBuilder();
-			var storageModule = new StorageModule();
-			storageModule.OverriddenProperties = overrides;
+			var storageModule = new StorageModule {OverriddenProperties = overrides};
 			builder.RegisterModule(storageModule);
 
 			builder.Register(c => (ITypeMapperProvider)new TypeMapperProvider());
