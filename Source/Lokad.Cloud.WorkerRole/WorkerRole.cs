@@ -50,20 +50,10 @@ namespace Lokad.Cloud
 			overrides.Add("BlobEndpoint", RoleManager.GetConfigurationSetting("BlobEndpoint"));
 			overrides.Add("QueueEndpoint", RoleManager.GetConfigurationSetting("QueueEndpoint"));
 
-			//IsolatedWorker isolatedInstance = new IsolatedWorker();
-			//isolatedInstance.DoWorkInternal(overrides);
-
 			// This trick is to load this same assembly in another domain, then
 			// instantiate this same class and invoke DoWorkInternal
 
-			/*AppDomainSetup setup = new AppDomainSetup();
-			setup.ApplicationBase = AppDomain.CurrentDomain.BaseDirectory;
-			setup.ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;*/
 			AppDomain domain = AppDomain.CreateDomain("WorkerDomain", null, AppDomain.CurrentDomain.SetupInformation);
-			/*foreach(Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				domain.Load(asm.FullName);
-			}*/
 
 			IsolatedWorker isolatedInstance = (IsolatedWorker)domain.CreateInstanceAndUnwrap(
 				Assembly.GetExecutingAssembly().FullName, typeof(IsolatedWorker).FullName);
