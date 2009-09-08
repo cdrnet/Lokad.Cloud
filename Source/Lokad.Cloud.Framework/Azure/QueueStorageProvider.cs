@@ -38,7 +38,7 @@ namespace Lokad.Cloud.Azure
 		readonly IFormatter _formatter;
 
 		// messages currently being processed (boolean property indicates if the message is overflowing)
-		private readonly Dictionary<object, Tuple<Message, bool>> _inprocess;
+		private readonly Dictionary<object, InProcessMessage> _inProcessMessages;
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
@@ -48,7 +48,7 @@ namespace Lokad.Cloud.Azure
 			_blobStorage = blobStorage;
 			_formatter = formatter;
 
-			_inprocess = new Dictionary<object, Tuple<Message, bool>>();
+			_inProcessMessages = new Dictionary<object, InProcessMessage>(20);
 		}
 
 		public IEnumerable<string> List(string prefix)
@@ -97,10 +97,21 @@ namespace Lokad.Cloud.Azure
 					{
 						messages.Add((T)innerMessage);
 
-						// message could already have been retrieved (the the raw message will be identical)
-						if (!_inprocess.ContainsKey(innerMessage))
+						// If T is a value type, _inprocess could already contain the message
+						// (not the same exact instance, but an instance that is value-equal to this one)
+						InProcessMessage inProcMsg;
+						if(!_inProcessMessages.TryGetValue(innerMessage, out inProcMsg))
 						{
-							_inprocess.Add(innerMessage, new Tuple<Message, bool>(rawMessage, false));
+							inProcMsg = new InProcessMessage()
+							{
+								RawMessages = new List<Message>() { rawMessage },
+								IsOverflowing = false
+							};
+							_inProcessMessages.Add(innerMessage, inProcMsg);
+						}
+						else
+						{
+							inProcMsg.RawMessages.Add(rawMessage);
 						}
 					}
 					else
@@ -109,7 +120,12 @@ namespace Lokad.Cloud.Azure
 						var mw = (MessageWrapper) innerMessage;
 						wrappedMessages.Add(mw);
 
-						_inprocess.Add(mw, new Tuple<Message, bool>(rawMessage, true));
+						var overflowingInProcMsg = new InProcessMessage()
+						{
+							RawMessages = new List<Message>() { rawMessage },
+							IsOverflowing = true
+						};
+						_inProcessMessages.Add(mw, overflowingInProcMsg);
 					}
 				}
 			}
@@ -129,8 +145,8 @@ namespace Lokad.Cloud.Azure
 					Message rawMessage;
 					lock (_sync)
 					{
-						rawMessage = _inprocess[mw].Item1;
-						_inprocess.Remove(mw);
+						rawMessage = _inProcessMessages[mw].RawMessages[0];
+						_inProcessMessages.Remove(mw);
 					}
 
 					queue.DeleteMessage(rawMessage);
@@ -145,9 +161,9 @@ namespace Lokad.Cloud.Azure
 				// substitution: message wrapper replaced by actual item in '_inprocess' list
 				lock(_sync)
 				{
-					var rawMessage = _inprocess[mw];
-					_inprocess.Remove(mw);
-					_inprocess.Add(innerMessage, rawMessage);
+					var rawMessage = _inProcessMessages[mw];
+					_inProcessMessages.Remove(mw);
+					_inProcessMessages.Add(innerMessage, rawMessage);
 				}
 
 				messages.Add(innerMessage);
@@ -280,11 +296,11 @@ namespace Lokad.Cloud.Azure
 				lock(_sync)
 				{
 					// ignoring message if already deleted
-					Tuple<Message, bool> tuple;
-					if(!_inprocess.TryGetValue(message, out tuple)) break;
+					InProcessMessage inProcMsg;
+					if(!_inProcessMessages.TryGetValue(message, out inProcMsg)) continue;
 
-					rawMessage = tuple.Item1;
-					isOverflowing = tuple.Item2;
+					rawMessage = inProcMsg.RawMessages[0];
+					isOverflowing = inProcMsg.IsOverflowing;
 				}
 
 				// deleting the overflowing copy from the blob storage.
@@ -297,11 +313,15 @@ namespace Lokad.Cloud.Azure
 					container.DeleteBlob(mw.BlobName);
 				}
 
-				if(queue.DeleteMessage(rawMessage)) deletionCount++;
+				if(queue.DeleteMessage(rawMessage))
+					deletionCount++;
 
 				lock(_sync)
 				{
-					_inprocess.Remove(message);
+					var inProcMsg = _inProcessMessages[message];
+					inProcMsg.RawMessages.RemoveAt(0);
+					
+					if(0 == inProcMsg.RawMessages.Count) _inProcessMessages.Remove(message);
 				}
 			}
 
@@ -331,4 +351,17 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 	}
+
+	/// <summary>Represents a set of value-identical messages that are being processed by workers, 
+	/// i.e. were hidden from the queue because of calls to Get{T}.</summary>
+	internal class InProcessMessage
+	{
+		/// <summary>The multiple, different raw <see cref="T:Message" /> objects as returned from the queue storage.</summary>
+		public List<Message> RawMessages { get; set; }
+
+		/// <summary>A flag indicating whether the original message was bigger than the max allowed size and was
+		/// therefore wrapped in <see cref="T:MessageWrapper" />.</summary>
+		public bool IsOverflowing { get; set; }
+	}
+
 }

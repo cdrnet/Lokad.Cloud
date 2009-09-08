@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using Lokad.Cloud;
+using System.Text;
 
 namespace Lokad.Cloud.Azure.Test
 {
@@ -64,6 +65,116 @@ namespace Lokad.Cloud.Azure.Test
 
 			provider.Delete(QueueName, retrieved);
 		}
+
+		[Test]
+		public void PutGetDeleteIdenticalStructOrNative()
+		{
+			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
+
+			Assert.IsNotNull(provider, "GlobalSetup should resolve the provider");
+
+			provider.DeleteQueue(QueueName);
+
+			var testStruct = new MyStruct()
+			{
+				IntegerValue = 12,
+				StringValue = "hello"
+			};
+
+			for(int i = 0; i < 10; i++)
+			{
+				provider.Put(QueueName, testStruct);
+			}
+
+			var outStruct1 = provider.Get<MyStruct>(QueueName, 1).First();
+			var outStruct2 = provider.Get<MyStruct>(QueueName, 1).First();
+			Assert.IsTrue(provider.Delete(QueueName, outStruct1), "1st Delete failed");
+			Assert.IsTrue(provider.Delete(QueueName, outStruct2), "2nd Delete failed");
+			Assert.IsFalse(provider.Delete(QueueName, outStruct2), "3nd Delete succeeded");
+
+			var outAllStructs = provider.Get<MyStruct>(QueueName, 20);
+			Assert.AreEqual(8, outAllStructs.Count(), "Wrong queue item count");
+			foreach(var str in outAllStructs)
+			{
+				Assert.AreEqual(testStruct.IntegerValue, str.IntegerValue, "Wrong integer value");
+				Assert.AreEqual(testStruct.StringValue, str.StringValue, "Wrong string value");
+				Assert.IsTrue(provider.Delete(QueueName, str), "Delete failed");
+			}
+
+			var testDouble = 3.6D;
+
+			for(int i = 0; i < 10; i++)
+			{
+				provider.Put(QueueName, testDouble);
+			}
+
+			var outDouble1 = provider.Get<double>(QueueName, 1).First();
+			var outDouble2 = provider.Get<double>(QueueName, 1).First();
+			var outDouble3 = provider.Get<double>(QueueName, 1).First();
+			Assert.IsTrue(provider.Delete(QueueName, outDouble1), "1st Delete failed");
+			Assert.IsTrue(provider.Delete(QueueName, outDouble2), "2nd Delete failed");
+			Assert.IsTrue(provider.Delete(QueueName, outDouble3), "3nd Delete failed");
+			Assert.IsFalse(provider.Delete(QueueName, outDouble2), "3nd Delete succeeded");
+
+			var outAllDoubles = provider.Get<double>(QueueName, 20);
+			Assert.AreEqual(7, outAllDoubles.Count(), "Wrong queue item count");
+			foreach(var dbl in outAllDoubles)
+			{
+				Assert.AreEqual(testDouble, dbl, "Wrong double value");
+				Assert.IsTrue(provider.Delete(QueueName, dbl), "Delete failed");
+			}
+
+			var testString = "hi there!";
+
+			for(int i = 0; i < 10; i++)
+			{
+				provider.Put(QueueName, testString);
+			}
+
+			var outString1 = provider.Get<string>(QueueName, 1).First();
+			var outString2 = provider.Get<string>(QueueName, 1).First();
+			Assert.IsTrue(provider.Delete(QueueName, outString1), "1st Delete failed");
+			Assert.IsTrue(provider.Delete(QueueName, outString2), "2nd Delete failed");
+			Assert.IsFalse(provider.Delete(QueueName, outString2), "3nd Delete succeeded");
+
+			var outAllStrings = provider.Get<string>(QueueName, 20);
+			Assert.AreEqual(8, outAllStrings.Count(), "Wrong queue item count");
+			foreach(var str in outAllStrings)
+			{
+				Assert.AreEqual(testString, str, "Wrong string value");
+				Assert.IsTrue(provider.Delete(QueueName, str), "Delete failed");
+			}
+
+			var testClass = new StringBuilder("text");
+
+			for(int i = 0; i < 10; i++)
+			{
+				provider.Put(QueueName, testClass);
+			}
+
+			var outClass1 = provider.Get<StringBuilder>(QueueName, 1).First();
+			var outClass2 = provider.Get<StringBuilder>(QueueName, 1).First();
+			Assert.IsTrue(provider.Delete(QueueName, outClass1), "1st Delete failed");
+			Assert.IsTrue(provider.Delete(QueueName, outClass2), "2nd Delete failed");
+			Assert.IsFalse(provider.Delete(QueueName, outClass2), "3nd Delete succeeded");
+
+			var outAllClasses = provider.Get<StringBuilder>(QueueName, 20);
+			Assert.AreEqual(8, outAllClasses.Count(), "Wrong queue item count");
+			foreach(var cls in outAllClasses)
+			{
+				Assert.AreEqual(testClass.ToString(), cls.ToString(), "Wrong deserialized class value");
+				Assert.IsTrue(provider.Delete(QueueName, cls), "Delete failed");
+			}
+
+			provider.DeleteQueue(QueueName);
+		}
+	}
+
+	[Serializable]
+	public struct MyStruct
+	{
+		public int IntegerValue;
+		public string StringValue;
 	}
 
 	[Serializable]
