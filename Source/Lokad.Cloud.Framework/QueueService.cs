@@ -51,7 +51,7 @@ namespace Lokad.Cloud
 		/// instead.</summary>
 		protected sealed override bool StartImpl()
 		{
-			var messages = Providers.QueueStorage.Get<T>(_queueName, _batchSize);
+			var messages = QueueStorage.Get<T>(_queueName, _batchSize);
 
 			var count = messages.Count();
 			if (count > 0) StartRange(messages);
@@ -97,7 +97,7 @@ namespace Lokad.Cloud
 		/// before asking for more.</remarks>
 		public IEnumerable<T> GetMore(int count)
 		{
-			return Providers.QueueStorage.Get<T>(_queueName, count);
+			return QueueStorage.Get<T>(_queueName, count);
 		}
 
 		/// <summary>Get more message from an arbitrary queue.</summary>
@@ -107,21 +107,21 @@ namespace Lokad.Cloud
 		/// <returns>Retrieved message (enumeration might be empty).</returns>
 		public IEnumerable<U> GetMore<U>(int count, string queueName)
 		{
-			return Providers.QueueStorage.Get<U>(_queueName, count);
+			return QueueStorage.Get<U>(_queueName, count);
 		}
 
 		/// <summary>Delete message retrieved either through <see cref="StartRange"/>
 		/// or through <see cref="GetMore"/>.</summary>
 		public void Delete<U>(U message)
 		{
-			Providers.QueueStorage.Delete(_queueName, message);
+			QueueStorage.Delete(_queueName, message);
 		}
 
 		/// <summary>Delete messages retrieved either through <see cref="StartRange"/>
 		/// or through <see cref="GetMore"/>.</summary>
 		public void DeleteRange<U>(IEnumerable<U> messages)
 		{
-			Providers.QueueStorage.DeleteRange(_queueName, messages);
+			QueueStorage.DeleteRange(_queueName, messages);
 		}
 	}
 }

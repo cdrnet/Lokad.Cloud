@@ -20,19 +20,17 @@ namespace Lokad.Cloud.Services
 	{
 		protected override void StartOnSchedule()
 		{
-			var blobStorage = Providers.BlobStorage; // short-hand
-
 			// lazy enumeration over the delayed messages
-			foreach (var blobName in blobStorage.List<DelayedMessageName>(null))
+			foreach (var blobName in BlobStorage.List<DelayedMessageName>(null))
 			{
 				var parsedName = BaseBlobName.Parse<DelayedMessageName>(blobName);
 
 				// if the overflowing message is expired, delete it
 				if (DateTime.Now > parsedName.TriggerTime)
 				{
-					var dm = blobStorage.GetBlob<DelayedMessage>(parsedName);
-					Providers.QueueStorage.Put(dm.QueueName, dm.InnerMessage);
-					blobStorage.DeleteBlob(parsedName);
+					var dm = BlobStorage.GetBlob<DelayedMessage>(parsedName);
+					QueueStorage.Put(dm.QueueName, dm.InnerMessage);
+					BlobStorage.DeleteBlob(parsedName);
 				}
 				else
 				{

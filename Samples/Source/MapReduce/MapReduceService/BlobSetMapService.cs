@@ -37,8 +37,6 @@ namespace MapReduce
 
 		protected override void StartRange(IEnumerable<BlobSetMapMessage> messages)
 		{
-			var blobStorage = Providers.BlobStorage; // short-hand
-
 			const string mapSettingsSuffix = BlobSet.MapSettingsSuffix;
 			const string mapCounterSuffix = BlobSet.MapCounterSuffix;
 
@@ -50,19 +48,19 @@ namespace MapReduce
             	var outputBlobName = new BlobSetMapName(message.DestinationPrefix, message.ItemSuffix);
 
                 // retrieving the mapper
-            	var mapSettings = blobStorage.GetBlob<BlobSetMapSettings>(settingsBlobName);
+            	var mapSettings = BlobStorage.GetBlob<BlobSetMapSettings>(settingsBlobName);
 
 				// retrieving the input
-            	var input = blobStorage.GetBlob<object>(inputBlobName);
+            	var input = BlobStorage.GetBlob<object>(inputBlobName);
 
 				// map
             	var output = BlobSet.InvokeAsDelegate(mapSettings.Mapper, input);
 
 				// saving the output
-				blobStorage.PutBlob(outputBlobName, output);
+				BlobStorage.PutBlob(outputBlobName, output);
 
 				// Decrementing the counter once the operation is completed
-            	var counter = new BlobCounter(blobStorage, counterBlobName);
+            	var counter = new BlobCounter(BlobStorage, counterBlobName);
             	var remainingMappings = (long) counter.Increment(-1);
 
 				// deleting message
@@ -74,8 +72,7 @@ namespace MapReduce
 					counter.Delete();
 
 					// pushing the message as a completion signal
-					Providers.QueueStorage.Put(
-						mapSettings.OnCompletedQueueName, mapSettings.OnCompleted);
+					QueueStorage.Put(mapSettings.OnCompletedQueueName, mapSettings.OnCompleted);
 				}
             }
 		}

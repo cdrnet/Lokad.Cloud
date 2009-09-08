@@ -10,6 +10,8 @@ using BlobSet = MapReduce.BlobSet<object>;
 // TODO: a smart reduction process would take into account the size and CPU cost
 // of the reduction to figure out how many item needs to be retrieved at once
 
+// TODO: need to migrate toward BaseBlogName
+
 namespace MapReduce
 {
 	/// <summary>Message for an elementary map operation in a map-reduce process.</summary>
@@ -38,8 +40,7 @@ namespace MapReduce
 
 			var settingsBlobName = message.SourcePrefix + delimiter + message.SettingsSuffix;
 
-			var settings = Providers.BlobStorage.
-				GetBlob<BlobSetReduceSettings>(containerName, settingsBlobName);
+			var settings = BlobStorage.GetBlob<BlobSetReduceSettings>(containerName, settingsBlobName);
 
 			// cleanup has already been performed, reduction is complete.
 			if (null == settings)
@@ -52,7 +53,7 @@ namespace MapReduce
 			var counterBlobName = message.SourcePrefix + delimiter + settings.ReductionCounter;
 			var counter = new BlobCounter(Providers, containerName, counterBlobName);
 
-			var items = Providers.QueueStorage.Get<object>(settings.WorkQueue, 2);
+			var items = QueueStorage.Get<object>(settings.WorkQueue, 2);
 
 			// if there are at least two items, then reduce them
 			if (items.Count() >= 2)
@@ -64,8 +65,8 @@ namespace MapReduce
 				{
 					var reducted = BlobSet.InvokeAsDelegate(settings.Reducer, current, next);
 
-					Providers.QueueStorage.Put(settings.WorkQueue, reducted);
-					Providers.QueueStorage.DeleteRange(settings.WorkQueue, new[] { current, next });
+					QueueStorage.Put(settings.WorkQueue, reducted);
+					QueueStorage.DeleteRange(settings.WorkQueue, new[] { current, next });
 
 					remainingReductions = (long)counter.Increment(-1);
 
@@ -75,26 +76,25 @@ namespace MapReduce
 					// in batches here.
 
 					// retrieving the next item and keep up with the reduction
-					var nextItems = Providers.QueueStorage.Get<object>(settings.WorkQueue, 1);
+					var nextItems = QueueStorage.Get<object>(settings.WorkQueue, 1);
 					next = nextItems.Any() ? nextItems.First() : null;
 				}
 
 				// iteration beyond zero are possible through rare condition
 				if (remainingReductions <= 0)
 				{
-					Providers.QueueStorage.Put(settings.ReductionQueue, current);
+					QueueStorage.Put(settings.ReductionQueue, current);
 
 					// performing cleanup
-					Providers.BlobStorage.DeleteBlob(containerName, settingsBlobName);
+					BlobStorage.DeleteBlob(containerName, settingsBlobName);
 					counter.Delete();
-					Providers.QueueStorage.DeleteQueue(settings.WorkQueue);
+					QueueStorage.DeleteQueue(settings.WorkQueue);
 				}
 			}
 			else
 			{
 				// not enough items retrieved for reduction
-				remainingReductions =
-					Providers.BlobStorage.GetBlob<long>(containerName, counterBlobName);
+				remainingReductions = BlobStorage.GetBlob<long>(containerName, counterBlobName);
 			}
 
 			// reduction is still under way

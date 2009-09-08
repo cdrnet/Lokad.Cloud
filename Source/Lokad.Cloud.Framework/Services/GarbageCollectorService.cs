@@ -4,12 +4,6 @@
 #endregion
 using System;
 
-// HACK: we are currently assuming that the amount of garbage items is low.
-// Yet, in some circumstances (service failures for example), the amount of overflowing
-// messages could be large, and would need a more scalable implementation pattern.
-
-// TODO: make name pattern here consistent with the TemporaryBlobName
-
 namespace Lokad.Cloud.Services
 {
 	/// <summary>
@@ -37,14 +31,14 @@ namespace Lokad.Cloud.Services
 			const string cn = TemporaryContainer;
 
 			// lazy enumeration over the overflowing messages
-			foreach(var blobName in Providers.BlobStorage.List(cn, null))
+			foreach(var blobName in BlobStorage.List(cn, null))
 			{
 				var parsedName = BaseBlobName.Parse<TemporaryBlobName>(blobName);
 
 				// if the overflowing message is expired, delete it
 				if(DateTime.Now > parsedName.Expiration)
 				{
-					Providers.BlobStorage.DeleteBlob(cn, blobName);
+					BlobStorage.DeleteBlob(cn, blobName);
 				}
 				else
 				{

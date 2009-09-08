@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autofac;
+using Lokad.Quality;
 using Lokad.Threading;
 
 namespace Lokad.Cloud
@@ -88,7 +89,7 @@ namespace Lokad.Cloud
 		/// on queue is set at 2h. Yet, in order to avoid race condition between
 		/// message silent re-inclusion in queue and message deletion, the timeout here
 		/// is shortened at 1h58.</remarks>
-		public static TimeSpan ExecutionTimeout { get { return new TimeSpan(1, 58, 0); } }
+		static TimeSpan ExecutionTimeout { get { return new TimeSpan(1, 58, 0); } }
 
 		/// <summary>Indicates the state of the service, as retrieved during the last check.</summary>
 		CloudServiceState _state = CloudServiceState.Started;
@@ -96,10 +97,8 @@ namespace Lokad.Cloud
 		/// <summary>Indicates the last time the service has checked its excution status.</summary>
 		DateTime _lastStateCheck = DateTime.MinValue;
 
-		ProvidersForCloudStorage _providers;
-
 		/// <summary>Indicates the frequency where the service is actually checking for its state.</summary>
-		public static TimeSpan StateCheckInterval
+		static TimeSpan StateCheckInterval
 		{
 			get { return 1.Minutes(); }
 		}
@@ -107,7 +106,7 @@ namespace Lokad.Cloud
 		/// <summary>Error logger.</summary>
 		public ILog Log
 		{
-			get { return _providers.Log; }
+			get { return Providers.Log; }
 		}
 
 		/// <summary>Name of the service (used for reporting purposes).</summary>
@@ -118,11 +117,14 @@ namespace Lokad.Cloud
 		}
 
 		/// <summary>Providers used by the cloud service to access the storage.</summary>
-		public ProvidersForCloudStorage Providers
-		{
-			get { return _providers; }
-			set { _providers = value; }
-		}
+		[UsedImplicitly]
+		public ProvidersForCloudStorage Providers { get; set; }
+
+		/// <summary>Short-hand for <c>Providers.BlobStorage</c>.</summary>
+		public IBlobStorageProvider BlobStorage { get { return Providers.BlobStorage; } }
+
+		/// <summary>Short-hand for <c>Providers.QueueStorage</c>.</summary>
+		public IQueueStorageProvider QueueStorage { get { return Providers.QueueStorage; } }
 
 		/// <summary>Wrapper method for the <see cref="StartImpl"/> method. Checks
 		/// that the service status before executing the inner start.</summary>
@@ -139,7 +141,7 @@ namespace Lokad.Cloud
 				var cn = ServiceStateContainer;
 				var bn = ServiceStatePrefix + Delimiter + Name;
 
-				var state = _providers.BlobStorage.GetBlob<CloudServiceState?>(cn, bn);
+				var state = BlobStorage.GetBlob<CloudServiceState?>(cn, bn);
 
 				// no state can be retrieved, update blob storage
 				if(!state.HasValue)
@@ -150,7 +152,7 @@ namespace Lokad.Cloud
 							(settings.AutoStart ? CloudServiceState.Started : CloudServiceState.Stopped) :
 							CloudServiceState.Started;
 
-					_providers.BlobStorage.PutBlob(cn, bn, state);
+					BlobStorage.PutBlob(cn, bn, state);
 				}
 
 				_state = state.Value;
@@ -196,13 +198,13 @@ namespace Lokad.Cloud
 		/// <summary>Put messages into the queue implicitely associated to the type <c>T</c>.</summary>
 		public void PutRange<T>(IEnumerable<T> messages)
 		{
-			PutRange(messages, _providers.TypeMapper.GetStorageName(typeof(T)));
+			PutRange(messages, Providers.TypeMapper.GetStorageName(typeof(T)));
 		}
 
 		/// <summary>Put messages into the queue identified by <c>queueName</c>.</summary>
 		public void PutRange<T>(IEnumerable<T> messages, string queueName)
 		{
-			_providers.QueueStorage.PutRange(queueName, messages);
+			QueueStorage.PutRange(queueName, messages);
 		}
 
 		/// <summary>Put a message into the queue implicitly associated to the type <c>T</c> at the
@@ -223,7 +225,7 @@ namespace Lokad.Cloud
 		/// time specified by the <c>triggerTime</c>.</summary>
 		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime)
 		{
-			PutRangeWithDelay(messages, triggerTime, _providers.TypeMapper.GetStorageName(typeof(T)));
+			PutRangeWithDelay(messages, triggerTime, Providers.TypeMapper.GetStorageName(typeof(T)));
 		}
 
 		/// <summary>Put messages into the queue identified by <c>queueName</c> at the
@@ -235,7 +237,7 @@ namespace Lokad.Cloud
 			foreach (var message in messages)
 			{
 				var blobName = new DelayedMessageName(triggerTime, Guid.NewGuid());
-				_providers.BlobStorage.PutBlob(blobName, message);
+				BlobStorage.PutBlob(blobName, message);
 			}
 		}
 

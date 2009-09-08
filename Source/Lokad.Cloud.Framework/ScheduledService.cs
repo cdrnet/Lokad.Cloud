@@ -32,7 +32,7 @@ namespace Lokad.Cloud
 		{
 			// retrieving the state info if any
 			var stateName = ScheduleStatePrefix + Delimiter + Name;
-			var state = Providers.BlobStorage.GetBlob<ScheduledServiceState>(ScheduleStateContainer, stateName);
+			var state = BlobStorage.GetBlob<ScheduledServiceState>(ScheduleStateContainer, stateName);
 
 			if(!_isInitialized)
 			{
@@ -49,7 +49,7 @@ namespace Lokad.Cloud
 					// recording a fresh schedule state in the cloud
 					_triggerInterval = settings.TriggerInterval.Seconds();
 
-					var writeSucceeded = Providers.BlobStorage.PutBlob(
+					var writeSucceeded = BlobStorage.PutBlob(
 						ScheduleStateContainer, stateName, 
 						new ScheduledServiceState
 							{
@@ -72,7 +72,7 @@ namespace Lokad.Cloud
 			// update this value if it's old enough. When the update fails,
 			// it simply means that another worker is already on its ways
 			// to execute the service.
-			var updated = Providers.BlobStorage.UpdateIfNotModified<ScheduledServiceState>(
+			var updated = BlobStorage.UpdateIfNotModified<ScheduledServiceState>(
 				ScheduleStateContainer, stateName, 
 				currentState =>
 					{
