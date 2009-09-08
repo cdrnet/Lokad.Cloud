@@ -87,7 +87,7 @@ namespace Lokad.Cloud
 		/// </remarks>
 		protected virtual void Start(T message)
 		{
-			throw new NotImplementedException("Start or StartRange method must overriden by inheritor.");
+			throw new NotSupportedException("Start or StartRange method must overriden by inheritor.");
 		}
 
 		/// <summary>Get more messages from the underlying queue.</summary>
