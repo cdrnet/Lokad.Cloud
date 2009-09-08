@@ -68,7 +68,7 @@ namespace Lokad.Cloud
 		/// </summary>
 		/// <param name="messages">Messages to be processed.</param>
 		/// <remarks>
-		/// We suggest to make messages deleted asap through the <see cref="DeleteRange{U}"/>
+		/// We suggest to make messages deleted asap through the <see cref="DeleteRange"/>
 		/// method. Otherwise, messages will be automatically deleted when the method
 		/// returns (except if an exception is thrown obviously).
 		/// </remarks>
@@ -93,7 +93,7 @@ namespace Lokad.Cloud
 		/// <summary>Get more messages from the underlying queue.</summary>
 		/// <param name="count">Maximal number of messages to be retrieved.</param>
 		/// <returns>Retrieved messages (enumeration might be empty).</returns>
-		/// <remarks>It is suggested to <see cref="DeleteRange{U}"/> messages first
+		/// <remarks>It is suggested to <see cref="DeleteRange"/> messages first
 		/// before asking for more.</remarks>
 		public IEnumerable<T> GetMore(int count)
 		{
@@ -101,25 +101,24 @@ namespace Lokad.Cloud
 		}
 
 		/// <summary>Get more message from an arbitrary queue.</summary>
-		/// <typeparam name="U">Message type.</typeparam>
 		/// <param name="count">Number of message to be retrieved.</param>
 		/// <param name="queueName">Name of the queue.</param>
 		/// <returns>Retrieved message (enumeration might be empty).</returns>
-		public IEnumerable<U> GetMore<U>(int count, string queueName)
+		public IEnumerable<T> GetMore(int count, string queueName)
 		{
-			return QueueStorage.Get<U>(_queueName, count);
+			return QueueStorage.Get<T>(_queueName, count);
 		}
 
 		/// <summary>Delete message retrieved either through <see cref="StartRange"/>
-		/// or through <see cref="GetMore"/>.</summary>
-		public void Delete<U>(U message)
+		/// or through <see cref="GetMore(int)"/>.</summary>
+		public void Delete(T message)
 		{
 			QueueStorage.Delete(_queueName, message);
 		}
 
 		/// <summary>Delete messages retrieved either through <see cref="StartRange"/>
-		/// or through <see cref="GetMore"/>.</summary>
-		public void DeleteRange<U>(IEnumerable<U> messages)
+		/// or through <see cref="GetMore(int)"/>.</summary>
+		public void DeleteRange(IEnumerable<T> messages)
 		{
 			QueueStorage.DeleteRange(_queueName, messages);
 		}
