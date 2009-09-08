@@ -34,12 +34,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}"
 	ProjectSection(SolutionItems) = preProject
+		ReadMe.MapReduce.txt = ReadMe.MapReduce.txt
 		Samples\Source\PingPong\ReadMe.PingPong.txt = Samples\Source\PingPong\ReadMe.PingPong.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingPongClient", "Samples\Source\PingPong\PingPongClient\PingPongClient.csproj", "{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingPongService", "Samples\Source\PingPong\PingPongService\PingPongService.csproj", "{EF63B21A-0390-4DB3-8573-21BE5931CD5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapReduceClient", "Samples\Source\MapReduce\MapReduceClient\MapReduceClient.csproj", "{9CE653AE-247C-4A3B-B18B-07411EF9B59F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapReduceService", "Samples\Source\MapReduce\MapReduceService\MapReduceService.csproj", "{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -84,6 +89,18 @@ Global
 		{EF63B21A-0390-4DB3-8573-21BE5931CD5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF63B21A-0390-4DB3-8573-21BE5931CD5E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EF63B21A-0390-4DB3-8573-21BE5931CD5E}.ReleaseApi|Any CPU.ActiveCfg = Release|Any CPU
+		{9CE653AE-247C-4A3B-B18B-07411EF9B59F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CE653AE-247C-4A3B-B18B-07411EF9B59F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CE653AE-247C-4A3B-B18B-07411EF9B59F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CE653AE-247C-4A3B-B18B-07411EF9B59F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CE653AE-247C-4A3B-B18B-07411EF9B59F}.ReleaseApi|Any CPU.ActiveCfg = Release|Any CPU
+		{9CE653AE-247C-4A3B-B18B-07411EF9B59F}.ReleaseApi|Any CPU.Build.0 = Release|Any CPU
+		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}.ReleaseApi|Any CPU.ActiveCfg = Release|Any CPU
+		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}.ReleaseApi|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,5 +114,7 @@ Global
 		{93D4C481-3265-42F3-BF63-C06106AE016F} = {A4EE85F0-A2E1-4516-8B4E-F4BA7DA67968}
 		{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 		{EF63B21A-0390-4DB3-8573-21BE5931CD5E} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
+		{9CE653AE-247C-4A3B-B18B-07411EF9B59F} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
+		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 	EndGlobalSection
 EndGlobal

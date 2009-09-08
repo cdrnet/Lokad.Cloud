@@ -89,7 +89,6 @@
     <Compile Include="BlobCounter.cs" />
     <Compile Include="BaseBlobName.cs" />
     <Compile Include="BlobNamePrefix.cs" />
-    <Compile Include="BlobSet.cs" />
     <Compile Include="CloudService.cs" />
     <Compile Include="CloudServiceSettingsAttribute.cs" />
     <Compile Include="Mock\MemoryLogger.cs" />
@@ -108,8 +107,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScheduledService.cs" />
     <Compile Include="ScheduledServiceSettingsAttribute.cs" />
-    <Compile Include="Services\BlobSetMapService.cs" />
-    <Compile Include="Services\BlobSetReduceService.cs" />
     <Compile Include="Services\DelayedQueueService.cs" />
     <Compile Include="Services\GarbageCollectorService.cs" />
     <Compile Include="StorageClient\Authentication.cs" />

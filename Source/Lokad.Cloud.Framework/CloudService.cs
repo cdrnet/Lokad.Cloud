@@ -181,20 +181,6 @@ namespace Lokad.Cloud
 			// does nothing
 		}
 
-		/// <summary>Instanciate a <see cref="BlobSet{T}"/> based on the current
-		/// storage providers (prefix is auto-generated based on the type <c>T</c>).</summary>
-		public BlobSet<T> GetBlobSet<T>()
-		{
-			return new BlobSet<T>(_providers, _providers.TypeMapper.GetStorageName(typeof(T)));
-		}
-
-		/// <summary>Instanciate a <see cref="BlobSet{T}"/> with the specified prefix name
-		/// based on the current storage providers.</summary>
-		public BlobSet<T> GetBlobSet<T>(string prefixName)
-		{
-			return new BlobSet<T>(_providers, prefixName);
-		}
-
 		/// <summary>Put a message into the queue implicitely associated to the type <c>T</c>.</summary>
 		public void Put<T>(T message)
 		{
