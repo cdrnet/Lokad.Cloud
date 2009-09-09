@@ -17,9 +17,11 @@ namespace Lokad.Cloud.Services
 	[ScheduledServiceSettings(
 		AutoStart = true, 
 		Description = "Garbage collects temporary items.",
-		TriggerInterval = 24 * 60 * 60)] // 1 execution per day by default
+		TriggerInterval = 60)] // 1 execution every 1min
 	public class GarbageCollectorService : ScheduledService
 	{
+		static TimeSpan MaxExecutionTime { get { return 10.Minutes(); } }
+
 		/// <remarks>Name is overriden for consistency in the framework.</remarks>
 		public override string Name
 		{
@@ -28,23 +30,30 @@ namespace Lokad.Cloud.Services
 
 		protected override void StartOnSchedule()
 		{
-			const string cn = TemporaryContainer;
+			var executionExpiration = DateTime.UtcNow.Add(MaxExecutionTime);
 
 			// lazy enumeration over the overflowing messages
-			foreach(var blobName in BlobStorage.List(cn, null))
+			foreach (var blobName in BlobStorage.List(
+				BaseBlobName.GetContainerName<TemporaryBlobName>(), null))
 			{
 				var parsedName = BaseBlobName.Parse<TemporaryBlobName>(blobName);
 
 				// if the overflowing message is expired, delete it
-				if(DateTime.Now > parsedName.Expiration)
+				if(DateTime.UtcNow > parsedName.Expiration)
 				{
-					BlobStorage.DeleteBlob(cn, blobName);
+					BlobStorage.DeleteBlob(parsedName);
 				}
 				else
 				{
 					// overflowing messages are iterated in date-increasing order
 					// as soon a non-expired overflowing message is encountered
 					// just stop the process.
+					break;
+				}
+
+				// don't freeze the worker with this service
+				if (DateTime.UtcNow > executionExpiration)
+				{
 					break;
 				}
 			}
