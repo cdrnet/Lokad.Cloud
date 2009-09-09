@@ -125,7 +125,19 @@ namespace Lokad.Cloud
 		}
 
 		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
+			BaseTypedBlobName<T> fullName, Func<T, Result<T>> updater, out Result<T> result)
+		{
+			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater, out result);
+		}
+
+		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
 			BaseBlobName fullName, Func<T, T> updater, out T result)
+		{
+			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater, out result);
+		}
+
+		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
+			BaseTypedBlobName<T> fullName, Func<T, T> updater, out T result)
 		{
 			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater, out result);
 		}
@@ -137,7 +149,19 @@ namespace Lokad.Cloud
 		}
 
 		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
+			BaseTypedBlobName<T> fullName, Func<T, Result<T>> updater)
+		{
+			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
+		}
+
+		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
 			BaseBlobName fullName, Func<T, T> updater)
+		{
+			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
+		}
+
+		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
+			BaseTypedBlobName<T> fullName, Func<T, T> updater)
 		{
 			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
 		}
