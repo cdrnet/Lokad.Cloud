@@ -13,9 +13,22 @@ namespace Lokad.Cloud.Azure.Test
 	[TestFixture]
 	public class QueueStorageProviderTests
 	{
-		private const string QueueName = "tests-queuestorageprovider-mymessage";
+		private const string BaseQueueName = "tests-queuestorageprovider-";
+		private string QueueName;
 
 		private static Random _rand = new Random();
+
+		[SetUp]
+		public void SetUp() {
+			QueueName = BaseQueueName + Guid.NewGuid().ToString("N");
+		}
+
+		[TearDown]
+		public void TearDown() {
+			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
+
+			provider.DeleteQueue(QueueName);
+		}
 
 		[Test]
 		public void PutGetDelete()
@@ -72,8 +85,6 @@ namespace Lokad.Cloud.Azure.Test
 			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
 
 			Assert.IsNotNull(provider, "GlobalSetup should resolve the provider");
-
-			provider.DeleteQueue(QueueName);
 
 			var testStruct = new MyStruct()
 			{
@@ -165,8 +176,6 @@ namespace Lokad.Cloud.Azure.Test
 				Assert.AreEqual(testClass.ToString(), cls.ToString(), "Wrong deserialized class value");
 				Assert.IsTrue(provider.Delete(QueueName, cls), "Delete failed");
 			}
-
-			provider.DeleteQueue(QueueName);
 		}
 	}
 
