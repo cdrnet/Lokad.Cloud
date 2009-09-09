@@ -37,6 +37,30 @@ namespace Lokad.Cloud.Web
 			Container = builder.Build();
 		}
 
+		private static string _storageAccountName = null;
+		private static object _syncRoot = new object();
+
+		/// <summary>
+		/// Storage account name, cached at startup.
+		/// </summary>
+		public static string StorageAccountName
+		{
+			get
+			{
+				// This synchronization scheme is surely a bit overkill in this case...
+				if(null == _storageAccountName)
+				{
+					lock(_syncRoot)
+					{
+						if(null == _storageAccountName)
+							_storageAccountName = Container.Resolve<Microsoft.Samples.ServiceHosting.StorageClient.BlobStorage>().AccountName;
+					}
+				}
+
+				return _storageAccountName;
+			}
+		}
+
 		/// <summary>
 		/// Assembly version, cached on startup.
 		/// </summary>

@@ -29,5 +29,5 @@
 	<br />
 	
 	<h2 class="separator">System status</h2>
-	<pre><asp:Label ID="LokadCloudVersion" runat="server" Text='<%# "Lokad.Cloud " + GlobalSetup.AssemblyVersion %>' /></pre>
+	<pre><asp:Label ID="LokadCloudVersion" runat="server" Text='<%# "Lokad.Cloud " + GlobalSetup.AssemblyVersion  + " - Storage Account Name: " + GlobalSetup.StorageAccountName %>' /></pre>
 </asp:Content>
