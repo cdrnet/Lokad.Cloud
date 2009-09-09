@@ -20,9 +20,6 @@ namespace Lokad.Cloud
 
 		static readonly Random _rand = new Random();
 
-		// TODO: document those methods.
-		// TODO: add missing AtomicUpdate overloads.
-
 		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, string containerName, string blobName, Func<T, Result<T>> updater, out Result<T> result)
 		{
 			Result<T> tmpResult = null;
@@ -75,8 +72,6 @@ namespace Lokad.Cloud
 			return builder.ToString();
 		}
 
-		// TODO: add missing overload for 'BaseBlobName'.
-
 		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseBlobName fullName, Func<T, Result<T>> updater, out Result<T> result)
 		{
 			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
@@ -121,6 +116,30 @@ namespace Lokad.Cloud
 		public static IEnumerable<string> List(this IBlobStorageProvider provider, BlobNamePrefix prefix)
 		{
 			return provider.List(prefix.Container, prefix.Prefix);
+		}
+
+		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
+			BaseBlobName fullName, Func<T, Result<T>> updater, out Result<T> result)
+		{
+			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater, out result);
+		}
+
+		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
+			BaseBlobName fullName, Func<T, T> updater, out T result)
+		{
+			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater, out result);
+		}
+
+		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
+			BaseBlobName fullName, Func<T, Result<T>> updater)
+		{
+			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
+		}
+
+		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
+			BaseBlobName fullName, Func<T, T> updater)
+		{
+			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
 		}
 	}
 }
