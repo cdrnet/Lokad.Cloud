@@ -76,7 +76,7 @@ namespace Lokad.Cloud
 				ScheduleStateContainer, stateName, 
 				currentState =>
 					{
-						var now = DateTime.Now;
+						var now = DateTime.UtcNow;
 
 						if(null == currentState)
 						{

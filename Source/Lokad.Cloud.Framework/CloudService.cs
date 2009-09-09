@@ -133,7 +133,7 @@ namespace Lokad.Cloud
 		/// then a <see cref="TimeoutException"/> is thrown.</remarks>
 		public bool Start()
 		{
-			var now = DateTime.Now;
+			var now = DateTime.UtcNow;
 
 			// checking service state at regular interval
 			if(now.Subtract(_lastStateCheck) > StateCheckInterval)

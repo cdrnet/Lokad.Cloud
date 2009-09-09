@@ -192,7 +192,7 @@ namespace Lokad.Cloud.Azure
 				{
 					
 					// 7 days = maximal processing duration for messages in queue
-					var blobName = TemporaryBlobName.GetNew(DateTime.Now.AddDays(7), queueName);
+					var blobName = TemporaryBlobName.GetNew(DateTime.UtcNow.AddDays(7), queueName);
 
 					var blobContents = new BlobContents(buffer);
 					var blobProperties = new BlobProperties(blobName.ToString());

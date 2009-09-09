@@ -266,7 +266,7 @@ namespace MapReduce
 
 			var builder = new StringBuilder();
 			builder.Append("lokad-tmp-");
-			builder.Append(DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd"));
+			builder.Append(DateTime.UtcNow.ToString("yyyy-MM-dd"));
 			builder.Append("-");
 			builder.Append(Guid.NewGuid().ToString("N"));
 
@@ -281,7 +281,7 @@ namespace MapReduce
 			var builder = new StringBuilder();
 			builder.Append("lokad-tmp");
 			builder.Append(Delimiter);
-			builder.Append(DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd"));
+			builder.Append(DateTime.UtcNow.ToString("yyyy-MM-dd"));
 			builder.Append(Delimiter);
 			builder.Append(Guid.NewGuid().ToString("N"));
 

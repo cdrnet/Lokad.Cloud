@@ -147,7 +147,7 @@ namespace Lokad.Cloud.Azure
 		static string GetNewLogBlobName(LogLevel level)
 		{
 			var builder = new StringBuilder();
-			builder.Append(ToPrefix(DateTime.Now));
+			builder.Append(ToPrefix(DateTime.UtcNow));
 			builder.Append(Delimiter);
 			builder.Append(level.ToString());
 			builder.Append(Delimiter);

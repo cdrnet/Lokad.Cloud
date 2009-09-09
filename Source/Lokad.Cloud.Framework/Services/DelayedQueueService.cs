@@ -26,7 +26,7 @@ namespace Lokad.Cloud.Services
 				var parsedName = BaseBlobName.Parse<DelayedMessageName>(blobName);
 
 				// if the overflowing message is expired, delete it
-				if (DateTime.Now > parsedName.TriggerTime)
+				if (DateTime.UtcNow > parsedName.TriggerTime)
 				{
 					var dm = BlobStorage.GetBlob<DelayedMessage>(parsedName);
 					QueueStorage.Put(dm.QueueName, dm.InnerMessage);

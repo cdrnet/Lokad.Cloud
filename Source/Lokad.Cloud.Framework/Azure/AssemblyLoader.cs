@@ -55,7 +55,7 @@ namespace Lokad.Cloud.Azure
 		public void Load()
 		{
 			var buffer = _provider.GetBlob<byte[]>(ContainerName, BlobName, out _lastPackageEtag);
-			_lastPackageCheck = DateTime.Now;
+			_lastPackageCheck = DateTime.UtcNow;
 
 			// if no assemblies have been loaded yet, just skip the loading
 			if(null == buffer) return;
@@ -85,7 +85,7 @@ namespace Lokad.Cloud.Azure
 		/// <see cref="UpdateCheckFrequency"/>.</param>
 		public void CheckUpdate(bool delayCheck)
 		{
-			var now = DateTime.Now;
+			var now = DateTime.UtcNow;
 
 			// limiting the frequency where the actual update check is performed.
 			if(now.Subtract(_lastPackageCheck) > UpdateCheckFrequency || !delayCheck)

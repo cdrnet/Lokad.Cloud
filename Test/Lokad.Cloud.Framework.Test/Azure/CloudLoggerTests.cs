@@ -45,7 +45,7 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void ToPrefixToDateTime()
 		{
-			var now = DateTime.Now;
+			var now = DateTime.UtcNow;
 
 			var rounded = new DateTime(
 				now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, now.Millisecond, DateTimeKind.Utc);

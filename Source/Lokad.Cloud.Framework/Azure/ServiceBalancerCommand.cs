@@ -60,8 +60,8 @@ namespace Lokad.Cloud.Azure
 				// 'more of the same pattern'
 				// as long the service is active, keep triggering the same service
 				// for at least 1min (in order to avoid a single service to monopolize CPU)
-				var start = DateTime.Now;
-				while (DateTime.Now.Subtract(start) < MoreOfTheSame.Seconds() && isRun && !_isStopRequested)
+				var start = DateTime.UtcNow;
+				while (DateTime.UtcNow.Subtract(start) < MoreOfTheSame.Seconds() && isRun && !_isStopRequested)
 				{
 					try
 					{
