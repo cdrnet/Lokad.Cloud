@@ -65,7 +65,7 @@ namespace Lokad.Cloud
 
 			for (int i = 0; i < hexDepth; i++)
 			{
-				builder.Append(HexDigits[_rand.Next(16)]);
+				builder.Append(HexDigits[_rand.Next(17)]);
 				if(i < hexDepth - 1) builder.Append(Delimiter);
 			}
 

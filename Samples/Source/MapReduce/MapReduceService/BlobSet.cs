@@ -170,7 +170,7 @@ namespace MapReduce
 
 			counter.Reset(BlobCounter.Aleph);
 
-			var itemCount = 0l;
+			var itemCount = 0L;
 			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
 			{
 				var message = new BlobSetMapMessage
@@ -187,7 +187,7 @@ namespace MapReduce
 			var res = (long)counter.Increment(itemCount - BlobCounter.Aleph);
 
 			// rare race condition  (but possible in theory)
-			if(0l == res)
+			if(0L == res)
 			{
 				counter.Delete();
 
@@ -230,7 +230,7 @@ namespace MapReduce
 			var counter = new BlobCounter(_providers, ContainerName, counterBlobName);
 			counter.Reset(BlobCounter.Aleph);
 
-			var itemCount = 0l;
+			var itemCount = 0L;
 			foreach (var blobName in _providers.BlobStorage.List(ContainerName, _prefix))
 			{
 				// listing directly the wrappers (to avoid retrieving items).
