@@ -48,7 +48,7 @@ namespace Lokad.Cloud.Azure
 		{
 			var loader = new AssemblyLoader(_providers.BlobStorage);
 
-			var assemblies = loader.LoadPackage();
+			loader.LoadPackage();
 			var config = loader.LoadConfiguration();
 
 			// processing configuration file as retrieved from the blob storage.
