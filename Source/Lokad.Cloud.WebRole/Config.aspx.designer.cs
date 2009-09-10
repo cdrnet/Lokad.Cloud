@@ -11,42 +11,33 @@
 namespace Lokad.Cloud.Web {
     
     
-    public partial class Home {
+    public partial class Config {
         
         /// <summary>
-        /// NavBar1 control.
+        /// ConfigurationBox control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::Lokad.Cloud.Web.NavBar NavBar1;
+        protected global::System.Web.UI.WebControls.TextBox ConfigurationBox;
         
         /// <summary>
-        /// AdminsView control.
+        /// SaveConfigButton control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView AdminsView;
+        protected global::System.Web.UI.WebControls.Button SaveConfigButton;
         
         /// <summary>
-        /// Button1 control.
+        /// SavedLabel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button Button1;
-        
-        /// <summary>
-        /// LokadCloudVersion control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label LokadCloudVersion;
+        protected global::System.Web.UI.WebControls.Label SavedLabel;
     }
 }

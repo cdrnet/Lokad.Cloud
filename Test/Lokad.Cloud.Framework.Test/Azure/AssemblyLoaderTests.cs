@@ -35,10 +35,10 @@ namespace Lokad.Cloud.Azure.Test
 			provider.CreateContainer(AssemblyLoader.ContainerName);
 
 			// put the sample assembly
-			provider.PutBlob(AssemblyLoader.ContainerName, AssemblyLoader.BlobName, buffer);
+			provider.PutBlob(AssemblyLoader.ContainerName, AssemblyLoader.PackageBlobName, buffer);
 
 			var loader = new AssemblyLoader(provider);
-			loader.Load();
+			loader.LoadPackage();
 
 			// validate that 'sample.dll' has been loaded
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -55,7 +55,7 @@ namespace Lokad.Cloud.Azure.Test
 			}
 
 			// forcing update
-			provider.PutBlob(AssemblyLoader.ContainerName, AssemblyLoader.BlobName, buffer);
+			provider.PutBlob(AssemblyLoader.ContainerName, AssemblyLoader.PackageBlobName, buffer);
 
 			// update, re-checking
 			try

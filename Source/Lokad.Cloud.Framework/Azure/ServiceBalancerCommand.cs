@@ -3,11 +3,15 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Autofac;
 using Autofac.Builder;
+using Autofac.Configuration;
+using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Lokad.Cloud.Azure
 {
@@ -44,18 +48,36 @@ namespace Lokad.Cloud.Azure
 		{
 			var loader = new AssemblyLoader(_providers.BlobStorage);
 
-			var assemblies = loader.Load();
+			var assemblies = loader.LoadPackage();
+			var config = loader.LoadConfiguration();
 
-			// HACK: directly grabing all client modules and instanciating them "by hand"
-			var clientModuleTypes = assemblies.Select(a => a.GetExportedTypes()).SelectMany(x => x)
-				.Where(t => t.GetInterfaces().Contains(typeof (IModule)) && !t.IsAbstract && !t.IsGenericType);
-			
-			var clientModules = clientModuleTypes.Select(t => (IModule)t.InvokeMember("_ctor", 
-				BindingFlags.CreateInstance, null, null, new object[0]));
-
-			foreach (var clientModule in clientModules)
+			// processing configuration file as retrieved from the blob storage.
+			if(null != config)
 			{
-				ContainerBuilder.RegisterModule(clientModule);
+				const string fileName = "lokad.cloud.clientapp.config";
+				string pathToFile;
+
+				// HACK: hard-code string for local storage name
+				if (RoleManager.IsRoleManagerRunning)
+				{
+					var localResource = RoleManager.GetLocalResource("LokadCloudStorage");
+					pathToFile = Path.Combine(localResource.RootPath, fileName);
+				}
+				else
+				{
+					pathToFile = Path.Combine(Path.GetTempPath(), fileName);
+				}
+
+				using (var stream = File.Open(pathToFile, FileMode.Create, FileAccess.ReadWrite))
+				{
+					// writing config locally
+					stream.Write(config, 0, config.Length);
+				}
+
+				// HACK: need to copy settings locally first
+				var configReader = new ConfigurationSettingsReader("autofac", pathToFile);
+
+				ContainerBuilder.RegisterModule(configReader);
 			}
 
 			// HACK: resetting field in order to be able to build a second time

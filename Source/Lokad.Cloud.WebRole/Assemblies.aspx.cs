@@ -8,7 +8,6 @@ using System.IO;
 using System.Web.UI.WebControls;
 using ICSharpCode.SharpZipLib.Zip;
 using Lokad.Cloud.Azure;
-using Lokad.Cloud;
 
 namespace Lokad.Cloud.Web
 {
@@ -26,7 +25,7 @@ namespace Lokad.Cloud.Web
 		{
 			var buffer = _provider.GetBlob<byte[]>(
 					AssemblyLoader.ContainerName,
-					AssemblyLoader.BlobName);
+					AssemblyLoader.PackageBlobName);
 
 			// do not return anything is no assembly is loaded
 			if(null == buffer) yield break;
@@ -60,7 +59,7 @@ namespace Lokad.Cloud.Web
 			// pushing new archive to storage
 			_provider.PutBlob(
 				AssemblyLoader.ContainerName,
-				AssemblyLoader.BlobName, 
+				AssemblyLoader.PackageBlobName, 
 				AssemblyFileUpload.FileBytes, true);
 
 			AssembliesView.DataBind();

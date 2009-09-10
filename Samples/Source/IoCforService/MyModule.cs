@@ -8,7 +8,7 @@ using Lokad;
 
 namespace IoCforService
 {
-	class MyModule : Module
+	public class MyModule : Module
 	{
 		protected override void Load(ContainerBuilder builder)
 		{

@@ -17,7 +17,8 @@
   </WebRole>
 	<!-- Full trust is needed for binary serialization -->
   <WorkerRole name="Lokad.Cloud.WorkerRole" enableNativeCodeExecution="true">
-    <ConfigurationSettings>
+		<LocalStorage name="LokadCloudStorage" sizeInMB="2"/>
+		<ConfigurationSettings>
       <Setting name="AccountName" />
       <Setting name="AccountKey" />
       <Setting name="BlobEndpoint" />

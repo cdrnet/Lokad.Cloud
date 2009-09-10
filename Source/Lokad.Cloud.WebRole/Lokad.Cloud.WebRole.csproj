@@ -95,6 +95,13 @@
     <Compile Include="Assemblies.aspx.designer.cs">
       <DependentUpon>Assemblies.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Config.aspx.cs">
+      <DependentUpon>Config.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Config.aspx.designer.cs">
+      <DependentUpon>Config.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Home.aspx.cs">
       <DependentUpon>Home.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -182,6 +189,7 @@
     <Content Include="App_Themes\Lokad\Images\ico_frontlist.gif" />
     <Content Include="App_Themes\Lokad\Images\logo.gif" />
     <Content Include="App_Themes\Lokad\Lokad.skin" />
+    <Content Include="Config.aspx" />
     <Content Include="Home.aspx" />
     <Content Include="NavBar.ascx" />
     <Content Include="Scheduler.aspx" />
@@ -204,7 +212,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>53230</DevelopmentServerPort>
+          <DevelopmentServerPort>51817</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>
