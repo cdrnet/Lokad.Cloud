@@ -39,10 +39,11 @@ namespace Lokad.Cloud.Azure.Test
 
 			var loader = new AssemblyLoader(provider);
 			loader.LoadPackage();
+			loader.LoadConfiguration();
 
 			// validate that 'sample.dll' has been loaded
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-			Assert.That(assemblies.Any(a => a.ManifestModule.ScopeName == "sample.dll"));
+			Assert.That(assemblies.Any(a => a.FullName.StartsWith("sample")));
 
 			// no update, checking
 			try
