@@ -141,7 +141,7 @@ namespace Lokad.Cloud
 				var cn = ServiceStateContainer;
 				var bn = ServiceStatePrefix + Delimiter + Name;
 
-				var state = BlobStorage.GetBlob<CloudServiceState?>(cn, bn);
+				var state = BlobStorage.GetBlobOrDelete<CloudServiceState?>(cn, bn);
 
 				// no state can be retrieved, update blob storage
 				if(!state.HasValue)

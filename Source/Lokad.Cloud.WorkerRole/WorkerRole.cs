@@ -84,7 +84,7 @@ namespace Lokad.Cloud
 				try
 				{	
 					var balancer = container.Resolve<ServiceBalancerCommand>();
-					balancer.Container = container;
+					balancer.ContainerBuilder = builder;
 
 					// balancer endlessly keeps pinging queues for pending work
 					balancer.Execute();

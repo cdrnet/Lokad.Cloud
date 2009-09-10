@@ -4,8 +4,10 @@
 #endregion
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Autofac;
+using Autofac.Builder;
 
 namespace Lokad.Cloud.Azure
 {
@@ -29,7 +31,7 @@ namespace Lokad.Cloud.Azure
 		bool _isStopped;
 
 		/// <summary>Container used to populate cloud service properties.</summary>
-		public IContainer Container { get; set; }
+		public ContainerBuilder ContainerBuilder { get; set; }
 
 		/// <summary>IoC constructor.</summary>
 		public ServiceBalancerCommand(ILog logger, ProvidersForCloudStorage providers)
@@ -42,8 +44,28 @@ namespace Lokad.Cloud.Azure
 		{
 			var loader = new AssemblyLoader(_providers.BlobStorage);
 
-			loader.Load();
-			_services = CloudService.GetAllServices(Container).ToArray();
+			var assemblies = loader.Load();
+
+			// HACK: directly grabing all client modules and instanciating them "by hand"
+			var clientModuleTypes = assemblies.Select(a => a.GetExportedTypes()).SelectMany(x => x)
+				.Where(t => t.GetInterfaces().Contains(typeof (IModule)) && !t.IsAbstract && !t.IsGenericType);
+			
+			var clientModules = clientModuleTypes.Select(t => (IModule)t.InvokeMember("_ctor", 
+				BindingFlags.CreateInstance, null, null, new object[0]));
+
+			foreach (var clientModule in clientModules)
+			{
+				ContainerBuilder.RegisterModule(clientModule);
+			}
+
+			// HACK: resetting field in order to be able to build a second time
+			var field = ContainerBuilder.GetType().
+				GetField("_wasBuilt", BindingFlags.Instance | BindingFlags.NonPublic);
+			field.SetValue(ContainerBuilder, false);
+
+			var clientContainer = ContainerBuilder.Build();
+
+			_services = CloudService.GetAllServices(clientContainer).ToArray();
 
 			var index = 0;
 

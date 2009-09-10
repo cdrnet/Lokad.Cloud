@@ -29,7 +29,7 @@ namespace Lokad.Cloud.Web
 
 			foreach(var blobName in _provider.List(cn, prefix))
 			{
-				var state = _provider.GetBlob<CloudServiceState?>(cn, blobName);
+				var state = _provider.GetBlobOrDelete<CloudServiceState?>(cn, blobName);
 				yield return new
 					{
 						Name = blobName.Substring(prefix.Length + 1), // discarding the prefix

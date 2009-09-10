@@ -23,7 +23,7 @@ namespace Lokad.Cloud.Web
 
 			// TODO: loading twice the states (not efficient)
 
-			ScheduleView.DataSource = GetStates().Select(p => new
+			ScheduleView.DataSource = GetStates().Where(s => null != s).Select(p => new
 				{
 					Name = p.Item1,
 					p.Item2.LastExecuted,
@@ -42,7 +42,7 @@ namespace Lokad.Cloud.Web
 				yield return new Pair<string, ScheduledServiceState>(
 					// discarding the prefix for display purposes
 					blobName.Substring(Prefix.Length + 1),
-					_provider.GetBlob<ScheduledServiceState>(Cn, blobName));
+					_provider.GetBlobOrDelete<ScheduledServiceState>(Cn, blobName));
 			}
 		}
 

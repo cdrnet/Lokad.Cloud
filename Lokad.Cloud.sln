@@ -34,6 +34,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}"
 	ProjectSection(SolutionItems) = preProject
+		ReadMe.IoCforService.txt = ReadMe.IoCforService.txt
 		ReadMe.MapReduce.txt = ReadMe.MapReduce.txt
 		Samples\Source\PingPong\ReadMe.PingPong.txt = Samples\Source\PingPong\ReadMe.PingPong.txt
 	EndProjectSection
@@ -45,6 +46,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapReduceClient", "Samples\Source\MapReduce\MapReduceClient\MapReduceClient.csproj", "{9CE653AE-247C-4A3B-B18B-07411EF9B59F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapReduceService", "Samples\Source\MapReduce\MapReduceService\MapReduceService.csproj", "{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoCforService", "Samples\Source\IoCforService\IoCforService.csproj", "{7C11E5A4-4F68-4521-A530-74C7BD30E328}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,6 +104,12 @@ Global
 		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}.ReleaseApi|Any CPU.ActiveCfg = Release|Any CPU
 		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}.ReleaseApi|Any CPU.Build.0 = Release|Any CPU
+		{7C11E5A4-4F68-4521-A530-74C7BD30E328}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C11E5A4-4F68-4521-A530-74C7BD30E328}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C11E5A4-4F68-4521-A530-74C7BD30E328}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C11E5A4-4F68-4521-A530-74C7BD30E328}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C11E5A4-4F68-4521-A530-74C7BD30E328}.ReleaseApi|Any CPU.ActiveCfg = Release|Any CPU
+		{7C11E5A4-4F68-4521-A530-74C7BD30E328}.ReleaseApi|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -116,5 +125,6 @@ Global
 		{EF63B21A-0390-4DB3-8573-21BE5931CD5E} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 		{9CE653AE-247C-4A3B-B18B-07411EF9B59F} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
+		{7C11E5A4-4F68-4521-A530-74C7BD30E328} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 	EndGlobalSection
 EndGlobal

@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using ICSharpCode.SharpZipLib.Zip;
@@ -52,14 +53,15 @@ namespace Lokad.Cloud.Azure
 		/// <summary>Loads the assembly package.</summary>
 		/// <remarks>This method is expected to be called only once. Call <see cref="CheckUpdate"/>
 		/// afterward.</remarks>
-		public void Load()
+		public Assembly[] Load()
 		{
 			var buffer = _provider.GetBlob<byte[]>(ContainerName, BlobName, out _lastPackageEtag);
 			_lastPackageCheck = DateTime.UtcNow;
 
 			// if no assemblies have been loaded yet, just skip the loading
-			if(null == buffer) return;
-			
+			if(null == buffer) return new Assembly[0];
+
+			var assemblies = new List<Assembly>();
 			using(var zipStream = new ZipInputStream(new MemoryStream(buffer)))
 			{
 				ZipEntry entry;
@@ -72,9 +74,11 @@ namespace Lokad.Cloud.Azure
 					if (!entry.IsFile || !entry.Name.ToLowerInvariant().EndsWith(".dll")) continue;
 
 					// loading assembly from data packed in zip
-					Assembly.Load(data);
+					assemblies.Add(Assembly.Load(data));
 				}
 			}
+
+			return assemblies.ToArray();
 		}
 
 		/// <summary>Check for the availability of a new assembly package
