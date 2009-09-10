@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 
@@ -95,6 +96,35 @@ namespace Lokad.Cloud
 		public static T GetBlob<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName)
 		{
 			return provider.GetBlob<T>(fullName.ContainerName, fullName.ToString());
+		}
+
+		/// <summary>Gets the corresponding object. If the deserialization fails
+		/// just delete the existing copy.</summary>
+		public static T GetBlobOrDelete<T>(this IBlobStorageProvider provider, string containerName, string blobName)
+		{
+			try
+			{
+				return provider.GetBlob<T>(containerName, blobName);
+			}
+			catch (SerializationException)
+			{
+				provider.DeleteBlob(containerName, blobName);
+				return default(T);
+			}
+		}
+
+		/// <summary>Gets the corresponding object. If the deserialization fails
+		/// just delete the existing copy.</summary>
+		public static T GetBlobOrDelete<T>(this IBlobStorageProvider provider, BaseBlobName fullName)
+		{
+			return provider.GetBlobOrDelete<T>(fullName.ContainerName, fullName.ToString());
+		}
+
+		/// <summary>Gets the corresponding object. If the deserialization fails
+		/// just delete the existing copy.</summary>
+		public static T GetBlobOrDelete<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName)
+		{
+			return provider.GetBlobOrDelete<T>(fullName.ContainerName, fullName.ToString());
 		}
 
 		public static void PutBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName, T item)
