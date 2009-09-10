@@ -96,6 +96,69 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.IsTrue(provider.DeleteBlob(ContainerName, BlobName), "#A04");
 			Assert.IsTrue(provider.DeleteContainer(ContainerName), "#A05");
 		}
+
+		[Test]
+		public void CreatePutGetRangeDelete()
+		{
+			var privateContainerName = "test-" + Guid.NewGuid().ToString("N");
+
+			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+			provider.CreateContainer(privateContainerName);
+
+			var blobNames = new string[]
+			{
+				BlobName + "-0",
+				BlobName + "-1",
+				BlobName + "-2",
+				BlobName + "-3"
+			};
+
+			var inputBlobs = new MyBlob[]
+			{
+				new MyBlob(),
+				new MyBlob(),
+				new MyBlob(),
+				new MyBlob()
+			};
+
+			for(int i = 0; i < blobNames.Length; i++)
+			{
+				provider.PutBlob(privateContainerName, blobNames[i], inputBlobs[i]);
+			}
+
+			string[] allEtags;
+			var allBlobs = provider.GetBlobRange<MyBlob>(privateContainerName, blobNames, out allEtags);
+
+			Assert.AreEqual(blobNames.Length, allEtags.Length, "Wrong etags array length");
+			Assert.AreEqual(blobNames.Length, allBlobs.Length, "Wrong blobs array length");
+
+			for(int i = 0; i < allBlobs.Length; i++)
+			{
+				Assert.IsNotNull(allEtags[i], "Etag should have been set");
+				Assert.AreEqual(inputBlobs[i].MyGuid, allBlobs[i].MyGuid, "Wrong blob content");
+			}
+
+			// Test missing blob
+			var wrongBlobNames = new string[blobNames.Length + 1];
+			Array.Copy(blobNames, wrongBlobNames, blobNames.Length);
+			wrongBlobNames[wrongBlobNames.Length - 1] = "inexistent-blob";
+
+			allBlobs = provider.GetBlobRange<MyBlob>(privateContainerName, wrongBlobNames, out allEtags);
+
+			Assert.AreEqual(wrongBlobNames.Length, allEtags.Length, "Wrong etags array length");
+			Assert.AreEqual(wrongBlobNames.Length, allBlobs.Length, "Wrong blobs array length");
+
+			for(int i = 0; i < allBlobs.Length - 1; i++)
+			{
+				Assert.IsNotNull(allEtags[i], "Etag should have been set");
+				Assert.AreEqual(inputBlobs[i].MyGuid, allBlobs[i].MyGuid, "Wrong blob content");
+			}
+			Assert.IsNull(allEtags[allEtags.Length - 1], "Etag should be null");
+			Assert.IsNull(allBlobs[allBlobs.Length - 1], "Blob should be null");
+
+			provider.DeleteContainer(privateContainerName);
+		}
+
 	}
 
 	[Serializable]

@@ -64,6 +64,17 @@ namespace Lokad.Cloud
 		/// returned.</returns>
 		T GetBlob<T>(string containerName, string blobName, out string etag);
 
+		/// <summary>
+		/// Gets a range of blobs.
+		/// </summary>
+		/// <typeparam name="T">Blob type.</typeparam>
+		/// <param name="containerName">Name of the container.</param>
+		/// <param name="blobNames">Names of the blobs.</param>
+		/// <param name="etags">Etag identifiers for all returned blobs.</param>
+		/// <returns>For each requested blob, an element in the array is returned in the same order.
+		/// If a specific blob was not found, the corresponding <b>etags</b> array element is <c>null</c>.</returns>
+		T[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags);
+
 		/// <summary>Gets a blob only if the etag has changed meantime.</summary>
 		/// <typeparam name="T">Type of the blob.</typeparam>
 		/// <param name="containerName">Name of the container.</param>

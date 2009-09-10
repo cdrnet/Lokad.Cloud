@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lokad.Cloud;
+using Lokad.Threading;
 
 namespace Lokad.Cloud.Mock
 {
@@ -129,6 +130,29 @@ namespace Lokad.Cloud.Mock
 					return (T)Containers[containerName].GetBlob(blobName);
 				}
 			}
+		}
+
+		public T[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
+		{
+			// Copy-paste from BlobStorageProvider.cs
+
+			var tempResult = blobNames.SelectInParallel(blobName =>
+			{
+				string etag = null;
+				T blob = GetBlob<T>(containerName, blobName, out etag);
+				return new Tuple<T, string>(blob, etag);
+			}, blobNames.Length);
+
+			etags = new string[blobNames.Length];
+			var result = new T[blobNames.Length];
+
+			for(int i = 0; i < tempResult.Length; i++)
+			{
+				result[i] = tempResult[i].Item1;
+				etags[i] = tempResult[i].Item2;
+			}
+
+			return result;
 		}
 
 		public T GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag)
