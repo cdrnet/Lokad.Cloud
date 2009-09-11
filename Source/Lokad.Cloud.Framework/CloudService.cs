@@ -239,7 +239,7 @@ namespace Lokad.Cloud
 		}
 
 		/// <summary>Get all services instantiated through reflection.</summary>
-		internal static IEnumerable<CloudService> GetAllServices(IContainer container)
+		public static IEnumerable<CloudService> GetAllServices(IContainer container)
 		{
 			// invoking all loaded services through reflexion
 			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
