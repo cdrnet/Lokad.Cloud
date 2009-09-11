@@ -91,8 +91,8 @@ namespace Lokad.Cloud
 				}
 				catch (TriggerRestartException)
 				{
-					var logger = container.Resolve<ILog>();
-					logger.Log(LogLevel.Info, "Requesting worker restart...");
+					//var logger = container.Resolve<ILog>();
+					//logger.Log(LogLevel.Info, "Requesting worker restart...");
 
 					return;
 				}
