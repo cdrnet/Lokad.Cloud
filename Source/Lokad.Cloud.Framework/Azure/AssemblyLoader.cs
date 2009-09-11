@@ -164,7 +164,10 @@ namespace Lokad.Cloud.Azure
 		/// </summary>
 		private Assembly AssemblyResolve(object sender, ResolveEventArgs args)
 		{
-			bool isFullName = args.Name.IndexOf("Version=") != -1;
+			var isFullName = args.Name.IndexOf("Version=") != -1;
+
+			// extract the simple name out of a qualified assembly name
+			var nameOf = new Func<string, string>(qn => qn.Substring(0, qn.IndexOf(",")));
 
 			// first try to find an already loaded assembly
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -172,7 +175,8 @@ namespace Lokad.Cloud.Azure
 			{
 				if (isFullName)
 				{
-					if (assembly.FullName == args.Name)
+					if (assembly.FullName == args.Name ||
+						nameOf(assembly.FullName) == nameOf(args.Name))
 					{
 						// return assembly from AppDomain
 						return assembly;
@@ -184,6 +188,8 @@ namespace Lokad.Cloud.Azure
 					return assembly;
 				}
 			}
+
+			// TODO: missing optimistic assembly resolution when it comes from the cache.
 
 			// find assembly in cache
 			if (isFullName)
