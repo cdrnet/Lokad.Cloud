@@ -6,7 +6,6 @@
 using System;
 using System.Reflection;
 using Autofac.Builder;
-using Lokad.Cloud;
 using Lokad.Cloud.Azure;
 using Microsoft.ServiceHosting.ServiceRuntime;
 using System.Collections.Generic;

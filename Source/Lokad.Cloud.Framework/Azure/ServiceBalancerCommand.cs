@@ -3,12 +3,10 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Microsoft.ServiceHosting.ServiceRuntime;
