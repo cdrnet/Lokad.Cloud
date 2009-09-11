@@ -29,7 +29,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{50709B8F-2F9A-4D2B-A46D-0DD01E159BC1}"
 	ProjectSection(SolutionItems) = preProject
 		Resource\Template\index.template.htm = Resource\Template\index.template.htm
-		Resource\Template\lokad-ccf.jpg = Resource\Template\lokad-ccf.jpg
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}"

@@ -1,7 +1,7 @@
 Lokad.Cloud is intended as an execution framework for back-end cloud apps.
 Copyright (c) Lokad SAS, 2009
 
-Authors: Joannes Vermorel, Rinat Abdullin
+Authors: Joannes Vermorel, Rinat Abdullin, Dario Solera
 Project page: http://code.google.com/p/lokad-cloud/
 Company page: http://www.lokad.com/
 Forums: http://forums.lokad.com/ 
@@ -33,25 +33,3 @@ Finally, you need something to run on top of Lokad.Cloud,
 http://code.google.com/p/lokad-cloud/wiki/GettingStarted
 
 
-
-STORAGE SCHEMAS
-
-Lokad.Cloud autogenerates a couple of storage items. All system items get prefixed 
-by "lokad-cloud" in order to facilitate identification and eventually removal.
-
-Blob containers part of the framework:
-
-lokad-cloud-assemblies
-lokad-cloud-cuids [planned]
-lokad-cloud-locks [planned]
-lokad-cloud-logs 
-lokad-cloud-messages
-lokad-cloud-services
-lokad-cloud-schedule
-lokad-cloud-temporary
-
-Queue containers part of the framework:
-
-lokad-cloud-schedule
-lokad-cloud-blobsets-map
-lokad-cloud-blobsets-reduce
