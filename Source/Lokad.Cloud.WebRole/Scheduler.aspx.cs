@@ -30,7 +30,7 @@ namespace Lokad.Cloud.Web
 				});
 			ScheduleView.DataBind();
 
-			ScheduleList.DataSource = GetStates().Select(p => p.Item1);
+			ScheduleList.DataSource = GetStates().Where(s => null != s).Select(p => p.Item1);
 			ScheduleList.DataBind();
 		}
 
