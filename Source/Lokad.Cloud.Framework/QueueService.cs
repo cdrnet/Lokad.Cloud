@@ -37,7 +37,8 @@ namespace Lokad.Cloud
 
 			if(null != settings) // settings are provided through custom attribute
 			{
-				_queueName = settings.QueueName;
+				// QueueName setting is optional, using type mapper is null
+				_queueName = settings.QueueName ?? Providers.TypeMapper.GetStorageName(typeof(T)); ;
 				_batchSize = Math.Max(settings.BatchSize, 1); // need to be at least 1
 			}
 			else // default setting
