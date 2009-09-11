@@ -61,7 +61,7 @@ namespace Lokad.Cloud
 
 		public readonly DateTime TriggerTime;
 
-		public readonly Guid Identifier;
+		[UsedImplicitly] public readonly Guid Identifier;
 
 		public DelayedMessageName(DateTime triggerTime, Guid identifier)
 		{
@@ -103,12 +103,6 @@ namespace Lokad.Cloud
 			get { return 1.Minutes(); }
 		}
 
-		/// <summary>Error logger.</summary>
-		public ILog Log
-		{
-			get { return Providers.Log; }
-		}
-
 		/// <summary>Name of the service (used for reporting purposes).</summary>
 		/// <remarks>Default implementation returns <c>Type.FullName</c>.</remarks>
 		public virtual string Name
@@ -125,6 +119,9 @@ namespace Lokad.Cloud
 
 		/// <summary>Short-hand for <c>Providers.QueueStorage</c>.</summary>
 		public IQueueStorageProvider QueueStorage { get { return Providers.QueueStorage; } }
+
+		/// <summary>Error logger.</summary>
+		public ILog Log { get { return Providers.Log; } }
 
 		/// <summary>Wrapper method for the <see cref="StartImpl"/> method. Checks
 		/// that the service status before executing the inner start.</summary>
