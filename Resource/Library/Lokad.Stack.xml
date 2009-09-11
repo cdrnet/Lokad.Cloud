@@ -34,17 +34,17 @@
             Same as <see cref="M:Lokad.Container.AutoRegistrationModule.AddAssembly(System.Reflection.Assembly)" /> but for the XML configs
             </summary>
     </member>
-    <member name="T:Lokad.Container.ContainerBuilderExtensions">
+    <member name="T:Lokad.Container.ExtendContainerBuilder">
       <summary>
             Extensions for the <see cref="T:Autofac.Builder.ContainerBuilder" /></summary>
     </member>
-    <member name="M:Lokad.Container.ContainerBuilderExtensions.AutoRegister``1(Autofac.Builder.ContainerBuilder)">
-      <see cref="M:Lokad.Container.ContainerBuilderExtensions.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)" />
+    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegister``1(Autofac.Builder.ContainerBuilder)">
+      <see cref="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)" />
     </member>
-    <member name="M:Lokad.Container.ContainerBuilderExtensions.AutoRegister(Autofac.Builder.ContainerBuilder,System.Collections.Generic.IEnumerable{System.Type})">
-      <see cref="M:Lokad.Container.ContainerBuilderExtensions.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)" />
+    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegister(Autofac.Builder.ContainerBuilder,System.Collections.Generic.IEnumerable{System.Type})">
+      <see cref="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)" />
     </member>
-    <member name="M:Lokad.Container.ContainerBuilderExtensions.AutoRegisterAssembly(Autofac.Builder.ContainerBuilder)">
+    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterAssembly(Autofac.Builder.ContainerBuilder)">
       <summary>
             Performs autoregistration of all types in this assembly, 
             using the attrubite-based rules
@@ -52,7 +52,7 @@
       <param name="builder">
       </param>
     </member>
-    <member name="M:Lokad.Container.ContainerBuilderExtensions.AutoRegisterAssembly(Autofac.Builder.ContainerBuilder,System.Reflection.Assembly)">
+    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterAssembly(Autofac.Builder.ContainerBuilder,System.Reflection.Assembly)">
       <summary>
             Performs autoregistration of all types in the specified assembly, 
             using the attribute-based rules
@@ -62,7 +62,7 @@
       <param name="assembly">
       </param>
     </member>
-    <member name="M:Lokad.Container.ContainerBuilderExtensions.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)">
+    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)">
       <summary>
             Runs auto-registration based on the <see cref="T:Lokad.Container.ComponentAttribute" /></summary>
       <param name="type">
@@ -70,7 +70,7 @@
       <param name="builder">
       </param>
     </member>
-    <member name="M:Lokad.Container.ContainerBuilderExtensions.GetScope(Lokad.Container.RegistrationScope)">
+    <member name="M:Lokad.Container.ExtendContainerBuilder.GetScope(Lokad.Container.RegistrationScope)">
       <summary>
             Converts <see cref="T:Lokad.Container.RegistrationScope" /> to <see cref="T:Autofac.InstanceScope" /></summary>
       <param name="scope">
@@ -78,26 +78,12 @@
       <returns>
       </returns>
     </member>
-    <member name="M:Lokad.Container.ContainerBuilderExtensions.LoadDecorators(Autofac.IContainer,System.Collections.Generic.IEnumerable{Lokad.Container.DecoratorInfo})">
+    <member name="M:Lokad.Container.ExtendContainerBuilder.RegisterModule``1(Autofac.Builder.ContainerBuilder)">
       <summary>
-            Loads decorators into the container
+            Registers the module.
             </summary>
-      <param name="container">
-      </param>
-      <param name="decorators">
-      </param>
-    </member>
-    <member name="T:Autofac.PendingAutofacExtensions">
-      <summary>
-            Pending extensions. To be pulled upstream to Autofac, if they prove useful in multiple projects
-            </summary>
-    </member>
-    <member name="M:Autofac.PendingAutofacExtensions.Build(Autofac.IContainer,System.Action{Autofac.Builder.ContainerBuilder})">
-      <summary>
-            Builds the specified registration into the container.
-            </summary>
-      <param name="container">The container.</param>
-      <param name="registration">The registration.</param>
+      <typeparam name="TModule">The type of the module.</typeparam>
+      <param name="containerBuilder">The container builder.</param>
     </member>
     <member name="T:Lokad.Logging.LoggingModule">
       <summary>
@@ -237,21 +223,41 @@
             </summary>
       <returns>new log instance</returns>
     </member>
-    <member name="T:Autofac.GeneratedFactories.FactoryGenerator`1">
+    <member name="T:Autofac.ContainerExtensions">
+      <summary>
+            Extension methods for <see cref="T:Autofac.IContainer" /></summary>
+    </member>
+    <member name="M:Autofac.ContainerExtensions.Build(Autofac.IContainer,System.Action{Autofac.Builder.ContainerBuilder})">
+      <summary>
+            Builds the specified registration into the container, 
+            simplifying addition of simple registrations to the container.
+            </summary>
+      <param name="container">The container.</param>
+      <param name="registration">The registration.</param>
+    </member>
+    <member name="T:Autofac.GeneratedFactories.FactoryGenerator">
       <summary>
             Generates context-bound closures that represent factories from
             a set of heuristics based on delegate type signatures.
             </summary>
-      <typeparam name="TDelegate">The factory delegate type.</typeparam>
     </member>
-    <member name="M:Autofac.GeneratedFactories.FactoryGenerator`1.#ctor(Autofac.Service)">
+    <member name="M:Autofac.GeneratedFactories.FactoryGenerator.#ctor(System.Type,Autofac.Service)">
       <summary>
             Create a factory generator.
             </summary>
       <param name="service">The service that will be resolved in
             order to create the products of the factory.</param>
+      <param name="delegateType">The factory delegate type.</param>
     </member>
-    <member name="M:Autofac.GeneratedFactories.FactoryGenerator`1.GenerateFactory(Autofac.IContext,System.Collections.Generic.IEnumerable{Autofac.Parameter})">
+    <member name="M:Autofac.GeneratedFactories.FactoryGenerator.GenerateFactory(Autofac.IContext,System.Collections.Generic.IEnumerable{Autofac.Parameter})">
+      <summary>
+            Generates a factory delegate that closes over the provided context.
+            </summary>
+      <param name="context">The context in which the factory will be used.</param>
+      <param name="parameters">Parameters provided to the resolve call for the factory itself.</param>
+      <returns>A factory delegate that will work within the context.</returns>
+    </member>
+    <member name="M:Autofac.GeneratedFactories.FactoryGenerator.GenerateFactory``1(Autofac.IContext,System.Collections.Generic.IEnumerable{Autofac.Parameter})">
       <summary>
             Generates a factory delegate that closes over the provided context.
             </summary>
@@ -266,6 +272,23 @@
       <remarks>
             This file is excluded from the .NET 2.0 build.
             </remarks>
+    </member>
+    <member name="M:Autofac.Builder.GeneratedFactoryExtensions.RegisterGeneratedFactory(Autofac.Builder.ContainerBuilder,System.Type,Autofac.Service)">
+      <summary>
+            Registers the factory delegate.
+            </summary>
+      <param name="builder">The container builder.</param>
+      <param name="delegateType">The type of the delegate.</param>
+      <param name="service">The service that the delegate will return instances of.</param>
+      <returns>A registrar allowing configuration to continue.</returns>
+    </member>
+    <member name="M:Autofac.Builder.GeneratedFactoryExtensions.RegisterGeneratedFactory(Autofac.Builder.ContainerBuilder,System.Type)">
+      <summary>
+            Registers the factory delegate.
+            </summary>
+      <param name="builder">The container builder.</param>
+      <param name="delegateType">The type of the delegate.</param>
+      <returns>A registrar allowing configuration to continue.</returns>
     </member>
     <member name="M:Autofac.Builder.GeneratedFactoryExtensions.RegisterGeneratedFactory``1(Autofac.Builder.ContainerBuilder,Autofac.Service)">
       <summary>
@@ -734,6 +757,45 @@
             Initializes a new instance of the <see cref="T:Autofac.Configuration.FileElementCollection" /> class.
             </summary>
     </member>
+    <member name="T:Autofac.IRegistrationSource">
+      <summary>
+            Allows registrations to be made on-the-fly when unregistered
+            services are requested (lazy registrations.)
+            </summary>
+    </member>
+    <member name="M:Autofac.IRegistrationSource.TryGetRegistration(Autofac.Service,Autofac.IComponentRegistration@)">
+      <summary>
+            Retrieve a registration for an unregistered service, to be used
+            by the container.
+            </summary>
+      <param name="service">The service that was requested.</param>
+      <param name="registration">A registration providing the service.</param>
+      <returns>True if the registration could be created.</returns>
+    </member>
+    <member name="T:Autofac.IModule">
+      <summary>
+            Represents a set of components and related functionality
+            packaged together.
+            </summary>
+    </member>
+    <member name="M:Autofac.IModule.Configure(Autofac.IContainer)">
+      <summary>
+            Apply the module to the container.
+            </summary>
+      <param name="container">Container to apply configuration to.</param>
+    </member>
+    <member name="T:Autofac.Modules.ImplicitCollectionSupportModule">
+      <summary>
+            Configures the container so that requests for IEnumerable{T} or T[]
+            will result in all of the available instances of T being returned.
+            </summary>
+    </member>
+    <member name="M:Autofac.Modules.ImplicitCollectionSupportModule.Configure(Autofac.IContainer)">
+      <summary>
+            Configures the container.
+            </summary>
+      <param name="container">Container to configure.</param>
+    </member>
     <member name="T:Autofac.ConstantParameter">
       <summary>
             Base class for parameters that provide a constant value.
@@ -891,6 +953,8 @@
       <summary>
             Hides standard Object members to make fluent interfaces
             easier to read.
+            Based on blog post by @kzu here:
+            http://www.clariusconsulting.net/blogs/kzu/archive/2008/03/10/58301.aspx
             </summary>
     </member>
     <member name="M:Autofac.Registrars.IFluentInterface.GetType">
@@ -1067,18 +1131,6 @@
             Gets or sets the registration creator.
             </summary>
       <value>The registration creator.</value>
-    </member>
-    <member name="T:Autofac.IModule">
-      <summary>
-            Represents a set of components and related functionality
-            packaged together.
-            </summary>
-    </member>
-    <member name="M:Autofac.IModule.Configure(Autofac.IContainer)">
-      <summary>
-            Apply the module to the container.
-            </summary>
-      <param name="container">Container to apply configuration to.</param>
     </member>
     <member name="T:Autofac.Registrars.Registrar`1">
       <summary>
@@ -1325,6 +1377,46 @@
       <param name="ctorSignature">The types that designate the constructor to use.</param>
       <returns>A registrar allowing registration to continue.</returns>
     </member>
+    <member name="M:Autofac.Registrars.IGenericRegistrar.WithArguments(Autofac.Parameter[])">
+      <summary>
+            Associates constructor parameters with default values.
+            </summary>
+      <param name="additionalCtorArgs">The named values to apply to the constructor.
+            These may be overriden by supplying any/all values to the IContext.Resolve() method.</param>
+      <returns>
+            A registrar allowing registration to continue.
+            </returns>
+    </member>
+    <member name="M:Autofac.Registrars.IGenericRegistrar.WithArguments(System.Collections.Generic.IEnumerable{Autofac.Parameter})">
+      <summary>
+            Associates constructor parameters with default values.
+            </summary>
+      <param name="additionalCtorArgs">The named values to apply to the constructor.
+            These may be overriden by supplying any/all values to the IContext.Resolve() method.</param>
+      <returns>
+            A registrar allowing registration to continue.
+            </returns>
+    </member>
+    <member name="M:Autofac.Registrars.IGenericRegistrar.WithProperties(Autofac.NamedPropertyParameter[])">
+      <summary>
+            Provide explicit property values to be set on the new object.
+            </summary>
+      <param name="explicitProperties">
+      </param>
+      <returns>A registrar allowing configuration to continue.</returns>
+      <remarks>Note, supplying a null value will not prevent property injection if
+            property injection is done through an OnActivating handler.</remarks>
+    </member>
+    <member name="M:Autofac.Registrars.IGenericRegistrar.WithProperties(System.Collections.Generic.IEnumerable{Autofac.NamedPropertyParameter})">
+      <summary>
+            Provide explicit property values to be set on the new object.
+            </summary>
+      <param name="explicitProperties">
+      </param>
+      <returns>A registrar allowing configuration to continue.</returns>
+      <remarks>Note, supplying a null value will not prevent property injection if
+            property injection is done through an OnActivating handler.</remarks>
+    </member>
     <member name="T:Autofac.Registrars.Automatic.AutomaticRegistrar">
       <summary>
             Automatically registers types that match a supplied predicate.
@@ -1348,6 +1440,46 @@
             </summary>
       <param name="ctorSignature">The types that designate the constructor to use.</param>
       <returns>A registrar allowing registration to continue.</returns>
+    </member>
+    <member name="M:Autofac.Registrars.Automatic.AutomaticRegistrar.WithArguments(Autofac.Parameter[])">
+      <summary>
+            Associates constructor parameters with default values.
+            </summary>
+      <param name="additionalCtorArgs">The named values to apply to the constructor.
+            These may be overriden by supplying any/all values to the IContext.Resolve() method.</param>
+      <returns>
+            A registrar allowing registration to continue.
+            </returns>
+    </member>
+    <member name="M:Autofac.Registrars.Automatic.AutomaticRegistrar.WithArguments(System.Collections.Generic.IEnumerable{Autofac.Parameter})">
+      <summary>
+            Associates constructor parameters with default values.
+            </summary>
+      <param name="additionalCtorArgs">The named values to apply to the constructor.
+            These may be overriden by supplying any/all values to the IContext.Resolve() method.</param>
+      <returns>
+            A registrar allowing registration to continue.
+            </returns>
+    </member>
+    <member name="M:Autofac.Registrars.Automatic.AutomaticRegistrar.WithProperties(Autofac.NamedPropertyParameter[])">
+      <summary>
+            Provide explicit property values to be set on the new object.
+            </summary>
+      <param name="explicitProperties">
+      </param>
+      <returns>A registrar allowing configuration to continue.</returns>
+      <remarks>Note, supplying a null value will not prevent property injection if
+            property injection is done through an OnActivating handler.</remarks>
+    </member>
+    <member name="M:Autofac.Registrars.Automatic.AutomaticRegistrar.WithProperties(System.Collections.Generic.IEnumerable{Autofac.NamedPropertyParameter})">
+      <summary>
+            Provide explicit property values to be set on the new object.
+            </summary>
+      <param name="explicitProperties">
+      </param>
+      <returns>A registrar allowing configuration to continue.</returns>
+      <remarks>Note, supplying a null value will not prevent property injection if
+            property injection is done through an OnActivating handler.</remarks>
     </member>
     <member name="P:Autofac.Registrars.Automatic.AutomaticRegistrar.Syntax">
       <summary>
@@ -1398,33 +1530,20 @@
       <param name="sender">The sender.</param>
       <param name="e">The <see cref="T:Autofac.ActivatingEventArgs" /> instance containing the event data.</param>
     </member>
-    <member name="T:Autofac.IRegistrationSource">
-      <summary>
-            Allows registrations to be made on-the-fly when unregistered
-            services are requested (lazy registrations.)
-            </summary>
-    </member>
-    <member name="M:Autofac.IRegistrationSource.TryGetRegistration(Autofac.Service,Autofac.IComponentRegistration@)">
-      <summary>
-            Retrieve a registration for an unregistered service, to be used
-            by the container.
-            </summary>
-      <param name="service">The service that was requested.</param>
-      <param name="registration">A registration providing the service.</param>
-      <returns>True if the registration could be created.</returns>
-    </member>
     <member name="T:Autofac.Registrars.ReflectiveRegistrationSource">
       <summary>
             This class provides a common base for registration handlers that provide
             reflection-based registrations.
             </summary>
     </member>
-    <member name="M:Autofac.Registrars.ReflectiveRegistrationSource.#ctor(Autofac.Registrars.DeferredRegistrationParameters,Autofac.Component.Activation.IConstructorSelector)">
+    <member name="M:Autofac.Registrars.ReflectiveRegistrationSource.#ctor(Autofac.Registrars.DeferredRegistrationParameters,Autofac.Component.Activation.IConstructorSelector,System.Collections.Generic.IEnumerable{Autofac.Parameter},System.Collections.Generic.IEnumerable{Autofac.NamedPropertyParameter})">
       <summary>
             Initializes a new instance of the <see cref="T:Autofac.Registrars.ReflectiveRegistrationSource" /> class.
             </summary>
       <param name="deferredParams">The deferred params.</param>
       <param name="constructorSelector">The constructor selector.</param>
+      <param name="arguments">Additional arguments to supply to the component's constructor.</param>
+      <param name="properties">Additional properties to set on the component.</param>
     </member>
     <member name="M:Autofac.Registrars.ReflectiveRegistrationSource.TryGetRegistration(Autofac.Service,Autofac.IComponentRegistration@)">
       <summary>
@@ -1450,13 +1569,15 @@
             Provides registrations based on a requested type.
             </summary>
     </member>
-    <member name="M:Autofac.Registrars.Automatic.AutomaticRegistrationHandler.#ctor(System.Predicate{System.Type},Autofac.Registrars.DeferredRegistrationParameters,Autofac.Component.Activation.IConstructorSelector)">
+    <member name="M:Autofac.Registrars.Automatic.AutomaticRegistrationHandler.#ctor(System.Predicate{System.Type},Autofac.Registrars.DeferredRegistrationParameters,Autofac.Component.Activation.IConstructorSelector,System.Collections.Generic.IEnumerable{Autofac.Parameter},System.Collections.Generic.IEnumerable{Autofac.NamedPropertyParameter})">
       <summary>
             Initializes a new instance of the <see cref="T:Autofac.Registrars.Automatic.AutomaticRegistrationHandler" /> class.
             </summary>
       <param name="predicate">The predicate.</param>
       <param name="deferredParams">The deferred registration params.</param>
       <param name="constructorSelector">The constructor selector.</param>
+      <param name="arguments">Additional arguments to supply to the component's constructor.</param>
+      <param name="properties">Additional properties to set on the component.</param>
     </member>
     <member name="M:Autofac.Registrars.Automatic.AutomaticRegistrationHandler.TryGetImplementation(Autofac.Service,System.Type@,System.Collections.Generic.IEnumerable{Autofac.Service}@)">
       <summary>
@@ -1884,6 +2005,46 @@
             </summary>
       <param name="ctorSignature">The types that designate the constructor to use.</param>
       <returns>A registrar allowing registration to continue.</returns>
+    </member>
+    <member name="M:Autofac.Registrars.Generic.GenericRegistrar.WithArguments(Autofac.Parameter[])">
+      <summary>
+            Associates constructor parameters with default values.
+            </summary>
+      <param name="additionalCtorArgs">The named values to apply to the constructor.
+            These may be overriden by supplying any/all values to the IContext.Resolve() method.</param>
+      <returns>
+            A registrar allowing registration to continue.
+            </returns>
+    </member>
+    <member name="M:Autofac.Registrars.Generic.GenericRegistrar.WithArguments(System.Collections.Generic.IEnumerable{Autofac.Parameter})">
+      <summary>
+            Associates constructor parameters with default values.
+            </summary>
+      <param name="additionalCtorArgs">The named values to apply to the constructor.
+            These may be overriden by supplying any/all values to the IContext.Resolve() method.</param>
+      <returns>
+            A registrar allowing registration to continue.
+            </returns>
+    </member>
+    <member name="M:Autofac.Registrars.Generic.GenericRegistrar.WithProperties(Autofac.NamedPropertyParameter[])">
+      <summary>
+            Provide explicit property values to be set on the new object.
+            </summary>
+      <param name="explicitProperties">
+      </param>
+      <returns>A registrar allowing configuration to continue.</returns>
+      <remarks>Note, supplying a null value will not prevent property injection if
+            property injection is done through an OnActivating handler.</remarks>
+    </member>
+    <member name="M:Autofac.Registrars.Generic.GenericRegistrar.WithProperties(System.Collections.Generic.IEnumerable{Autofac.NamedPropertyParameter})">
+      <summary>
+            Provide explicit property values to be set on the new object.
+            </summary>
+      <param name="explicitProperties">
+      </param>
+      <returns>A registrar allowing configuration to continue.</returns>
+      <remarks>Note, supplying a null value will not prevent property injection if
+            property injection is done through an OnActivating handler.</remarks>
     </member>
     <member name="P:Autofac.Registrars.Generic.GenericRegistrar.Syntax">
       <summary>
@@ -2602,10 +2763,34 @@
             The component instance that provides the service, or null if
             none is available.
             </returns>
-      <remarks>Useful with the C#3 initialiser syntax.</remarks>
+      <remarks>Useful with the C#3 initializer syntax.</remarks>
       <example>
             container.Register&lt;ISomething&gt;(c =&gt; new Something(){ AProperty = c.ResolveOptional&lt;IOptional&gt;() });
             </example>
+    </member>
+    <member name="M:Autofac.IContext.ResolveOptional``1(System.String,System.Collections.Generic.IEnumerable{Autofac.Parameter})">
+      <summary>
+            Retrieve a service registered with the container
+            </summary>
+      <typeparam name="TService">The type of the service to retrieve.</typeparam>
+      <param name="serviceName">Name of the service to retrieve.</param>
+      <param name="parameters">The parameters.</param>
+      <returns>
+            The component instance that provides the service, or null if
+            none is available
+            </returns>
+    </member>
+    <member name="M:Autofac.IContext.ResolveOptional``1(System.String,Autofac.Parameter[])">
+      <summary>
+            Retrieve a service registered with the container
+            </summary>
+      <typeparam name="TService">The type of the service to retrieve.</typeparam>
+      <param name="serviceName">Name of the service to retrieve.</param>
+      <param name="parameters">The parameters.</param>
+      <returns>
+            The component instance that provides the service, or null if
+            none is available
+            </returns>
     </member>
     <member name="M:Autofac.IContext.IsRegistered(System.Type)">
       <summary>
@@ -2762,6 +2947,30 @@
       <example>
             container.Register&lt;ISomething&gt;(c =&gt; new Something(){ AProperty = c.ResolveOptional&lt;IOptional&gt;() });
             </example>
+    </member>
+    <member name="M:Autofac.Context.ResolveOptional``1(System.String,System.Collections.Generic.IEnumerable{Autofac.Parameter})">
+      <summary>
+            Retrieve a service registered with the container
+            </summary>
+      <typeparam name="TService">The type of the service to retrieve.</typeparam>
+      <param name="serviceName">Name of the service to retrieve.</param>
+      <param name="parameters">The parameters.</param>
+      <returns>
+            The component instance that provides the service, or null if
+            none is available
+            </returns>
+    </member>
+    <member name="M:Autofac.Context.ResolveOptional``1(System.String,Autofac.Parameter[])">
+      <summary>
+            Retrieve a service registered with the container
+            </summary>
+      <typeparam name="TService">The type of the service to retrieve.</typeparam>
+      <param name="serviceName">Name of the service to retrieve.</param>
+      <param name="parameters">The parameters.</param>
+      <returns>
+            The component instance that provides the service, or null if
+            none is available
+            </returns>
     </member>
     <member name="M:Autofac.Context.TryResolve``1(``0@,Autofac.Parameter[])">
       <summary>
@@ -3380,6 +3589,14 @@
       <typeparam name="T">Collection item type</typeparam>
       <returns>A registrar allowing configuration to continue.</returns>
     </member>
+    <member name="M:Autofac.Builder.ContainerBuilder.RegisterCollection(System.Type)">
+      <summary>
+            Registers the type as a collection. If no services or names are specified, the
+            default service will be IEnumerable&lt;T&gt;();
+            </summary>
+      <param name="collectionType">Collection item type</param>
+      <returns>A registrar allowing configuration to continue.</returns>
+    </member>
     <member name="M:Autofac.Builder.ContainerBuilder.Register``1(Autofac.Registrars.Delegate.ComponentActivator{``0})">
       <summary>
             Register a component that will be created using a provided delegate.
@@ -3600,7 +3817,7 @@
             to see how performance goes.
             </remarks>
     </member>
-    <member name="M:Autofac.Registrars.Generic.GenericRegistrationHandler.#ctor(System.Collections.Generic.IEnumerable{Autofac.Service},System.Type,Autofac.Registrars.DeferredRegistrationParameters,Autofac.Component.Activation.IConstructorSelector)">
+    <member name="M:Autofac.Registrars.Generic.GenericRegistrationHandler.#ctor(System.Collections.Generic.IEnumerable{Autofac.Service},System.Type,Autofac.Registrars.DeferredRegistrationParameters,Autofac.Component.Activation.IConstructorSelector,System.Collections.Generic.IEnumerable{Autofac.Parameter},System.Collections.Generic.IEnumerable{Autofac.NamedPropertyParameter})">
       <summary>
             Initializes a new instance of the <see cref="T:Autofac.Registrars.Generic.GenericRegistrationHandler" /> class.
             </summary>
@@ -3608,6 +3825,8 @@
       <param name="implementor">The implementor.</param>
       <param name="deferredParams">The deferred params.</param>
       <param name="constructorSelector">The constructor selector.</param>
+      <param name="arguments">Additional arguments to supply to the component's constructor.</param>
+      <param name="properties">Additional properties to set on the component.</param>
     </member>
     <member name="M:Autofac.Registrars.Generic.GenericRegistrationHandler.TryGetImplementation(Autofac.Service,System.Type@,System.Collections.Generic.IEnumerable{Autofac.Service}@)">
       <summary>
@@ -3667,8 +3886,10 @@
     <member name="M:Autofac.Builder.Module.Load(Autofac.Builder.ContainerBuilder)">
       <summary>
             Override to add registrations to the container.
+            Note that the ContainerBuilder parameter is not the same one
+            that the module is being registered by (i.e. it can have its own defaults.)
             </summary>
-      <param name="builder">The builder.</param>
+      <param name="moduleBuilder">The builder.</param>
     </member>
     <member name="M:Autofac.Builder.Module.AttachToComponentRegistration(Autofac.IContainer,Autofac.IComponentRegistration)">
       <summary>
@@ -4325,6 +4546,30 @@
       <example>
             container.Register&lt;ISomething&gt;(c =&gt; new Something(){ AProperty = c.ResolveOptional&lt;IOptional&gt;() });
             </example>
+    </member>
+    <member name="M:Autofac.Container.ResolveOptional``1(System.String,System.Collections.Generic.IEnumerable{Autofac.Parameter})">
+      <summary>
+            Retrieve a service registered with the container
+            </summary>
+      <typeparam name="TService">The type of the service to retrieve.</typeparam>
+      <param name="serviceName">Name of the service to retrieve.</param>
+      <param name="parameters">The parameters.</param>
+      <returns>
+            The component instance that provides the service, or null if
+            none is available
+            </returns>
+    </member>
+    <member name="M:Autofac.Container.ResolveOptional``1(System.String,Autofac.Parameter[])">
+      <summary>
+            Retrieve a service registered with the container
+            </summary>
+      <typeparam name="TService">The type of the service to retrieve.</typeparam>
+      <param name="serviceName">Name of the service to retrieve.</param>
+      <param name="parameters">The parameters.</param>
+      <returns>
+            The component instance that provides the service, or null if
+            none is available
+            </returns>
     </member>
     <member name="M:Autofac.Container.Resolve``1(System.Collections.Generic.IEnumerable{Autofac.Parameter})">
       <summary>
@@ -5192,6 +5437,29 @@
       <summary>
               Looks up a localized string similar to The property '{0}' has been specified multiple times for component '{1}'..
             </summary>
+    </member>
+    <member name="T:Autofac.ResolvedParameter">
+      <summary>
+            Flexible parameter type allows arbitrary values to be retrieved from the resolution context.
+            </summary>
+    </member>
+    <member name="M:Autofac.ResolvedParameter.#ctor(System.Func{System.Reflection.ParameterInfo,Autofac.IContext,System.Boolean},System.Func{System.Reflection.ParameterInfo,Autofac.IContext,System.Object})">
+      <summary>
+            Create an instance of the ResolvedParameter class.
+            </summary>
+      <param name="predicate">A predicate that determines which parameters on a constructor will be supplied by this instance.</param>
+      <param name="valueAccessor">A function that supplies the parameter value given the context.</param>
+    </member>
+    <member name="M:Autofac.ResolvedParameter.CanSupplyValue(System.Reflection.ParameterInfo,Autofac.IContext,System.Func{System.Object}@)">
+      <summary>
+            Returns true if the parameter is able to provide a value to a particular site.
+            </summary>
+      <param name="pi">Constructor, method, or property-mutator parameter.</param>
+      <param name="context">The component context in which the value is being provided.</param>
+      <param name="valueProvider">If the result is true, the valueProvider parameter will
+            be set to a function that will lazily retrieve the parameter value. If the result is false,
+            will be set to null.</param>
+      <returns>True if a value can be supplied; otherwise, false.</returns>
     </member>
     <member name="M:Autofac.SequenceExtensions.JoinWith(System.Collections.Generic.IEnumerable{System.String},System.String)">
       <summary>
