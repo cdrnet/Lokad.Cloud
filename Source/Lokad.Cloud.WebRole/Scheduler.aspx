@@ -11,7 +11,8 @@
 
 <asp:Content ContentPlaceHolderID="BodyPlaceHolder" runat="server">
 	<h1>Scheduler</h1>
-	<p>Manage scheduled execution of your services.</p>
+	<p>Manage scheduled execution of your services.<br/>
+	Current server time: <%= DateTime.UtcNow %></p>
 	
 	<p><asp:GridView ID="ScheduleView" runat="server" /></p>
 	<br />
