@@ -7,7 +7,7 @@ using System;
 
 namespace Lokad.Cloud.Mock
 {
-	class MemoryLogger : ILog
+	public class MemoryLogger : ILog
 	{
 		public bool IsEnabled(LogLevel level)
 		{
