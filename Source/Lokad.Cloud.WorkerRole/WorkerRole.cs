@@ -70,7 +70,6 @@ namespace Lokad.Cloud
 			var storageModule = new StorageModule {OverriddenProperties = overrides};
 			builder.RegisterModule(storageModule);
 
-			builder.Register(c => (ITypeMapperProvider)new TypeMapperProvider());
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
 
 			builder.Register(typeof(ProvidersForCloudStorage));

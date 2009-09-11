@@ -31,7 +31,6 @@ namespace Lokad.Cloud.Web
 				builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 			}
 
-			builder.Register(c => (ITypeMapperProvider) new TypeMapperProvider());
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
 
 			Container = builder.Build();

@@ -13,10 +13,9 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void GetStorageName()
 		{
-			var mapper = new TypeMapperProvider();
 			Assert.AreEqual(
 				"lokad-cloud-azure-test-typemapperprovidertests", 
-				mapper.GetStorageName(typeof(TypeMapperProviderTests)));
+				TypeMapper.GetStorageName(typeof(TypeMapperProviderTests)));
 		}
 	}
 }

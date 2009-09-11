@@ -22,20 +22,15 @@ namespace Lokad.Cloud
 		/// <summary>Error Logger</summary>
 		public ILog Log { get; private set; }
 
-		/// <summary>Type mapper for implicit cloud storage.</summary>
-		public ITypeMapperProvider TypeMapper { get; private set; }
-
 		/// <summary>IoC constructor.</summary>
 		public ProvidersForCloudStorage(
 			IBlobStorageProvider blobStorage, 
 			IQueueStorageProvider queueStorage,
-			ILog log,
-			ITypeMapperProvider typeMapper)
+			ILog log)
 		{
 			BlobStorage = blobStorage;
 			QueueStorage = queueStorage;
 			Log = log;
-			TypeMapper = typeMapper;
 		}
 	}
 }

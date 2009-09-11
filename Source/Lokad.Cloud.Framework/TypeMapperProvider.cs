@@ -3,19 +3,17 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using Lokad.Cloud;
 
-namespace Lokad.Cloud.Azure
+namespace Lokad.Cloud
 {
 	/// <summary>Maps types to storage names, and vice-versa.</summary>
 	/// <remarks>
 	/// Spec on queue names: http://msdn.microsoft.com/en-us/library/dd179349.aspx
 	/// Spec on container names: http://msdn.microsoft.com/en-us/library/dd135715.aspx
 	/// </remarks>
-	public class TypeMapperProvider : ITypeMapperProvider
+	public static class TypeMapper
 	{
-		/// <see cref="ITypeMapperProvider.GetStorageName"/>
-		public string GetStorageName(Type type)
+		public static string GetStorageName(Type type)
 		{
 			var name = type.FullName.ToLowerInvariant().Replace(".", "-");
 

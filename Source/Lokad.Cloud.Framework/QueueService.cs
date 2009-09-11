@@ -39,11 +39,12 @@ namespace Lokad.Cloud
 
 			if(null != settings) // settings are provided through custom attribute
 			{
-				_queueName = settings.QueueName;
+				_queueName = settings.QueueName ?? TypeMapper.GetStorageName(typeof(T));
 				_batchSize = Math.Max(settings.BatchSize, 1); // need to be at least 1
 			}
 			else // default setting
 			{
+				_queueName = TypeMapper.GetStorageName(typeof(T));
 				_batchSize = 1;
 			}
 		}
@@ -52,9 +53,6 @@ namespace Lokad.Cloud
 		/// instead.</summary>
 		protected sealed override bool StartImpl()
 		{
-			// delayed initialization (now 'Providers' is available)
-			_queueName = _queueName ?? Providers.TypeMapper.GetStorageName(typeof (T));
-
 			var messages = QueueStorage.Get<T>(_queueName, _batchSize);
 
 			var count = messages.Count();

@@ -6,7 +6,6 @@
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad.Cloud;
 
 namespace Lokad.Cloud.Azure.Test
 {
@@ -19,7 +18,6 @@ namespace Lokad.Cloud.Azure.Test
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
-			builder.Register(c => (ITypeMapperProvider)new TypeMapperProvider());
 			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
 
 			builder.Register(typeof (ProvidersForCloudStorage));

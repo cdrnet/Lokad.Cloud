@@ -129,7 +129,7 @@ namespace MapReduce
 		/// <remarks>This method is asynchronous.</remarks>
 		public void MapToBlobSet<U, M>(string destPrefix, Func<T, U> mapper, M onCompleted)
 		{
-			var completionQueueName = _providers.TypeMapper.GetStorageName(typeof(M));
+			var completionQueueName = TypeMapper.GetStorageName(typeof(M));
 			MapToBlobSet(destPrefix, mapper, onCompleted, completionQueueName);
 		}
 
@@ -202,7 +202,7 @@ namespace MapReduce
 		/// <param name="reducer">Reducing function.</param>
 		public void ReduceToQueue<U>(Func<U, U, U> reducer)
 		{
-			ReduceToQueue(reducer, _providers.TypeMapper.GetStorageName(typeof(U)));
+			ReduceToQueue(reducer, TypeMapper.GetStorageName(typeof(U)));
 		}
 
 		/// <summary>Apply a reducing function and outputs to the queue specified.</summary>

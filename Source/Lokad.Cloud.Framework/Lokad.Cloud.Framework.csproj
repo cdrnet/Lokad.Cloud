@@ -84,7 +84,7 @@
     <Compile Include="Azure\QueueStorageProvider.cs" />
     <Compile Include="Azure\ServiceBalancerCommand.cs" />
     <Compile Include="Azure\StorageModule.cs" />
-    <Compile Include="Azure\TypeMapperProvider.cs" />
+    <Compile Include="TypeMapperProvider.cs" />
     <Compile Include="BaseTypedBlobName.cs" />
     <Compile Include="BlobCounter.cs" />
     <Compile Include="BaseBlobName.cs" />
@@ -96,7 +96,6 @@
     <Compile Include="StorageExtensions.cs" />
     <Compile Include="IBlobStorageProvider.cs" />
     <Compile Include="IQueueStorageProvider.cs" />
-    <Compile Include="ITypeMapperProvider.cs" />
     <None Include="Cuid.cs" />
     <Compile Include="MessageWrapper.cs" />
     <Compile Include="Mock\MemoryBlobStorageProvider.cs" />

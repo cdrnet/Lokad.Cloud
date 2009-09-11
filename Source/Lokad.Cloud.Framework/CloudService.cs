@@ -198,7 +198,7 @@ namespace Lokad.Cloud
 		/// <summary>Put messages into the queue implicitely associated to the type <c>T</c>.</summary>
 		public void PutRange<T>(IEnumerable<T> messages)
 		{
-			PutRange(messages, Providers.TypeMapper.GetStorageName(typeof(T)));
+			PutRange(messages, TypeMapper.GetStorageName(typeof(T)));
 		}
 
 		/// <summary>Put messages into the queue identified by <c>queueName</c>.</summary>
@@ -225,7 +225,7 @@ namespace Lokad.Cloud
 		/// time specified by the <c>triggerTime</c>.</summary>
 		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime)
 		{
-			PutRangeWithDelay(messages, triggerTime, Providers.TypeMapper.GetStorageName(typeof(T)));
+			PutRangeWithDelay(messages, triggerTime, TypeMapper.GetStorageName(typeof(T)));
 		}
 
 		/// <summary>Put messages into the queue identified by <c>queueName</c> at the
