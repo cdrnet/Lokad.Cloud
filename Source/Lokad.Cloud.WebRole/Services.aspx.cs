@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI.WebControls;
-using Lokad.Cloud;
 
 // TODO: blobs are sequentially enumerated, performance issue
 // if there are more than a few dozen services
@@ -30,9 +29,13 @@ namespace Lokad.Cloud.Web
 			foreach(var blobName in _provider.List(cn, prefix))
 			{
 				var state = _provider.GetBlobOrDelete<CloudServiceState?>(cn, blobName);
+
+				if (!state.HasValue || blobName.Length == prefix.Length) continue;
+
 				yield return new
 					{
-						Name = blobName.Substring(prefix.Length + 1), // discarding the prefix
+						// discarding the prefix
+						Name = blobName.Substring(prefix.Length + 1),
 						State = state.ToString()
 					};
 			}
