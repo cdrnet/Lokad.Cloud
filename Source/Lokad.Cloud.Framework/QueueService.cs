@@ -21,8 +21,10 @@ namespace Lokad.Cloud
 	/// </remarks>
 	public abstract class QueueService<T> : CloudService
 	{
-		readonly string _queueName;
 		readonly int _batchSize;
+
+		// not read-only because 'Providers' is not available when 'QueueService' gets instanciated.
+		string _queueName;
 
 		/// <summary>Name of the queue associated to the service.</summary>
 		public override string Name
@@ -37,13 +39,11 @@ namespace Lokad.Cloud
 
 			if(null != settings) // settings are provided through custom attribute
 			{
-				// QueueName setting is optional, using type mapper is null
-				_queueName = settings.QueueName ?? Providers.TypeMapper.GetStorageName(typeof(T)); ;
+				_queueName = settings.QueueName;
 				_batchSize = Math.Max(settings.BatchSize, 1); // need to be at least 1
 			}
 			else // default setting
 			{
-				_queueName = Providers.TypeMapper.GetStorageName(typeof (T));
 				_batchSize = 1;
 			}
 		}
@@ -52,6 +52,9 @@ namespace Lokad.Cloud
 		/// instead.</summary>
 		protected sealed override bool StartImpl()
 		{
+			// delayed initialization (now 'Providers' is available)
+			_queueName = _queueName ?? Providers.TypeMapper.GetStorageName(typeof (T));
+
 			var messages = QueueStorage.Get<T>(_queueName, _batchSize);
 
 			var count = messages.Count();

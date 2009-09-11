@@ -249,11 +249,21 @@ namespace Lokad.Cloud
 				.Select(a => a.GetExportedTypes()).SelectMany(x => x)
 				.Where(t => t.IsSubclassOf(typeof(CloudService)) && !t.IsAbstract && !t.IsGenericType);
 
-			// assuming that a default constructor is available
-			// ToArray needed to avoid lazy enumeration that mess-up the side effect the next line
-			var services = serviceTypes.Select(t =>
-				(CloudService)t.InvokeMember("_ctor", 
-				BindingFlags.CreateInstance, null, null, new object[0])).ToArray();
+			var services = new List<CloudService>();
+			foreach(var t in serviceTypes)
+			{
+				// assuming that a default constructor is available
+				// but throwing a meaningfull exception if not
+				try
+				{
+					services.Add((CloudService)t.GetConstructors().First().Invoke(new object[0]));
+				}
+				catch (TargetInvocationException ex)
+				{
+					throw new NotSupportedException(
+						string.Format("Missing default constructor for {0}.", t.Name), ex);
+				}
+			}
 
 			services.ForEach(s => container.InjectProperties(s));
 
