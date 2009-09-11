@@ -24,7 +24,6 @@ namespace Lokad.Cloud.Test.Mock.Services
 			var service = new SquareQueueService { Providers = providersForCloudStorage };
 			var blobStorage = providersForCloudStorage.BlobStorage;
 
-			const string queueName = "SquareQueue";
 			const string containerName = "mockContainer";
 
 			//filling blobs to be processed.
@@ -39,7 +38,8 @@ namespace Lokad.Cloud.Test.Mock.Services
 					Expiration = DateTime.Now + new TimeSpan(10, 0, 0, 0),
 					IsStart = true
 				};
-			
+
+			var queueName = TypeMapper.GetStorageName(typeof(SquareMessage));
 			providersForCloudStorage.QueueStorage.Put(queueName, squareMessage);
 
 			for (int i = 0 ; i < 2 ; i++)
@@ -68,7 +68,7 @@ namespace Lokad.Cloud.Test.Mock.Services
 			public TemporaryBlobName BlobCounter { get; set; }
 		}
 
-		[QueueServiceSettings(AutoStart = true, BatchSize = 100, QueueName = "SquareQueue",
+		[QueueServiceSettings(AutoStart = true, BatchSize = 100, //QueueName = "SquareQueue",
 		Description = "multiply numbers by themselves.")]
 		class SquareQueueService : QueueService<SquareMessage>
 		{
@@ -97,7 +97,7 @@ namespace Lokad.Cloud.Test.Mock.Services
 								ContainerName = message.ContainerName,
 								IsStart = false,
 								BlobCounter = counterName
-							}, "SquareQueue");
+							});
 					}
 
 					// dealing with rare race condition
