@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
@@ -143,9 +144,11 @@ namespace Lokad.Cloud
 			return provider.List(BaseBlobName.GetContainerName<N>(), prefix);
 		}
 
-		public static IEnumerable<string> List(this IBlobStorageProvider provider, BlobNamePrefix prefix)
+		public static IEnumerable<T> List<T>(
+			this IBlobStorageProvider provider, BlobNamePrefix<T> prefix) where T : BaseBlobName
 		{
-			return provider.List(prefix.Container, prefix.Prefix);
+			return provider.List(prefix.Container, prefix.Prefix)
+				.Select(rawName => BaseBlobName.Parse<T>(rawName));
 		}
 
 		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,

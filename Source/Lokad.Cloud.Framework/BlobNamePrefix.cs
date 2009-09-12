@@ -6,9 +6,9 @@ using System;
 
 namespace Lokad.Cloud
 {
-	/// <typeparam name="T">Type of iterated items.</typeparam>
+	/// <summary>Helper to facilitate blob storage enumeration.</summary>
 	[Serializable]
-	public class BlobNamePrefix
+	public class BlobNamePrefix<T> where T : BaseBlobName
 	{
 		public string Container { get; set; }
 		public string Prefix { get; set; }

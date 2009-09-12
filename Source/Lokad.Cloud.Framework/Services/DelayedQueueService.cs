@@ -21,7 +21,8 @@ namespace Lokad.Cloud.Services
 		protected override void StartOnSchedule()
 		{
 			// lazy enumeration over the delayed messages
-			foreach (var blobName in BlobStorage.List<DelayedMessageName>(null))
+			string nullPrefix = null;
+			foreach (var blobName in BlobStorage.List<DelayedMessageName>(nullPrefix))
 			{
 				var parsedName = BaseBlobName.Parse<DelayedMessageName>(blobName);
 
