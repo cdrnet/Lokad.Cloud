@@ -33,8 +33,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}"
 	ProjectSection(SolutionItems) = preProject
-		ReadMe.IoCforService.txt = ReadMe.IoCforService.txt
-		ReadMe.MapReduce.txt = ReadMe.MapReduce.txt
+		Samples\Source\IoCforService\ReadMe.IoCforService.txt = Samples\Source\IoCforService\ReadMe.IoCforService.txt
+		Samples\Source\MapReduce\ReadMe.MapReduce.txt = Samples\Source\MapReduce\ReadMe.MapReduce.txt
 		Samples\Source\PingPong\ReadMe.PingPong.txt = Samples\Source\PingPong\ReadMe.PingPong.txt
 	EndProjectSection
 EndProject
