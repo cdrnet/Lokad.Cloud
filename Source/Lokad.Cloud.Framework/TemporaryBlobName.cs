@@ -8,8 +8,9 @@ using Lokad.Quality;
 
 namespace Lokad.Cloud
 {
-	/// <summary>Used in conjunction with the <see cref="GarbageCollectorService"/>.</summary>
-	/// <remarks>Use the method <see cref="GetNew(System.DateTime)"/> to instantiate a new instance
+	/// <summary>Name associated to a fixed-lifespan item.</summary>
+	/// <remarks>Used in conjunction with the <see cref="GarbageCollectorService"/>.
+	/// Use the method <see cref="GetNew(System.DateTime)"/> to instantiate a new instance
 	/// direcly linked to the garbage collected container.</remarks>
 	[Serializable]
 	public class TemporaryBlobName : BaseBlobName
@@ -20,14 +21,10 @@ namespace Lokad.Cloud
 		}
 
 		// caution: field order DOES matter here.
+		[UsedImplicitly] public readonly DateTime Expiration;
+		[UsedImplicitly] public readonly string Suffix;
 
-		[UsedImplicitly]
-		public readonly DateTime Expiration;
-
-		[UsedImplicitly]
-		public readonly string Suffix;
-
-		public TemporaryBlobName(DateTime expiration, string suffix)
+		TemporaryBlobName(DateTime expiration, string suffix)
 		{
 			Expiration = expiration;
 			Suffix = suffix;

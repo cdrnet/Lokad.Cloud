@@ -139,7 +139,7 @@ namespace Lokad.Cloud
 			return ConverterTypeCache<T>.PartialPrint(instance, fieldCount);
 		}
 
-		public static BlobNamePrefix<T> Prefix<T>(T instance, int fieldCount) where T : BaseBlobName
+		public static BlobNamePrefix<T> GetPrefix<T>(T instance, int fieldCount) where T : BaseBlobName
 		{
 			return new BlobNamePrefix<T>(GetContainerName<T>(), PartialPrint(instance, fieldCount));
 		}
