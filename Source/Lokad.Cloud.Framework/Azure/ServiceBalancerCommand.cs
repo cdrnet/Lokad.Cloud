@@ -35,6 +35,9 @@ namespace Lokad.Cloud.Azure
 		/// <summary>Container used to populate cloud service properties.</summary>
 		public ContainerBuilder ContainerBuilder { get; set; }
 
+		/// <summary>An instance of the assembly loader component.</summary>
+		public AssemblyLoader AssemblyLoader { get; set; }
+
 		/// <summary>IoC constructor.</summary>
 		public ServiceBalancerCommand(ILog logger, ProvidersForCloudStorage providers)
 		{
@@ -44,10 +47,7 @@ namespace Lokad.Cloud.Azure
 
 		public void Execute()
 		{
-			var loader = new AssemblyLoader(_providers.BlobStorage);
-
-			loader.LoadPackage();
-			var config = loader.LoadConfiguration();
+			var config = AssemblyLoader.LoadConfiguration();
 
 			// processing configuration file as retrieved from the blob storage.
 			if(null != config)
@@ -118,7 +118,9 @@ namespace Lokad.Cloud.Azure
 					}
 					catch (Exception ex)
 					{
-						_logger.Error(ex, string.Format("Service {0} has failed.", service));
+						var msg = string.Format("Service {0} has failed.", service);
+						_logger.Error(ex, msg);
+						throw new CloudServiceException(msg, ex);
 					}
 				}
 
@@ -141,7 +143,7 @@ namespace Lokad.Cloud.Azure
 				}
 
 				// throws a 'TriggerRestartException' if a new package is detected.
-				loader.CheckUpdate(true);
+				AssemblyLoader.CheckUpdate(true);
 			}
 
 			lock(_sync)

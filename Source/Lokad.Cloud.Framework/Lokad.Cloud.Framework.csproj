@@ -84,6 +84,7 @@
     <Compile Include="Azure\QueueStorageProvider.cs" />
     <Compile Include="Azure\ServiceBalancerCommand.cs" />
     <Compile Include="Azure\StorageModule.cs" />
+    <Compile Include="CloudServiceException.cs" />
     <Compile Include="BaseTemporaryBlobName.cs" />
     <Compile Include="TypeMapperProvider.cs" />
     <Compile Include="BaseTypedBlobName.cs" />
