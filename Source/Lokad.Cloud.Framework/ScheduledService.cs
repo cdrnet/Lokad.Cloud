@@ -23,7 +23,7 @@ namespace Lokad.Cloud
 			get { return ScheduledService.ScheduleStateContainer; }
 		}
 
-		public string ServiceName;
+		[Pos(0)] public readonly string ServiceName;
 
 		public ScheduledServiceStateName(string serviceName)
 		{

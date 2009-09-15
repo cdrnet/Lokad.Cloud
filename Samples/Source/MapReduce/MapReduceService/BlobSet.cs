@@ -41,9 +41,8 @@ namespace MapReduce
 			get { return BlobSet<object>.ContainerName; }
 		}
 
-		// caution: field order DOES matter with 'BaseBlobName'
-		[UsedImplicitly] public readonly string Prefix;
-		[UsedImplicitly] public readonly string Suffix;
+		[UsedImplicitly, Pos(0)] public readonly string Prefix;
+		[UsedImplicitly, Pos(1)] public readonly string Suffix;
 
 		public BlobSetMapName(string prefix, string suffix)
 		{

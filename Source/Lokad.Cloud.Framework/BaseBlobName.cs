@@ -85,7 +85,11 @@ namespace Lokad.Cloud
 			{
 				// HACK: optimize this to IL code, if needed
 				// NB: this approach could be used to generate F# style objects!
-				Fields = typeof(T).GetFields();
+				Fields = typeof(T).GetFields()
+					.Where(f => f.GetCustomAttributes(typeof(PosAttribute), true).Exists())
+					.OrderBy(f => ((PosAttribute)f.GetCustomAttributes(typeof(PosAttribute),true).First()).Index)
+					.ToArray();
+
 				FirstCtor = typeof(T).GetConstructors(
 					BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).First();
 			}

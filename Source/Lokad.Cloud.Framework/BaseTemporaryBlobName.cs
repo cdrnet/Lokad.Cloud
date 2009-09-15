@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Reflection;
 using Lokad.Quality;
 
 namespace Lokad.Cloud
@@ -19,9 +18,9 @@ namespace Lokad.Cloud
 			get { return CloudService.TemporaryContainer; }
 		}
 
-		// caution: field order DOES matter here.
-		[UsedImplicitly] public readonly DateTime Expiration;
-		[UsedImplicitly] public readonly string Prefix;
+		// using negative values here on purpose, so that implementors start at zero
+		[UsedImplicitly, Pos(-2)] public readonly DateTime Expiration;
+		[UsedImplicitly, Pos(-1)] public readonly string Prefix;
 
 		/// <summary>Explicit constructor.</summary>
 		/// <param name="expiration">Date that triggers the garbage collection.</param>

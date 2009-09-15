@@ -67,7 +67,6 @@
     <Compile Include="Azure\GlobalSetup.cs" />
     <Compile Include="Azure\QueueStorageProviderTests.cs" />
     <Compile Include="Azure\TypeMapperProviderTests.cs" />
-    <Compile Include="BaseTemporaryBlobNameTests.cs" />
     <Compile Include="BlobCounterTests.cs" />
     <Compile Include="BaseBlobNameTests.cs" />
     <None Include="App.config" />

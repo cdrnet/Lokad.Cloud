@@ -23,10 +23,10 @@ namespace Lokad.Cloud.Test
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
 
-			public readonly DateTime Timestamp;
-			public readonly long AccountHRID;
-			public readonly Guid ChunkID;
-			public readonly int ChunkSize;
+			[Pos(0)] public readonly DateTime Timestamp;
+			[Pos(1)] public readonly long AccountHRID;
+			[Pos(2)] public readonly Guid ChunkID;
+			[Pos(3)] public readonly int ChunkSize;
 
 			public PatternA(DateTime timestamp, long accountHrid, Guid chunkID, int chunkSize)
 			{
@@ -42,8 +42,8 @@ namespace Lokad.Cloud.Test
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
 
-			public readonly long AccountHRID;
-			public readonly Guid ChunkID;
+			[Pos(0)] public readonly long AccountHRID;
+			[Pos(1)] public readonly Guid ChunkID;
 
 			public PatternB(Guid chunkID, long accountHrid)
 			{
@@ -57,8 +57,8 @@ namespace Lokad.Cloud.Test
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
 
-			public readonly Guid ChunkID;
-			public readonly long AccountId;
+			[Pos(0)] public readonly Guid ChunkID;
+			[Pos(1)] public readonly long AccountId;
 			
 			public PatternC(Guid chunkID, long accountId)
 			{
@@ -69,7 +69,7 @@ namespace Lokad.Cloud.Test
 
 		class PatternD : PatternC
 		{
-			public readonly long UserId;
+			[Pos(2)] public readonly long UserId;
 
 			public PatternD(Guid chunkID, long accountId, long userId) : base(chunkID, accountId)
 			{

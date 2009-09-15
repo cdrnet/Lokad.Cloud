@@ -20,9 +20,8 @@ namespace Lokad.Cloud
 			get { return CloudService.TemporaryContainer; }
 		}
 
-		// caution: field order DOES matter here.
-		[UsedImplicitly] public readonly DateTime Expiration;
-		[UsedImplicitly] public readonly string Suffix;
+		[UsedImplicitly, Pos(0)] public readonly DateTime Expiration;
+		[UsedImplicitly, Pos(1)] public readonly string Suffix;
 
 		TemporaryBlobName(DateTime expiration, string suffix)
 		{
