@@ -15,7 +15,7 @@ namespace Lokad.Cloud
 	/// <summary>Entry point of Lokad.Cloud.</summary>
 	public class WorkerRole : RoleEntryPoint
 	{
-		bool _isHeathly;
+		bool _isHeathly = true;
 
 		public override void Start()
 		{
