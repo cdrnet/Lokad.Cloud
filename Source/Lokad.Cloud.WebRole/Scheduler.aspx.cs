@@ -10,10 +10,6 @@ namespace Lokad.Cloud.Web
 {
 	public partial class Scheduler : System.Web.UI.Page
 	{
-		// shorthand
-		const string Cn = ScheduledService.ScheduleStateContainer;
-		const string Prefix = ScheduledService.ScheduleStatePrefix;
-
 		readonly IBlobStorageProvider _provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 
 		protected void Page_Load(object sender, EventArgs e)
@@ -36,21 +32,21 @@ namespace Lokad.Cloud.Web
 
 		IEnumerable<Pair<string, ScheduledServiceState>> GetStates()
 		{
-			foreach (var blobName in _provider.List(Cn, Prefix))
+			foreach (var blobName in _provider.List(ScheduledServiceStateName.GetPrefix()))
 			{
 				yield return new Pair<string, ScheduledServiceState>(
 					// discarding the prefix for display purposes
-					blobName.Substring(Prefix.Length + 1),
-					_provider.GetBlobOrDelete<ScheduledServiceState>(Cn, blobName));
+					blobName.ServiceName,
+					_provider.GetBlobOrDelete<ScheduledServiceState>(blobName));
 			}
 		}
 
 		protected void UpdateIntervalButton_OnClick(object sender, EventArgs e)
 		{
-			var bn = Prefix + "/" + ScheduleList.SelectedValue;
+			var blobName = new ScheduledServiceStateName(ScheduleList.SelectedValue);
 			var triggerInterval = int.Parse(NewIntervalBox.Text);
 
-			_provider.UpdateIfNotModified<ScheduledServiceState>(Cn, bn,
+			_provider.UpdateIfNotModified<ScheduledServiceState>(blobName,
 				state =>
 					{
 						state.TriggerInterval = triggerInterval.Seconds();

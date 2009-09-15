@@ -15,14 +15,35 @@ namespace Lokad.Cloud
 		public DateTime LastExecuted { get; set; }
 	}
 
+	public class ScheduledServiceStateName : BaseTypedBlobName<ScheduledServiceState>
+	{
+
+		public override string ContainerName
+		{
+			get { return ScheduledService.ScheduleStateContainer; }
+		}
+
+		public string ServiceName;
+
+		public ScheduledServiceStateName(string serviceName)
+		{
+			ServiceName = serviceName;
+		}
+
+		public static BlobNamePrefix<ScheduledServiceStateName> GetPrefix()
+		{
+			return new BlobNamePrefix<ScheduledServiceStateName>(ScheduledService.ScheduleStateContainer, "");
+		}
+
+	}
+
 	/// <summary>This cloud service is automatically called by the framework
 	/// on scheduled basis. Scheduling options are provided through the
 	/// <see cref="ScheduledServiceSettingsAttribute"/>.</summary>
 	/// <remarks>A empty constructor is needed for instantiation through reflection.</remarks>
 	public abstract class ScheduledService : CloudService
 	{
-		public const string ScheduleStateContainer = "lokad-cloud-schedule";
-		public const string ScheduleStatePrefix = "state";
+		internal const string ScheduleStateContainer = "lokad-cloud-schedule-state";
 
 		bool _isInitialized;
 		TimeSpan _triggerInterval;
@@ -31,8 +52,8 @@ namespace Lokad.Cloud
 		protected sealed override bool StartImpl()
 		{
 			// retrieving the state info if any
-			var stateName = ScheduleStatePrefix + Delimiter + Name;
-			var state = BlobStorage.GetBlob<ScheduledServiceState>(ScheduleStateContainer, stateName);
+			var stateName = new ScheduledServiceStateName(Name);
+			var state = BlobStorage.GetBlob<ScheduledServiceState>(stateName);
 
 			if(!_isInitialized)
 			{
@@ -49,8 +70,7 @@ namespace Lokad.Cloud
 					// recording a fresh schedule state in the cloud
 					_triggerInterval = settings.TriggerInterval.Seconds();
 
-					var writeSucceeded = BlobStorage.PutBlob(
-						ScheduleStateContainer, stateName, 
+					var writeSucceeded = BlobStorage.PutBlob(stateName, 
 						new ScheduledServiceState
 							{
 								LastExecuted = DateTime.MinValue,
@@ -72,8 +92,7 @@ namespace Lokad.Cloud
 			// update this value if it's old enough. When the update fails,
 			// it simply means that another worker is already on its ways
 			// to execute the service.
-			var updated = BlobStorage.UpdateIfNotModified<ScheduledServiceState>(
-				ScheduleStateContainer, stateName, 
+			var updated = BlobStorage.UpdateIfNotModified<ScheduledServiceState>(stateName, 
 				currentState =>
 					{
 						var now = DateTime.UtcNow;

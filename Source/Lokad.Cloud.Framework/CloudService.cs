@@ -70,6 +70,28 @@ namespace Lokad.Cloud
 		}
 	}
 
+	public class CloudServiceStateName : BaseTypedBlobName<CloudServiceState>
+	{
+
+		public override string ContainerName
+		{
+			get { return CloudService.ServiceStateContainer; }
+		}
+
+		public string ServiceName;
+
+		public CloudServiceStateName(string serviceName)
+		{
+			ServiceName = serviceName;
+		}
+
+		public static BlobNamePrefix<CloudServiceStateName> GetPrefix()
+		{
+			return new BlobNamePrefix<CloudServiceStateName>(CloudService.ServiceStateContainer, "");
+		}
+
+	}
+
 	/// <summary>Base class for cloud services.</summary>
 	/// <remarks>Do not inherit directly from <see cref="CloudService"/>, inherit from
 	/// <see cref="QueueService{T}"/> or <see cref="ScheduledService"/> instead.</remarks>
@@ -77,12 +99,10 @@ namespace Lokad.Cloud
 	{
 		/// <summary>Name fo the container associated to temporary items. Each blob
 		/// is prefixed with his lifetime expiration date.</summary>
-		public const string TemporaryContainer = "lokad-cloud-temporary";
+		internal const string TemporaryContainer = "lokad-cloud-temporary";
 
-		public const string ServiceStateContainer = "lokad-cloud-services";
-		public const string DelayedMessageContainer = "lokad-cloud-messages";
-		public const string ServiceStatePrefix = "state";
-		public const string Delimiter = "/";
+		internal const string ServiceStateContainer = "lokad-cloud-services-state";
+		internal const string DelayedMessageContainer = "lokad-cloud-messages";
 
 		/// <summary>Timeout set at 1h58.</summary>
 		/// <remarks>The timeout provided by Windows Azure for message consumption
@@ -135,10 +155,9 @@ namespace Lokad.Cloud
 			// checking service state at regular interval
 			if(now.Subtract(_lastStateCheck) > StateCheckInterval)
 			{
-				var cn = ServiceStateContainer;
-				var bn = ServiceStatePrefix + Delimiter + Name;
+				var stateBlobName = new CloudServiceStateName(Name);
 
-				var state = BlobStorage.GetBlobOrDelete<CloudServiceState?>(cn, bn);
+				var state = BlobStorage.GetBlobOrDelete<CloudServiceState?>(stateBlobName);
 
 				// no state can be retrieved, update blob storage
 				if(!state.HasValue)
@@ -149,7 +168,7 @@ namespace Lokad.Cloud
 							(settings.AutoStart ? CloudServiceState.Started : CloudServiceState.Stopped) :
 							CloudServiceState.Started;
 
-					BlobStorage.PutBlob(cn, bn, state);
+					BlobStorage.PutBlob(stateBlobName, state);
 				}
 
 				_state = state.Value;

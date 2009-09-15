@@ -23,19 +23,15 @@ namespace Lokad.Cloud.Web
 
 		IEnumerable<object> GetServices()
 		{
-			var cn = CloudService.ServiceStateContainer;
-			var prefix = CloudService.ServiceStatePrefix;
-
-			foreach(var blobName in _provider.List(cn, prefix))
+			foreach(var blobName in _provider.List(CloudServiceStateName.GetPrefix()))
 			{
-				var state = _provider.GetBlobOrDelete<CloudServiceState?>(cn, blobName);
+				var state = _provider.GetBlobOrDelete<CloudServiceState?>(blobName);
 
-				if (!state.HasValue || blobName.Length == prefix.Length) continue;
+				if (!state.HasValue) continue;
 
 				yield return new
 					{
-						// discarding the prefix
-						Name = blobName.Substring(prefix.Length + 1),
+						Name = blobName.ServiceName,
 						State = state.ToString()
 					};
 			}
@@ -43,19 +39,15 @@ namespace Lokad.Cloud.Web
 
 		protected void ServicesView_OnRowCommand(object sender, GridViewCommandEventArgs e)
 		{
-			var cn = CloudService.ServiceStateContainer;
-			var prefix = CloudService.ServiceStatePrefix;
-
 			if(e.CommandName == "Toggle")
 			{
 				var row = -1;
 				int.TryParse(e.CommandArgument as string, out row);
 
-				var suffix = ServicesView.Rows[row].Cells[1].Text;
-				var bn = prefix + "/" + suffix;
+				var blobName = new CloudServiceStateName(ServicesView.Rows[row].Cells[1].Text);
 
 				// inverting the service status
-				_provider.UpdateIfNotModified<CloudServiceState?>(cn, bn, 
+				_provider.UpdateIfNotModified<CloudServiceState?>(blobName, 
 					s => s.HasValue ? 
 						(s.Value == CloudServiceState.Started ? CloudServiceState.Stopped : CloudServiceState.Started) :
 						CloudServiceState.Started);
