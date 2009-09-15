@@ -18,7 +18,7 @@ namespace Lokad.Cloud.Test
 	{
 		// ReSharper disable InconsistentNaming
 
-		sealed class PatternA : BaseBlobName
+		class PatternA : BaseBlobName
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -37,7 +37,7 @@ namespace Lokad.Cloud.Test
 			}
 		}
 
-		sealed class PatternB : BaseBlobName
+		class PatternB : BaseBlobName
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -51,6 +51,32 @@ namespace Lokad.Cloud.Test
 				AccountHRID = accountHrid;
 			}
 		}
+
+		class PatternC : BaseBlobName
+		{
+			// not a field
+			public override string ContainerName { get { return "my-test-container"; } }
+
+			public readonly Guid ChunkID;
+			public readonly long AccountId;
+			
+			public PatternC(Guid chunkID, long accountId)
+			{
+				ChunkID = chunkID;
+				AccountId = accountId;
+			}
+		}
+
+		class PatternD : PatternC
+		{
+			public readonly long UserId;
+
+			public PatternD(Guid chunkID, long accountId, long userId) : base(chunkID, accountId)
+			{
+				UserId = userId;
+			}
+		}
+
 
 		[Test]
 		public void Conversion_round_trip()
@@ -87,6 +113,26 @@ namespace Lokad.Cloud.Test
 			var pb = new PatternB(Guid.NewGuid(), 1000);
 
 			Assert.AreNotEqual(pa.ToString(), pb.ToString());
+		}
+
+		[Test]
+		public void Field_Order_Matters()
+		{
+			var g = Guid.NewGuid();
+			var pb = new PatternB(g, 1000);
+			var pc = new PatternC(g, 1000);
+
+			Assert.AreNotEqual(pb.ToString(), pc.ToString());	
+		}
+
+		[Test]
+		public void Field_Order_Works_With_Inheritance()
+		{
+			var g = Guid.NewGuid();
+			var pc = new PatternC(g, 1000);
+			var pd = new PatternD(g, 1000, 1234);
+
+			Assert.IsTrue(pd.ToString().StartsWith(pc.ToString()));
 		}
 
 		[Test, ExpectedException(typeof(ArgumentException))]
