@@ -6,7 +6,7 @@
 using System;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using Lokad.Cloud.Azure;
+
 using Lokad.Cloud.Mock;
 using NUnit.Framework;
 
