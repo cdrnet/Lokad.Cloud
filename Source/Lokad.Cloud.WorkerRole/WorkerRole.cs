@@ -15,9 +15,19 @@ namespace Lokad.Cloud
 	/// <summary>Entry point of Lokad.Cloud.</summary>
 	public class WorkerRole : RoleEntryPoint
 	{
+		bool _isHeathly;
+
 		public override void Start()
 		{
 			RoleManager.WriteToLog("Information", "Worker Process entry point called.");
+
+			// TODO: #54 review proposed implementation to avoid restart flood
+			//var restartPolicy = new NoRestartFloodPolicy(isHeathly => { _isHeathly = isHeathly; });
+			//restartPolicy.Do(() =>
+			//{
+			//    var worker = new IsolatedWorker();
+			//    worker.DoWork();
+			//});
 
 			while(true)
 			{
@@ -28,7 +38,7 @@ namespace Lokad.Cloud
 
 		public override RoleStatus GetHealthStatus()
 		{
-			return RoleStatus.Healthy;
+			return _isHeathly ? RoleStatus.Healthy : RoleStatus.Unhealthy;
 		}
 	}
 
