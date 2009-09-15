@@ -17,6 +17,15 @@ namespace Lokad.Cloud
 	[Serializable]
 	public abstract class BaseBlobName
 	{
+		class InheritanceComparer : IComparer<Type>
+		{
+			public int Compare(Type x, Type y)
+			{
+				if(x.Equals(y)) return 0;
+				return x.IsSubclassOf(y) ? 1 : -1;
+			}
+		}
+        
 		/// <summary>Sortable pattern for date times.</summary>
 		/// <remarks>Hyphens can be eventually used to refine further the iteration.</remarks>
 		public const string DateFormatInBlobName = "yyyy-MM-dd-HH-mm-ss-ffff";
@@ -87,7 +96,12 @@ namespace Lokad.Cloud
 				// NB: this approach could be used to generate F# style objects!
 				Fields = typeof(T).GetFields()
 					.Where(f => f.GetCustomAttributes(typeof(PosAttribute), true).Exists())
-					.OrderBy(f => ((PosAttribute)f.GetCustomAttributes(typeof(PosAttribute),true).First()).Index)
+					// ordering always respect inheritance
+					.GroupBy(f => f.DeclaringType)
+						.OrderBy(g => g.Key, new InheritanceComparer())
+						.Select(g => 
+							g.OrderBy(f => ((PosAttribute)f.GetCustomAttributes(typeof(PosAttribute),true).First()).Index))
+					.SelectMany(f => f)
 					.ToArray();
 
 				FirstCtor = typeof(T).GetConstructors(

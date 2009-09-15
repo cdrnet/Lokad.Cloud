@@ -18,9 +18,8 @@ namespace Lokad.Cloud
 			get { return CloudService.TemporaryContainer; }
 		}
 
-		// using negative values here on purpose, so that implementors start at zero
-		[UsedImplicitly, Pos(-2)] public readonly DateTime Expiration;
-		[UsedImplicitly, Pos(-1)] public readonly string Prefix;
+		[UsedImplicitly, Pos(0)] public readonly DateTime Expiration;
+		[UsedImplicitly, Pos(1)] public readonly string Prefix;
 
 		/// <summary>Explicit constructor.</summary>
 		/// <param name="expiration">Date that triggers the garbage collection.</param>

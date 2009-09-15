@@ -69,7 +69,8 @@ namespace Lokad.Cloud.Test
 
 		class PatternD : PatternC
 		{
-			[Pos(2)] public readonly long UserId;
+			// position should always respect inheritance
+			[Pos(0)] public readonly long UserId;
 
 			public PatternD(Guid chunkID, long accountId, long userId) : base(chunkID, accountId)
 			{
