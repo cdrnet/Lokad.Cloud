@@ -129,7 +129,9 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_sync)
 			{
-				return _queueStorage[queueName].Count;
+				Queue<object> queue;
+				return _queueStorage.TryGetValue(queueName, out queue)
+					? queue.Count : 0;
 			}
 		}
 	}
