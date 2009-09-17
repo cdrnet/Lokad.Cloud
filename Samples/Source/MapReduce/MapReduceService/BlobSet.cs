@@ -41,8 +41,8 @@ namespace MapReduce
 			get { return BlobSet<object>.ContainerName; }
 		}
 
-		[UsedImplicitly, Pos(0)] public readonly string Prefix;
-		[UsedImplicitly, Pos(1)] public readonly string Suffix;
+		[UsedImplicitly, Rank(0)] public readonly string Prefix;
+		[UsedImplicitly, Rank(1)] public readonly string Suffix;
 
 		public BlobSetMapName(string prefix, string suffix)
 		{

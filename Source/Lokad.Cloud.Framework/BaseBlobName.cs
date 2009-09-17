@@ -95,12 +95,12 @@ namespace Lokad.Cloud
 				// HACK: optimize this to IL code, if needed
 				// NB: this approach could be used to generate F# style objects!
 				Fields = typeof(T).GetFields()
-					.Where(f => f.GetCustomAttributes(typeof(PosAttribute), true).Exists())
+					.Where(f => f.GetCustomAttributes(typeof(RankAttribute), true).Exists())
 					// ordering always respect inheritance
 					.GroupBy(f => f.DeclaringType)
 						.OrderBy(g => g.Key, new InheritanceComparer())
 						.Select(g => 
-							g.OrderBy(f => ((PosAttribute)f.GetCustomAttributes(typeof(PosAttribute),true).First()).Index))
+							g.OrderBy(f => ((RankAttribute)f.GetCustomAttributes(typeof(RankAttribute),true).First()).Index))
 					.SelectMany(f => f)
 					.ToArray();
 

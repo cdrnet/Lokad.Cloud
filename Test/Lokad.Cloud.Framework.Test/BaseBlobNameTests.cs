@@ -2,12 +2,6 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-
-#region Copyright (c) Lokad 2009
-// This code is released under the terms of the new BSD licence.
-// URL: http://www.lokad.com/
-#endregion
-
 using System;
 using NUnit.Framework;
 
@@ -23,10 +17,10 @@ namespace Lokad.Cloud.Test
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
 
-			[Pos(0)] public readonly DateTime Timestamp;
-			[Pos(1)] public readonly long AccountHRID;
-			[Pos(2)] public readonly Guid ChunkID;
-			[Pos(3)] public readonly int ChunkSize;
+			[Rank(0)] public readonly DateTime Timestamp;
+			[Rank(1)] public readonly long AccountHRID;
+			[Rank(2)] public readonly Guid ChunkID;
+			[Rank(3)] public readonly int ChunkSize;
 
 			public PatternA(DateTime timestamp, long accountHrid, Guid chunkID, int chunkSize)
 			{
@@ -42,8 +36,8 @@ namespace Lokad.Cloud.Test
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
 
-			[Pos(0)] public readonly long AccountHRID;
-			[Pos(1)] public readonly Guid ChunkID;
+			[Rank(0)] public readonly long AccountHRID;
+			[Rank(1)] public readonly Guid ChunkID;
 
 			public PatternB(Guid chunkID, long accountHrid)
 			{
@@ -57,8 +51,8 @@ namespace Lokad.Cloud.Test
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
 
-			[Pos(0)] public readonly Guid ChunkID;
-			[Pos(1)] public readonly long AccountId;
+			[Rank(0)] public readonly Guid ChunkID;
+			[Rank(1)] public readonly long AccountId;
 			
 			public PatternC(Guid chunkID, long accountId)
 			{
@@ -70,7 +64,7 @@ namespace Lokad.Cloud.Test
 		class PatternD : PatternC
 		{
 			// position should always respect inheritance
-			[Pos(0)] public readonly long UserId;
+			[Rank(0)] public readonly long UserId;
 
 			public PatternD(Guid chunkID, long accountId, long userId) : base(chunkID, accountId)
 			{

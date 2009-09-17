@@ -86,7 +86,7 @@
     <Compile Include="Azure\ServiceBalancerCommand.cs" />
     <Compile Include="Azure\StorageModule.cs" />
     <Compile Include="BaseTemporaryBlobName.cs" />
-    <Compile Include="PosAttribute.cs" />
+    <Compile Include="RankAttribute.cs" />
     <Compile Include="TypeMapperProvider.cs" />
     <Compile Include="BaseTypedBlobName.cs" />
     <Compile Include="BlobCounter.cs" />

@@ -59,8 +59,8 @@ namespace Lokad.Cloud
 			get { return CloudService.DelayedMessageContainer; }
 		}
 
-		[Pos(0)] public readonly DateTime TriggerTime;
-		[UsedImplicitly, Pos(1)] public readonly Guid Identifier;
+		[Rank(0)] public readonly DateTime TriggerTime;
+		[UsedImplicitly, Rank(1)] public readonly Guid Identifier;
 
 		public DelayedMessageName(DateTime triggerTime, Guid identifier)
 		{
@@ -76,7 +76,7 @@ namespace Lokad.Cloud
 			get { return CloudService.ServiceStateContainer; }
 		}
 
-		[Pos(0)] public readonly string ServiceName;
+		[Rank(0)] public readonly string ServiceName;
 
 		public CloudServiceStateName(string serviceName)
 		{
