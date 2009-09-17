@@ -9,74 +9,9 @@
              Assembly information class that is shared between all projects
             </summary>
     </member>
-    <member name="T:Lokad.Container.AutoRegistrationModule">
-      <summary>
-            Autofac extension module that provides auto-registration
-            capabilities.
-            </summary>
-    </member>
-    <member name="M:Lokad.Container.AutoRegistrationModule.AddAssembly(System.Reflection.Assembly)">
-      <summary>
-            Adds the assembly to the autoregistration list.
-            </summary>
-      <param name="assembly">
-      </param>
-    </member>
-    <member name="M:Lokad.Container.AutoRegistrationModule.Configure(Autofac.IContainer)">
-      <summary>
-        <see cref="M:Autofac.IModule.Configure(Autofac.IContainer)" />
-      </summary>
-      <param name="container">
-      </param>
-    </member>
-    <member name="P:Lokad.Container.AutoRegistrationModule.IncludeAssemblies">
-      <summary>
-            Same as <see cref="M:Lokad.Container.AutoRegistrationModule.AddAssembly(System.Reflection.Assembly)" /> but for the XML configs
-            </summary>
-    </member>
     <member name="T:Lokad.Container.ExtendContainerBuilder">
       <summary>
             Extensions for the <see cref="T:Autofac.Builder.ContainerBuilder" /></summary>
-    </member>
-    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegister``1(Autofac.Builder.ContainerBuilder)">
-      <see cref="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)" />
-    </member>
-    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegister(Autofac.Builder.ContainerBuilder,System.Collections.Generic.IEnumerable{System.Type})">
-      <see cref="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)" />
-    </member>
-    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterAssembly(Autofac.Builder.ContainerBuilder)">
-      <summary>
-            Performs autoregistration of all types in this assembly, 
-            using the attrubite-based rules
-            </summary>
-      <param name="builder">
-      </param>
-    </member>
-    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterAssembly(Autofac.Builder.ContainerBuilder,System.Reflection.Assembly)">
-      <summary>
-            Performs autoregistration of all types in the specified assembly, 
-            using the attribute-based rules
-            </summary>
-      <param name="builder">
-      </param>
-      <param name="assembly">
-      </param>
-    </member>
-    <member name="M:Lokad.Container.ExtendContainerBuilder.AutoRegisterType(System.Type,Autofac.Builder.ContainerBuilder)">
-      <summary>
-            Runs auto-registration based on the <see cref="T:Lokad.Container.ComponentAttribute" /></summary>
-      <param name="type">
-      </param>
-      <param name="builder">
-      </param>
-    </member>
-    <member name="M:Lokad.Container.ExtendContainerBuilder.GetScope(Lokad.Container.RegistrationScope)">
-      <summary>
-            Converts <see cref="T:Lokad.Container.RegistrationScope" /> to <see cref="T:Autofac.InstanceScope" /></summary>
-      <param name="scope">
-      </param>
-      <returns>
-      </returns>
     </member>
     <member name="M:Lokad.Container.ExtendContainerBuilder.RegisterModule``1(Autofac.Builder.ContainerBuilder)">
       <summary>
