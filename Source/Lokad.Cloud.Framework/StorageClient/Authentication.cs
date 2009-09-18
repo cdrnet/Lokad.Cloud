@@ -3,7 +3,7 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -222,7 +222,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         {
             // Algorithem is as follows
             // 1. Start with the empty string ("")
-            // 2. Append the account name owning the resource preceded by a �/�. This is not 
+            // 2. Append the account name owning the resource preceded by a /. This is not 
             //    the name of the account making the request but the account that owns the 
             //    resource being accessed.
             // 3. Append the path part of the un-decoded HTTP Request-URI, up-to but not 
@@ -298,7 +298,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
     /// <summary>
     /// Use this class to extract various header values from Http requests.
     /// </summary>
-    internal static class HttpRequestAccessor
+    public static class HttpRequestAccessor
     {
         /// <summary>
         /// A helper function for extracting HTTP header values from a NameValueCollection object.
@@ -426,7 +426,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             string path)
         {
             // This is where we encode the url path to be valid
-            string encodedPath = HttpUtility.UrlEncode(path);
+            string encodedPath = HttpUtility.UrlPathEncode(path);
             return new Uri(endpoint, encodedPath);
         }
     }

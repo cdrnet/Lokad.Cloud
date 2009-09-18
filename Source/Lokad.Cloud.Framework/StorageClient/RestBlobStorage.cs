@@ -3,7 +3,7 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -331,9 +331,9 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                 catch (WebException we)
                 {
                     if (we.Response != null &&
-                        ((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.Gone ||
-                        (((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.NotFound)
-                        )
+                        (((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.Gone ||
+                         ((HttpWebResponse)we.Response).StatusCode == HttpStatusCode.NotFound)
+                       )
                         result = false;
                     else
                         throw Utilities.TranslateWebException(we);
@@ -791,7 +791,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         {
             bool retval = false;
             // Since we got a large block, chunk it into smaller pieces called blocks
-            long blockSize = BlockSize;
+            long blockSize = StorageHttpConstants.BlobBlockConstants.BlockSize;
             long startPosition = stream.Position;
             long length = stream.Length - startPosition;
             int numBlocks = (int)Math.Ceiling((double)length / blockSize);
@@ -851,7 +851,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             // This will ensure that a broken connection will only impact a single piece
             long originalPosition = stream.Position;
             long length = stream.Length - stream.Position;
-            if (length > ChunkingSize)
+            if (length > StorageHttpConstants.BlobBlockConstants.MaximumBlobSizeBeforeTransmittingAsBlocks)
                 return PutLargeBlobImpl(blobProperties, stream, overwrite, eTag);
 
             bool retval = false;
@@ -996,7 +996,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                 long location = 0;
                 while (location < blobProperties.ContentLength)
                 {
-                    long nBytes = Math.Min(blobProperties.ContentLength - location, BlockSize);
+                    long nBytes = Math.Min(blobProperties.ContentLength - location, StorageHttpConstants.BlobBlockConstants.BlockSize);
                     R(() =>
                     {
                         // Set the position to rewind in case of a retry
@@ -1102,21 +1102,20 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                 }
                 catch (System.TimeoutException te)
                 {
-                    throw new StorageServerException(StorageErrorCode.ServiceTimeout, "Timeout during blob upload",
+                    throw new StorageServerException(StorageErrorCode.ServiceTimeout, "Timeout during blob metadata upload",
                                     HttpStatusCode.RequestTimeout, te);
                 }
                 catch (WebException we)
                 {
                     if (we.Response != null)
                     {
-                        using (HttpWebResponse response = (HttpWebResponse)we.Response)
+                        HttpWebResponse response = (HttpWebResponse)we.Response;
+                        if (eTag != null &&
+                            (response.StatusCode == HttpStatusCode.PreconditionFailed ||
+                             response.StatusCode == HttpStatusCode.NotModified))
                         {
-                            if (eTag != null &&
-                                (response.StatusCode == HttpStatusCode.PreconditionFailed ||
-                                 response.StatusCode == HttpStatusCode.NotModified))
-                            {
-                                retval = false;
-                            }
+                            retval = false;
+                            return;
                         }
                     }
                     throw Utilities.TranslateWebException(we);
@@ -1229,7 +1228,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             }
             catch (System.TimeoutException te)
             {
-                throw new StorageServerException(StorageErrorCode.ServiceTimeout, "Timeout during blob upload",
+                throw new StorageServerException(StorageErrorCode.ServiceTimeout, "Timeout during blob download",
                                 HttpStatusCode.RequestTimeout, te);
             }
             catch (WebException we)
@@ -1433,7 +1432,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                 }
                 catch (System.TimeoutException te)
                 {
-                    throw new StorageServerException(StorageErrorCode.ServiceTimeout, "Timeout during blob upload",
+                    throw new StorageServerException(StorageErrorCode.ServiceTimeout, "Timeout during listing blobs",
                                     HttpStatusCode.RequestTimeout, te);
                 }
                 catch (WebException we)
@@ -1530,14 +1529,9 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             return new ListBlobsResult(blobs, commonPrefixes, nextMarker);
         }
 
-        const int KB = 1024;
-        const int MB = 1024 * KB;
-
         private Uri containerUri;
         private byte[] key;
         private SharedKeyCredentials credentials;
-        private readonly long BlockSize = 1 * MB;
-        private readonly long ChunkingSize = 2 * MB;
     }
 
     /// <summary>

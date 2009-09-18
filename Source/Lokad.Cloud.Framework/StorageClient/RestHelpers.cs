@@ -3,7 +3,7 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,6 +35,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             internal const string Equal = "=";
             internal const string Bang = "!";
             internal const string Star = "*";
+            internal const string Dot = ".";
         }
 
         internal static class RequestParams
@@ -169,7 +170,8 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
 
             internal const string CreationTime = PrefixForStorageProperties + "creation-time";
             internal const string ForceUpdate = PrefixForStorageHeader + "force-update";            
-            internal const string ApproximateMessagesCount = PrefixForStorageHeader + "approximate-messages-count";     
+            internal const string ApproximateMessagesCount = PrefixForStorageHeader + "approximate-messages-count";
+            internal const string Version = PrefixForStorageHeader + "version";     
         }
 
         internal static class HeaderValues
@@ -204,11 +206,44 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             internal const string Connect = "CONNECT";
         }
 
+        internal static class BlobBlockConstants
+        {
+            internal const int KB = 1024;
+            internal const int MB = 1024 * KB;
+            /// <summary>
+            /// When transmitting a blob that is larger than this constant, this library automatically
+            /// transmits the blob as individual blocks. I.e., the blob is (1) partitioned
+            /// into separate parts (these parts are called blocks) and then (2) each of the blocks is 
+            /// transmitted separately.
+            /// The maximum size of this constant as supported by the real blob storage service is currently 
+            /// 64 MB; the development storage tool currently restricts this value to 2 MB.
+            /// Setting this constant can have a significant impact on the performance for uploading or
+            /// downloading blobs.
+            /// As a general guideline: If you run in a reliable environment increase this constant to reduce
+            /// the amount of roundtrips. In an unreliable environment keep this constant low to reduce the 
+            /// amount of data that needs to be retransmitted in case of connection failures.
+            /// </summary>
+            internal const long MaximumBlobSizeBeforeTransmittingAsBlocks = 2 * MB;
+            /// <summary>
+            /// The size of a single block when transmitting a blob that is larger than the 
+            /// MaximumBlobSizeBeforeTransmittingAsBlocks constant (see above).
+            /// The maximum size of this constant is currently 4 MB; the development storage 
+            /// tool currently restricts this value to 1 MB.
+            /// Setting this constant can have a significant impact on the performance for uploading or 
+            /// downloading blobs.
+            /// As a general guideline: If you run in a reliable environment increase this constant to reduce
+            /// the amount of roundtrips. In an unreliable environment keep this constant low to reduce the 
+            /// amount of data that needs to be retransmitted in case of connection failures.
+            /// </summary>
+            internal const long BlockSize = 1 * MB;            
+        }
+
         internal static class ListingConstants
         {
             internal const int MaxContainerListResults = 100;
             internal const int MaxBlobListResults = 100;
             internal const int MaxQueueListResults = 50;
+            internal const int MaxTableListResults = 50;
         }
 
         /// <summary>
@@ -226,6 +261,17 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             /// Table names that match against this regular expression are valid.
             /// </summary>
             public const string ValidTableNameRegex = @"^([a-z]|[A-Z]){1}([a-z]|[A-Z]|\d){2,62}$";
+        }
+
+        internal static class StandardPortalEndpoints
+        {
+            internal const string BlobStorage = "blob";
+            internal const string QueueStorage = "queue";
+            internal const string TableStorage = "table";
+            internal const string StorageHostSuffix = ".core.windows.net";
+            internal const string BlobStorageEndpoint = BlobStorage + StorageHostSuffix;
+            internal const string QueueStorageEndpoint = QueueStorage + StorageHostSuffix;
+            internal const string TableStorageEndpoint = TableStorage + StorageHostSuffix;
         }
     }
 
@@ -388,17 +434,9 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
 
         internal static bool StringIsIPAddress(string address)
         {
-            try
-            {
-                IPAddress.Parse(address);
+            IPAddress outIPAddress;
 
-                // No exception means it's a valid IP address. 
-                return true;
-            }
-            catch (FormatException)
-            {
-                return false;
-            }
+            return IPAddress.TryParse(address, out outIPAddress);
         }
 
         internal static void AddMetadataHeaders(HttpWebRequest request, NameValueCollection metadata)

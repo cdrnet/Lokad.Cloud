@@ -3,7 +3,7 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,8 +24,8 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
     {
         private SharedKeyCredentials _credentials;
 
-        internal QueueStorageRest(StorageAccountInfo accountInfo)
-            : base(accountInfo)
+        internal QueueStorageRest(StorageAccountInfo accountInfo,string version)
+            : base(accountInfo,version)
         {
             byte[] key = null;
             if (accountInfo.Base64Key != null)
@@ -46,7 +46,8 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             return new QueueRest(queueName,
                                  AccountInfo, 
                                  Timeout,
-                                 RetryPolicy
+                                 RetryPolicy,
+                                 Version
                                  );
         }
 
@@ -101,7 +102,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
 
                     foreach (string name in result.Names)
                     {
-                        yield return new QueueRest(name, AccountInfo, this.Timeout, this.RetryPolicy);
+                        yield return new QueueRest(name, AccountInfo, this.Timeout, this.RetryPolicy,this.Version);
                     }
                 }
             } while (marker != null);
@@ -218,16 +219,20 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                                                      Justification = "Disposable types are only used for automatic receiving of messages, which handle the disposal themselves.")]
     internal class QueueRest : MessageQueue
     {
-        #region Properties and constructors
+        #region Member variables and constructors
 
-        protected SharedKeyCredentials _credentials;
-        protected int _pollInterval = DefaultPollInterval;
+        private Uri _queueUri;
+        private SharedKeyCredentials _credentials;
+        private int _pollInterval = DefaultPollInterval;
+        private string version;
+
 
         internal QueueRest(
                     string name,
                     StorageAccountInfo account,
                     TimeSpan timeout,
-                    RetryPolicy retryPolicy
+                    RetryPolicy retryPolicy,
+                    string version
                     )
             : base(name, account)
         {
@@ -236,13 +241,24 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             {
                 key = Convert.FromBase64String(AccountInfo.Base64Key);
             }
+            ResourceUriComponents uriComponents = new ResourceUriComponents(account.AccountName, name, null);
             _credentials = new SharedKeyCredentials(AccountInfo.AccountName, key);
+            _queueUri = HttpRequestAccessor.ConstructResourceUri(account.BaseUri, uriComponents, account.UsePathStyleUris);
             Timeout = timeout;
             RetryPolicy = retryPolicy;
+            this.version = version;
         }
         #endregion
 
         #region Public interface
+
+        public override Uri QueueUri
+        {
+            get
+            {
+                return _queueUri;
+            }
+        }
 
         public override bool CreateQueue(out bool queueAlreadyExists)
         {
@@ -736,11 +752,11 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             {
                 _evStarted.Close();
             }
-            if (_evStopped == null)
+            if (_evStopped != null)
             {
                 _evStopped.Close();
             }
-            if (_evQuit == null)
+            if (_evQuit != null)
             {
                 _evQuit.Close();
             }
@@ -899,6 +915,11 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             request.ContentLength = 0;
             request.Headers.Add(StorageHttpConstants.HeaderNames.StorageDateTime,
                                 Utilities.ConvertDateTimeToHttpString(DateTime.UtcNow));
+            if (!String.IsNullOrEmpty(this.version))
+            {
+                request.Headers.Add(StorageHttpConstants.HeaderNames.Version, this.version);
+            }
+            
             if (metadata != null)
             {
                 Utilities.AddMetadataHeaders(request, metadata);

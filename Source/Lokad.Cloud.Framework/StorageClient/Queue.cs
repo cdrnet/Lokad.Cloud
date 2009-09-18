@@ -3,7 +3,7 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,12 +42,18 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         /// <returns>A newly created QueueStorage instance</returns>
         public static QueueStorage Create(Uri baseUri, bool? usePathStyleUris, string accountName, string base64Key)
         {
-            return new QueueStorageRest(new StorageAccountInfo(baseUri, usePathStyleUris, accountName, base64Key));
+            return new QueueStorageRest(new StorageAccountInfo(baseUri, usePathStyleUris, accountName, base64Key),null);
         }
 
         public static QueueStorage Create(StorageAccountInfo accountInfo)
         {
-            return new QueueStorageRest(accountInfo);
+            return new QueueStorageRest(accountInfo, null);
+        }
+
+
+        public static QueueStorage Create(StorageAccountInfo accountInfo,string version)
+        {
+            return new QueueStorageRest(accountInfo,version);
         }
 
         /// <summary>
@@ -133,6 +139,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                           Justification = "TimeSpan is a non-mutable type")]
         public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
+
         /// <summary>
         /// The default retry policy
         /// </summary>
@@ -140,11 +147,12 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                           Justification = "RetryPolicy is a non-mutable type")]
         public static readonly RetryPolicy DefaultRetryPolicy = RetryPolicies.NoRetry;
 
-        internal protected QueueStorage(StorageAccountInfo accountInfo)
+        internal protected QueueStorage(StorageAccountInfo accountInfo,string version)
         {
             this.AccountInfo = accountInfo;
             Timeout = DefaultTimeout;
             RetryPolicy = DefaultRetryPolicy;
+            Version = version;
         }
 
         protected QueueStorage(QueueStorage other)
@@ -152,10 +160,12 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             this.AccountInfo = other.AccountInfo;
             this.Timeout = other.Timeout;
             this.RetryPolicy = other.RetryPolicy;
+            this.Version = other.Version;
         }
 
         internal protected StorageAccountInfo AccountInfo { get; set; }
         internal protected SharedKeyCredentials Credentials { get; set; }
+        internal protected string Version { get; set; }
     }
 
     /// <summary>
@@ -185,14 +195,14 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         /// <summary>
         /// Creates a message and initializes the content of the message to be the specified string.
         /// </summary>
-        /// <param name="contents">A string representing the contents of the message.</param>
-        public Message(string contents)
+        /// <param name="content">A string representing the contents of the message.</param>
+        public Message(string content)
         {
-            if (contents == null)
+            if (content == null)
             {
-                throw new ArgumentNullException("The parameter contents must not be null.");
+                throw new ArgumentNullException("content");
             }
-            this.content = Encoding.UTF8.GetBytes(contents);
+            this.content = Encoding.UTF8.GetBytes(content);
         }
 
         /// <summary>
@@ -207,7 +217,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         {
             if (content == null)
             {
-                throw new ArgumentNullException("The parameter content must not be null.");
+                throw new ArgumentNullException("content");
             }
             if (Convert.ToBase64String(content).Length > MaxMessageSize)
             {
@@ -287,11 +297,15 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         /// </summary>
         /// <param name="str">The Base64-encoded string.</param>
         internal void SetContentFromBase64String(string str) {
-            if (str == null)
+            if (str == null || str == string.Empty)
             {
-                throw new ArgumentNullException("The string to convert must not be null!");
+                // we got a message with an empty <MessageText> element
+                this.content = Encoding.UTF8.GetBytes(string.Empty);
             }
-            this.content = Convert.FromBase64String(str);
+            else
+            {
+                this.content = Convert.FromBase64String(str);
+            }
         }
 
         /// <summary>
@@ -476,6 +490,13 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             }
         }
 
+        /// <summary>
+        /// The URI of the queue
+        /// </summary>
+        public abstract Uri QueueUri
+        {
+            get;
+        }
 
         /// <summary>
         /// The retry policy used for retrying requests; this is the retry policy of the 

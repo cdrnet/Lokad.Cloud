@@ -3,13 +3,14 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Collections.Specialized;
 using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Diagnostics;
 
 [assembly:CLSCompliant(true)]
 
@@ -55,7 +56,20 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                                     string base64Key
                                     )
         {
-            return new BlobStorageRest(baseUri, usePathStyleUris, accountName, base64Key);
+            //We create a StorageAccountInfo and then extract the properties of that object.
+            //This is because the constructor of StorageAccountInfo does normalization of BaseUri.
+            StorageAccountInfo accountInfo = new StorageAccountInfo(
+                                                baseUri,
+                                                usePathStyleUris,
+                                                accountName,
+                                                base64Key
+                                                );
+            return new BlobStorageRest(
+                accountInfo.BaseUri,
+                accountInfo.UsePathStyleUris,
+                accountInfo.AccountName,
+                accountInfo.Base64Key
+                );
         }
 
         /// <summary>
@@ -189,6 +203,11 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
     /// </summary>
     public static class RetryPolicies
     {
+
+        public static readonly TimeSpan StandardMinBackoff = TimeSpan.FromMilliseconds(100);
+        public static readonly TimeSpan StandardMaxBackoff = TimeSpan.FromSeconds(30);
+        private static readonly Random random = new Random();
+
         /// <summary>
         /// Policy that does no retries i.e., it just invokes <paramref name="action"/> exactly once
         /// </summary>
@@ -218,11 +237,60 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         public static RetryPolicy RetryN(int numberOfRetries, TimeSpan intervalBetweenRetries)
         {
             return new RetryPolicy((Action action) =>
-                {
-                    RetryNImpl(action, numberOfRetries, intervalBetweenRetries);
-                }
+            {
+                RetryNImpl(action, numberOfRetries, intervalBetweenRetries);
+            }
             );
         }
+
+        /// <summary>
+        /// Policy that retries a specified number of times with a randomized exponential backoff scheme
+        /// </summary>
+        /// <param name="numberOfRetries">The number of times to retry. Should be a non-negative number.</param>
+        /// <param name="deltaBackoff">The multiplier in the exponential backoff scheme</param>
+        /// <returns></returns>
+        /// <remarks>For this retry policy, the minimum amount of milliseconds between retries is given by the 
+        /// StandardMinBackoff constant, and the maximum backoff is predefined by the StandardMaxBackoff constant. 
+        /// Otherwise, the backoff is calculated as random(2^currentRetry) * deltaBackoff.</remarks>
+        public static RetryPolicy RetryExponentialN(int numberOfRetries, TimeSpan deltaBackoff)
+        {
+            return new RetryPolicy((Action action) =>
+            {
+                RetryExponentialNImpl(action, numberOfRetries, StandardMinBackoff, StandardMaxBackoff, deltaBackoff);
+            }
+            );
+        }
+
+        /// <summary>
+        /// Policy that retries a specified number of times with a randomized exponential backoff scheme
+        /// </summary>
+        /// <param name="numberOfRetries">The number of times to retry. Should be a non-negative number</param>
+        /// <param name="deltaBackoff">The multiplier in the exponential backoff scheme</param>
+        /// <param name="minBackoff">The minimum backoff interval</param>
+        /// <param name="maxBackoff">The maximum backoff interval</param>
+        /// <returns></returns>
+        /// <remarks>For this retry policy, the minimum amount of milliseconds between retries is given by the 
+        /// minBackoff parameter, and the maximum backoff is predefined by the maxBackoff parameter. 
+        /// Otherwise, the backoff is calculated as random(2^currentRetry) * deltaBackoff.</remarks>
+        public static RetryPolicy RetryExponentialN(int numberOfRetries, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff)
+        {
+            if (minBackoff > maxBackoff)
+            {
+                throw new ArgumentException("The minimum backoff must not be larger than the maximum backoff period.");
+            }
+            if (minBackoff < TimeSpan.Zero)
+            {
+                throw new ArgumentException("The minimum backoff period must not be negative.");
+            }
+
+            return new RetryPolicy((Action action) =>
+            {
+                RetryExponentialNImpl(action, numberOfRetries, minBackoff, maxBackoff, deltaBackoff);
+            }
+            );
+        }
+
+        #region private helper methods
 
         private static void RetryNImpl(Action action, int numberOfRetries, TimeSpan intervalBetweenRetries)
         {
@@ -236,21 +304,126 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                 catch (StorageServerException)
                 {
                     if (numberOfRetries == 0)
+                    {
                         throw;
+                    }
                     if (intervalBetweenRetries > TimeSpan.Zero)
+                    {
                         Thread.Sleep(intervalBetweenRetries);
-                    //Console.WriteLine("Retrying request");
+                    }
                 }
                 catch (TableRetryWrapperException e)
                 {
                     if (numberOfRetries == 0)
+                    {
                         throw e.InnerException;
+                    }
                     if (intervalBetweenRetries > TimeSpan.Zero)
+                    {
                         Thread.Sleep(intervalBetweenRetries);
+                    }
                 }
             }
             while (numberOfRetries-- > 0);
         }
+
+        private static void RetryExponentialNImpl(Action action, int numberOfRetries, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff)
+        {
+            int totalNumberOfRetries = numberOfRetries;
+            TimeSpan backoff;
+
+            // sanity check
+            // this is already checked when creating the retry policy in case other than the standard settings are used
+            // because this library is available in source code, the standard settings can be changed and thus we 
+            // check again at this point
+            if (minBackoff > maxBackoff)
+            {
+                throw new ArgumentException("The minimum backoff must not be larger than the maximum backoff period.");
+            }
+            if (minBackoff < TimeSpan.Zero)
+            {
+                throw new ArgumentException("The minimum backoff period must not be negative.");
+            }
+
+            do
+            {
+                try
+                {
+                    action();
+                    break;
+                }
+                catch (StorageServerException)
+                {
+                    if (numberOfRetries == 0)
+                    {
+                        throw;
+                    }  
+                    backoff = CalculateCurrentBackoff(minBackoff, maxBackoff, deltaBackoff, totalNumberOfRetries - numberOfRetries);
+                    Debug.Assert(backoff >= minBackoff);
+                    Debug.Assert(backoff <= maxBackoff);
+                    if (backoff > TimeSpan.Zero) {
+                        Thread.Sleep(backoff);
+                    }
+                }
+                catch (TableRetryWrapperException e)
+                {
+                    if (numberOfRetries == 0)
+                    {
+                        throw e.InnerException;
+                    }
+                    backoff = CalculateCurrentBackoff(minBackoff, maxBackoff, deltaBackoff, totalNumberOfRetries - numberOfRetries);
+                    Debug.Assert(backoff >= minBackoff);
+                    Debug.Assert(backoff <= maxBackoff);
+                    if (backoff > TimeSpan.Zero)
+                    {
+                        Thread.Sleep(backoff);
+                    }
+                }
+            }
+            while (numberOfRetries-- > 0);
+        }
+
+        private static TimeSpan CalculateCurrentBackoff(TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff, int curRetry)
+        {
+            long backoff;
+
+            if (curRetry > 30)
+            {
+                backoff = maxBackoff.Ticks;
+            }
+            else
+            {
+                try
+                {
+                    checked
+                    {
+                        // only randomize the multiplier here 
+                        // it would be as correct to randomize the whole backoff result
+                        lock (random)
+                        {
+                            backoff = random.Next((1 << curRetry) + 1);
+                        }
+                        // Console.WriteLine("backoff:" + backoff);
+                        // Console.WriteLine("random range: [0, " + ((1 << curRetry) + 1) + "]");
+                        backoff *= deltaBackoff.Ticks;
+                        backoff += minBackoff.Ticks;
+                    }
+                }
+                catch (OverflowException)
+                {
+                    backoff = maxBackoff.Ticks;
+                }
+                if (backoff > maxBackoff.Ticks)
+                {
+                    backoff = maxBackoff.Ticks;
+                }
+            }
+            Debug.Assert(backoff >= minBackoff.Ticks);
+            Debug.Assert(backoff <= maxBackoff.Ticks);
+            return TimeSpan.FromTicks(backoff);
+        }
+
+        #endregion
     }
 
     /// <summary>

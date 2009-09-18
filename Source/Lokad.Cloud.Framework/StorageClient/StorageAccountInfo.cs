@@ -3,13 +3,14 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Globalization;
 using System.Configuration;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using Microsoft.ServiceHosting.ServiceRuntime;
 
 namespace Microsoft.Samples.ServiceHosting.StorageClient
@@ -87,19 +88,47 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         /// <param name="accountName">The account name.</param>
         /// <param name="base64Key">The account's shared key.</param>
         /// <param name="allowIncompleteSettings">true if it shall be allowed to only set parts of the StorageAccountInfo properties.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase")]
         public StorageAccountInfo(Uri baseUri, bool? usePathStyleUris, string accountName, string base64Key, bool allowIncompleteSettings)
         {
             if (baseUri == null && !allowIncompleteSettings)
             {
                 throw new ArgumentNullException("baseUri");
             }
+            if (string.IsNullOrEmpty(base64Key) && !allowIncompleteSettings)
+            {
+                throw new ArgumentNullException("base64Key");
+            }
+            if (baseUri != null) 
+            {
+                string newAccountName = null;
+                Uri newBaseUri = null;
+                if (IsStandardStorageEndpoint(baseUri, out newAccountName, out newBaseUri)) {
+                    if (!string.IsNullOrEmpty(newAccountName) && 
+                        !string.IsNullOrEmpty(accountName) &&
+                        string.Compare(accountName, newAccountName, StringComparison.Ordinal) != 0)
+                    {
+                        throw new ArgumentException("The configured base URI " + baseUri.AbsoluteUri + " for the storage service is incorrect. " + 
+                                                    "The configured account name " + accountName + " must match the account name " + newAccountName +
+                                                    " as specified in the storage service base URI." +
+                                                     GeneralAccountConfigurationExceptionString);
+                    }
+                    Debug.Assert((newBaseUri == null && newAccountName == null) || (newBaseUri != null && newAccountName != null));
+                    if (newAccountName != null && newBaseUri != null) {
+                        accountName = newAccountName;
+                        baseUri = newBaseUri;
+                    }
+                }
+            }
             if (string.IsNullOrEmpty(accountName) && !allowIncompleteSettings)
             {
                 throw new ArgumentNullException("accountName");
             }
-            if (string.IsNullOrEmpty(base64Key) && !allowIncompleteSettings)
-            {
-                throw new ArgumentNullException("base64Key");
+            if (!string.IsNullOrEmpty(accountName) && accountName.ToLowerInvariant() != accountName) {
+                throw new ArgumentException("The account name must not contain upper-case letters. " + 
+                                "The account name is the first part of the URL for accessing the storage services as presented to you by the portal or " +
+                                "the predefined storage account name when using the development storage tool. " + 
+                                GeneralAccountConfigurationExceptionString);
             }
 
             BaseUri = baseUri;
@@ -110,7 +139,14 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             }
             else if (usePathStyleUris == null)
             {
-                _usePathStyleUris = null;
+                if (baseUri != null)
+                {
+                    _usePathStyleUris = Utilities.StringIsIPAddress(baseUri.Host);
+                }
+                else
+                {
+                    _usePathStyleUris = null;
+                }
             }
             else
             {
@@ -401,10 +437,6 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                 }
             }
 
-            if (string.IsNullOrEmpty(name) && !allowIncompleteSettings)
-            {
-                throw new ArgumentException("No account name specified!");
-            }
             if (string.IsNullOrEmpty(key) && !allowIncompleteSettings)
             {
                 throw new ArgumentException("No account key specified!");
@@ -412,6 +444,25 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             if (string.IsNullOrEmpty(endpoint) && !allowIncompleteSettings)
             {
                 throw new ArgumentException("No endpoint specified!");
+            }
+            if (string.IsNullOrEmpty(name))
+            {
+                // in this case let's try to derive the account name from the Uri
+                string newAccountName = null;
+                Uri newBaseUri = null;
+                if (IsStandardStorageEndpoint(new Uri(endpoint), out newAccountName, out newBaseUri))
+                {
+                    Debug.Assert((newAccountName != null && newBaseUri != null) || (newAccountName == null && newBaseUri == null));
+                    if (newAccountName != null && newBaseUri != null)
+                    {
+                        endpoint = newBaseUri.AbsoluteUri;
+                        name = newAccountName;
+                    }
+                }
+                if (string.IsNullOrEmpty(name) && !allowIncompleteSettings)
+                {
+                    throw new ArgumentException("No account name specified.");
+                }
             }
 
             bool? usePathStyleUris = null;
@@ -489,6 +540,71 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             }
             return ret;
         }
+
+        private static string GeneralAccountConfigurationExceptionString {
+            get {
+                return "If the portal defines http://test.blob.core.windows.net as your blob storage endpoint, the string \"test\" " + 
+                       "is your account name, and you can specify http://blob.core.windows.net as the BlobStorageEndpoint in your " +
+                       "service's configuration file(s).";
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase")]
+        private static bool IsStandardStorageEndpoint(Uri baseUri, out string newAccountName, out Uri newBaseUri) {
+            if (baseUri == null) {
+                throw new ArgumentNullException("baseUri");
+            }
+
+            newAccountName = null;
+            newBaseUri = null;
+
+            string host = baseUri.Host;
+            if (string.IsNullOrEmpty(host)) {
+                throw new ArgumentException("The host part of the Uri " + baseUri.AbsoluteUri + " must not be null or empty.");
+            }
+            if (host != host.ToLowerInvariant()) {
+                throw new ArgumentException("The specified host string " + host + " must not contain upper-case letters.");
+            }
+
+            string suffix = null;
+            if (host.EndsWith(StorageHttpConstants.StandardPortalEndpoints.TableStorageEndpoint, StringComparison.Ordinal)) {
+                suffix = StorageHttpConstants.StandardPortalEndpoints.TableStorageEndpoint;
+            }
+            if (host.EndsWith(StorageHttpConstants.StandardPortalEndpoints.BlobStorageEndpoint, StringComparison.Ordinal))
+            {
+                suffix = StorageHttpConstants.StandardPortalEndpoints.BlobStorageEndpoint;
+            }
+            if (host.EndsWith(StorageHttpConstants.StandardPortalEndpoints.QueueStorageEndpoint, StringComparison.Ordinal))
+            {
+                suffix = StorageHttpConstants.StandardPortalEndpoints.QueueStorageEndpoint;
+            }
+            // a URL as presented on the portal was specified, lets find out whether it is in the correct format
+            if (suffix != null) {
+                int index = host.IndexOf(suffix, StringComparison.Ordinal);
+                Debug.Assert(index != -1);
+                if (index > 0) {
+                    string first = host.Substring(0, index);
+                    Debug.Assert(!string.IsNullOrEmpty(first));
+                    if (first[first.Length-1] != StorageHttpConstants.ConstChars.Dot[0]) {
+                        return false;
+                    }
+                    first = first.Substring(0, first.Length - 1);
+                    if (string.IsNullOrEmpty(first)) {
+                        throw new ArgumentException("The configured base URI " + baseUri.AbsoluteUri + " for the storage service is incorrect. " + 
+                                                     GeneralAccountConfigurationExceptionString);
+                    }
+                    if (first.Contains(StorageHttpConstants.ConstChars.Dot)) {
+                        throw new ArgumentException("The configured base URI " + baseUri.AbsoluteUri + " for the storage service is incorrect. " + 
+                                                     GeneralAccountConfigurationExceptionString);
+                    }
+                    newAccountName = first;
+                    newBaseUri = new Uri(baseUri.Scheme + Uri.SchemeDelimiter + suffix + baseUri.PathAndQuery);                    
+                }
+                return true;
+            }
+            return false;
+        }
+
 
         #endregion
 

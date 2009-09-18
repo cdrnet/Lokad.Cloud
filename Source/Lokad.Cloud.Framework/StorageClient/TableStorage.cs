@@ -3,7 +3,7 @@
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
 //
-﻿// This file contains helper classes for accessing the table storage service:
+// This file contains helper classes for accessing the table storage service:
 //      - base classes for tables and table entities (table rows) containing the necessary 
 //        partition key and row key values
 //      - methods for applying the table storage authentication scheme and for handling 
@@ -121,12 +121,16 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                                           string base64Key
                                          )
         {
-            TableStorage storage = new TableStorage(baseUri, usePathStyleUris, accountName, base64Key);
-            if (storage != null)
-            {
-                storage.RetryPolicy = DefaultRetryPolicy;
-            }
-            return storage;
+            //We create a StorageAccountInfo and then extract the properties of that object.
+            //This is because the constructor of StorageAccountInfo does normalization of BaseUri.
+            StorageAccountInfo info = new StorageAccountInfo(
+                                            baseUri,
+                                            usePathStyleUris,
+                                            accountName,
+                                            base64Key
+                                            );
+
+            return new TableStorage(info.BaseUri, info.UsePathStyleUris, info.AccountName, info.Base64Key);
         }
 
         /// <summary>
@@ -134,7 +138,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         /// </summary>
         public static TableStorage Create(StorageAccountInfo info)
         {
-            return TableStorage.Create(info.BaseUri, info.UsePathStyleUris, info.AccountName, info.Base64Key);
+            return new TableStorage(info.BaseUri, info.UsePathStyleUris, info.AccountName, info.Base64Key);
         }
 
         /// <summary>
@@ -268,6 +272,10 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             svc.MergeOption = MergeOption.NoTracking;
             IQueryable<TableStorageTable> query = from t in svc.CreateQuery<TableStorageTable>(TableStorageConstants.TablesName)
                                                   select t;
+            // result chunking
+            // if we would not do this, the default value of 1000 is used before query result pagination
+            // occurs
+            query = query.Take(StorageHttpConstants.ListingConstants.MaxTableListResults);
 
 
             DataServiceQuery<TableStorageTable> orig = query as DataServiceQuery<TableStorageTable>;
@@ -376,12 +384,23 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
 
         /// <summary>
         /// Tries to create a table with the given name.
+        /// The main difference to the CreateTable method is that this function first queries the 
+        /// table storage service whether the table already exists, before it tries to actually create 
+        /// the table. The reason is that this 
+        /// is more lightweight for the table storage service than always trying to create a table that 
+        /// does already exist. Furthermore, as we expect that applications don't really randomly create
+        /// tables, the additional roundtrip that is required for creating the table is necessary only very
+        /// rarely.
         /// </summary>
         /// <param name="tableName">The name of the table.</param>
         /// <returns>True if the operation was completed successfully. False if the table already exists.</returns>
         public bool TryCreateTable(string tableName)
         {
             ParameterValidator.CheckStringParameter(tableName, false, "tableName");
+            if (DoesTableExist(tableName))
+            {
+                return false;
+            }
             try
             {
                 CreateTable(tableName);
@@ -436,6 +455,14 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
                         {
                             throw;
                         }
+                    }
+                    catch (NullReferenceException ne)
+                    {
+                        //This is a workaround for bug in DataServiceQuery<T>.Execute. It throws a
+                        //NullReferenceException instead of a DataServiceRequestException when it
+                        //cannot connect to the the server. This workaround will be removed when
+                        //the fix for this bug is released.
+                        throw new DataServiceRequestException("Unable to connect to server.", ne);
                     }
                 }
                 catch (InvalidOperationException e)
@@ -585,7 +612,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             {
                 this._usePathStyleUris = usePathStyleUris.Value;
             }
-
+            RetryPolicy = DefaultRetryPolicy;
         }
 
         private Uri _baseUri;
@@ -720,7 +747,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             {
                 throw new ArgumentException("The string cannot be null or empty!");
             }
-            if (propertyValue.Length > TableStorageConstants.MaxStringPropertySizeInBytes)
+            if (propertyValue.Length > TableStorageConstants.MaxStringPropertySizeInChars)
             {
                 throw new ArgumentException("The string cannot be longer than the maximum string property size.");
             }
@@ -735,7 +762,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             {
                 return false;
             }
-            if (propertyValue.Length > TableStorageConstants.MaxStringPropertySizeInBytes)
+            if (propertyValue.Length > TableStorageConstants.MaxStringPropertySizeInChars)
             {
                 return false;
             }
@@ -805,6 +832,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         }
     }
 
+
     /// <summary>
     /// This class represents an entity (row) in a table in table storage.
     /// </summary>
@@ -854,6 +882,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
         {
         }
 
+        
         /// <summary>
         /// Compares to entities.
         /// </summary>
@@ -873,6 +902,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             return (this.PartitionKey == rhs.PartitionKey
                        && this.RowKey == rhs.RowKey);
         }
+        
 
         /// <summary>
         /// Computes a HashCode for this object.
@@ -979,7 +1009,7 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
             IEnumerable<TElement> ret = null;
             if (retry == null)
             {
-                throw new ArgumentNullException("The retry policy must not be null!");
+                throw new ArgumentNullException("retry");
             }
             retry(() =>
             {
@@ -1455,4 +1485,3 @@ namespace Microsoft.Samples.ServiceHosting.StorageClient
 
     #endregion
 }
-
