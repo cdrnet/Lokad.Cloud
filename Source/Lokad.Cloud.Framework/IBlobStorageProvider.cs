@@ -12,12 +12,12 @@ namespace Lokad.Cloud
 	/// <remarks>
 	/// This provider represents a <em>logical</em> blob storage, not the actual
 	/// Blob Storage. In particular, this provider deals with overflowing buffers
-	/// that need to be split in smaller chuncks to be uploaded.
+	/// that need to be split in smaller chunks to be uploaded.
 	/// </remarks>
 	public interface IBlobStorageProvider
 	{
 		/// <summary>Creates a new blob container.</summary>
-		/// <returns><c>true</c> if the container was actually created and false if
+		/// <returns><c>true</c> if the container was actually created and <c>false</c> if
 		/// the container already exists.</returns>
 		bool CreateContainer(string containerName);
 
@@ -31,7 +31,7 @@ namespace Lokad.Cloud
 
 		/// <summary>Puts a blob and optionally overwrite.</summary>
 		/// <remarks>Creates the container if it does not exist beforehand.</remarks>
-		/// <returns><c>true</c> if the blob has been put and false if the blob already
+		/// <returns><c>true</c> if the blob has been put and <c>false</c> if the blob already
 		/// exists but could not be overwritten.</returns>
 		bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite);
 
@@ -44,7 +44,7 @@ namespace Lokad.Cloud
 		/// <param name="etag">New etag (identifier used to track for blob change) if
 		/// the blob is written, or <c>null</c> if no blob is written.</param>
 		/// <remarks>Creates the container if it does not exist beforehand.</remarks>
-		/// <returns><c>true</c> if the blob has been put and false if the blob already
+		/// <returns><c>true</c> if the blob has been put and <c>false</c> if the blob already
 		/// exists but could not be overwritten.</returns>
 		bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite, out string etag);
 
@@ -79,7 +79,7 @@ namespace Lokad.Cloud
 		/// <typeparam name="T">Type of the blob.</typeparam>
 		/// <param name="containerName">Name of the container.</param>
 		/// <param name="blobName">Name of the blob.</param>
-		/// <param name="oldEtag">Old etag value. If this value is null, the blob will always
+		/// <param name="oldEtag">Old etag value. If this value is <c>null</c>, the blob will always
 		/// be retrieved (except if the blob does not exist anymore).</param>
 		/// <param name="newEtag">New etag value. Will be <c>null</c> if the blob no more exist,
 		/// otherwise will be set to the current etag value of the blob.</param>
@@ -92,7 +92,7 @@ namespace Lokad.Cloud
 		/// </summary>
 		string GetBlobEtag(string containerName, string blobName);
 
-		/// <summary>Update a blob while garantying an atomic update process.</summary>
+		/// <summary>Update a blob while guaranteeing an atomic update process.</summary>
 		/// <param name="containerName"></param>
 		/// <param name="blobName"></param>
 		/// <param name="updater">The function takes a <c>T</c> object to update
@@ -110,7 +110,7 @@ namespace Lokad.Cloud
 		/// <seealso cref="UpdateIfNotModified{T}(string,string,System.Func{T,Lokad.Result{T}},out Lokad.Result{T})"/>
 		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result);
 
-		/// <summary>Update a blob while garantying an atomic update process.</summary>
+		/// <summary>Update a blob while guaranteeing an atomic update process.</summary>
 		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater);
 
 		/// <seealso cref="UpdateIfNotModified{T}(string,string,System.Func{T,Lokad.Result{T}})"/>

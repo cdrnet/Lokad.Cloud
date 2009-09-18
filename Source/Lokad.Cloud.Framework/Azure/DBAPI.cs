@@ -2,9 +2,9 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using Lokad.Quality;
@@ -211,7 +211,7 @@ namespace Lokad.Cloud.Azure
 		/// as the one making this call, will be able to decrypt data.
 		/// Machine key will allow any application running on the same
 		/// computer where data were encrypted to perform decryption.
-		/// Note: If optional entropy is specifed, it will be required
+		/// Note: If optional entropy is specified, it will be required
 		/// for decryption.
 		/// </param>
 		/// <param name="plainText">
@@ -257,7 +257,7 @@ namespace Lokad.Cloud.Azure
 		/// as the one making this call, will be able to decrypt data.
 		/// Machine key will allow any application running on the same
 		/// computer where data were encrypted to perform decryption.
-		/// Note: If optional entropy is specifed, it will be required
+		/// Note: If optional entropy is specified, it will be required
 		/// for decryption.
 		/// </param>
 		/// <param name="plainTextBytes">

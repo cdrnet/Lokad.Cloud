@@ -11,7 +11,7 @@ namespace Lokad.Cloud
 	public sealed class QueueServiceSettingsAttribute : CloudServiceSettingsAttribute
 	{
 		/// <summary>Name of the queue attached to the <see cref="QueueService{T}"/>.</summary>
-		/// <remarks>If this value is null or empty, a default queue name is chosen based
+		/// <remarks>If this value is <c>null</c> or empty, a default queue name is chosen based
 		/// on the type <c>T</c>.</remarks>
 		public string QueueName { get; set; }
 

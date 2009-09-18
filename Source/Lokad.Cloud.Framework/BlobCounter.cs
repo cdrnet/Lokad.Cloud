@@ -14,7 +14,7 @@ namespace Lokad.Cloud
 		readonly string _containerName;
 		readonly string _blobName;
 
-		/// <summary>Constant value provided for the cloud enueration pattern
+		/// <summary>Constant value provided for the cloud enumeration pattern
 		/// over a queue.</summary>
 		/// <remarks>The constant value is <c>2^48</c>, expected to be sufficiently
 		/// large to avoid any arithmetic overflow with <c>long</c> values.</remarks>

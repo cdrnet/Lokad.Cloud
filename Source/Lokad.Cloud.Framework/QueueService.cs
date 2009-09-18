@@ -9,12 +9,12 @@ using System.Linq;
 
 namespace Lokad.Cloud
 {
-	/// <summary>Strongly-type queue service (inheritors are instanciated by
+	/// <summary>Strongly-type queue service (inheritors are instantiated by
 	/// reflection on the cloud).</summary>
 	/// <typeparam name="T">Message type</typeparam>
 	/// <remarks>
 	/// <para>The implementation is not constrained by the 8kb limit for <c>T</c> instances.
-	/// If the intances are larger, the framework will wrap them into the cloud storage.</para>
+	/// If the instances are larger, the framework will wrap them into the cloud storage.</para>
 	/// <para>Whenever possible, we suggest to design the service logic to be idempotent
 	/// in order to make the service reliable and ultimately consistent.</para>
 	/// <para>A empty constructor is needed for instantiation through reflection.</para>
@@ -66,7 +66,7 @@ namespace Lokad.Cloud
 		}
 
 		/// <summary>Method called first by the <c>Lokad.Cloud</c> framework when messages are
-		/// available for processing. Defaut implementation is naively calling <see cref="Start"/>.
+		/// available for processing. Default implementation is naively calling <see cref="Start"/>.
 		/// </summary>
 		/// <param name="messages">Messages to be processed.</param>
 		/// <remarks>
@@ -89,7 +89,7 @@ namespace Lokad.Cloud
 		/// </remarks>
 		protected virtual void Start(T message)
 		{
-			throw new NotSupportedException("Start or StartRange method must overriden by inheritor.");
+			throw new NotSupportedException("Start or StartRange method must overridden by inheritor.");
 		}
 
 		/// <summary>Get more messages from the underlying queue.</summary>

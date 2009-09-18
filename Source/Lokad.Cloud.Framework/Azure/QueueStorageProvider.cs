@@ -2,12 +2,12 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using Lokad.Cloud;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
 namespace Lokad.Cloud.Azure
@@ -17,7 +17,7 @@ namespace Lokad.Cloud.Azure
 	/// <remarks>
 	/// <para>
 	/// Overflowing messages are stored in blob storage and normally deleted as with
-	/// their originating correspondance in queue storage. Yet if messages aren't processed
+	/// their originating correspondence in queue storage. Yet if messages aren't processed
 	/// in 7 days, then, they should be removed.
 	/// </para>
 	/// <para>

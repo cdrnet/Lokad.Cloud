@@ -2,13 +2,14 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
 using Lokad.Quality;
 
 namespace Lokad.Cloud
 {
 	/// <summary>Name associated to a strong typed fixed-lifespan item.</summary>
-	/// <typeparam name="T">Type refered by the blob name.</typeparam>
+	/// <typeparam name="T">Type referred by the blob name.</typeparam>
 	[Serializable]
 	public class BaseTemporaryBlobName<T> : BaseTypedBlobName<T>
 	{

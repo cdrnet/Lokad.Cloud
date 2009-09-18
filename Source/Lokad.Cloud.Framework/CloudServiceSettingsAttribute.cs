@@ -2,6 +2,7 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
 
 namespace Lokad.Cloud
@@ -21,7 +22,7 @@ namespace Lokad.Cloud
 		/// <summary>Gets a description of the service (for administration purposes).</summary>
 		public string Description { get; set; }
 
-		/// <summary>Excution time-out for the <c>StartImpl</c> methods of 
+		/// <summary>Execution time-out for the <c>StartImpl</c> methods of 
 		/// <see cref="CloudService"/> inheritors.</summary>
 		public TimeSpan ProcessingTimeout { get; set; }
 	}

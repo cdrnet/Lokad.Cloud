@@ -25,7 +25,7 @@ namespace Lokad.Cloud.Azure
 		/// <summary>Name of the container used to store the assembly package.</summary>
 		public const string ContainerName = "lokad-cloud-assemblies";
 
-		/// <summary>Name of the blob used to store the asssembly package.</summary>
+		/// <summary>Name of the blob used to store the assembly package.</summary>
 		public const string PackageBlobName = "default";
 
 		/// <summary>Name of the blob used to store the client configuration.</summary>
@@ -129,7 +129,7 @@ namespace Lokad.Cloud.Azure
 		private readonly Dictionary<string, Assembly> _assemblyCache;
 
 		/// <summary> 
-		/// Initializes an instanse of the <see cref="AssemblyResolver" />  class.
+		/// Initializes an instance of the <see cref="AssemblyResolver" />  class.
 		/// </summary>
 		public AssemblyResolver()
 		{

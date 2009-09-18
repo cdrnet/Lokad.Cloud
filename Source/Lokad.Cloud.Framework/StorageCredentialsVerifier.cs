@@ -4,9 +4,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
 namespace Lokad.Cloud
@@ -34,7 +31,7 @@ namespace Lokad.Cloud
 		/// <summary>
 		/// Verifies the storage credentials.
 		/// </summary>
-		/// <returns><b>true</b> if the credentials are correct, <b>false</b> otherwise.</returns>
+		/// <returns><c>true</c> if the credentials are correct, <c>false</c> otherwise.</returns>
 		public bool VerifyCredentials()
 		{
 			try

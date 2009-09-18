@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lokad.Cloud;
 using Lokad.Threading;
 
 namespace Lokad.Cloud.Mock
@@ -38,11 +37,9 @@ namespace Lokad.Cloud.Mock
 				{
 					return false;
 				}
-				else
-				{
-					Containers.Add(containerName, new MockContainer());
-					return true;
-				}		
+				
+				Containers.Add(containerName, new MockContainer());
+				return true;
 			}	
 		}
 
@@ -50,13 +47,13 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_syncRoot)
 			{
-				if (Containers.Keys.Contains(containerName))
+				if (!Containers.Keys.Contains(containerName))
 				{
-					Containers.Remove(containerName);
-					return true;
+					return false;
 				}
-				else
-					return false;	
+
+				Containers.Remove(containerName);
+				return true;
 			}
 		}
 
@@ -67,7 +64,7 @@ namespace Lokad.Cloud.Mock
 
 		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite)
 		{
-			string ignored = null;
+			string ignored;
 			return PutBlob<T>(containerName, blobName, item, overwrite, out ignored);
 		}
 
@@ -80,31 +77,25 @@ namespace Lokad.Cloud.Mock
 				{
 					if(Containers[containerName].BlobNames.Contains(blobName))
 					{
-						if(overwrite)
-						{
-							Containers[containerName].SetBlob(blobName, item);
-							etag = Containers[containerName].BlobsEtag[blobName];
-							return true;
-						}
-						else
+						if (!overwrite)
 						{
 							return false;
 						}
-					}
-					else
-					{
-						Containers[containerName].AddBlob(blobName, item);
+
+						Containers[containerName].SetBlob(blobName, item);
 						etag = Containers[containerName].BlobsEtag[blobName];
 						return true;
 					}
-				}
-				else
-				{
-					Containers.Add(containerName, new MockContainer());
+					
 					Containers[containerName].AddBlob(blobName, item);
 					etag = Containers[containerName].BlobsEtag[blobName];
 					return true;
 				}
+				
+				Containers.Add(containerName, new MockContainer());
+				Containers[containerName].AddBlob(blobName, item);
+				etag = Containers[containerName].BlobsEtag[blobName];
+				return true;
 			}
 		}
 
@@ -124,11 +115,9 @@ namespace Lokad.Cloud.Mock
 					etag = null;
 					return default(T);
 				}
-				else
-				{
-					etag = Containers[containerName].BlobsEtag[blobName];
-					return (T)Containers[containerName].GetBlob(blobName);
-				}
+				
+				etag = Containers[containerName].BlobsEtag[blobName];
+				return (T)Containers[containerName].GetBlob(blobName);
 			}
 		}
 
@@ -138,7 +127,7 @@ namespace Lokad.Cloud.Mock
 
 			var tempResult = blobNames.SelectInParallel(blobName =>
 			{
-				string etag = null;
+				string etag;
 				T blob = GetBlob<T>(containerName, blobName, out etag);
 				return new Tuple<T, string>(blob, etag);
 			}, blobNames.Length);
@@ -166,11 +155,9 @@ namespace Lokad.Cloud.Mock
 					newEtag = null;
 					return default(T);
 				}
-				else
-				{
-					newEtag = currentEtag;
-					return GetBlob<T>(containerName, blobName);
-				}
+				
+				newEtag = currentEtag;
+				return GetBlob<T>(containerName, blobName);
 			}
 		}
 
@@ -221,7 +208,7 @@ namespace Lokad.Cloud.Mock
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result)
 		{
 			Result<T> rresult;
-			var flag = UpdateIfNotModified(containerName, blobName, x => Result.Success(updater(x)), out rresult);
+			var flag = UpdateIfNotModified(containerName, blobName, x => Result.CreateSuccess(updater(x)), out rresult);
 
 			result = rresult.Value;
 			return flag;
@@ -235,20 +222,20 @@ namespace Lokad.Cloud.Mock
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)
 		{
-			return UpdateIfNotModified<T>(containerName, blobName, x => Result.Success(updater(x)));
+			return UpdateIfNotModified<T>(containerName, blobName, x => Result.CreateSuccess(updater(x)));
 		}
 
 		public bool DeleteBlob(string containerName, string blobName)
 		{
 			lock (_syncRoot)
 			{
-				if (Containers.Keys.Contains(containerName) && Containers[containerName].BlobNames.Contains(blobName))
+				if (!Containers.Keys.Contains(containerName) || !Containers[containerName].BlobNames.Contains(blobName))
 				{
-					Containers[containerName].RemoveBlob(blobName);
-					return true;
-				}
-				else
 					return false;
+				}
+
+				Containers[containerName].RemoveBlob(blobName);
+				return true;
 			}
 		}
 
@@ -256,12 +243,12 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_syncRoot)
 			{
-				if (Containers.Keys.Contains(containerName))
+				if (!Containers.Keys.Contains(containerName))
 				{
-					return Containers[containerName].BlobNames.Where(name => name.StartsWith(prefix));
-				}
-				else
 					throw new InvalidOperationException("ContainerName : " + containerName + " does not exist.");
+				}
+
+				return Containers[containerName].BlobNames.Where(name => name.StartsWith(prefix));
 			}
 		}
 

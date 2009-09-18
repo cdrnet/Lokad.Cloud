@@ -95,7 +95,7 @@ namespace Lokad.Cloud
 	/// <see cref="QueueService{T}"/> or <see cref="ScheduledService"/> instead.</remarks>
 	public abstract class CloudService
 	{
-		/// <summary>Name fo the container associated to temporary items. Each blob
+		/// <summary>Name of the container associated to temporary items. Each blob
 		/// is prefixed with his lifetime expiration date.</summary>
 		internal const string TemporaryContainer = "lokad-cloud-temporary";
 
@@ -112,7 +112,7 @@ namespace Lokad.Cloud
 		/// <summary>Indicates the state of the service, as retrieved during the last check.</summary>
 		CloudServiceState _state = CloudServiceState.Started;
 
-		/// <summary>Indicates the last time the service has checked its excution status.</summary>
+		/// <summary>Indicates the last time the service has checked its execution status.</summary>
 		DateTime _lastStateCheck = DateTime.MinValue;
 
 		/// <summary>Indicates the frequency where the service is actually checking for its state.</summary>
@@ -197,7 +197,7 @@ namespace Lokad.Cloud
 			// does nothing
 		}
 
-		/// <summary>Put a message into the queue implicitely associated to the type <c>T</c>.</summary>
+		/// <summary>Put a message into the queue implicitly associated to the type <c>T</c>.</summary>
 		public void Put<T>(T message)
 		{
 			PutRange(new[]{message});
@@ -209,7 +209,7 @@ namespace Lokad.Cloud
 			PutRange(new[] { message }, queueName);
 		}
 
-		/// <summary>Put messages into the queue implicitely associated to the type <c>T</c>.</summary>
+		/// <summary>Put messages into the queue implicitly associated to the type <c>T</c>.</summary>
 		public void PutRange<T>(IEnumerable<T> messages)
 		{
 			PutRange(messages, TypeMapper.GetStorageName(typeof(T)));

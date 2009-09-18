@@ -6,9 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
-using Lokad.Cloud;
 using Lokad.Threading;
 using Microsoft.Samples.ServiceHosting.StorageClient;
 
@@ -213,7 +211,7 @@ namespace Lokad.Cloud.Azure
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)
 		{
-			return UpdateIfNotModified<T>(containerName, blobName, x => Result.Success(updater(x)));
+			return UpdateIfNotModified<T>(containerName, blobName, x => Result.CreateSuccess(updater(x)));
 		}
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater)
@@ -225,7 +223,7 @@ namespace Lokad.Cloud.Azure
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result)
 		{
 			Result<T> rresult;
-			var flag = UpdateIfNotModified(containerName, blobName, x => Result.Success(updater(x)), out rresult);
+			var flag = UpdateIfNotModified(containerName, blobName, x => Result.CreateSuccess(updater(x)), out rresult);
 
 			result = rresult.Value;
 			return flag;

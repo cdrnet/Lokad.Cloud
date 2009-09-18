@@ -14,7 +14,7 @@ namespace Lokad.Cloud.Azure
 		static ActionPolicy _slowInstantiation;
 
 		/// <summary>Very patient retry policy to deal with container or queue
-		/// instanciation that happens just after a deletion.</summary>
+		/// instantiation that happens just after a deletion.</summary>
 		public static ActionPolicy SlowInstantiation
 		{
 			get

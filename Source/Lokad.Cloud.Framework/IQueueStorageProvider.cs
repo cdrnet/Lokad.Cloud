@@ -2,6 +2,7 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System.Collections.Generic;
 
 namespace Lokad.Cloud
@@ -15,8 +16,8 @@ namespace Lokad.Cloud
 	/// </remarks>
 	public interface IQueueStorageProvider
 	{
-		/// <summary>Gets the list of queues whose name start with the specifed prefix.</summary>
-		/// <param name="prefix">If null or empty, returns all queues.</param>
+		/// <summary>Gets the list of queues whose name start with the specified prefix.</summary>
+		/// <param name="prefix">If <c>null</c> or empty, returns all queues.</param>
 		IEnumerable<string> List(string prefix);
 
 		/// <summary>Gets messages from a queue.</summary>

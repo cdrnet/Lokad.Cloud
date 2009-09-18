@@ -2,6 +2,7 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
 
 namespace Lokad.Cloud.Services
@@ -22,7 +23,7 @@ namespace Lokad.Cloud.Services
 	{
 		static TimeSpan MaxExecutionTime { get { return 10.Minutes(); } }
 
-		/// <remarks>Name is overriden for consistency in the framework.</remarks>
+		/// <remarks>Name is overridden for consistency in the framework.</remarks>
 		public override string Name
 		{
 			get { return "lokad-cloud-garbage-collector"; }

@@ -88,15 +88,13 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_sync)
 			{
-				if (_queuesHashset[queueName].Contains(message))
-				{
-					_queuesHashset[queueName].Remove(message);
-					return true;
-				}
-				else
+				if (!_queuesHashset[queueName].Contains(message))
 				{
 					return false;
 				}
+
+				_queuesHashset[queueName].Remove(message);
+				return true;
 			}
 		}
 
@@ -112,16 +110,14 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_sync)
 			{
-				if (_queueStorage.ContainsKey(queueName))
-				{
-					_queueStorage.Remove(queueName);
-					_queuesHashset.Remove(queueName);
-					return true;
-				}
-				else
+				if (!_queueStorage.ContainsKey(queueName))
 				{
 					return false;
 				}
+
+				_queueStorage.Remove(queueName);
+				_queuesHashset.Remove(queueName);
+				return true;
 			}
 		}
 

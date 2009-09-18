@@ -2,6 +2,7 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
 using Lokad.Cloud.Services;
 using Lokad.Quality;
@@ -11,7 +12,7 @@ namespace Lokad.Cloud
 	/// <summary>Name associated to a fixed-lifespan item.</summary>
 	/// <remarks>Used in conjunction with the <see cref="GarbageCollectorService"/>.
 	/// Use the method <see cref="GetNew(System.DateTime)"/> to instantiate a new instance
-	/// direcly linked to the garbage collected container.</remarks>
+	/// directly linked to the garbage collected container.</remarks>
 	[Serializable]
 	public class TemporaryBlobName : BaseBlobName
 	{
