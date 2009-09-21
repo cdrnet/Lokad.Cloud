@@ -23,12 +23,6 @@ namespace Lokad.Cloud.Services
 	{
 		static TimeSpan MaxExecutionTime { get { return 10.Minutes(); } }
 
-		/// <remarks>Name is overridden for consistency in the framework.</remarks>
-		public override string Name
-		{
-			get { return "lokad-cloud-garbage-collector"; }
-		}
-
 		protected override void StartOnSchedule()
 		{
 			var executionExpiration = DateTime.UtcNow.Add(MaxExecutionTime);
