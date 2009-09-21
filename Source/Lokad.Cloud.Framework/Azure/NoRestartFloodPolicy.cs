@@ -25,6 +25,8 @@ namespace Lokad.Cloud.Azure
 
 		Action<bool> _isRestartFlooding;
 
+		/// <summary>Initializes a new instance of the <see cref="NoRestartFloodPolicy"/> class.</summary>
+		/// <param name="isRestartFlooding">The parameter indicates whether the worker is healthy (<c>true</c>) or not (<c>false</c>).</param>
 		public NoRestartFloodPolicy(Action<bool> isRestartFlooding)
 		{
 			_isRestartFlooding = isRestartFlooding;
@@ -32,20 +34,25 @@ namespace Lokad.Cloud.Azure
 
 		/// <summary>Endlessly restart the provided action, but
 		/// avoiding restart flooding patterns.</summary>
-		public void Do(Action workButNotFloodRestart)
+		public void Do(Func<bool> workButNotFloodRestart)
 		{
 			while(true)
 			{
-				var lastRestart = DateTime.UtcNow;
-				workButNotFloodRestart();
+				// The assemblyUpdated flag handles the case when a restart is caused by an asm update, "soon" after another restart
+				// In such case, the worker would be reported as unhealthy virtually forever if no more restarts occur
 
-				if(DateTime.UtcNow.Subtract(lastRestart) < FloodFrequencyThreshold)
+				var lastRestart = DateTime.UtcNow;
+				var assemblyUpdated = workButNotFloodRestart();
+
+				if(!assemblyUpdated && DateTime.UtcNow.Subtract(lastRestart) < FloodFrequencyThreshold)
 				{
-					_isRestartFlooding(true);
+					// Unhealthy
+					_isRestartFlooding(false);
 					Thread.Sleep(DelayWhenFlooding);
 				}
 
-				_isRestartFlooding(false);
+				// Healthy
+				_isRestartFlooding(true);
 			}
 		}
 	}

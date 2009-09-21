@@ -119,7 +119,9 @@ namespace Lokad.Cloud.Azure
 					}
 					catch (Exception ex)
 					{
-						_logger.Error(ex, string.Format("Service {0} has failed.", service));
+						_logger.Error(ex, string.Format("Service {0} has failed - restarting.", service));
+						// Must re-throw in order to allow restart policies to kick in when appropriate
+						throw;
 					}
 				}
 

@@ -21,19 +21,12 @@ namespace Lokad.Cloud
 		{
 			RoleManager.WriteToLog("Information", "Worker Process entry point called.");
 
-			// TODO: #54 review proposed implementation to avoid restart flood
-			//var restartPolicy = new NoRestartFloodPolicy(isHeathly => { _isHeathly = isHeathly; });
-			//restartPolicy.Do(() =>
-			//{
-			//    var worker = new IsolatedWorker();
-			//    worker.DoWork();
-			//});
-
-			while(true)
+			var restartPolicy = new NoRestartFloodPolicy(isHeathly => { _isHeathly = isHeathly; });
+			restartPolicy.Do(() =>
 			{
 				var worker = new IsolatedWorker();
-				worker.DoWork();
-			}
+				return worker.DoWork();
+			});
 		}
 
 		public override RoleStatus GetHealthStatus()
@@ -48,7 +41,8 @@ namespace Lokad.Cloud
 	public class IsolatedWorker : MarshalByRefObject
 	{
 		/// <summary>Performs the work. </summary>
-		public void DoWork()
+		/// <returns><c>true</c> if the assemblies were updated and a restart is needed.</returns>
+		public bool DoWork()
 		{
 			// This is necessary to load config values in the main AppDomain because
 			// RoleManager is not properly working when invoked from another AppDomain
@@ -65,15 +59,17 @@ namespace Lokad.Cloud
 
 			// This never throws, unless something went wrong with IoC setup and that's fine
 			// because it is not possible to execute the worker
-			isolatedInstance.DoWorkInternal(overrides);
+			var returnValue = isolatedInstance.DoWorkInternal(overrides);
 
 			// If this throws, it's because something went wrong when unloading the AppDomain
 			// The exception correctly pulls down the entire worker process so that no AppDomains are
 			// left in memory
 			AppDomain.Unload(domain);
+
+			return returnValue;
 		}
 
-		public void DoWorkInternal(Dictionary<string, string> overrides)
+		public bool DoWorkInternal(Dictionary<string, string> overrides)
 		{
 			var builder = new ContainerBuilder();
 			var storageModule = new StorageModule {OverriddenProperties = overrides};
@@ -96,20 +92,17 @@ namespace Lokad.Cloud
 
 					// balancer endlessly keeps pinging queues for pending work
 					balancer.Execute();
+
+					return false;
 				}
 				catch (TriggerRestartException)
 				{
-					//var logger = container.Resolve<ILog>();
-					//logger.Log(LogLevel.Info, "Requesting worker restart...");
-
-					return;
+					return true;
 				}
-				catch(Exception ex)
+				catch(Exception)
 				{
-					var logger = container.Resolve<ILog>();
-					logger.Log(LogLevel.Error, ex, "Executor level exception (probably a Lokad.Cloud issue).");
-
-					return;
+					// Exception is already logged by the service balancer
+					return false;
 				}
 			}
 		}
