@@ -9,6 +9,8 @@ using Autofac.Builder;
 using Lokad.Cloud.Azure;
 using Microsoft.ServiceHosting.ServiceRuntime;
 using System.Collections.Generic;
+using System.IO;
+using System.Security;
 
 namespace Lokad.Cloud
 {
@@ -82,29 +84,64 @@ namespace Lokad.Cloud
 
 			using (var container = builder.Build())
 			{
+				bool restartForAssemblyUpdate = false;
+
 				var log = container.Resolve<ILog>();
 				log.Log(LogLevel.Info, "Isolated worker started.");
 
+				ServiceBalancerCommand balancer = null;
 				try
-				{	
-					var balancer = container.Resolve<ServiceBalancerCommand>();
+				{
+					balancer = container.Resolve<ServiceBalancerCommand>();
 					balancer.ContainerBuilder = builder;
 
 					// balancer endlessly keeps pinging queues for pending work
 					balancer.Execute();
-
-					return false;
 				}
-				catch (TriggerRestartException)
+				catch(TypeLoadException typeLoadEx)
 				{
-					return true;
+					log.Log(LogLevel.Error, typeLoadEx,
+						string.Format("Type {0} could not be loaded (service: {1}).", GetServiceInExecution(balancer)));
+					restartForAssemblyUpdate = false;
 				}
-				catch(Exception)
+				catch(FileLoadException fileLoadEx)
 				{
-					// Exception is already logged by the service balancer
-					return false;
+					// Tentatively: referenced assembly is missing
+					log.Log(LogLevel.Error, fileLoadEx,
+						string.Format("Could not load assembly probably due to a missing reference assembly (service: {0}).",
+						GetServiceInExecution(balancer)));
+					restartForAssemblyUpdate = false;
 				}
+				catch(SecurityException securityEx)
+				{
+					// Tentatively: assembly cannot be loaded due to security config
+					log.Log(LogLevel.Error, securityEx,
+						string.Format("Could not load assembly {0} probably due to security configuration (service: {1}).",
+						securityEx.FailedAssemblyInfo, GetServiceInExecution(balancer)));
+					restartForAssemblyUpdate = false;
+				}
+				catch(TriggerRestartException)
+				{
+					//log.Log(LogLevel.Debug, "TriggerRestartException");
+					restartForAssemblyUpdate = true;
+				}
+				catch(Exception ex)
+				{
+					// Generic exception
+					log.Log(LogLevel.Error, ex,
+						string.Format("An unhandled exception occurred (service: {0}).", GetServiceInExecution(balancer)));
+					restartForAssemblyUpdate = false;
+				}
+				
+				return restartForAssemblyUpdate;
 			}
+		}
+
+		static string GetServiceInExecution(ServiceBalancerCommand balancer)
+		{
+			if(balancer == null) return "unknown";
+			else if(balancer.ServiceInExecution == null) return "unknown";
+			else return balancer.ServiceInExecution;
 		}
 
 	}

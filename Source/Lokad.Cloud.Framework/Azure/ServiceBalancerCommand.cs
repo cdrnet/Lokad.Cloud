@@ -36,6 +36,9 @@ namespace Lokad.Cloud.Azure
 		/// <summary>Container used to populate cloud service properties.</summary>
 		public ContainerBuilder ContainerBuilder { get; set; }
 
+		/// <summary>The name of the service that is being executed, if any, <c>null</c> otherwise.</summary>
+		public string ServiceInExecution { get; private set; }
+
 		/// <summary>IoC constructor.</summary>
 		public ServiceBalancerCommand(ILog logger, ProvidersForCloudStorage providers)
 		{
@@ -106,24 +109,13 @@ namespace Lokad.Cloud.Azure
 				var start = DateTime.UtcNow;
 				while (DateTime.UtcNow.Subtract(start) < MoreOfTheSame.Seconds() && isRun && !_isStopRequested)
 				{
-					try
-					{
-						isRun = service.Start();
-						isRunOnce |= isRun;
-					}
-					catch (TriggerRestartException ex)
-					{
-						// services can cause overall restart
-						_logger.Info(ex, string.Format("Restart requested by service {0}.", service));
-						throw;
-					}
-					catch (Exception ex)
-					{
-						_logger.Error(ex, string.Format("Service {0} has failed - restarting.", service));
-						// Must re-throw in order to allow restart policies to kick in when appropriate
-						throw;
-					}
+					// No exceptions caught here
+					ServiceInExecution = service.Name;
+					isRun = service.Start();
+					isRunOnce |= isRun;
 				}
+
+				ServiceInExecution = null;
 
 				noRunCount = isRunOnce ? 0 : noRunCount + 1;
 
