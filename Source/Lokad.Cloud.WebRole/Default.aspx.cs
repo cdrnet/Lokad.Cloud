@@ -20,6 +20,8 @@ namespace Lokad.Cloud.Web
 					GlobalSetup.Container.Resolve<Microsoft.Samples.ServiceHosting.StorageClient.BlobStorage>());
 				_credentialsWarningPanel.Visible = !verifier.VerifyCredentials();
 			}
+
+			_openIdLogin.Focus();
 		}
 
 		protected void OpenIdLogin_OnLoggingIn(object sender, OpenIdEventArgs e)
