@@ -165,7 +165,6 @@
 	<Target Name="Release" DependsOnTargets="Clean;_Version;Build;Test;Distrib" />
 	
 	<Target Name="_Version">
-		<!-- placeholder for now 
 		<CreateItem Include="**\GlobalAssemblyInfo.cs">
 			<Output ItemName="_VersionPaths" TaskParameter="Include"/>
 		</CreateItem>
@@ -176,9 +175,9 @@
 			<Output TaskParameter="FormattedTime" PropertyName="BuildTime" />
 		</Time>
 		<AssemblyInfo OutputFile="%(_VersionFiles.FullPath)" CodeLanguage="CS"
-									AssemblyVersion="$(Version)"
-									AssemblyFileVersion="$(Version)"
-									AssemblyConfiguration="$(Configuration) built on $(BuildTime)" /> -->
+			AssemblyVersion="$(Version)"
+			AssemblyFileVersion="$(Version)"
+			AssemblyConfiguration="$(Configuration) built on $(BuildTime)" />
 	</Target>
 
 
