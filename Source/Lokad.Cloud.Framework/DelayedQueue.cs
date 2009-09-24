@@ -11,7 +11,7 @@ namespace Lokad.Cloud
 {
 	/// <summary>Used as a wrapper for delayed messages (stored in the
 	/// blob storage waiting to be pushed into a queue).</summary>
-	/// <seealso cref="QueueDelayer.PutWithDelay{T}(T,System.DateTime)"/>
+	/// <seealso cref="DelayedQueue.PutWithDelay{T}(T,System.DateTime)"/>
 	[Serializable]
 	class DelayedMessage
 	{
@@ -53,17 +53,16 @@ namespace Lokad.Cloud
 	/// <summary>Allows to put messages in a queue, delaying them as needed.</summary>
 	/// <remarks>A <see cref="IBlobStorageProvider"/> is used for storing messages that 
 	/// must be enqueued with a delay.</remarks>
-	public class QueueDelayer
+	[Immutable]
+	public class DelayedQueue
 	{
+		readonly IBlobStorageProvider _provider;
 
-		IBlobStorageProvider _provider;
-
-		/// <summary>Initializes a new instance of the <see cref="T:QueueDelayer"/> class.</summary>
+		/// <summary>Initializes a new instance of the <see cref="DelayedQueue"/> class.</summary>
 		/// <param name="provider">The blob storage provider.</param>
-		public QueueDelayer(IBlobStorageProvider provider)
+		public DelayedQueue(IBlobStorageProvider provider)
 		{
-			if(provider == null) throw new ArgumentNullException("provider");
-
+			Enforce.Argument(() => provider);
 			_provider = provider;
 		}
 

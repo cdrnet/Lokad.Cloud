@@ -14,7 +14,7 @@ using System.Threading;
 namespace Lokad.Cloud.Test
 {
 	[TestFixture]
-	public class QueueDelayerTests
+	public class DelayedQueueTests
 	{
 		string _testQueueName = null;
 
@@ -32,7 +32,7 @@ namespace Lokad.Cloud.Test
 
 			var blobStorage = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 
-			var delayer = new QueueDelayer(blobStorage);
+			var delayer = new DelayedQueue(blobStorage);
 
 			DateTime trigger = DateTime.Now.AddMinutes(10);
 

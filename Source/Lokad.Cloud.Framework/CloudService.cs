@@ -186,21 +186,21 @@ namespace Lokad.Cloud
 		/// time specified by the <c>triggerTime</c>.</summary>
 		public void PutWithDelay<T>(T message, DateTime triggerTime)
 		{
-			new QueueDelayer(BlobStorage).PutWithDelay(message, triggerTime);
+			new DelayedQueue(BlobStorage).PutWithDelay(message, triggerTime);
 		}
 
 		/// <summary>Put a message into the queue identified by <c>queueName</c> at the
 		/// time specified by the <c>triggerTime</c>.</summary>
 		public void PutWithDelay<T>(T message, DateTime triggerTime, string queueName)
 		{
-			new QueueDelayer(BlobStorage).PutWithDelay(message, triggerTime, queueName);
+			new DelayedQueue(BlobStorage).PutWithDelay(message, triggerTime, queueName);
 		}
 
 		/// <summary>Put messages into the queue implicitly associated to the type <c>T</c> at the
 		/// time specified by the <c>triggerTime</c>.</summary>
 		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime)
 		{
-			new QueueDelayer(BlobStorage).PutRangeWithDelay(messages, triggerTime);
+			new DelayedQueue(BlobStorage).PutRangeWithDelay(messages, triggerTime);
 		}
 
 		/// <summary>Put messages into the queue identified by <c>queueName</c> at the
@@ -209,7 +209,7 @@ namespace Lokad.Cloud
 		/// before the <c>triggerTime</c> is reached.</remarks>
 		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime, string queueName)
 		{
-			new QueueDelayer(BlobStorage).PutRangeWithDelay(messages, triggerTime, queueName);
+			new DelayedQueue(BlobStorage).PutRangeWithDelay(messages, triggerTime, queueName);
 		}
 
 		/// <summary>Get all services instantiated through reflection.</summary>
