@@ -13,12 +13,13 @@ using Lokad.Quality;
 
 namespace Lokad.Cloud.Samples.MapReduce
 {
-	
 	/// <summary>Manages sets of blobs for map/reduce services.</summary>
 	/// <typeparam name="TMapIn">The type of the items that are input in the map operation.</typeparam>
 	/// <typeparam name="TMapOut">The type of the items that are output from the map operation.</typeparam>
 	/// <typeparam name="TReduceOut">The type of the items that are output from the reduce operation.</typeparam>
 	/// <remarks>All public mebers are thread-safe.</remarks>
+	/// <seealso cref="MapReduceService"/>
+	/// <seealso cref="MapReduceJob"/>
 	public sealed class MapReduceBlobSet
 	{
 		/// <summary>The queue used for managing map/reduce work items (<seealso cref="T:BatchMessage"/>).</summary>
@@ -30,6 +31,9 @@ namespace Lokad.Cloud.Samples.MapReduce
 		internal const string ReducedPrefix = "reduced";
 		internal const string AggregatedPrefix = "aggregated";
 		internal const string CounterPrefix = "counter";
+
+		// ###############################################
+		// ACTUAL NAMES ARE NOT LIKE THESE!!! There is no nesting!
 
 		// Final blob names:
 		// - blobsets/config/<job-name> -- map/reduce/aggregate functions plus number of queued blobsets -- readonly
@@ -233,37 +237,104 @@ namespace Lokad.Cloud.Samples.MapReduce
 			}
 		}
 
-		/// <summary>Determines whether a job is complete.</summary>
+		/// <summary>Gets the number of completed blobsets of a job.</summary>
 		/// <param name="jobName">The name of the job.</param>
-		/// <returns><c>true</c> if the job is complete, <c>false</c> otherwise.</returns>
-		public bool IsJobComplete(string jobName)
+		/// <returns>The number of completed blobsets (<c>Tuple.Item1</c>) and the total number of blobsets (<c>Tuple.Item2</c>).</returns>
+		/// <exception cref="ArgumentException">If <paramref name="jobName"/> refers to an inexistent job.</exception>
+		public Tuple<int, int> GetCompletedBlobSets(string jobName)
 		{
-			// 1. Load config
-			// 2.1. If aggregate function is present, verify if the aggregate result is available
-			// 2.2. If aggregate function is not present, verify if all blobsets are complete (BlobCounter)
-
-			// 1. Load config
 			var config = GetJobConfig(jobName);
+			if(config == null) throw new ArgumentException("Unknown job", "jobName");
 
-			if(config.MapReduceFunctions.Aggregator != null)
-			{
-				// 2.1. Is aggregate result present?
-			}
-			else
-			{
-				// 2.2. Are all blobsets complete?
-			}
-			throw new NotImplementedException();
+			var counter = new BlobCounter(_blobStorage, new BlobCounterName(jobName));
+			int completedBlobsets = (int)counter.GetValue();
+
+			return new Tuple<int, int>(completedBlobsets, config.BlobSetCount);
 		}
 
 		/// <summary>Retrieves the aggregated result of a map/reduce/aggregate job.</summary>
 		/// <typeparam name="T">The type of the result.</typeparam>
 		/// <param name="jobName">The name of the job.</param>
 		/// <returns>The aggregated result.</returns>
-		/// <exception cref="InvalidOperationException">If the job does not exist or is not complete yet.</exception>
+		/// <exception cref="InvalidOperationException">If the is not complete yet or if the aggregate function was not specified.</exception>
+		/// <exception cref="ArgumentException">If <paramref name="jobName"/> refers to an inexistent job.</exception>
 		public T GetAggregatedResult<T>(string jobName)
 		{
-			throw new NotImplementedException();
+			var config = GetJobConfig(jobName);
+			if(config == null) throw new ArgumentException("Unknown job", "jobName");
+
+			var counter = new BlobCounter(_blobStorage, new BlobCounterName(jobName));
+			int completedBlobsets = (int)counter.GetValue();
+
+			if(config.MapReduceFunctions.Aggregator == null) throw new InvalidOperationException("Aggregator function was not specified");
+			if(completedBlobsets < config.BlobSetCount) throw new InvalidOperationException("Job is not complete (there still are blobsets to process)");
+
+			var blobName = new AggregatedBlobName(jobName);
+			var aggregatedResult = _blobStorage.GetBlob<object>(blobName);
+
+			if(aggregatedResult == null) throw new InvalidOperationException("Job is not complete (reduced items must still be aggregated)");
+			else return (T)aggregatedResult;
+		}
+
+		/// <summary>Retrieves the reduced results of a map/reduce job (no aggregate function).</summary>
+		/// <typeparam name="T">The type of the result.</typeparam>
+		/// <param name="jobName">The name of the job.</param>
+		/// <returns>The reduced results.</returns>
+		/// <exception cref="InvalidOperationException">If the job does not exist or is not complete yet.</exception>
+		public IList<T> GetReducedResults<T>(string jobName)
+		{
+			var config = GetJobConfig(jobName);
+			if(config == null) throw new ArgumentException("Unknown job", "jobName");
+
+			var counter = new BlobCounter(_blobStorage, new BlobCounterName(jobName));
+			int completedBlobsets = (int)counter.GetValue();
+
+			if(config.MapReduceFunctions.Aggregator != null) throw new InvalidOperationException("Aggregator function was specified");
+			if(completedBlobsets < config.BlobSetCount) throw new InvalidOperationException("Job is not complete (there still are blobsets to process)");
+
+			var results = new List<T>();
+			foreach(var blobName in _blobStorage.List(ReducedBlobName.GetPrefix(jobName)))
+			{
+				results.Add(_blobStorage.GetBlob<T>(blobName));
+			}
+
+			return results;
+		}
+
+		/// <summary>Deletes all the data related to a job, regardless of the job status.</summary>
+		/// <param name="jobName">The name of the job.</param>
+		/// <remarks>Messages enqueued cannot be deleted but they cause no harm.</remarks>
+		public void DeleteJobData(string jobName)
+		{
+			_blobStorage.DeleteBlob(new MapReduceConfigurationName(jobName));
+
+			foreach(var blobName in _blobStorage.List(InputBlobName.GetPrefix(jobName)))
+			{
+				_blobStorage.DeleteBlob(blobName);
+			}
+
+			foreach(var blobName in _blobStorage.List(ReducedBlobName.GetPrefix(jobName)))
+			{
+				_blobStorage.DeleteBlob(blobName);
+			}
+
+			_blobStorage.DeleteBlob(new AggregatedBlobName(jobName));
+
+			_blobStorage.DeleteBlob(new BlobCounterName(jobName));
+		}
+
+		/// <summary>Gets the existing jobs.</summary>
+		/// <returns>The names of the existing jobs.</returns>
+		public IList<string> GetExistingJobs()
+		{
+			var names = new List<string>();
+
+			foreach(var blobName in _blobStorage.List(MapReduceConfigurationName.GetPrefix()))
+			{
+				names.Add(blobName.JobName);
+			}
+
+			return names;
 		}
 
 		#region Delegate Utils
@@ -300,11 +371,19 @@ namespace Lokad.Cloud.Samples.MapReduce
 			}
 
 			[UsedImplicitly, Rank(0)]
+			public string Prefix;
+			[UsedImplicitly, Rank(1)]
 			public string JobName;
 
 			public MapReduceConfigurationName(string jobName)
 			{
+				Prefix = ConfigPrefix;
 				JobName = jobName;
+			}
+
+			public static BlobNamePrefix<MapReduceConfigurationName> GetPrefix()
+			{
+				return GetPrefix(new MapReduceConfigurationName(null), 1);
 			}
 
 		}
@@ -317,14 +396,17 @@ namespace Lokad.Cloud.Samples.MapReduce
 			}
 
 			[UsedImplicitly, Rank(0)]
-			public string JobName;
+			public string Prefix;
 			[UsedImplicitly, Rank(1)]
-			public int BlobSetId;
+			public string JobName;
 			[UsedImplicitly, Rank(2)]
+			public int BlobSetId;
+			[UsedImplicitly, Rank(3)]
 			public int BlobId;
 
 			public InputBlobName(string jobName, int blobSetId, int blobId)
 			{
+				Prefix = InputPrefix;
 				JobName = jobName;
 				BlobSetId = blobSetId;
 				BlobId = blobId;
@@ -332,7 +414,12 @@ namespace Lokad.Cloud.Samples.MapReduce
 
 			public static BlobNamePrefix<InputBlobName> GetPrefix(string jobName, int blobSetId)
 			{
-				return GetPrefix(new InputBlobName(jobName, blobSetId, 0), 2);
+				return GetPrefix(new InputBlobName(jobName, blobSetId, 0), 3);
+			}
+
+			public static BlobNamePrefix<InputBlobName> GetPrefix(string jobName)
+			{
+				return GetPrefix(new InputBlobName(jobName, 0, 0), 2);
 			}
 
 		}
@@ -345,19 +432,22 @@ namespace Lokad.Cloud.Samples.MapReduce
 			}
 
 			[UsedImplicitly, Rank(0)]
-			public string JobName;
+			public string Prefix;
 			[UsedImplicitly, Rank(1)]
+			public string JobName;
+			[UsedImplicitly, Rank(2)]
 			public int BlobSetId;
 
 			public ReducedBlobName(string jobName, int blobSetIt)
 			{
+				Prefix = ReducedPrefix;
 				JobName = jobName;
 				BlobSetId = blobSetIt;
 			}
 
 			public static BlobNamePrefix<ReducedBlobName> GetPrefix(string jobName)
 			{
-				return GetPrefix(new ReducedBlobName(jobName, 0), 1);
+				return GetPrefix(new ReducedBlobName(jobName, 0), 2);
 			}
 
 		}
@@ -370,10 +460,13 @@ namespace Lokad.Cloud.Samples.MapReduce
 			}
 
 			[UsedImplicitly, Rank(0)]
+			public string Prefix;
+			[UsedImplicitly, Rank(1)]
 			public string JobName;
 
 			public AggregatedBlobName(string jobName)
 			{
+				Prefix = AggregatedPrefix;
 				JobName = jobName;
 			}
 
@@ -387,10 +480,13 @@ namespace Lokad.Cloud.Samples.MapReduce
 			}
 
 			[UsedImplicitly, Rank(0)]
+			public string Prefix;
+			[UsedImplicitly, Rank(1)]
 			public string JobName;
 
 			public BlobCounterName(string jobName)
 			{
+				Prefix = CounterPrefix;
 				JobName = jobName;
 			}
 

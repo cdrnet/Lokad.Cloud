@@ -5,19 +5,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Lokad;
-using Lokad.Cloud;
 
 namespace Lokad.Cloud.Samples.MapReduce
 {
-	
-	/// <summary>Entry point for consuming a map/reduce service.</summary>
+	/// <summary>Entry point for setting up and consuming a map/reduce service.</summary>
 	/// <typeparam name="TMapIn">The type of the items that are input in the map operation.</typeparam>
 	/// <typeparam name="TMapOut">The type of the items that are output from the map operation.</typeparam>
 	/// <typeparam name="TReduceOut">The type of the items that are output from the reduce operation.</typeparam>
 	/// <remarks>All public members are thread-safe.</remarks>
+	/// <seealso cref="MapReduceBlobSet"/>
+	/// <seealso cref="MapReduceService"/>
 	public sealed class MapReduceJob<TMapIn, TMapOut, TReduceOut>
 	{
 
@@ -88,7 +85,29 @@ namespace Lokad.Cloud.Samples.MapReduce
 			lock(_jobName)
 			{
 				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
-				return blobSet.IsJobComplete(_jobName);
+
+				var status = blobSet.GetCompletedBlobSets(_jobName);
+				if(status.Item1 < status.Item2) return false;
+
+				try
+				{
+					blobSet.GetAggregatedResult<object>(_jobName);
+					return true;
+				}
+				catch(InvalidOperationException)
+				{
+					// Inconclusive
+				}
+
+				try
+				{
+					blobSet.GetReducedResults<object>(_jobName);
+					return true;
+				}
+				catch(InvalidOperationException)
+				{
+					return false;
+				}
 			}
 		}
 
@@ -99,8 +118,11 @@ namespace Lokad.Cloud.Samples.MapReduce
 		/// if the result is not ready (<seealso cref="M:IsCompleted"/>).</exception>
 		public TReduceOut GetSingleResult()
 		{
-			// Verify exceptions
-			throw new NotImplementedException();
+			lock(_jobName)
+			{
+				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
+				return blobSet.GetAggregatedResult<TReduceOut>(_jobName);
+			}
 		}
 
 		/// <summary>Gets the result of a job whose output is a multiple items 
@@ -110,8 +132,23 @@ namespace Lokad.Cloud.Samples.MapReduce
 		/// if the result is not ready (<seealso cref="M:IsCompleted"/>).</exception>
 		public IList<TReduceOut> GetMultipleResults()
 		{
-			// Verify exceptions
-			throw new NotImplementedException();
+			lock(_jobName)
+			{
+				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
+				return blobSet.GetReducedResults<TReduceOut>(_jobName);
+			}
+		}
+
+		/// <summary>Deletes all the data related to the job.</summary>
+		/// <remarks>After calling this method, the instance of <see cref="T:MapReduceJob"/> 
+		/// should not be used anymore.</remarks>
+		public void DeleteJobData()
+		{
+			lock(_jobName)
+			{
+				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
+				blobSet.DeleteJobData(_jobName);
+			}
 		}
 
 	}
