@@ -21,6 +21,8 @@ namespace Lokad.Cloud.Samples.MapReduce
 	public sealed class MapReduceJob<TMapIn, TMapOut, TReduceOut>
 	{
 
+		// HACK: thread-safety is achieved via locks. It would be better to make this class immutable.
+
 		string _jobName;
 		IBlobStorageProvider _blobStorage;
 		IQueueStorageProvider _queueStorage;
@@ -62,18 +64,17 @@ namespace Lokad.Cloud.Samples.MapReduce
 		/// <param name="functions">The functions for map/reduce/aggregate operations.</param>
 		/// <param name="items">The items to process (at least two).</param>
 		/// <param name="workerCount">The max number of workers to use.</param>
-		/// <param name="maxDuration">The maximum duration of the map/reduce process.</param>
 		/// <returns>The batch ID.</returns>
 		/// <exception cref="InvalidOperationException">If the method was already called.</exception>
 		/// <exception cref="ArgumentException">If <paramref name="items"/> contains less than two items.</exception>
-		public string PushItems(MapReduceFunctions functions, IList<object> items, int workerCount, TimeSpan maxDuration)
+		public string PushItems(MapReduceFunctions functions, IList<object> items, int workerCount)
 		{
 			lock(_jobName)
 			{
 				if(_itemsPushed) throw new InvalidOperationException("A batch was already pushed to the work queue");
 
 				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
-				blobSet.GenerateBlobSets(_jobName, items, functions, workerCount, maxDuration);
+				blobSet.GenerateBlobSets(_jobName, items, functions, workerCount);
 				_itemsPushed = true;
 
 				return _jobName;
@@ -84,13 +85,18 @@ namespace Lokad.Cloud.Samples.MapReduce
 		/// <returns><c>true</c> if the batch is completed, <c>false</c> otherwise.</returns>
 		public bool IsCompleted()
 		{
-			throw new NotImplementedException();
+			lock(_jobName)
+			{
+				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
+				return blobSet.IsJobComplete(_jobName);
+			}
 		}
 
 		/// <summary>Gets the result of a job whose output is a single item 
-		/// (the aggregator function was specified).</summary>
+		/// (call this method the aggregator function was specified).</summary>
 		/// <returns>The result item.</returns>
-		/// <exception cref="InvalidOperationException">If the aggregator function was not specified.</exception>
+		/// <exception cref="InvalidOperationException">If the aggregator function was not specified or 
+		/// if the result is not ready (<seealso cref="M:IsCompleted"/>).</exception>
 		public TReduceOut GetSingleResult()
 		{
 			// Verify exceptions
@@ -98,10 +104,11 @@ namespace Lokad.Cloud.Samples.MapReduce
 		}
 
 		/// <summary>Gets the result of a job whose output is a multiple items 
-		/// (the aggregator function was not specified).</summary>
+		/// (call this method the aggregator function was <b>not</b> specified).</summary>
 		/// <returns>The result items.</returns>
-		/// <exception cref="InvalidOperationException">If the aggregator function was specified.</exception>
-		public IEnumerable<TReduceOut> GetMultipleResults()
+		/// <exception cref="InvalidOperationException">If the aggregator function was specified or 
+		/// if the result is not ready (<seealso cref="M:IsCompleted"/>).</exception>
+		public IList<TReduceOut> GetMultipleResults()
 		{
 			// Verify exceptions
 			throw new NotImplementedException();
