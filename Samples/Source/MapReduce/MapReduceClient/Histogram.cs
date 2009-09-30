@@ -13,9 +13,31 @@ namespace MapReduceClient
 	/// <summary>Represents a picture histogram.</summary>
 	public class Histogram
 	{
+		/// <summary>The size of the <see cref="M:Frequencies"/> array (2^8).</summary>
+		public static readonly int FrequenciesSize = 256;
+
 		/// <summary>An array of 256 items, each representing 
 		/// the frequency of each brightness level (0.0 to 1.0).</summary>
-		public float[] Frequencies;
+		public double[] Frequencies;
+
+		/// <summary>The total number of pixels (weights the histogram).</summary>
+		public int TotalPixels;
+
+		/// <summary>Initializes a new instance of the <see cref="T:Histogram"/> class.</summary>
+		/// <param name="totalPixels">The total number of pixels.</param>
+		public Histogram(int totalPixels)
+		{
+			Frequencies = new double[FrequenciesSize];
+			TotalPixels = totalPixels;
+		}
+
+		/// <summary>Gets the max frequency in the histogram (for scaling purposes).</summary>
+		/// <returns>The max frequency.</returns>
+		public double GetMaxFrequency()
+		{
+			return Frequencies.Max();
+		}
+
 	}
 
 }

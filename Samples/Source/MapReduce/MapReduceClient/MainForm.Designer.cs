@@ -37,9 +37,11 @@
 			this._btnStart = new System.Windows.Forms.Button();
 			this._grpResult = new System.Windows.Forms.GroupBox();
 			this._timer = new System.Windows.Forms.Timer(this.components);
+			this._pnlHistogram = new System.Windows.Forms.Panel();
 			this._grpInput.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._picPreview)).BeginInit();
 			this._grpProgress.SuspendLayout();
+			this._grpResult.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// _grpInput
@@ -103,6 +105,7 @@
 			// 
 			// _grpResult
 			// 
+			this._grpResult.Controls.Add(this._pnlHistogram);
 			this._grpResult.Location = new System.Drawing.Point(304, 66);
 			this._grpResult.Name = "_grpResult";
 			this._grpResult.Size = new System.Drawing.Size(286, 274);
@@ -114,6 +117,14 @@
 			// 
 			this._timer.Interval = 5000;
 			this._timer.Tick += new System.EventHandler(this._timer_Tick);
+			// 
+			// _pnlHistogram
+			// 
+			this._pnlHistogram.Location = new System.Drawing.Point(16, 37);
+			this._pnlHistogram.Name = "_pnlHistogram";
+			this._pnlHistogram.Size = new System.Drawing.Size(255, 200);
+			this._pnlHistogram.TabIndex = 0;
+			this._pnlHistogram.Paint += new System.Windows.Forms.PaintEventHandler(this._pnlHistogram_Paint);
 			// 
 			// MainForm
 			// 
@@ -131,6 +142,7 @@
 			this._grpInput.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._picPreview)).EndInit();
 			this._grpProgress.ResumeLayout(false);
+			this._grpResult.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -145,5 +157,6 @@
 		private System.Windows.Forms.Button _btnBrowse;
 		private System.Windows.Forms.GroupBox _grpResult;
 		private System.Windows.Forms.Timer _timer;
+		private System.Windows.Forms.Panel _pnlHistogram;
 	}
 }

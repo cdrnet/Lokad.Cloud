@@ -19,6 +19,7 @@ namespace MapReduceClient
 	{
 		string _currentFileName = null;
 		MapReduceJob<Bitmap, Histogram, Histogram> _mapReduceJob = null;
+		Histogram _currentHistogram = null;
 
 		public MainForm()
 		{
@@ -36,7 +37,7 @@ namespace MapReduceClient
 				if(dialog.ShowDialog() == DialogResult.OK)
 				{
 					_currentFileName = dialog.FileName;
-					_picPreview.Image = Bitmap.FromFile(_currentFileName);
+					_picPreview.ImageLocation = _currentFileName;
 				}
 			}
 
@@ -48,21 +49,58 @@ namespace MapReduceClient
 			_btnStart.Enabled = false;
 			_btnBrowse.Enabled = false;
 			_prgProgress.Style = ProgressBarStyle.Marquee;
+			_currentHistogram = null;
 
 			_mapReduceJob = new MapReduceJob<Bitmap, Histogram, Histogram>(
 				Setup.Container.Resolve<Lokad.Cloud.IBlobStorageProvider>(),
 				Setup.Container.Resolve<Lokad.Cloud.IQueueStorageProvider>());
 
-			// ##############################
-			// Split image and push job
+			using(var input = (Bitmap)Bitmap.FromFile(_currentFileName))
+			{
+				var slices = Helpers.SliceBitmap(input, 8);
+
+				// Queue slices
+				_mapReduceJob.PushItems(Helpers.GetMapReduceFunctions(), new List<object>(slices), 2);
+				//_currentHistogram = Helpers.ComputeHistogram(input);
+				//_pnlHistogram.Refresh();
+
+				for(int i = 0; i < slices.Length; i++)
+				{
+					slices[i].Dispose();
+				}
+			}
 
 			_timer.Start();
 		}
 
 		private void _timer_Tick(object sender, EventArgs e)
 		{
-			// ##############################
 			// Check job status
+			bool completed = _mapReduceJob.IsCompleted();
+
+			if(completed)
+			{
+				_timer.Stop();
+				_currentHistogram = _mapReduceJob.GetSingleResult();
+				_pnlHistogram.Refresh();
+				_btnStart.Enabled = true;
+				_btnBrowse.Enabled = true;
+				_prgProgress.Style = ProgressBarStyle.Blocks;
+			}
+		}
+
+		private void _pnlHistogram_Paint(object sender, PaintEventArgs e)
+		{
+			e.Graphics.Clear(_pnlHistogram.BackColor);
+			if(_currentHistogram == null) return;
+
+			double maxFreq = _currentHistogram.GetMaxFrequency();
+			for(int i = 0; i < _currentHistogram.Frequencies.Length; i++)
+			{
+				e.Graphics.DrawLine(Pens.Black,
+					i, _pnlHistogram.Height,
+					i, _pnlHistogram.Height - (float)(_pnlHistogram.Height * _currentHistogram.Frequencies[i] / maxFreq));
+			}
 		}
 
 	}

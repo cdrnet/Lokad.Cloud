@@ -12,6 +12,13 @@ namespace MapReduceClient
 {
 	public static class Setup
 	{
+		public static Autofac.IContainer Container { get; private set; }
+
+		static Setup()
+		{
+			Container = SetupContainer();
+		}
+
 		private static Autofac.IContainer SetupContainer()
 		{
 			var builder = new ContainerBuilder();
@@ -22,11 +29,5 @@ namespace MapReduceClient
 			return builder.Build();
 		}
 
-		static Autofac.IContainer _container = SetupContainer();
-
-		public static Autofac.IContainer Container
-		{
-			get { return _container; }
-		}
 	}
 }
