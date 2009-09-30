@@ -8,7 +8,7 @@
     <ProjectGuid>{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MapReduce</RootNamespace>
+    <RootNamespace>Lokad.Cloud.Samples.MapReduce</RootNamespace>
     <AssemblyName>MapReduceService</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -49,9 +49,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JobMessage.cs" />
     <Compile Include="BlobSet.cs" />
     <Compile Include="BlobSetMapService.cs" />
     <Compile Include="BlobSetReduceService.cs" />
+    <Compile Include="MapReduceJob.cs" />
+    <Compile Include="MapReduceBlobSet.cs" />
+    <Compile Include="MapReduceFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

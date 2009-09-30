@@ -10,5 +10,5 @@ TODO: sample not functional
 
 The purpose of this sample is to illustrate the usage of Lokad.Cloud
 through a minimalistic application that involve two components:
-- a map / reduce services (running on Windows Azure) hosted in Lokad.Cloud
-- a client executable that perform map and reduce operations.
+- a map / reduce service (running on Windows Azure) hosted in Lokad.Cloud
+- a client executable that performs map and reduce operations.
