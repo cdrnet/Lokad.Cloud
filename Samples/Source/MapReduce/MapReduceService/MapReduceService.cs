@@ -19,7 +19,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 		QueueName = MapReduceBlobSet.JobsQueueName)]
 	public class MapReduceService : QueueService<JobMessage>
 	{
-		protected override void Start(JobMessage messages)
+		protected override void Start(JobMessage message)
 		{
 			throw new NotImplementedException();
 		}
