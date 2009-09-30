@@ -13,9 +13,13 @@ namespace Lokad.Cloud.Samples.MapReduce
 	/// <summary>Implements a map/reduce service.</summary>
 	/// <seealso cref="MapReduceBlobSet"/>
 	/// <seealso cref="MapReduceJob"/>
+	[QueueServiceSettings(
+		AutoStart = true,
+		Description = "Processes map/reduce jobs",
+		QueueName = MapReduceBlobSet.JobsQueueName)]
 	public class MapReduceService : QueueService<JobMessage>
 	{
-		protected override void StartRange(IEnumerable<JobMessage> messages)
+		protected override void Start(JobMessage messages)
 		{
 			throw new NotImplementedException();
 		}
