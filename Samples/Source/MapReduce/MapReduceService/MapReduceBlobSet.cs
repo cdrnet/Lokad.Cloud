@@ -32,9 +32,6 @@ namespace Lokad.Cloud.Samples.MapReduce
 		internal const string AggregatedPrefix = "aggregated";
 		internal const string CounterPrefix = "counter";
 
-		// ###############################################
-		// ACTUAL NAMES ARE NOT LIKE THESE!!! There is no nesting!
-
 		// Final blob names:
 		// - blobsets/config/<job-name> -- map/reduce/aggregate functions plus number of queued blobsets -- readonly
 		// - blobsets/input/<job-name>/<blob-guid>
@@ -367,7 +364,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 		{
 			public override string ContainerName
 			{
-				get { return ContainerName; }
+				get { return MapReduceBlobSet.ContainerName; }
 			}
 
 			[UsedImplicitly, Rank(0)]
@@ -392,7 +389,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 		{
 			public override string ContainerName
 			{
-				get { return ContainerName; }
+				get { return MapReduceBlobSet.ContainerName; }
 			}
 
 			[UsedImplicitly, Rank(0)]
@@ -428,7 +425,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 		{
 			public override string ContainerName
 			{
-				get { return ContainerName; }
+				get { return MapReduceBlobSet.ContainerName; }
 			}
 
 			[UsedImplicitly, Rank(0)]
@@ -456,7 +453,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 		{
 			public override string ContainerName
 			{
-				get { return ContainerName; }
+				get { return MapReduceBlobSet.ContainerName; }
 			}
 
 			[UsedImplicitly, Rank(0)]
@@ -476,7 +473,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 		{
 			public override string ContainerName
 			{
-				get { return ContainerName; }
+				get { return MapReduceBlobSet.ContainerName; }
 			}
 
 			[UsedImplicitly, Rank(0)]

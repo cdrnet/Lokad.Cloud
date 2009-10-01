@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Lokad.Cloud.Samples.MapReduce;
+using System.Threading;
 
 namespace MapReduceClient
 {
@@ -55,38 +56,49 @@ namespace MapReduceClient
 				Setup.Container.Resolve<Lokad.Cloud.IBlobStorageProvider>(),
 				Setup.Container.Resolve<Lokad.Cloud.IQueueStorageProvider>());
 
-			using(var input = (Bitmap)Bitmap.FromFile(_currentFileName))
+			// Do this asynchronously because it requires a few seconds
+			ThreadPool.QueueUserWorkItem(new WaitCallback((s) =>
 			{
-				var slices = Helpers.SliceBitmap(input, 8);
-
-				// Queue slices
-				_mapReduceJob.PushItems(Helpers.GetMapReduceFunctions(), new List<object>(slices), 2);
-				//_currentHistogram = Helpers.ComputeHistogram(input);
-				//_pnlHistogram.Refresh();
-
-				for(int i = 0; i < slices.Length; i++)
+				using(var input = (Bitmap)Bitmap.FromFile(_currentFileName))
 				{
-					slices[i].Dispose();
-				}
-			}
+					var slices = Helpers.SliceBitmap(input, 8);
 
-			_timer.Start();
+					// Queue slices
+					_mapReduceJob.PushItems(Helpers.GetMapReduceFunctions(), new List<object>(slices), 2);
+					//_currentHistogram = Helpers.ComputeHistogram(input);
+					//_pnlHistogram.Refresh();
+
+					for(int i = 0; i < slices.Length; i++)
+					{
+						slices[i].Dispose();
+					}
+				}
+
+				BeginInvoke(new Action(() => _timer.Start()));
+			}));
 		}
 
 		private void _timer_Tick(object sender, EventArgs e)
 		{
-			// Check job status
-			bool completed = _mapReduceJob.IsCompleted();
-
-			if(completed)
+			_timer.Stop();
+			ThreadPool.QueueUserWorkItem(new WaitCallback((s) =>
 			{
-				_timer.Stop();
-				_currentHistogram = _mapReduceJob.GetSingleResult();
-				_pnlHistogram.Refresh();
-				_btnStart.Enabled = true;
-				_btnBrowse.Enabled = true;
-				_prgProgress.Style = ProgressBarStyle.Blocks;
-			}
+				// Check job status
+				bool completed = _mapReduceJob.IsCompleted();
+
+				BeginInvoke(new Action(() =>
+				{
+					if(completed)
+					{
+						_currentHistogram = _mapReduceJob.GetSingleResult();
+						_pnlHistogram.Refresh();
+						_btnStart.Enabled = true;
+						_btnBrowse.Enabled = true;
+						_prgProgress.Style = ProgressBarStyle.Blocks;
+					}
+					else _timer.Start();
+				}));
+			}));
 		}
 
 		private void _pnlHistogram_Paint(object sender, PaintEventArgs e)

@@ -35,7 +35,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 			Enforce.Argument(() => blobStorage);
 			Enforce.Argument(() => queueStorage);
 
-			_jobName = Guid.NewGuid().ToString("M");
+			_jobName = Guid.NewGuid().ToString("N");
 			_blobStorage = blobStorage;
 			_queueStorage = queueStorage;
 		}
