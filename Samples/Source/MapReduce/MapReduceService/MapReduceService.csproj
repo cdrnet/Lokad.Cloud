@@ -50,9 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="JobMessage.cs" />
-    <Compile Include="BlobSet.cs" />
-    <Compile Include="BlobSetMapService.cs" />
-    <Compile Include="BlobSetReduceService.cs" />
     <Compile Include="MapReduceJob.cs" />
     <Compile Include="MapReduceBlobSet.cs" />
     <Compile Include="MapReduceFunctions.cs" />

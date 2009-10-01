@@ -8,7 +8,7 @@ using Autofac.Configuration;
 using Lokad.Cloud;
 using Lokad.Cloud.Azure;
 
-namespace MapReduceClient
+namespace Lokad.Cloud.Samples.MapReduce
 {
 	public static class Setup
 	{

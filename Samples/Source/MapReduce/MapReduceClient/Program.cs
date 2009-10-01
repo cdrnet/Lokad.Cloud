@@ -6,7 +6,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace MapReduceClient
+namespace Lokad.Cloud.Samples.MapReduce
 {
 	class Program
 	{

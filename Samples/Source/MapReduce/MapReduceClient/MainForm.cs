@@ -14,7 +14,7 @@ using System.Windows.Forms;
 using Lokad.Cloud.Samples.MapReduce;
 using System.Threading;
 
-namespace MapReduceClient
+namespace Lokad.Cloud.Samples.MapReduce
 {
 	public partial class MainForm : Form
 	{

@@ -6,7 +6,7 @@ using System.Text;
 using System.Drawing;
 using Lokad.Cloud.Samples.MapReduce;
 
-namespace MapReduceClient
+namespace Lokad.Cloud.Samples.MapReduce
 {
 	/// <summary>Implements helper methods.</summary>
 	public static class Helpers

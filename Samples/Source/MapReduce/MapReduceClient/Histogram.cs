@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MapReduceClient
+namespace Lokad.Cloud.Samples.MapReduce
 {
 	/// <summary>Represents a picture histogram.</summary>
 	public class Histogram

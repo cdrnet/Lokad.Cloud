@@ -8,7 +8,7 @@
     <ProjectGuid>{9CE653AE-247C-4A3B-B18B-07411EF9B59F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MapReduceClient</RootNamespace>
+    <RootNamespace>Lokad.Cloud.Samples.MapReduce</RootNamespace>
     <AssemblyName>MapReduceClient</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

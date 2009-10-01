@@ -23,7 +23,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 	public sealed class MapReduceBlobSet
 	{
 		/// <summary>The queue used for managing map/reduce work items (<seealso cref="T:BatchMessage"/>).</summary>
-		internal const string JobsQueueName = "blobsets-queue";
+		internal const string JobsQueueName = "blobsets";
 
 		internal const string ContainerName = "blobsets";
 		internal const string ConfigPrefix = "config";

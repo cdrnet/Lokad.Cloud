@@ -21,7 +21,29 @@ namespace Lokad.Cloud.Samples.MapReduce
 	{
 		protected override void Start(JobMessage message)
 		{
-			throw new NotImplementedException();
+			switch(message.Type)
+			{
+				case MessageType.BlobSetToProcess:
+					ProcessBlobSet(message.JobName, message.BlobSetId.Value);
+					break;
+				case MessageType.ReducedDataToAggregate:
+					AggregateData(message.JobName);
+					break;
+				default:
+					throw new InvalidOperationException("Invalid Message Type");
+			}
+		}
+
+		void ProcessBlobSet(string jobName, int blobSetId)
+		{
+			var blobSet = new MapReduceBlobSet(BlobStorage, QueueStorage);
+			blobSet.PerformMapReduce(jobName, blobSetId);
+		}
+
+		void AggregateData(string jobName)
+		{
+			var blobSet = new MapReduceBlobSet(BlobStorage, QueueStorage);
+			blobSet.PerformAggregate(jobName);
 		}
 
 	}

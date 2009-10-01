@@ -1,4 +1,4 @@
-﻿namespace MapReduceClient
+﻿namespace Lokad.Cloud.Samples.MapReduce
 {
 	partial class MainForm
 	{
