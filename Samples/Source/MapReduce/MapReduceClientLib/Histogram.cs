@@ -11,6 +11,7 @@ using System.Text;
 namespace Lokad.Cloud.Samples.MapReduce
 {
 	/// <summary>Represents a picture histogram.</summary>
+	[Serializable]
 	public class Histogram
 	{
 		/// <summary>The size of the <see cref="M:Frequencies"/> array (2^8).</summary>

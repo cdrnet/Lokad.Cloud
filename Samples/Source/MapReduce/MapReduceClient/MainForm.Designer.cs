@@ -36,8 +36,8 @@
 			this._prgProgress = new System.Windows.Forms.ProgressBar();
 			this._btnStart = new System.Windows.Forms.Button();
 			this._grpResult = new System.Windows.Forms.GroupBox();
-			this._timer = new System.Windows.Forms.Timer(this.components);
 			this._pnlHistogram = new System.Windows.Forms.Panel();
+			this._timer = new System.Windows.Forms.Timer(this.components);
 			this._grpInput.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._picPreview)).BeginInit();
 			this._grpProgress.SuspendLayout();
@@ -113,18 +113,18 @@
 			this._grpResult.TabStop = false;
 			this._grpResult.Text = "3 - View Histogram";
 			// 
+			// _pnlHistogram
+			// 
+			this._pnlHistogram.Location = new System.Drawing.Point(15, 37);
+			this._pnlHistogram.Name = "_pnlHistogram";
+			this._pnlHistogram.Size = new System.Drawing.Size(257, 200);
+			this._pnlHistogram.TabIndex = 0;
+			this._pnlHistogram.Paint += new System.Windows.Forms.PaintEventHandler(this._pnlHistogram_Paint);
+			// 
 			// _timer
 			// 
 			this._timer.Interval = 5000;
 			this._timer.Tick += new System.EventHandler(this._timer_Tick);
-			// 
-			// _pnlHistogram
-			// 
-			this._pnlHistogram.Location = new System.Drawing.Point(16, 37);
-			this._pnlHistogram.Name = "_pnlHistogram";
-			this._pnlHistogram.Size = new System.Drawing.Size(255, 200);
-			this._pnlHistogram.TabIndex = 0;
-			this._pnlHistogram.Paint += new System.Windows.Forms.PaintEventHandler(this._pnlHistogram_Paint);
 			// 
 			// MainForm
 			// 

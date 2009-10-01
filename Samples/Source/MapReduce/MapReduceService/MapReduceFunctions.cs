@@ -18,11 +18,8 @@ namespace Lokad.Cloud.Samples.MapReduce {
 		/// <summary>The mapper, expected to be Func{TMapIn, TMapOut}.</summary>
 		public object Mapper { get; set; }
 
-		/// <summary>The reducer, expected to be Func{TMapOut, TMapOut, TReduceOut}.</summary>
+		/// <summary>The reducer, expected to be Func{TMapOut, TMapOut, TMapOut}.</summary>
 		public object Reducer { get; set; }
-
-		/// <summary>The aggregator or <c>null</c>, expected to be Func{TReduceOut, TReduceOut, TReduceOut}.</summary>
-		public object Aggregator { get; set; }
 
 	}
 

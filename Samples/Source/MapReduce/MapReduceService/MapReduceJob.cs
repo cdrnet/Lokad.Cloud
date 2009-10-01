@@ -96,46 +96,20 @@ namespace Lokad.Cloud.Samples.MapReduce
 				}
 				catch(InvalidOperationException)
 				{
-					// Inconclusive
-				}
-
-				try
-				{
-					blobSet.GetReducedResults<object>(_jobName);
-					return true;
-				}
-				catch(InvalidOperationException)
-				{
 					return false;
 				}
 			}
 		}
 
-		/// <summary>Gets the result of a job whose output is a single item 
-		/// (call this method the aggregator function was specified).</summary>
+		/// <summary>Gets the result of a job.</summary>
 		/// <returns>The result item.</returns>
-		/// <exception cref="InvalidOperationException">If the aggregator function was not specified or 
-		/// if the result is not ready (<seealso cref="M:IsCompleted"/>).</exception>
-		public TReduceOut GetSingleResult()
+		/// <exception cref="InvalidOperationException">If the result is not ready (<seealso cref="M:IsCompleted"/>).</exception>
+		public TReduceOut GetResult()
 		{
 			lock(_jobName)
 			{
 				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
 				return blobSet.GetAggregatedResult<TReduceOut>(_jobName);
-			}
-		}
-
-		/// <summary>Gets the result of a job whose output is a multiple items 
-		/// (call this method the aggregator function was <b>not</b> specified).</summary>
-		/// <returns>The result items.</returns>
-		/// <exception cref="InvalidOperationException">If the aggregator function was specified or 
-		/// if the result is not ready (<seealso cref="M:IsCompleted"/>).</exception>
-		public IList<TReduceOut> GetMultipleResults()
-		{
-			lock(_jobName)
-			{
-				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
-				return blobSet.GetReducedResults<TReduceOut>(_jobName);
 			}
 		}
 

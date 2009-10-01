@@ -39,6 +39,8 @@ namespace Lokad.Cloud.Samples.MapReduce
 				{
 					_currentFileName = dialog.FileName;
 					_picPreview.ImageLocation = _currentFileName;
+					_currentHistogram = null;
+					_pnlHistogram.Refresh();
 				}
 			}
 
@@ -51,6 +53,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 			_btnBrowse.Enabled = false;
 			_prgProgress.Style = ProgressBarStyle.Marquee;
 			_currentHistogram = null;
+			_pnlHistogram.Refresh();
 
 			_mapReduceJob = new MapReduceJob<Bitmap, Histogram, Histogram>(
 				Setup.Container.Resolve<Lokad.Cloud.IBlobStorageProvider>(),
@@ -61,17 +64,12 @@ namespace Lokad.Cloud.Samples.MapReduce
 			{
 				using(var input = (Bitmap)Bitmap.FromFile(_currentFileName))
 				{
-					var slices = Helpers.SliceBitmap(input, 8);
+					var slices = Helpers.SliceBitmapAsPng(input, 14);
 
 					// Queue slices
-					_mapReduceJob.PushItems(Helpers.GetMapReduceFunctions(), new List<object>(slices), 2);
+					_mapReduceJob.PushItems(Helpers.GetMapReduceFunctions(), new List<object>(slices), 4);
 					//_currentHistogram = Helpers.ComputeHistogram(input);
 					//_pnlHistogram.Refresh();
-
-					for(int i = 0; i < slices.Length; i++)
-					{
-						slices[i].Dispose();
-					}
 				}
 
 				BeginInvoke(new Action(() => _timer.Start()));
@@ -86,11 +84,16 @@ namespace Lokad.Cloud.Samples.MapReduce
 				// Check job status
 				bool completed = _mapReduceJob.IsCompleted();
 
+				if(completed)
+				{
+					_currentHistogram = _mapReduceJob.GetResult();
+					_mapReduceJob.DeleteJobData();
+				}
+
 				BeginInvoke(new Action(() =>
 				{
 					if(completed)
 					{
-						_currentHistogram = _mapReduceJob.GetSingleResult();
 						_pnlHistogram.Refresh();
 						_btnStart.Enabled = true;
 						_btnBrowse.Enabled = true;

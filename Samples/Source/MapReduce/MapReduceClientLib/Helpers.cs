@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using Lokad.Cloud.Samples.MapReduce;
+using System.IO;
+using System.Drawing.Imaging;
 
 namespace Lokad.Cloud.Samples.MapReduce
 {
@@ -14,8 +16,8 @@ namespace Lokad.Cloud.Samples.MapReduce
 		/// <summary>Slices an input bitmap into several parts.</summary>
 		/// <param name="input">The input bitmap.</param>
 		/// <param name="sliceCount">The number of slices.</param>
-		/// <returns>The output bitmap.</returns>
-		public static Bitmap[] SliceBitmap(Bitmap input, int sliceCount)
+		/// <returns>The slices.</returns>
+		static Bitmap[] SliceBitmap(Bitmap input, int sliceCount)
 		{
 			// Simply split the bitmap in vertical slices
 			
@@ -42,12 +44,42 @@ namespace Lokad.Cloud.Samples.MapReduce
 			return outputBitmaps;
 		}
 
+		/// <summary>Slices an input bitmap into several parts.</summary>
+		/// <param name="input">The input bitmap.</param>
+		/// <param name="sliceCount">The number of slices.</param>
+		/// <returns>The slices, saved as PNG and serialized in byte arrays.</returns>
+		public static byte[][] SliceBitmapAsPng(Bitmap input, int sliceCount)
+		{
+			Bitmap[] slices = SliceBitmap(input, sliceCount);
+
+			var dump = new byte[slices.Length][];
+
+			for(int i = 0; i < slices.Length; i++)
+			{
+				using(var stream = new MemoryStream())
+				{
+					slices[i].Save(stream, ImageFormat.Png);
+					dump[i] = stream.ToArray();
+				}
+				slices[i].Dispose();
+			}
+
+			return dump;
+		}
+
 		/// <summary>Computes the histogram of a bitpam.</summary>
-		/// <param name="input">The bitmap.</param>
+		/// <param name="inputStream">The serialized, PNG format bitmap.</param>
 		/// <returns>The histogram.</returns>
-		public static Histogram ComputeHistogram(Bitmap input)
+		public static Histogram ComputeHistogram(byte[] inputStream)
 		{
 			// This method is inefficient (GetPixel is slow) but easy to understand
+
+			Bitmap input = null;
+			using(var stream = new MemoryStream(inputStream))
+			{
+				stream.Seek(0, SeekOrigin.Begin);
+				input = (Bitmap)Bitmap.FromStream(stream);
+			}
 
 			var result = new Histogram(input.Width * input.Height);
 			double increment = 1D / result.TotalPixels;
@@ -93,9 +125,8 @@ namespace Lokad.Cloud.Samples.MapReduce
 		{
 			return new MapReduceFunctions()
 				{
-					Mapper = (Func<Bitmap, Histogram>)ComputeHistogram,
-					Reducer = (Func<Histogram, Histogram, Histogram>)MergeHistograms,
-					Aggregator = (Func<Histogram, Histogram, Histogram>)MergeHistograms
+					Mapper = (Func<byte[], Histogram>)ComputeHistogram,
+					Reducer = (Func<Histogram, Histogram, Histogram>)MergeHistograms
 				};
 		}
 	}
