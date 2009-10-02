@@ -87,6 +87,7 @@
     <Compile Include="Azure\StorageModule.cs" />
     <Compile Include="BaseTemporaryBlobName.cs" />
     <Compile Include="DelayedQueue.cs" />
+    <Compile Include="Mock\MockStorageModule.cs" />
     <Compile Include="RankAttribute.cs" />
     <Compile Include="TypeMapperProvider.cs" />
     <Compile Include="BaseTypedBlobName.cs" />

@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{BC3C
 		Samples\Source\IoCforService\ReadMe.IoCforService.txt = Samples\Source\IoCforService\ReadMe.IoCforService.txt
 		Samples\Source\MapReduce\ReadMe.MapReduce.txt = Samples\Source\MapReduce\ReadMe.MapReduce.txt
 		Samples\Source\PingPong\ReadMe.PingPong.txt = Samples\Source\PingPong\ReadMe.PingPong.txt
+		Samples\Source\TestingSample\ReadMe.TestingSample.txt = Samples\Source\TestingSample\ReadMe.TestingSample.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingPongClient", "Samples\Source\PingPong\PingPongClient\PingPongClient.csproj", "{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874}"
