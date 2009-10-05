@@ -5,17 +5,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lokad.Cloud.Samples.MapReduce
 {
 	/// <summary>Entry point for setting up and consuming a map/reduce service.</summary>
 	/// <typeparam name="TMapIn">The type of the items that are input in the map operation.</typeparam>
 	/// <typeparam name="TMapOut">The type of the items that are output from the map operation.</typeparam>
-	/// <typeparam name="TReduceOut">The type of the items that are output from the reduce operation.</typeparam>
 	/// <remarks>All public members are thread-safe.</remarks>
 	/// <seealso cref="MapReduceBlobSet"/>
 	/// <seealso cref="MapReduceService"/>
-	public sealed class MapReduceJob<TMapIn, TMapOut, TReduceOut>
+	public sealed class MapReduceJob<TMapIn, TMapOut>
 	{
 
 		// HACK: thread-safety is achieved via locks. It would be better to make this class immutable.
@@ -64,14 +64,14 @@ namespace Lokad.Cloud.Samples.MapReduce
 		/// <returns>The batch ID.</returns>
 		/// <exception cref="InvalidOperationException">If the method was already called.</exception>
 		/// <exception cref="ArgumentException">If <paramref name="items"/> contains less than two items.</exception>
-		public string PushItems(MapReduceFunctions functions, IList<object> items, int workerCount)
+		public string PushItems(MapReduceFunctions functions, IList<TMapIn> items, int workerCount)
 		{
 			lock(_jobName)
 			{
 				if(_itemsPushed) throw new InvalidOperationException("A batch was already pushed to the work queue");
 
 				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
-				blobSet.GenerateBlobSets(_jobName, items, functions, workerCount);
+				blobSet.GenerateBlobSets(_jobName, new List<object>(from i in items select (object)i), functions, workerCount);
 				_itemsPushed = true;
 
 				return _jobName;
@@ -104,12 +104,12 @@ namespace Lokad.Cloud.Samples.MapReduce
 		/// <summary>Gets the result of a job.</summary>
 		/// <returns>The result item.</returns>
 		/// <exception cref="InvalidOperationException">If the result is not ready (<seealso cref="M:IsCompleted"/>).</exception>
-		public TReduceOut GetResult()
+		public TMapOut GetResult()
 		{
 			lock(_jobName)
 			{
 				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
-				return blobSet.GetAggregatedResult<TReduceOut>(_jobName);
+				return blobSet.GetAggregatedResult<TMapOut>(_jobName);
 			}
 		}
 

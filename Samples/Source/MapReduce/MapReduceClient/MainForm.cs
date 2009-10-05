@@ -19,7 +19,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 	public partial class MainForm : Form
 	{
 		string _currentFileName = null;
-		MapReduceJob<Bitmap, Histogram, Histogram> _mapReduceJob = null;
+		MapReduceJob<byte[], Histogram> _mapReduceJob = null;
 		Histogram _currentHistogram = null;
 
 		public MainForm()
@@ -55,7 +55,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 			_currentHistogram = null;
 			_pnlHistogram.Refresh();
 
-			_mapReduceJob = new MapReduceJob<Bitmap, Histogram, Histogram>(
+			_mapReduceJob = new MapReduceJob<byte[], Histogram>(
 				Setup.Container.Resolve<Lokad.Cloud.IBlobStorageProvider>(),
 				Setup.Container.Resolve<Lokad.Cloud.IQueueStorageProvider>());
 
@@ -67,7 +67,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 					var slices = Helpers.SliceBitmapAsPng(input, 14);
 
 					// Queue slices
-					_mapReduceJob.PushItems(Helpers.GetMapReduceFunctions(), new List<object>(slices), 4);
+					_mapReduceJob.PushItems(Helpers.GetMapReduceFunctions(), slices, 4);
 					//_currentHistogram = Helpers.ComputeHistogram(input);
 					//_pnlHistogram.Refresh();
 				}
