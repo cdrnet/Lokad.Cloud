@@ -61,9 +61,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlobBackupTool.cs" />
-    <Compile Include="BlobBackupToolTests.cs" />
+    <Compile Include="BlobBackupTool\BlobBackupTool.cs" />
+    <Compile Include="BlobBackupTool\BlobBackupToolTests.cs" />
     <Compile Include="GlobalSetup.cs" />
+    <Compile Include="OrderDispatcher\OrderDispatcherTests.cs" />
+    <Compile Include="OrderDispatcher\OrderMessage.cs" />
+    <Compile Include="OrderDispatcher\OrderDispatcher.cs" />
+    <Compile Include="OrderDispatcher\OrderProcessorService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

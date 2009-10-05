@@ -12,9 +12,9 @@ based on Lokad.Cloud and in particular using storage providers.
 The sample includes the following classes, which implement 
 scenarios requiring extensive testing:
 - BlobBackupTool: a class that allows to backup blobs
-- EmailDispatcher: a class that sends email messages using a queue
+- OrderDispatcher: a class that queues purchase orders in a queue for 
+  later processing by a QueueService
 
 This sample makes use of the following Lokad.Cloud concepts:
 - Strongly-typed containers names (BlobBackupTool)
-- Temporary containers names (BlobBackupTool)
-- Automatic management of queue messages (EmailDispatcher)
+- Automatic management of queue messages (OrderDispatcher)
