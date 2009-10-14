@@ -24,8 +24,8 @@ namespace Lokad.Cloud.Web
 		IEnumerable<object> GetZipEntries()
 		{
 			var buffer = _provider.GetBlob<byte[]>(
-					AssemblyLoader.ContainerName,
-					AssemblyLoader.PackageBlobName);
+				AssemblyLoader.ContainerName,
+				AssemblyLoader.PackageBlobName);
 
 			// do not return anything is no assembly is loaded
 			if(null == buffer) yield break;
@@ -35,11 +35,21 @@ namespace Lokad.Cloud.Web
 				ZipEntry entry;
 				while ((entry = zipStream.GetNextEntry()) != null)
 				{
+					byte[] assemblyBytes = new byte[entry.Size];
+					zipStream.Read(assemblyBytes, 0, assemblyBytes.Length);
+
+					string version = "n/a";
+					using(var inspector = new AssemblyInspector(assemblyBytes))
+					{
+						version = inspector.AssemblyVersion;
+					}
+
 					yield return new
 					{
-						entry.Name,
-						entry.DateTime,
-						entry.Size
+						Name = entry.Name,
+						DateTime = entry.DateTime,
+						Version = version,
+						Size = entry.Size
 					};
 				}
 			}

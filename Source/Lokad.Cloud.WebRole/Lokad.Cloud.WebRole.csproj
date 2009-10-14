@@ -95,6 +95,7 @@
     <Compile Include="Assemblies.aspx.designer.cs">
       <DependentUpon>Assemblies.aspx</DependentUpon>
     </Compile>
+    <Compile Include="AssemblyInspector.cs" />
     <Compile Include="Config.aspx.cs">
       <DependentUpon>Config.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
