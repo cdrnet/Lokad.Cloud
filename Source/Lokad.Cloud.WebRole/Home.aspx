@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" MasterPageFile="~/Nav.Master" AutoEventWireup="true" CodeBehind="Home.aspx.cs" Inherits="Lokad.Cloud.Web.Home" %>
+<%@ Page Language="C#" MasterPageFile="~/Nav.Master" AutoEventWireup="true" CodeBehind="Home.aspx.cs" Inherits="Lokad.Cloud.Web.Home" %>
 <%@ Register Src="NavBar.ascx" TagName="NavBar" TagPrefix="uc" %>
 <%@ Import Namespace="Lokad.Cloud.Azure"%>
 <%@ Import Namespace="Lokad.Cloud.Web"%>
@@ -29,5 +29,21 @@
 	<br />
 	
 	<h2 class="separator">System status</h2>
-	<pre><asp:Label ID="LokadCloudVersion" runat="server" Text='<%# "Lokad.Cloud " + GlobalSetup.AssemblyVersion  + " - Storage Account Name: " + GlobalSetup.StorageAccountName %>' /></pre>
+	<div class="box">
+		<ul>
+			<li>Lokad.Cloud Version: <b>
+				<asp:Label ID="LokadCloudVersion" runat="server" Text='<%# GlobalSetup.AssemblyVersion %>' /></b>
+				<ul>
+					<li>Status: <b>
+						<asp:Label ID="LokadCloudUpdateStatus" runat="server" Text='<%# GlobalSetup.IsLokadCloudUpToDate.HasValue ? (GlobalSetup.IsLokadCloudUpToDate.Value ? "Up-to-date" : ("New version avilable (" + GlobalSetup.NewLokadCloudVersion + ")")) : "Could not retrieve version info" %>' />
+						</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<asp:HyperLink ID="DownloadLokadCloud" runat="server" Visible='<%# GlobalSetup.IsLokadCloudUpToDate.HasValue && !GlobalSetup.IsLokadCloudUpToDate.Value %>'
+							NavigateUrl='<%# GlobalSetup.DownloadUrl %>' Text="Download" ToolTip="Go to the Lokad.Cloud download page (new window)" Target="_blank" />
+					</li>
+				</ul>
+			</li>
+			<li>Storage Account Name: <b>
+				<asp:Label ID="StorageAccountName" runat="server" Text='<%# GlobalSetup.StorageAccountName %>' /></b>
+			</li>
+		</ul>
+	</div>
 </asp:Content>

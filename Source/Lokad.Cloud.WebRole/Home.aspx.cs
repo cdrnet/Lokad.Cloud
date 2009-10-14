@@ -16,6 +16,9 @@ namespace Lokad.Cloud.Web
 			AdminsView.DataSource = GetAdmins();
 			AdminsView.DataBind();
 			LokadCloudVersion.DataBind();
+			StorageAccountName.DataBind();
+			LokadCloudUpdateStatus.DataBind();
+			DownloadLokadCloud.DataBind();
 		}
 
 		IEnumerable<object> GetAdmins()
