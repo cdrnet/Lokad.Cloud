@@ -432,8 +432,9 @@ img.thumb { border: solid 1px #CCCCCC; }
 
 /* Bigger Logo */
 	.logo a{ width:332px; }
-	.logo h1{ padding: 0 48px 0 0; width:332px; overflow: hidden; background:url(Images/logo_account.gif) no-repeat; }
+	.logo h1{ padding: 0 48px 0 0; width:332px; overflow: hidden; background:url(Images/bg_logo.png) no-repeat; }
 	.logo h1.Test { background:url(Images/logo_test.gif) no-repeat;}
+#Visual { background-image: url(Images/bg_slogan.gif); }
 	
 /* Help styles */
 	#HelpHeader { width:100%; float:left; border-bottom: solid #F2EDD9 2px; background-color:White;}
