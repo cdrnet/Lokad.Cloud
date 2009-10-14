@@ -16,13 +16,13 @@
 	<asp:GridView ID="AssembliesView" runat="server" EmptyDataText="No file in archive yet." />
 	
 	<br />
-	<p>Upload a new ZIP archive (containing your .NET assemblies):
+	<p>Upload a stand-alone .NET assembly (DLL) or a ZIP archive containing multiple DLLs (previous assemblies will be deleted):
 	</p>
 	<p>
 		<asp:FileUpload ID="AssemblyFileUpload" runat="server" />
 		<asp:CustomValidator ID="UploadValidator" runat="server" 
 			Display="Dynamic" 
-			Text="A file must be selected before uploading, and it must be a ZIP archive."
+			Text="A file must be selected before uploading, and it must either be a DLL assembly or a ZIP archive."
 			ValidationGroup="Upload"
 			OnServerValidate="UploadValidator_Validate" /> <br />
 		<asp:Button runat="server" 

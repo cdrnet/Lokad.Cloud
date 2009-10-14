@@ -56,15 +56,49 @@ namespace Lokad.Cloud.Web
 				return;
 			}
 
-			// pushing new archive to storage
-			_provider.PutBlob(
-				AssemblyLoader.ContainerName,
-				AssemblyLoader.PackageBlobName, 
-				AssemblyFileUpload.FileBytes, true);
+			string extension = GetLowercaseExtension(AssemblyFileUpload.FileName);
+
+			// If the file is a DLL, it must be compressed as ZIP
+			if(extension == ".dll")
+			{
+				using(var tempStream = new MemoryStream())
+				{
+					using(var zip = new ZipOutputStream(tempStream))
+					{
+						var entry = new ZipEntry(AssemblyFileUpload.FileName);
+						zip.PutNextEntry(entry);
+
+						var bytes = AssemblyFileUpload.FileBytes;
+						zip.Write(bytes, 0, bytes.Length);
+						zip.CloseEntry();
+					}
+
+					_provider.PutBlob(AssemblyLoader.ContainerName,
+						AssemblyLoader.PackageBlobName,
+						tempStream.ToArray(), true);
+				}
+			}
+			else
+			{
+				// pushing new archive to storage
+				_provider.PutBlob(
+					AssemblyLoader.ContainerName,
+					AssemblyLoader.PackageBlobName,
+					AssemblyFileUpload.FileBytes, true);
+			}
 
 			AssembliesView.DataBind();
 
 			UploadSucceededLabel.Visible = true;
+		}
+
+		private static string GetLowercaseExtension(string fileName)
+		{
+			string extension = Path.GetExtension(fileName);
+			if(extension == null) return "";
+
+			extension = extension.ToLowerInvariant();
+			return extension;
 		}
 
 		protected void UploadValidator_Validate(object source, ServerValidateEventArgs args)
@@ -74,28 +108,31 @@ namespace Lokad.Cloud.Web
 			// file must exists
 			args.IsValid &= AssemblyFileUpload.HasFile;
 
-			// Extension must be ".zip"
-			string extension = Path.GetExtension(AssemblyFileUpload.FileName);
-			args.IsValid &= !string.IsNullOrEmpty(extension) && extension.ToLowerInvariant() == ".zip";
+			// Extension must be ".zip" or ".dll"
+			var extension = GetLowercaseExtension(AssemblyFileUpload.FileName);
+			args.IsValid &= extension == ".zip" || extension == ".dll";
 
 			if(args.IsValid)
 			{
-				// checking that the archive can be decompressed correctly.
-				try
+				if(extension == ".zip")
 				{
-					using(var zipStream = new ZipInputStream(new MemoryStream(AssemblyFileUpload.FileBytes)))
+					// checking that the archive can be decompressed correctly.
+					try
 					{
-						ZipEntry entry;
-						while((entry = zipStream.GetNextEntry()) != null)
+						using(var zipStream = new ZipInputStream(new MemoryStream(AssemblyFileUpload.FileBytes)))
 						{
-							var buffer = new byte[entry.Size];
-							zipStream.Read(buffer, 0, buffer.Length);
+							ZipEntry entry;
+							while((entry = zipStream.GetNextEntry()) != null)
+							{
+								var buffer = new byte[entry.Size];
+								zipStream.Read(buffer, 0, buffer.Length);
+							}
 						}
 					}
-				}
-				catch(Exception)
-				{
-					args.IsValid = false;
+					catch(Exception)
+					{
+						args.IsValid = false;
+					}
 				}
 			}
 		}
