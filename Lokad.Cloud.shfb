@@ -1,0 +1,58 @@
+﻿<project schemaVersion="1.6.0.7">
+    <assemblies>
+        <assembly assemblyPath=".\Source\Lokad.Cloud.Framework\bin\Release\Lokad.Cloud.Framework.dll" xmlCommentsPath=".\Source\Lokad.Cloud.Framework\bin\Release\Lokad.Cloud.Framework.xml" commentsOnly="False" />
+    </assemblies>
+    <namespaceSummaries>
+        <namespaceSummaryItem name="" isDocumented="False" />
+        <namespaceSummaryItem name="Lokad.Cloud" isDocumented="True">Main Lokad.Cloud namespace.</namespaceSummaryItem>
+        <namespaceSummaryItem name="Lokad.Cloud.Azure" isDocumented="True">Namespace containing Microsoft Azure-specific implementations.</namespaceSummaryItem>
+        <namespaceSummaryItem name="Lokad.Cloud.Mock" isDocumented="True">Namespace containing cloud service in-memory mocks.</namespaceSummaryItem>
+        <namespaceSummaryItem name="Lokad.Cloud.Services" isDocumented="True">Namespace containing types for building Lokad.Cloud services.</namespaceSummaryItem>
+        <namespaceSummaryItem name="Microsoft.Samples.ServiceHosting.StorageClient" isDocumented="False" />
+        <namespaceSummaryItem name="Microsoft.Samples.ServiceHosting.StorageClient.StorageHttpConstants" isDocumented="False" />
+    </namespaceSummaries>
+    <dependencies>
+        <dependencyItem depPath=".\Source\Lokad.Cloud.Framework\bin\Release\*.*" />
+    </dependencies>
+    <ProjectSummary>Lokad.Cloud Framework Developer's Documentation.</ProjectSummary>
+    <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, TypeParameter</MissingTags>
+    <VisibleItems>Attributes, InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
+    <HtmlHelp1xCompilerPath path="%programfiles%\HTML Help Workshop\" />
+    <HtmlHelp2xCompilerPath path="" />
+    <OutputPath>.\Build\Help\</OutputPath>
+    <SandcastlePath path="%programfiles%\Sandcastle\" />
+    <WorkingPath path="" />
+    <CleanIntermediates>True</CleanIntermediates>
+    <KeepLogFile>True</KeepLogFile>
+    <BuildLogFile path="" />
+    <HelpFileFormat>Website</HelpFileFormat>
+    <CppCommentsFixup>False</CppCommentsFixup>
+    <FrameworkVersion>3.5</FrameworkVersion>
+    <IndentHtml>False</IndentHtml>
+    <Preliminary>True</Preliminary>
+    <RootNamespaceContainer>False</RootNamespaceContainer>
+    <RootNamespaceTitle />
+    <HelpTitle>Lokad.Cloud Framework Documentation</HelpTitle>
+    <HtmlHelpName>Lokad.Cloud</HtmlHelpName>
+    <Language>en-US</Language>
+    <CopyrightHref>http://www.lokad.com</CopyrightHref>
+    <CopyrightText>Copyright (C)2009 Lokad SAS</CopyrightText>
+    <FeedbackEMailAddress>support@lokad.com</FeedbackEMailAddress>
+    <FeedbackEMailLinkText>Send us your feedback</FeedbackEMailLinkText>
+    <HeaderText />
+    <FooterText />
+    <ProjectLinkType>Local</ProjectLinkType>
+    <SdkLinkType>Msdn</SdkLinkType>
+    <SdkLinkTarget>Blank</SdkLinkTarget>
+    <PresentationStyle>Prototype</PresentationStyle>
+    <NamingMethod>Guid</NamingMethod>
+    <SyntaxFilters>Standard</SyntaxFilters>
+    <ShowFeedbackControl>False</ShowFeedbackControl>
+    <BinaryTOC>True</BinaryTOC>
+    <IncludeFavorites>False</IncludeFavorites>
+    <CollectionTocStyle>Hierarchical</CollectionTocStyle>
+    <IncludeStopWordList>True</IncludeStopWordList>
+    <PlugInNamespaces>ms.vsipcc+, ms.vsexpresscc+</PlugInNamespaces>
+    <HelpFileVersion>1.0.0.0</HelpFileVersion>
+    <ContentPlacement>AboveNamespaces</ContentPlacement>
+</project>
