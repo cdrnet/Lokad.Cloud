@@ -1,6 +1,6 @@
 ﻿<project schemaVersion="1.6.0.7">
     <assemblies>
-        <assembly assemblyPath=".\Source\Lokad.Cloud.Framework\bin\Release\Lokad.Cloud.Framework.dll" xmlCommentsPath=".\Source\Lokad.Cloud.Framework\bin\Release\Lokad.Cloud.Framework.xml" commentsOnly="False" />
+        <assembly assemblyPath=".\Build\Cloud.Dev\Lokad.Cloud.Framework.dll" xmlCommentsPath=".\Build\Cloud.Dev\Lokad.Cloud.Framework.xml" commentsOnly="False" />
     </assemblies>
     <namespaceSummaries>
         <namespaceSummaryItem name="" isDocumented="False" />
@@ -12,7 +12,7 @@
         <namespaceSummaryItem name="Microsoft.Samples.ServiceHosting.StorageClient.StorageHttpConstants" isDocumented="False" />
     </namespaceSummaries>
     <dependencies>
-        <dependencyItem depPath=".\Source\Lokad.Cloud.Framework\bin\Release\*.*" />
+        <dependencyItem depPath=".\Build\Cloud.Dev\*.*" />
     </dependencies>
     <ProjectSummary>Lokad.Cloud Framework Developer's Documentation.</ProjectSummary>
     <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, TypeParameter</MissingTags>
