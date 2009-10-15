@@ -182,6 +182,7 @@
     <Content Include="App_Themes\Lokad\Images\bg_logo.png" />
     <Content Include="App_Themes\Lokad\Images\bg_nav.gif" />
     <Content Include="App_Themes\Lokad\Images\bg_nav_active.gif" />
+    <Content Include="App_Themes\Lokad\Images\bg_slogan.gif" />
     <Content Include="App_Themes\Lokad\Images\bt_btntop_left.gif" />
     <Content Include="App_Themes\Lokad\Images\bt_btntop_right.gif" />
     <Content Include="App_Themes\Lokad\Images\bullet_orange.gif" />
