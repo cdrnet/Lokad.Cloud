@@ -28,6 +28,8 @@ namespace Lokad.Cloud.Web
 
 			ScheduleList.DataSource = GetStates().Where(s => null != s).Select(p => p.Item1);
 			ScheduleList.DataBind();
+
+			ServiceList.DataBind();
 		}
 
 		IEnumerable<Pair<string, ScheduledServiceState>> GetStates()
@@ -54,6 +56,38 @@ namespace Lokad.Cloud.Web
 					});
 
 			ScheduleView.DataBind();
+		}
+
+		protected void ServiceList_DataBinding(object sender, EventArgs e)
+		{
+			// Filter out built-in services
+			var services = new List<string>();
+
+			foreach(var name in _provider.List(ScheduledServiceStateName.GetPrefix()))
+			{
+				// HACK: name of built-in services is hard-coded
+				if(name.ServiceName != typeof(Lokad.Cloud.Services.GarbageCollectorService).FullName &&
+					name.ServiceName != typeof(Lokad.Cloud.Services.DelayedQueueService).FullName)
+				{
+					services.Add(name.ServiceName);
+				}
+			}
+
+			ServiceList.DataSource = services;
+		}
+
+		protected void DeleteButton_Click(object sender, EventArgs e)
+		{
+			Page.Validate("delete");
+			if(!Page.IsValid) return;
+
+			var serviceName = ServiceList.SelectedValue;
+
+			var stateBlobName = new ScheduledServiceStateName(serviceName);
+
+			_provider.DeleteBlob(stateBlobName);
+
+			ServiceList.DataBind();
 		}
 	}
 }

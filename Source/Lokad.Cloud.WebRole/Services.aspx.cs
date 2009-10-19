@@ -19,6 +19,8 @@ namespace Lokad.Cloud.Web
 		{
 			ServicesView.DataSource = GetServices();
 			ServicesView.DataBind();
+
+			ServiceList.DataBind();
 		}
 
 		IEnumerable<object> GetServices()
@@ -42,7 +44,7 @@ namespace Lokad.Cloud.Web
 			if(e.CommandName == "Toggle")
 			{
 				var row = -1;
-				int.TryParse(e.CommandArgument as string, out row);
+				if(!int.TryParse(e.CommandArgument as string, out row)) return;
 
 				var blobName = new CloudServiceStateName(ServicesView.Rows[row].Cells[1].Text);
 
@@ -55,6 +57,38 @@ namespace Lokad.Cloud.Web
 				ServicesView.DataSource = GetServices();
 				ServicesView.DataBind();
 			}
+		}
+
+		protected void ServiceList_DataBinding(object sender, EventArgs e)
+		{
+			// Filter out built-in services
+			var services = new List<string>();
+
+			foreach(var name in _provider.List(CloudServiceStateName.GetPrefix()))
+			{
+				// HACK: name of built-in services is hard-coded
+				if(name.ServiceName != typeof(Lokad.Cloud.Services.GarbageCollectorService).FullName &&
+					name.ServiceName != typeof(Lokad.Cloud.Services.DelayedQueueService).FullName)
+				{
+					services.Add(name.ServiceName);
+				}
+			}
+
+			ServiceList.DataSource = services;
+		}
+
+		protected void DeleteButton_Click(object sender, EventArgs e)
+		{
+			Page.Validate("delete");
+			if(!Page.IsValid) return;
+
+			var serviceName = ServiceList.SelectedValue;
+
+			var stateBlobName = new CloudServiceStateName(serviceName);
+
+			_provider.DeleteBlob(stateBlobName);
+
+			ServiceList.DataBind();
 		}
 	}
 }

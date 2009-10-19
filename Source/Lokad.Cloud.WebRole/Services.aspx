@@ -14,9 +14,17 @@
 	<p>Use the panel below to start or stop services.</p>
 	<asp:GridView ID="ServicesView" runat="server" 
 		EmptyDataText="No services listed yet."
-		OnRowCommand="ServicesView_OnRowCommand" >
+		OnRowCommand="ServicesView_OnRowCommand">
 		<Columns>
 			<asp:ButtonField ButtonType="Link" Text="Toggle" CommandName="Toggle" />
 		</Columns>
 	</asp:GridView>
+	<br />
+	
+	<p>Delete data for unused services:<br />
+		<asp:DropDownList ID="ServiceList" runat="server" OnDataBinding="ServiceList_DataBinding" /><br />
+		<asp:Button ID="DeleteButton" runat="server" Text="Delete" OnClick="DeleteButton_Click" />
+		<asp:RequiredFieldValidator ID="ServiceListValue" runat="server" ControlToValidate="ServiceList"
+			ErrorMessage="You must select a service." CssClass="resulterror" ValidationGroup="delete" />
+	</p>
 </asp:Content>

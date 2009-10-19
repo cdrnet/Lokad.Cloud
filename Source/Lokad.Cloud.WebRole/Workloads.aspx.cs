@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using Lokad.Cloud;
+using System.Web.UI.WebControls;
 
 namespace Lokad.Cloud.Web
 {
@@ -29,6 +30,22 @@ namespace Lokad.Cloud.Web
 						QueueName = queueName,
 						Count = inQueueCount
 					};
+			}
+		}
+
+		protected void QueuesView_RowCommand(object sender, GridViewCommandEventArgs e)
+		{
+			if(e.CommandName == "DeleteQueue")
+			{
+				var row = -1;
+				if(!int.TryParse(e.CommandArgument as string, out row)) return;
+
+				string queueName = QueuesView.Rows[row].Cells[1].Text;
+
+				_provider.DeleteQueue(queueName);
+
+				QueuesView.DataSource = GetQueues();
+				QueuesView.DataBind();
 			}
 		}
 	}

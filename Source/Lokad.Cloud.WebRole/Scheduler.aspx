@@ -28,7 +28,13 @@
 			ControlToValidate="NewIntervalBox" Type="Integer"
 			ErrorMessage="Value must be between 1 and 10e9." 
 			MaximumValue="1000000000" MinimumValue="1"></asp:RangeValidator>
-
+	</p>
+	
+	<p>Delete data for unused scheduled services:<br />
+		<asp:DropDownList ID="ServiceList" runat="server" OnDataBinding="ServiceList_DataBinding" /><br />
+		<asp:Button ID="DeleteButton" runat="server" Text="Delete" OnClick="DeleteButton_Click" />
+		<asp:RequiredFieldValidator ID="ServiceListValue" runat="server" ControlToValidate="ServiceList"
+			ErrorMessage="You must select a service." CssClass="resulterror" ValidationGroup="delete" />
 	</p>
 	
 </asp:Content>
