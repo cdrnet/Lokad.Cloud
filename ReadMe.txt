@@ -23,7 +23,7 @@ Lokad.Cloud.Framework is the sole assembly refered by the client app.
 GETTING STARTED
 
 The package contains an Azure package "Lokad.Cloud.cspkg" ready to be deployed
-through the Windows Azure Developer Portal at https://lx.azure.microsoft.com/
+through the Windows Azure Developer Portal at https://windows.azure.com/
 
 Then, the package contains "ServiceConfiguration.cscfg" the configuration file
 that needs to be updated with your own settings (basically credentials for your
