@@ -6,6 +6,7 @@
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
+using Lokad.Cloud.Diagnostics;
 
 namespace Lokad.Cloud.Azure.Test
 {
@@ -18,9 +19,10 @@ namespace Lokad.Cloud.Azure.Test
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
-			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
+			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
+			builder.Register(c => new ServiceMonitor(c.Resolve<IBlobStorageProvider>())).As<IServiceMonitor>();
 
-			builder.Register(typeof (ProvidersForCloudStorage));
+			builder.Register(typeof (CloudInfrastructureProviders));
 			builder.Register(typeof (ServiceBalancerCommand));
 
 			return builder.Build();

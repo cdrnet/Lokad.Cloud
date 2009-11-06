@@ -10,6 +10,7 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Azure;
+using Lokad.Cloud.Diagnostics;
 using Microsoft.ServiceHosting.ServiceRuntime;
 using System.IO;
 
@@ -33,7 +34,8 @@ namespace Lokad.Cloud.Web
 				builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 			}
 
-			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
+			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
+			builder.Register(c => new ServiceMonitor(c.Resolve<IBlobStorageProvider>())).As<IServiceMonitor>();
 
 			Container = builder.Build();
 		}

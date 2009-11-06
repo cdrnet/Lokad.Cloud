@@ -7,6 +7,7 @@ using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud;
 using Lokad.Cloud.Azure;
+using Lokad.Cloud.Diagnostics;
 
 namespace Lokad.Cloud.Samples.MapReduce
 {
@@ -24,7 +25,8 @@ namespace Lokad.Cloud.Samples.MapReduce
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
-			builder.Register(c => (Lokad.ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
+			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
+			builder.Register(c => new ServiceMonitor(c.Resolve<IBlobStorageProvider>())).As<IServiceMonitor>();
 
 			return builder.Build();
 		}

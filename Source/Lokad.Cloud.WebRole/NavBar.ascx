@@ -7,4 +7,5 @@
 	<li id="Services" runat="server"><asp:HyperLink runat="server" NavigateUrl="~/Services.aspx" Text="Services" /></li>
 	<li id="Scheduler" runat="server"><asp:HyperLink runat="server" NavigateUrl="~/Scheduler.aspx" Text="Scheduler" /></li>
 	<li id="Workloads" runat="server"><asp:HyperLink runat="server" NavigateUrl="~/Workloads.aspx" Text="Queues" /></li>
+	<li id="Monitoring" runat="server"><asp:HyperLink runat="server" NavigateUrl="~/Monitoring.aspx" Text="Statistics" /></li>
 </ul>

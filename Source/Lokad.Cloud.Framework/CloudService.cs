@@ -91,7 +91,7 @@ namespace Lokad.Cloud
 
 		/// <summary>Providers used by the cloud service to access the storage.</summary>
 		[UsedImplicitly]
-		public ProvidersForCloudStorage Providers { get; set; }
+		public CloudInfrastructureProviders Providers { get; set; }
 
 		/// <summary>Short-hand for <c>Providers.BlobStorage</c>.</summary>
 		public IBlobStorageProvider BlobStorage { get { return Providers.BlobStorage; } }

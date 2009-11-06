@@ -27,7 +27,7 @@ namespace Lokad.Cloud
 		public string BlobName { get { return _blobName; } }
 
 		/// <summary>Shorthand constructor.</summary>
-		public BlobCounter(ProvidersForCloudStorage providers, string containerName, string blobName)
+		public BlobCounter(CloudInfrastructureProviders providers, string containerName, string blobName)
 			: this(providers.BlobStorage, containerName, blobName)
 		{
 		}

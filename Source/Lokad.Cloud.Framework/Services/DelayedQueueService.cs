@@ -29,7 +29,12 @@ namespace Lokad.Cloud.Services
 				// if the overflowing message is expired, delete it
 				if (DateTime.UtcNow > parsedName.TriggerTime)
 				{
-					var dm = BlobStorage.GetBlob<DelayedMessage>(parsedName);
+					var dm = BlobStorage.GetBlobOrDelete<DelayedMessage>(parsedName);
+					if(dm == null)
+					{
+						Log.WarnFormat("Deserialization failed for delayed message {0}, message was dropped.", parsedName.Identifier);
+						continue;
+					}
 					QueueStorage.Put(dm.QueueName, dm.InnerMessage);
 					BlobStorage.DeleteBlob(parsedName);
 				}

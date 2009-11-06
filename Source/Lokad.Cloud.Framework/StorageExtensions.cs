@@ -112,6 +112,11 @@ namespace Lokad.Cloud
 				provider.DeleteBlob(containerName, blobName);
 				return default(T);
 			}
+			catch (InvalidCastException)
+			{
+				provider.DeleteBlob(containerName, blobName);
+				return default(T);
+			}
 		}
 
 		/// <summary>Gets the corresponding object. If the deserialization fails

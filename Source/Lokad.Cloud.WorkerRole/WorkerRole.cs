@@ -7,6 +7,7 @@ using System;
 using System.Reflection;
 using Autofac.Builder;
 using Lokad.Cloud.Azure;
+using Lokad.Cloud.Diagnostics;
 using Microsoft.ServiceHosting.ServiceRuntime;
 using System.Collections.Generic;
 using System.IO;
@@ -77,9 +78,10 @@ namespace Lokad.Cloud
 			var storageModule = new StorageModule {OverriddenProperties = overrides};
 			builder.RegisterModule(storageModule);
 
-			builder.Register(c => (ILog)new CloudLogger(c.Resolve<IBlobStorageProvider>()));
+			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
+			builder.Register(c => new ServiceMonitor(c.Resolve<IBlobStorageProvider>())).As<IServiceMonitor>();
 
-			builder.Register(typeof(ProvidersForCloudStorage));
+			builder.Register(typeof(CloudInfrastructureProviders));
 			builder.Register(typeof(ServiceBalancerCommand));
 
 			using (var container = builder.Build())

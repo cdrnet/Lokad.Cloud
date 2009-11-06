@@ -99,7 +99,7 @@ namespace Lokad.Cloud
 
 						if(null == currentState)
 						{
-							return Result.Success(new ScheduledServiceState
+							return Result.CreateSuccess(new ScheduledServiceState
 								{
                                     TriggerInterval = _triggerInterval,
 									LastExecuted = now
@@ -111,7 +111,7 @@ namespace Lokad.Cloud
 							return Result<ScheduledServiceState>.CreateError("No need to update.");
 						}
 
-						return Result.Success(new ScheduledServiceState
+						return Result.CreateSuccess(new ScheduledServiceState
 							{
 								TriggerInterval = currentState.TriggerInterval,
 								LastExecuted = now

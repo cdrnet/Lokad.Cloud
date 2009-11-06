@@ -3,6 +3,8 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using Lokad.Cloud.Diagnostics;
+
 namespace Lokad.Cloud
 {
 	/// <summary>IoC argument for <see cref="CloudService"/> and other
@@ -11,7 +13,7 @@ namespace Lokad.Cloud
 	/// by the Lokad.Cloud framework itself. This class is placed in the
 	/// <c>Lokad.Cloud.Framework</c> for convenience while inheriting a
 	/// <see cref="CloudService"/>.</remarks>
-	public class ProvidersForCloudStorage
+	public class CloudInfrastructureProviders
 	{
 		/// <summary>Abstracts the Blob Storage.</summary>
 		public IBlobStorageProvider BlobStorage { get; private set; }
@@ -23,7 +25,7 @@ namespace Lokad.Cloud
 		public ILog Log { get; private set; }
 
 		/// <summary>IoC constructor.</summary>
-		public ProvidersForCloudStorage(
+		public CloudInfrastructureProviders(
 			IBlobStorageProvider blobStorage, 
 			IQueueStorageProvider queueStorage,
 			ILog log)

@@ -11,6 +11,7 @@ using System.Threading;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Microsoft.ServiceHosting.ServiceRuntime;
+using Lokad.Cloud.Diagnostics;
 
 namespace Lokad.Cloud.Azure
 {
@@ -25,8 +26,8 @@ namespace Lokad.Cloud.Azure
 
 		readonly object _sync = new object();
 
-		readonly ProvidersForCloudStorage _providers;
-		readonly ILog _logger;
+		readonly CloudInfrastructureProviders _providers;
+		readonly IServiceMonitor _monitoring;
 
 		CloudService[] _services;
 
@@ -40,10 +41,10 @@ namespace Lokad.Cloud.Azure
 		public string ServiceInExecution { get; private set; }
 
 		/// <summary>IoC constructor.</summary>
-		public ServiceBalancerCommand(ILog logger, ProvidersForCloudStorage providers)
+		public ServiceBalancerCommand(CloudInfrastructureProviders providers)
 		{
 			_providers = providers;
-			_logger = logger;
+			_monitoring = new ServiceMonitor(providers.BlobStorage);
 		}
 
 		public void Execute()
@@ -103,16 +104,19 @@ namespace Lokad.Cloud.Azure
 				var isRunOnce = false;
 				var isRun = true;
 
-				// 'more of the same pattern'
-				// as long the service is active, keep triggering the same service
-				// for at least 1min (in order to avoid a single service to monopolize CPU)
-				var start = DateTime.UtcNow;
-				while (DateTime.UtcNow.Subtract(start) < MoreOfTheSame.Seconds() && isRun && !_isStopRequested)
+				using (_monitoring.Monitor(service))
 				{
-					// No exceptions caught here
-					ServiceInExecution = service.Name;
-					isRun = service.Start();
-					isRunOnce |= isRun;
+					// 'more of the same pattern'
+					// as long the service is active, keep triggering the same service
+					// for at least 1min (in order to avoid a single service to monopolize CPU)
+					var start = DateTime.UtcNow;
+					while (DateTime.UtcNow.Subtract(start) < MoreOfTheSame.Seconds() && isRun && !_isStopRequested)
+					{
+						// No exceptions caught here
+						ServiceInExecution = service.Name;
+						isRun = service.Start();
+						isRunOnce |= isRun;
+					}
 				}
 
 				ServiceInExecution = null;

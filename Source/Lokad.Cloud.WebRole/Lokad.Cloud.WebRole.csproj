@@ -125,6 +125,13 @@
     <Compile Include="Logs.aspx.designer.cs">
       <DependentUpon>Logs.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Monitoring.aspx.cs">
+      <DependentUpon>Monitoring.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Monitoring.aspx.designer.cs">
+      <DependentUpon>Monitoring.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Nav.Master.cs">
       <DependentUpon>Nav.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -193,6 +200,7 @@
     <Content Include="App_Themes\Lokad\Lokad.skin" />
     <Content Include="Config.aspx" />
     <Content Include="Home.aspx" />
+    <Content Include="Monitoring.aspx" />
     <Content Include="NavBar.ascx" />
     <Content Include="Scheduler.aspx" />
   </ItemGroup>
