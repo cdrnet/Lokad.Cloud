@@ -39,7 +39,7 @@ namespace Lokad.Cloud.Web
 				yield return new Pair<string, ScheduledServiceState>(
 					// discarding the prefix for display purposes
 					blobName.ServiceName,
-					_provider.GetBlobOrDelete<ScheduledServiceState>(blobName));
+					_provider.GetBlobOrDelete(blobName));
 			}
 		}
 
@@ -48,7 +48,7 @@ namespace Lokad.Cloud.Web
 			var blobName = new ScheduledServiceStateName(ScheduleList.SelectedValue);
 			var triggerInterval = int.Parse(NewIntervalBox.Text);
 
-			_provider.UpdateIfNotModified<ScheduledServiceState>(blobName,
+			_provider.UpdateIfNotModified(blobName,
 				state =>
 					{
 						state.TriggerInterval = triggerInterval.Seconds();
@@ -66,8 +66,9 @@ namespace Lokad.Cloud.Web
 			foreach(var name in _provider.List(ScheduledServiceStateName.GetPrefix()))
 			{
 				// HACK: name of built-in services is hard-coded
-				if(name.ServiceName != typeof(Lokad.Cloud.Services.GarbageCollectorService).FullName &&
-					name.ServiceName != typeof(Lokad.Cloud.Services.DelayedQueueService).FullName)
+				if(name.ServiceName != typeof(Cloud.Services.GarbageCollectorService).FullName &&
+					name.ServiceName != typeof(Cloud.Services.DelayedQueueService).FullName &&
+					name.ServiceName != typeof(Cloud.Services.MonitoringService).FullName)
 				{
 					services.Add(name.ServiceName);
 				}

@@ -13,7 +13,7 @@ using System.Linq;
 namespace Lokad.Cloud.Diagnostics
 {
 	/// <summary>
-	/// Cloud Service Monitoring
+	/// Cloud Service Monitoring Data Provider
 	/// </summary>
 	public class ServiceMonitor : IServiceMonitor
 	{

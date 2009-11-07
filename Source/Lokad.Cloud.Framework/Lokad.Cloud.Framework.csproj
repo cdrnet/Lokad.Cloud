@@ -88,6 +88,10 @@
     <Compile Include="BaseTemporaryBlobName.cs" />
     <Compile Include="CloudInfrastructureProviders.cs" />
     <Compile Include="DelayedQueue.cs" />
+    <Compile Include="Diagnostics\ExecutionProfilingMonitor.cs" />
+    <Compile Include="Diagnostics\ExceptionTrackingMonitor.cs" />
+    <Compile Include="Diagnostics\ExceptionTrackingStatistics.cs" />
+    <Compile Include="Diagnostics\ExecutionProfilingStatistics.cs" />
     <Compile Include="Diagnostics\PartitionMonitor.cs" />
     <Compile Include="Diagnostics\PartitionStatistics.cs" />
     <Compile Include="Diagnostics\ServiceMonitor.cs" />

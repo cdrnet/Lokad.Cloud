@@ -28,7 +28,7 @@ namespace Lokad.Cloud.Azure.Test
 			return builder.Build();
 		}
 
-		/// <summary>Gets the IoC container as initiliazed by the setup.</summary>
+		/// <summary>Gets the IoC container as initialized by the setup.</summary>
 		public static IContainer Container 
 		{ 
 			get

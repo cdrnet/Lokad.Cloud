@@ -43,7 +43,7 @@ namespace Lokad.Cloud.Web
 		{
 			if(e.CommandName == "Toggle")
 			{
-				var row = -1;
+				int row;
 				if(!int.TryParse(e.CommandArgument as string, out row)) return;
 
 				var blobName = new CloudServiceStateName(ServicesView.Rows[row].Cells[1].Text);
@@ -67,8 +67,9 @@ namespace Lokad.Cloud.Web
 			foreach(var name in _provider.List(CloudServiceStateName.GetPrefix()))
 			{
 				// HACK: name of built-in services is hard-coded
-				if(name.ServiceName != typeof(Lokad.Cloud.Services.GarbageCollectorService).FullName &&
-					name.ServiceName != typeof(Lokad.Cloud.Services.DelayedQueueService).FullName)
+				if(name.ServiceName != typeof(Cloud.Services.GarbageCollectorService).FullName &&
+					name.ServiceName != typeof(Cloud.Services.DelayedQueueService).FullName &&
+					name.ServiceName != typeof(Cloud.Services.MonitoringService).FullName)
 				{
 					services.Add(name.ServiceName);
 				}

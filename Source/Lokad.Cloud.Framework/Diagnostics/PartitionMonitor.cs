@@ -13,7 +13,7 @@ using System.Linq;
 namespace Lokad.Cloud.Diagnostics
 {
 	/// <summary>
-	/// Cloud Partition & Worker Monitoring
+	/// Cloud Partition & Worker Monitoring Data Provider
 	/// </summary>
 	public class PartitionMonitor
 	{

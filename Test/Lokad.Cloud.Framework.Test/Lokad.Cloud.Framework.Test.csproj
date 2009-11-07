@@ -72,6 +72,7 @@
     <None Include="App.config" />
     <None Include="App.template.config" />
     <None Include="CuidTests.cs" />
+    <Compile Include="Diagnostics\ExceptionCounterTests.cs" />
     <Compile Include="MessageWrapperTests.cs" />
     <Compile Include="Mock\MemoryBlobStorageProviderTests.cs" />
     <Compile Include="Mock\MemoryQueueStorageProviderTests.cs" />

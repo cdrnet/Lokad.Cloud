@@ -13,18 +13,38 @@ namespace Lokad.Cloud.Services
 	[ScheduledServiceSettings(
 		   AutoStart = true,
 		   Description = "Collects and persists monitoring statistics.",
-		   TriggerInterval = 5*60)] // 1 execution every 5min
+		   TriggerInterval = 5 * 60)] // 1 execution every 5min
 	public class MonitoringService : ScheduledService
 	{
+		/// <remarks>IoC Injected (optional, failover to default)</remarks>
+		public PartitionMonitor PartitionMonitor { get; set; }
+
+		/// <remarks>IoC Injected (optional, failover to default)</remarks>
+		public ExecutionProfilingMonitor ExecutionProfiling { get; set; }
+
+		/// <remarks>IoC Injected (optional, failover to default)</remarks>
+		public ExceptionTrackingMonitor ExceptionTracking { get; set; }
+
 		/// <summary>Called by the framework.</summary>
 		protected override void StartOnSchedule()
 		{
-			// Update Partition Statistics
-			var partitionMonitor = new PartitionMonitor(BlobStorage);
-			partitionMonitor.UpdateStatistics();
+			if (PartitionMonitor == null)
+			{
+				PartitionMonitor = new PartitionMonitor(BlobStorage);
+			}
+			PartitionMonitor.UpdateStatistics();
 
-			// TODO: Update data from other monitoring sources as well
-			// (provide some way to inject them)
+			if (ExecutionProfiling == null)
+			{
+				ExecutionProfiling = new ExecutionProfilingMonitor(BlobStorage);
+			}
+			ExecutionProfiling.UpdateStatistics();
+
+			if (ExceptionTracking == null)
+			{
+				ExceptionTracking = new ExceptionTrackingMonitor(BlobStorage);
+			}
+			ExceptionTracking.UpdateStatistics();
 		}
 	}
 }

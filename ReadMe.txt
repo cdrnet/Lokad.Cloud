@@ -1,7 +1,7 @@
 Lokad.Cloud is intended as an execution framework for back-end cloud apps.
 Copyright (c) Lokad SAS, 2009
 
-Authors: Joannes Vermorel, Rinat Abdullin, Dario Solera
+Authors: Joannes Vermorel, Rinat Abdullin, Dario Solera, Christoph Ruegg
 Project page: http://code.google.com/p/lokad-cloud/
 Company page: http://www.lokad.com/
 Forums: http://forums.lokad.com/ 
