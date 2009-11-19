@@ -53,7 +53,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Resource\Library\Lokad.Stack.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.ServiceHosting.ServiceRuntime, Version=0.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.WindowsAzure.Diagnostics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.WindowsAzure.ServiceRuntime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.WindowsAzure.StorageClient, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core">
@@ -125,21 +127,11 @@
     <Compile Include="ScheduledServiceSettingsAttribute.cs" />
     <Compile Include="Services\DelayedQueueService.cs" />
     <Compile Include="Services\GarbageCollectorService.cs" />
-    <Compile Include="StorageClient\Authentication.cs" />
-    <Compile Include="StorageClient\BlobStorage.cs" />
-    <Compile Include="StorageClient\Errors.cs" />
-    <Compile Include="StorageClient\Queue.cs" />
-    <Compile Include="StorageClient\RestBlobStorage.cs" />
-    <Compile Include="StorageClient\RestHelpers.cs" />
-    <Compile Include="StorageClient\RestQueue.cs" />
-    <Compile Include="StorageClient\StorageAccountInfo.cs" />
-    <Compile Include="StorageClient\TableStorage.cs" />
     <Compile Include="TemporaryBlobName.cs" />
     <Compile Include="TriggerRestartException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Azure\ReadMe.txt" />
-    <Content Include="StorageClient\ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

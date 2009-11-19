@@ -52,7 +52,7 @@
   <PropertyGroup>
 
     <!-- The level of ToolsVersionSupportLevel this msi will support-->
-    <ServiceHostingVSSupport>4</ServiceHostingVSSupport>
+    <ServiceHostingVSSupport>5</ServiceHostingVSSupport>
     <!-- Example, bin\Debug\Compute.csx\  -->
     <ServiceOutputDirectory Condition=" '$(ServiceOutputDirectory)' == '' ">$(OutDir)$(ProjectName).csx\</ServiceOutputDirectory>
 
@@ -63,21 +63,13 @@
     <ServiceDefinitionNamespace>http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition</ServiceDefinitionNamespace>
     <ServiceConfigurationNamespace>http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration</ServiceConfigurationNamespace>
 
-    <!-- SSL properties. These new property names holds the same value of the thumbprint property 
-         inside the project file. We use new names, so we don't override the one in the project file. -->
-    <_DevelopmentSslCertificateThumbprint Condition=" '$(DevelopmentSslCertificateEnabled)' == 'True' ">$(DevelopmentSslCertificateThumbprint)</_DevelopmentSslCertificateThumbprint>
-    <_DevelopmentSslCertificateThumbprint Condition=" '$(DevelopmentSslCertificateEnabled)' != 'True' "></_DevelopmentSslCertificateThumbprint>
-
-    <_PublishSslCertificateThumbprint Condition=" '$(PublishSslCertificateEnabled)' == 'True' ">$(PublishSslCertificateThumbprint)</_PublishSslCertificateThumbprint>
-    <_PublishSslCertificateThumbprint Condition=" '$(PublishSslCertificateEnabled)' != 'True' "></_PublishSslCertificateThumbprint>
-
     <!-- Allow specifying explicit platform for the roles. 
          format: 
          {RoleName1}={Platform1};{RoleName2}={Platform2};...
          if the role is not specified, it will use the current project target platform.
     -->
-    <WebRoleTargetPlatform    Condition=" '$(WebRoleTargetPlatform)' == '' "></WebRoleTargetPlatform>
-    <WorkerRoleTargetPlatform Condition=" '$(WorkerRoleTargetPlatform)' == '' "></WorkerRoleTargetPlatform>
+    <WebRoleConfigPlatform    Condition=" '$(WebRoleConfigPlatform)' == '' "></WebRoleConfigPlatform>
+    <WorkerRoleConfigPlatform Condition=" '$(WorkerRoleConfigPlatform)' == '' "></WorkerRoleConfigPlatform>
 
   </PropertyGroup>
   
@@ -155,13 +147,10 @@
 
     <Message Text="Calling ServicePack" />
 
-    <Message Text="DevelopmentSslCertificateThumbprint = $(_DevelopmentSslCertificateThumbprint)" />
-
     <CSPack
       ServiceDefinitionFile="@(ServiceDefinition)"
       Output="$(ServiceOutputDirectory)"
       PackRoles="@(Roles)"
-      DevelopmentSSLCertificateThumbprint="$(_DevelopmentSslCertificateThumbprint)"
       CopyOnly="true"
      >
       <Output TaskParameter="OutputFiles" ItemName="FileWrites" />
@@ -287,7 +276,7 @@
               - Platform  : CPU Platform of the role project.
               - OutputDir : The path where we can find the outputs of the role.
               - SourceDir : (web specific) The source location of the web role.
-              - EntryPoint: (worker specific) The entry point assembly file name for worker role.
+              - EntryPoint: The entry point assembly file name for web/worker role.
               
       ========================================================================== -->
   <PropertyGroup>
@@ -322,13 +311,13 @@
               - Platform  : CPU Platform of the role project.
               - OutputDir : The path where we can find the outputs of the role.
               - SourceDir : The source location of the web role
-              - EntryPoint: not used.
+              - EntryPoint: The entry point assembly file name for web.
               
       ========================================================================== -->
   <Target 
       Name="ResolveWebRoleReferences">
 
-    <Message Text="WebRoleTargetPlatform=$(WebRoleTargetPlatform)" />
+    <Message Text="WebRoleConfigPlatform=$(WebRoleConfigPlatform)" />
 
     <!-- Get all the roles from the project references section -->
     <ItemGroup>
@@ -341,7 +330,7 @@
 
     <AssociatePlatformWithRoleReferences
       RoleReferences="@(WebRoleReferences)"
-      PlatformList="$(WebRoleTargetPlatform)"
+      PlatformList="$(WebRoleConfigPlatform)"
       DefaultPlatform="$(Platform)"
       >
       <Output TaskParameter="RoleReferencesWithPlatform" ItemName="WebRoleReferencesWithPlatform" />
@@ -372,16 +361,26 @@
       <Output TaskParameter="TargetOutputs" ItemName="WebTargetPathItem" />
     </MSBuild>
 
-    <!-- Include the TargetDir metadata into every item of WebRoleReferences -->
+    <!-- Include the WebEntryPoint metadata into every item of WebRoleReferences -->
     <ItemGroupsOrderedMerge
       Condition=" '@(WebRoleReferences)' != '' "
       MainList="@(WebRoleReferences)"
+      Values="@(WebTargetPathItem->'%(filename)%(extension)')"
+      MetadataName="WebEntryPoint"
+      >
+      <Output TaskParameter="OutputList" ItemName="WebRoleReferencesWithEntryPoint" />
+    </ItemGroupsOrderedMerge>
+
+    <!-- Include the TargetDir metadata into every item of WebRoleReferencesWithEntryPoint -->
+    <ItemGroupsOrderedMerge
+      Condition=" '@(WebRoleReferencesWithEntryPoint)' != '' "
+      MainList="@(WebRoleReferencesWithEntryPoint)"
       Values="@(WebTargetPathItem->'%(RootDir)%(Directory)')"
       MetadataName="TargetDir"
       >
       <Output TaskParameter="OutputList" ItemName="WebRoleReferencesWithTargetPath" />
     </ItemGroupsOrderedMerge>
-
+    
     <!-- Set WebRoleReferences from WebRoleReferencesWithTargetPath -->
     <ItemGroup Condition=" '@(WebRoleReferences)' != '' " >
       <WebRoleReferences Remove="@(WebRoleReferences)" />
@@ -412,8 +411,8 @@
       <WebRoleReferences>
         <OutputDir>$(IntermediateOutputFullPath)%(ProjectName)\</OutputDir>
         <SourceDir>%(RootDir)%(Directory)</SourceDir>
-        <!-- web doesn't use entrypoint, set it to empty as default -->
-        <EntryPoint></EntryPoint>
+        <!-- Stores the assembly file name (no path) of the web role -->
+        <EntryPoint>%(WebEntryPoint)</EntryPoint>
       </WebRoleReferences>
     </ItemGroup>
 
@@ -454,7 +453,7 @@
   <Target 
       Name="ResolveWorkerRoleReferences">
 
-    <Message Text="WorkerRoleTargetPlatform=$(WorkerRoleTargetPlatform)" />
+    <Message Text="WorkerRoleConfigPlatform=$(WorkerRoleConfigPlatform)" />
 
     <!-- Get all the roles from the project references section -->
     <ItemGroup>
@@ -523,7 +522,7 @@
 
     <AssociatePlatformWithRoleReferences
       RoleReferences="@(WorkerRoleReference)"
-      PlatformList="$(WorkerRoleTargetPlatform)"
+      PlatformList="$(WorkerRoleConfigPlatform)"
       DefaultPlatform="$(Platform)"
       >
       <Output TaskParameter="RoleReferencesWithPlatform" ItemName="WorkerRoleReferenceWithPlatform" />
@@ -571,7 +570,7 @@
         DocumentationProjectOutputGroup;
         SatelliteDllsProjectOutputGroup;
         SGenFilesOutputGroup"
-      Properties="Configuration=$(Configuration); Platform=%(Platform)"
+      Properties="AddAppConfigToBuildOutputs=true; Configuration=$(Configuration); Platform=%(Platform)"
       ContinueOnError="false"
       >
       <Output TaskParameter="TargetOutputs" ItemName="OutputGroups" />
@@ -659,7 +658,7 @@
     <Message Text="CopyToOutputItems=%(CopyToOutputItems.Identity) -> %(TargetPath)" />
 
     <ItemGroup>
-      <WorkerFiles Include="@(CopyToOutputItems)" Condition=" '@(CopyToOutputItems)' != '' ">
+      <WorkerFiles Include="$(WorkerTargetDir)%(TargetPath)" Condition=" '@(CopyToOutputItems)' != '' ">
         <TargetPath>%(TargetPath)</TargetPath>
       </WorkerFiles>
     </ItemGroup>
@@ -785,14 +784,11 @@
 
     <MakeDir Directories=" $(OutDir)Publish " />
 
-    <Message Text="PublishSSLCertificateThumbprint = $(_PublishSslCertificateThumbprint)" />
-
     <IsolatedCSPack
       ServiceHostingTasksPath="$(ServiceHostingSDKTaskPath)"
       ServiceDefinitionFile="@(ServiceDefinition)"
       Output="$(OutDir)Publish\$(ProjectName).cspkg"
       PackRoles="@(Roles)"
-      PublishSSLCertificateThumbprint="$(_PublishSslCertificateThumbprint)"
       CopyOnly="false"
       >
     </IsolatedCSPack>
@@ -803,32 +799,6 @@
     <Copy SourceFiles="@(ServiceConfiguration)" DestinationFolder="$(OutDir)Publish" />
 
     <Message Text="Publishing process has completed."/>
-
-  </Target>
-
-  <!-- =============== _CreateDevStorageTable =====================================
-       This target runs the tool DevtableGen.exe to generate the dev storage tables
-       ============================================================================ -->
-
-  <Target 
-      Name="_CreateDevStorageTable" 
-      DependsOnTargets="Build">
-
-    <Message Text="DevTableStorageDatabaseName = $(DevTableStorageDatabaseName)" />
-
-    <PropertyGroup>
-      <DevTableGenPath>$(ServiceHostingSDKBinDir)DevtableGen.exe</DevTableGenPath>
-    </PropertyGroup>
-
-    <Error Text="The development table storage database name cannot be empty." Condition=" '$(DevTableStorageDatabaseName)' == '' " />
-    <Error Text="The development table generator tool couldn't be found at $(DevTableGenPath)." Condition=" !Exists('$(DevTableGenPath)') " />
-
-    <ItemGroup>
-      <TableAssemblies Include="%(Roles.Identity)**\*.dll" />
-    </ItemGroup>
-
-    <Message Text="Launching DevtableGen Tool:" Importance="high" />
-    <Exec Command='"$(DevTableGenPath)" /forceCreate "/database:$(DevTableStorageDatabaseName)" "@(TableAssemblies)"' />
 
   </Target>
 

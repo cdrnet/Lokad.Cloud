@@ -1,27 +1,19 @@
 <?xml version="1.0"?>
 <ServiceConfiguration serviceName="Lokad.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration">
-  <Role name="Lokad.Cloud.WebRole">
-    <Instances count="1"/>
-    <ConfigurationSettings>
-			<!--Wired down to the Autofac's modules-->
-			<Setting name="AccountName" value="lokad1" />
-			<!-- Not a real key (just cut and paste from the Azure samples) -->
-			<Setting name="AccountKey" value="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="/>
-			<Setting name="BlobEndpoint" value="http://blob.core.windows.net"/>
-			<Setting name="QueueEndpoint" value="http://queue.core.windows.net"/>
+	<Role name="Lokad.Cloud.WebRole">
+		<Instances count="1"/>
+		<ConfigurationSettings>
+			<Setting name="DataConnectionString" value="DefaultEndpointsProtocol=https;AccountName=YOUR ACCOUNT NAME;AccountKey=YOUR ACCOUNT KEY" />
+			<Setting name="DiagnosticsConnectionString" value="DefaultEndpointsProtocol=https;AccountName=YOUR ACCOUNT NAME;AccountKey=YOUR ACCOUNT KEY" />
 			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
-			<Setting name="Admins" value="http://myopenid.example.com/"/>
-    </ConfigurationSettings>
-  </Role>
-  <Role name="Lokad.Cloud.WorkerRole">
-    <Instances count="1"/>
-    <ConfigurationSettings>
-			<!--Wired down to the Autofac's modules-->
-			<Setting name="AccountName" value="lokad1" />
-			<!-- Not a real key (just cut and paste from the Azure samples) -->
-			<Setting name="AccountKey" value="Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="/>
-			<Setting name="BlobEndpoint" value="http://blob.core.windows.net"/>
-			<Setting name="QueueEndpoint" value="http://queue.core.windows.net"/>
-    </ConfigurationSettings>
-  </Role>
+			<Setting name="Admins" value="http://www.flickr.com/photos/onemacro"/>
+		</ConfigurationSettings>
+	</Role>
+	<Role name="Lokad.Cloud.WorkerRole">
+		<Instances count="1"/>
+		<ConfigurationSettings>
+			<Setting name="DataConnectionString" value="DefaultEndpointsProtocol=https;AccountName=YOUR ACCOUNT NAME;AccountKey=YOUR ACCOUNT KEY" />
+			<Setting name="DiagnosticsConnectionString" value="DefaultEndpointsProtocol=https;AccountName=YOUR ACCOUNT NAME;AccountKey=YOUR ACCOUNT KEY" />
+		</ConfigurationSettings>
+	</Role>
 </ServiceConfiguration>

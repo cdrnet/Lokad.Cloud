@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Samples.ServiceHosting.StorageClient;
 using NUnit.Framework;
 using Lokad.Cloud.Azure.Test;
+using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Framework.Test
 {
@@ -20,7 +20,7 @@ namespace Lokad.Cloud.Framework.Test
 		[Test]
 		public void VerifyCredentials()
 		{
-			var storage = GlobalSetup.Container.Resolve<BlobStorage>();
+			var storage = GlobalSetup.Container.Resolve<CloudBlobClient>();
 
 			StorageCredentialsVerifier verifier = new StorageCredentialsVerifier(storage);
 

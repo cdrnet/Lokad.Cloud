@@ -10,8 +10,8 @@ using System.Reflection;
 using System.Threading;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Microsoft.ServiceHosting.ServiceRuntime;
 using Lokad.Cloud.Diagnostics;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.Azure
 {
@@ -61,9 +61,9 @@ namespace Lokad.Cloud.Azure
 				string pathToFile;
 
 				// HACK: hard-code string for local storage name
-				if (RoleManager.IsRoleManagerRunning)
+				if (RoleEnvironment.IsAvailable)
 				{
-					var localResource = RoleManager.GetLocalResource("LokadCloudStorage");
+					var localResource = RoleEnvironment.GetLocalResource("LokadCloudStorage");
 					pathToFile = Path.Combine(localResource.RootPath, fileName);
 				}
 				else

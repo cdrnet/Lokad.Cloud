@@ -4,7 +4,7 @@
 #endregion
 
 using System;
-using Microsoft.Samples.ServiceHosting.StorageClient;
+using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Azure
 {

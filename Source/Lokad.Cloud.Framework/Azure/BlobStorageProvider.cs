@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using Lokad.Threading;
-using Microsoft.Samples.ServiceHosting.StorageClient;
+using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Azure
 {
@@ -18,10 +18,10 @@ namespace Lokad.Cloud.Azure
 	/// </remarks>
 	public class BlobStorageProvider : IBlobStorageProvider
 	{
-		readonly BlobStorage _blobStorage;
+		readonly CloudBlobClient _blobStorage;
 		readonly IFormatter _formatter;
 
-		public BlobStorageProvider(BlobStorage blobStorage, IFormatter formatter)
+		public BlobStorageProvider(CloudBlobClient blobStorage, IFormatter formatter)
 		{
 			_blobStorage = blobStorage;
 			_formatter = formatter;
@@ -29,14 +29,34 @@ namespace Lokad.Cloud.Azure
 
 		public bool CreateContainer(string containerName)
 		{
-			var container = _blobStorage.GetBlobContainer(containerName);
-			return container.CreateContainer();
+			var container = _blobStorage.GetContainerReference(containerName);
+			try
+			{
+				container.Create();
+				return true;
+			}
+			catch(StorageClientException ex)
+			{
+				if(ex.ErrorCode == StorageErrorCode.ContainerAlreadyExists
+					|| ex.ErrorCode == StorageErrorCode.ResourceAlreadyExists) return false;
+				throw;
+			}
 		}
 
 		public bool DeleteContainer(string containerName)
 		{
-			var container = _blobStorage.GetBlobContainer(containerName);
-			return container.DeleteContainer();
+			var container = _blobStorage.GetContainerReference(containerName);
+			try
+			{
+				container.Delete();
+				return true;
+			}
+			catch(StorageClientException ex)
+			{
+				if(ex.ErrorCode == StorageErrorCode.ContainerNotFound
+					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound) return false;
+				throw;
+			}
 		}
 
 		public void PutBlob<T>(string containerName, string blobName, T item)
@@ -59,16 +79,26 @@ namespace Lokad.Cloud.Azure
 			etag = null;
 
 			// StorageClient already deals with spliting large items
-			var container = _blobStorage.GetBlobContainer(containerName);
-			BlobProperties blobProperties = new BlobProperties(blobName);
+			var container = _blobStorage.GetContainerReference(containerName);
 
 			try
 			{
-				bool created = container.CreateBlob(blobProperties, new BlobContents(buffer), overwrite);
+				var blob = container.GetBlockBlobReference(blobName);
+				try
+				{
+					blob.FetchAttributes();
+				}
+				catch { }
 
-				if(created) etag = blobProperties.ETag;
+				if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
+				{
+					blob.UploadByteArray(buffer);
+					blob.FetchAttributes();
+					etag = blob.Properties.ETag;
+					return true;
+				}
 
-				return created;
+				return false;
 			}
 			catch(StorageClientException ex)
 			{
@@ -77,16 +107,28 @@ namespace Lokad.Cloud.Azure
 				{
 					// caution the container might have been freshly deleted
 					var flag = false;
+					string tempEtag = null;
 					PolicyHelper.SlowInstantiation.Do(() =>
 					{
-						container.CreateContainer();
+						container.CreateIfNotExist();
 
-						flag = container.CreateBlob(
-							blobProperties,
-							new BlobContents(buffer), overwrite);
+						var myBlob = container.GetBlockBlobReference(blobName);
+						try
+						{
+							myBlob.FetchAttributes();
+						}
+						catch { }
+
+						if(myBlob.Properties.ETag == null || (myBlob.Properties.ETag != null && overwrite))
+						{
+							myBlob.UploadByteArray(buffer);
+							myBlob.FetchAttributes();
+							tempEtag = myBlob.Properties.ETag;
+							flag = true;
+						}
 					});
 
-					if(flag) etag = blobProperties.ETag;
+					if(flag) etag = tempEtag;
 
 					return flag;
 				}
@@ -98,11 +140,22 @@ namespace Lokad.Cloud.Azure
 					return false;
 				}
 
-				bool created = container.CreateBlob(blobProperties, new BlobContents(buffer), overwrite);
+				var blob = container.GetBlockBlobReference(blobName);
+				try
+				{
+					blob.FetchAttributes();
+				}
+				catch { }
 
-				if(created) etag = blobProperties.ETag;
+				if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
+				{
+					blob.UploadByteArray(buffer);
+					blob.FetchAttributes();
+					etag = blob.Properties.ETag;
+					return true;
+				}
 
-				return created;
+				return false;
 			}
 		}
 
@@ -114,29 +167,32 @@ namespace Lokad.Cloud.Azure
 
 		public T GetBlob<T>(string containerName, string blobName, out string etag)
 		{
-			var blobContents = new BlobContents(new MemoryStream());
-			var container = _blobStorage.GetBlobContainer(containerName);
+			var container = _blobStorage.GetContainerReference(containerName);
+			var blob = container.GetBlockBlobReference(blobName);
+			var stream = new MemoryStream();
+
 			etag = null;
 
 			// no such container, return default
 			try
 			{
-				var properties = container.GetBlob(blobName, blobContents, false);
-				if (null == properties) return default(T);
-				etag = properties.ETag;
+				blob.FetchAttributes();
+				blob.DownloadToStream(stream);
+				
+				etag = blob.Properties.ETag;
 			}
 			catch (StorageClientException ex)
 			{
 				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
-					|| ex.ErrorCode == StorageErrorCode.BlobNotFound)
+					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
+					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
 					return default(T);
 				}
 				throw;
 			}
 
-			var stream = blobContents.AsStream;
-			stream.Position = 0;
+			stream.Seek(0, SeekOrigin.Begin);
 			return (T)_formatter.Deserialize(stream);
 		}
 
@@ -162,46 +218,54 @@ namespace Lokad.Cloud.Azure
 
 		public T GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag)
 		{
-			var blobContents = new BlobContents(new MemoryStream());
-			var container = _blobStorage.GetBlobContainer(containerName);
+			var container = _blobStorage.GetContainerReference(containerName);
 			newEtag = null;
 
-			// no such container, return default
+			CloudBlockBlob blob = null;
+
 			try
 			{
-				BlobProperties props = new BlobProperties(blobName);
-				props.ETag = oldEtag;
-				bool available = container.GetBlobIfModified(props, blobContents, true);
-				if(!available) return default(T);
-				newEtag = props.ETag;
+				blob = container.GetBlockBlobReference(blobName);
+				blob.FetchAttributes();
+				if(blob.Properties == null || blob.Properties.ETag == oldEtag)
+				{
+					return default(T);
+				}
+				newEtag = blob.Properties.ETag;
 			}
 			catch(StorageClientException ex)
 			{
 				if(ex.ErrorCode == StorageErrorCode.ContainerNotFound
-					|| ex.ErrorCode == StorageErrorCode.BlobNotFound)
+					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
+					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
 					return default(T);
 				}
 				throw;
 			}
 
-			var stream = blobContents.AsStream;
-			stream.Position = 0;
+			var stream = new MemoryStream();
+			blob.DownloadToStream(stream);
+			stream.Seek(0, SeekOrigin.Begin);
+			
 			return (T)_formatter.Deserialize(stream);
 		}
 
 		public string GetBlobEtag(string containerName, string blobName)
 		{
-			var container = _blobStorage.GetBlobContainer(containerName);
+			var container = _blobStorage.GetContainerReference(containerName);
 
 			try
 			{
-				var properties = container.GetBlobProperties(blobName);
-				return null == properties ? null : properties.ETag;
+				var blob = container.GetBlockBlobReference(blobName);
+				blob.FetchAttributes();
+				return blob.Properties.ETag;
 			}
 			catch (StorageClientException ex)
 			{
-				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
+					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
+					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
 					return null;
 				}
@@ -231,27 +295,28 @@ namespace Lokad.Cloud.Azure
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater, out Result<T> result)
 		{
-			var blobContents = new BlobContents(new MemoryStream());
-			var container = _blobStorage.GetBlobContainer(containerName);
-			BlobProperties properties = null;
+			var container = _blobStorage.GetContainerReference(containerName);
+			CloudBlockBlob blob = null;
 
 			T input;
 			try
 			{
-				properties = container.GetBlob(blobName, blobContents, false);
+				blob = container.GetBlockBlobReference(blobName);
+				var rstream = new MemoryStream();
+				blob.DownloadToStream(rstream);
+				rstream.Seek(0, SeekOrigin.Begin);
 
-				var rstream = blobContents.AsStream;
-				rstream.Position = 0;
 				input = (T)_formatter.Deserialize(rstream);
 			}
 			catch (StorageClientException ex)
 			{
 				// creating the container when missing
 				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound 
-					|| ex.ErrorCode == StorageErrorCode.BlobNotFound)
+					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
+					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
 					input = default(T);
-					container.CreateContainer();
+					container.CreateIfNotExist();
 
 					// HACK: if the container has just been deleted,
 					// creation could be delayed and would need a proper handling.
@@ -274,24 +339,26 @@ namespace Lokad.Cloud.Azure
 			_formatter.Serialize(wstream, result.Value);
 			var buffer = wstream.GetBuffer();
 
-			blobContents = new BlobContents(buffer);
+			blob.UploadByteArray(buffer);
 
-			return null == properties ? 
-				container.CreateBlob(new BlobProperties(blobName), blobContents, false) : 
-				container.UpdateBlobIfNotModified(properties, blobContents);
+			return true;
 		}
 
 		public bool DeleteBlob(string containerName, string blobName)
 		{
-			var container = _blobStorage.GetBlobContainer(containerName);
+			var container = _blobStorage.GetContainerReference(containerName);
 
 			try
 			{
-				return container.DeleteBlob(blobName);
+				var blob = container.GetBlockBlobReference(blobName);
+				blob.Delete();
+				return true;
 			}
 			catch (StorageClientException ex) // no such container, return false
 			{
-				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
+					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
+					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
 					return false;
 				}
@@ -301,7 +368,63 @@ namespace Lokad.Cloud.Azure
 
 		public IEnumerable<string> List(string containerName, string prefix)
 		{
-			var container = _blobStorage.GetBlobContainer(containerName);
+			// HACK: quick and dirty implementation that replaces the old one below
+			// http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/c5e36676-8d07-46cc-b803-72621a0898b0/?prof=required
+
+			if(prefix == null) prefix = "";
+
+			var container = _blobStorage.GetContainerReference(containerName);
+
+			BlobRequestOptions options = new BlobRequestOptions();
+			options.UseFlatBlobListing = true;
+
+			var enumerator = container.ListBlobs(options).GetEnumerator();
+
+			while(true)
+			{
+				try
+				{
+					if(!enumerator.MoveNext())
+					{
+						yield break;
+					}
+				}
+				catch(StorageClientException ex)
+				{
+					// if the container does not exist, empty enumeration
+					if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+					{
+						yield break;
+					}
+					throw;
+				}
+
+				var stringUri = enumerator.Current.Uri.ToString();
+
+				// URI is like this
+				// http://azure.whatever.com/container/the-name -- or
+				// http://azure.whatever.com/container/a-prefix/the-name -- or
+				// http://azure.whatever.com/container/a-prefix/another-prefix/the-name -- etc
+
+				// Full name is extracted like this:
+				// Find the first two slashes and take everything after them
+				// Find the first slash and take everything after it
+				// Find the first slash and take everything after it (again)
+
+				stringUri = stringUri.Substring(stringUri.IndexOf("//") + 2);
+				var name = stringUri.Substring(stringUri.IndexOf("/") + 1);
+				name = name.Substring(name.IndexOf("/") + 1);
+
+				if(name.StartsWith(prefix)) yield return name;
+			}
+		}
+
+		[Obsolete]
+		private IEnumerable<string> ListOld(string containerName, string prefix)
+		{
+			throw new NotImplementedException();
+
+			/*var container = _blobStorage.GetContainerReference(containerName);
 
 			// Trick: 'ListBlobs' is lazilly enumerating over the blob storage
 			// only the minimal amount of network call will be made depending on
@@ -330,7 +453,7 @@ namespace Lokad.Cloud.Azure
 
 				// 'yield return' cannot appear in try/catch block
 				yield return ((BlobProperties)enumerator.Current).Name;
-			}
+			}*/
 		}
 	}
 }

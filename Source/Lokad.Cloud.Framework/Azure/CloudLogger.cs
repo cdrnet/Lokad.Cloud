@@ -10,7 +10,7 @@ using System.IO;
 using System.Security;
 using System.Text;
 using System.Xml.XPath;
-using Microsoft.Samples.ServiceHosting.StorageClient;
+using Microsoft.WindowsAzure.StorageClient;
 
 // TODO: [vermorel] This class will most probably be reimplemented using Azure logger instead
 // http://davidaiken.com/windows-azure/windows-azure-online-log-reader/

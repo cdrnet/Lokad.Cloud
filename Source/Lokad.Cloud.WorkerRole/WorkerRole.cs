@@ -4,14 +4,17 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Security;
 using Autofac.Builder;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
-using Microsoft.ServiceHosting.ServiceRuntime;
-using System.Collections.Generic;
-using System.IO;
-using System.Security;
+using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.Diagnostics;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud
 {
@@ -20,10 +23,13 @@ namespace Lokad.Cloud
 	{
 		bool _isHeathly = true;
 
-		public override void Start()
+		public override bool OnStart()
 		{
-			RoleManager.WriteToLog("Information", "Worker Process entry point called.");
+			return base.OnStart();
+		}
 
+		public override void Run()
+		{
 			var restartPolicy = new NoRestartFloodPolicy(isHeathly => { _isHeathly = isHeathly; });
 			restartPolicy.Do(() =>
 			{
@@ -32,10 +38,10 @@ namespace Lokad.Cloud
 			});
 		}
 
-		public override RoleStatus GetHealthStatus()
+		/*public override RoleStatus GetHealthStatus()
 		{
 			return _isHeathly ? RoleStatus.Healthy : RoleStatus.Unhealthy;
-		}
+		}*/
 	}
 
 	/// <summary>

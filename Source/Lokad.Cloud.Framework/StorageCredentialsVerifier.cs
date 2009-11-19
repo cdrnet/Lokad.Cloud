@@ -4,7 +4,7 @@
 #endregion
 
 using System;
-using Microsoft.Samples.ServiceHosting.StorageClient;
+using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud
 {
@@ -15,13 +15,13 @@ namespace Lokad.Cloud
 	public class StorageCredentialsVerifier
 	{
 
-		private BlobStorage _storage;
+		private CloudBlobClient _storage;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:StorageCredentialsVerifier" /> class.
 		/// </summary>
 		/// <param name="storage">The blob storage.</param>
-		public StorageCredentialsVerifier(BlobStorage storage)
+		public StorageCredentialsVerifier(CloudBlobClient storage)
 		{
 			if(storage == null) throw new ArgumentNullException("storage");
 
@@ -36,7 +36,7 @@ namespace Lokad.Cloud
 		{
 			try
 			{
-				var containers = _storage.ListBlobContainers();
+				var containers = _storage.ListContainers();
 
 				// It is necssary to enumerate in order to actually send the request
 				foreach(var c in containers)

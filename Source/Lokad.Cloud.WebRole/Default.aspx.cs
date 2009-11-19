@@ -5,7 +5,8 @@
 using System;
 using System.Configuration;
 using DotNetOpenAuth.OpenId.RelyingParty;
-using Microsoft.ServiceHosting.ServiceRuntime;
+using Microsoft.WindowsAzure.ServiceRuntime;
+using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Web
 {
@@ -17,7 +18,7 @@ namespace Lokad.Cloud.Web
 			if(!Page.IsPostBack)
 			{
 				var verifier = new StorageCredentialsVerifier(
-					GlobalSetup.Container.Resolve<Microsoft.Samples.ServiceHosting.StorageClient.BlobStorage>());
+					GlobalSetup.Container.Resolve<CloudBlobClient>());
 				_credentialsWarningPanel.Visible = !verifier.VerifyCredentials();
 			}
 
@@ -28,9 +29,9 @@ namespace Lokad.Cloud.Web
 		{
 			// HACK: logic to retrieve admins is duplicated with 'Default.aspx'
 			var admins = string.Empty;
-			if (RoleManager.IsRoleManagerRunning)
+			if (RoleEnvironment.IsAvailable)
 			{
-				admins = RoleManager.GetConfigurationSetting("Admins");
+				admins = RoleEnvironment.GetConfigurationSettingValue("Admins");
 			}
 			else
 			{

@@ -28,6 +28,11 @@ namespace Lokad.Cloud.Azure.Test
 		{
 			var logger = (CloudLogger)GlobalSetup.Container.Resolve<ILog>();
 
+			logger.Error(
+				new InvalidOperationException("CloudLoggerTests.Log"),
+				"My message with CloudLoggerTests.Log.");
+
+			logger.Info(new TriggerRestartException("CloudLoggerTests.Log"), "Not a restart, just a test.");
 
 			int counter = 0;
 

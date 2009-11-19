@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using Microsoft.ServiceHosting.ServiceRuntime;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
 {
@@ -25,9 +25,9 @@ namespace Lokad.Cloud.Web
 		{
 			// HACK: logic to retrieve admins is duplicated with 'Default.aspx'
 			var admins = string.Empty;
-			if (RoleManager.IsRoleManagerRunning)
+			if (RoleEnvironment.IsAvailable)
 			{
-				admins = RoleManager.GetConfigurationSetting("Admins");
+				admins = RoleEnvironment.GetConfigurationSettingValue("Admins");
 			}
 			else
 			{

@@ -2,27 +2,23 @@
 <ServiceDefinition name="Lokad.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition">
 	<!-- Full trust is needed for binary serialization -->
 	<WebRole name="Lokad.Cloud.WebRole" enableNativeCodeExecution="true">
-    <InputEndpoints>
-      <!-- Must use port 80 for http and port 443 for https when running in the cloud -->
-      <InputEndpoint name="HttpIn" protocol="http" port="80" />
-    </InputEndpoints>
-    <ConfigurationSettings>
-      <Setting name="AccountName" />
-      <Setting name="AccountKey" />
-      <Setting name="BlobEndpoint" />
-      <Setting name="QueueEndpoint" />
-      <!--Space separated OpenId identifiers (don't forget the trailing slash) -->
-      <Setting name="Admins" />
-    </ConfigurationSettings>
-  </WebRole>
+		<InputEndpoints>
+			<!-- Must use port 80 for http and port 443 for https when running in the cloud -->
+			<InputEndpoint name="HttpIn" protocol="http" port="80" />
+		</InputEndpoints>
+		<ConfigurationSettings>
+			<Setting name="DataConnectionString"/>
+			<Setting name="DiagnosticsConnectionString"/>
+			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
+			<Setting name="Admins" />
+		</ConfigurationSettings>
+	</WebRole>
 	<!-- Full trust is needed for binary serialization -->
-  <WorkerRole name="Lokad.Cloud.WorkerRole" enableNativeCodeExecution="true">
+	<WorkerRole name="Lokad.Cloud.WorkerRole" enableNativeCodeExecution="true">
 		<LocalStorage name="LokadCloudStorage" sizeInMB="2"/>
 		<ConfigurationSettings>
-      <Setting name="AccountName" />
-      <Setting name="AccountKey" />
-      <Setting name="BlobEndpoint" />
-      <Setting name="QueueEndpoint" />
-    </ConfigurationSettings>
-  </WorkerRole>
+			<Setting name="DataConnectionString"/>
+			<Setting name="DiagnosticsConnectionString"/>
+		</ConfigurationSettings>
+	</WorkerRole>
 </ServiceDefinition>

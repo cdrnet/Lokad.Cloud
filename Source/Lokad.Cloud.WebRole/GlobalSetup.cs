@@ -11,8 +11,9 @@ using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
-using Microsoft.ServiceHosting.ServiceRuntime;
 using System.IO;
+using Microsoft.WindowsAzure.ServiceRuntime;
+using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Web
 {
@@ -25,7 +26,7 @@ namespace Lokad.Cloud.Web
 			var builder = new ContainerBuilder();
 
 			// loading configuration from the Azure Service Configuration
-			if (RoleManager.IsRoleManagerRunning)
+			if (RoleEnvironment.IsAvailable)
 			{
 				builder.RegisterModule(new StorageModule());
 			}
@@ -61,7 +62,7 @@ namespace Lokad.Cloud.Web
 					lock(_syncRoot)
 					{
 						if(null == _storageAccountName)
-							_storageAccountName = Container.Resolve<Microsoft.Samples.ServiceHosting.StorageClient.BlobStorage>().AccountName;
+							_storageAccountName = Container.Resolve<CloudBlobClient>().Credentials.AccountName;
 					}
 				}
 

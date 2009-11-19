@@ -10,8 +10,6 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;
 using Lokad.Quality;
-using Microsoft.Samples.ServiceHosting.StorageClient;
-using Microsoft.ServiceHosting.ServiceRuntime;
 using Lokad.Cloud.Mock;
 
 namespace Lokad.Cloud.Mock

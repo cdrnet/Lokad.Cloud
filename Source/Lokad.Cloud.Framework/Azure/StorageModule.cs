@@ -10,8 +10,10 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;
 using Lokad.Quality;
-using Microsoft.Samples.ServiceHosting.StorageClient;
-using Microsoft.ServiceHosting.ServiceRuntime;
+using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.ServiceRuntime;
+using Microsoft.WindowsAzure.Diagnostics;
 
 namespace Lokad.Cloud.Azure
 {
@@ -21,32 +23,34 @@ namespace Lokad.Cloud.Azure
 	[NoCodeCoverage]
 	public sealed class StorageModule : Module
 	{
-		/// <summary>Account name of the Azure Storage.</summary>
+		/// <summary>The data connection string.</summary>
 		[UsedImplicitly]
-		public string AccountName { get; set; }
+		public string DataConnectionString { get; set; }
 
-		/// <summary>Key to access the Azure Storage.</summary>
+		/// <summary>The diagnostics connection string.</summary>
 		[UsedImplicitly]
-		public string AccountKey { get; set; }
-
-		/// <summary>Indicates whether the account key is encrypted with DBAPI.</summary>
-		[UsedImplicitly]
-		public string IsStorageKeyEncrypted { get; set; }
-
-		/// <summary>URL of the Blob Storage.</summary>
-		[UsedImplicitly]
-		public string BlobEndpoint { get; set; }
-
-		/// <summary>URL of the Queue Storage.</summary>
-		[UsedImplicitly]
-		public string QueueEndpoint { get; set; }
+		public string DiagnosticsConnectionString { get; set; }
 
 		/// <summary>Provides configuration properties when they are not available from RoleManager.</summary>
 		public Dictionary<string, string> OverriddenProperties { get; set; }
 
+		static bool RetryPolicy(int retryCount, Exception lastException, out TimeSpan delay)
+		{
+			if(retryCount < 10 && lastException is StorageServerException)
+			{
+				delay = 5.Seconds();
+				return true;
+			}
+			else
+			{
+				delay = TimeSpan.Zero;
+				return false;
+			}
+		}
+
 		protected override void Load(ContainerBuilder builder)
 		{
-			if(RoleManager.IsRoleManagerRunning)
+			if(RoleEnvironment.IsAvailable)
 			{
 				ApplyOverridesFromRuntime();
 			}
@@ -55,49 +59,67 @@ namespace Lokad.Cloud.Azure
 				ApplyOverridesFromInternal();
 			}
 
-			if (!string.IsNullOrEmpty(QueueEndpoint))
+			if(!string.IsNullOrEmpty(DiagnosticsConnectionString))
 			{
-				var queueUri = new Uri(QueueEndpoint);
-				var accountInfo = new StorageAccountInfo(queueUri, null, AccountName, GetAccountKey());
+				var account = CloudStorageAccount.Parse(DiagnosticsConnectionString);
+				var config = DiagnosticMonitor.GetDefaultInitialConfiguration();
 
 				builder.Register(c =>
 				{
-					var queueService = QueueStorage.Create(accountInfo);
+					var monitor = DiagnosticMonitor.Start(account, config);
 
-					ActionPolicy policy;
+					return monitor;
+				});
+			}
+
+			if (!string.IsNullOrEmpty(DataConnectionString))
+			{
+				var account = CloudStorageAccount.Parse(DataConnectionString);
+
+				builder.Register(c =>
+				{
+					var queueService = account.CreateCloudQueueClient();
+
+					// TODO: verify a better handling of retry policy
+
+					/*ActionPolicy policy;
 					if (!c.TryResolve(out policy))
 					{
 						policy = DefaultPolicy();	
-					}
-
-					queueService.RetryPolicy = policy.Do;
+					}*/
+					
+					//queueService.RetryPolicy = policy.Do;
+					//queueService.RetryPolicy = () => RetryPolicy;
 
 					return queueService;
 				});
 			}
 
-			if (!string.IsNullOrEmpty(BlobEndpoint))
+			if (!string.IsNullOrEmpty(DataConnectionString))
 			{
-				var blobUri = new Uri(BlobEndpoint);
-				var accountInfo = new StorageAccountInfo(blobUri, null, AccountName, GetAccountKey());
+				var account = CloudStorageAccount.Parse(DataConnectionString);
 
 				builder.Register(c =>
 				{
-					var storage = BlobStorage.Create(accountInfo);
+					var storage = account.CreateCloudBlobClient();
+
+					// TODO: verify a better handling of retry policy
 					
-					ActionPolicy policy;
+					/*ActionPolicy policy;
 					if (!c.TryResolve(out policy))
 					{
 						policy = DefaultPolicy();
-					}
+					}*/
 
-					storage.RetryPolicy = policy.Do;
+					//storage.RetryPolicy = policy.Do;
+					//storage.RetryPolicy = () => RetryPolicy;
+
 					return storage;
 				});
 			}
 
 			// registering the Lokad.Cloud providers
-			if (!string.IsNullOrEmpty(QueueEndpoint) && !string.IsNullOrEmpty(BlobEndpoint))
+			if (!string.IsNullOrEmpty(DataConnectionString))
 			{
 				builder.Register(c =>
              	{
@@ -107,7 +129,7 @@ namespace Lokad.Cloud.Azure
              			formatter = new BinaryFormatter();
              		}
 
-             		return (IBlobStorageProvider)new BlobStorageProvider(c.Resolve<BlobStorage>(), formatter);
+             		return (IBlobStorageProvider)new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
              	});
 
 				builder.Register(c =>
@@ -119,8 +141,8 @@ namespace Lokad.Cloud.Azure
 					}
 
 					return (IQueueStorageProvider)new QueueStorageProvider(
-						c.Resolve<QueueStorage>(),
-						c.Resolve<BlobStorage>(),
+						c.Resolve<CloudQueueClient>(),
+						c.Resolve<CloudBlobClient>(),
 						formatter);
 				});
 			}
@@ -138,12 +160,6 @@ namespace Lokad.Cloud.Azure
 			return ex is StorageServerException;
 		}
 
-		string GetAccountKey()
-		{
-			return "true".Equals((IsStorageKeyEncrypted ?? string.Empty).ToLower()) ? 
-				DBAPI.Decrypt(AccountKey) : AccountKey;
-		}
-
 		/// <summary>
 		/// Gets this type's properties whose value can be loaded by the IoC container.
 		/// </summary>
@@ -154,7 +170,7 @@ namespace Lokad.Cloud.Azure
 
 			return
 				(from p in properties
-				 where p.Name != "IsStorageKeyEncrypted" && p.Name != "OverriddenProperties"
+				 where p.Name != "OverriddenProperties"
 				 select p).ToArray();
 		}
 
@@ -168,7 +184,7 @@ namespace Lokad.Cloud.Azure
 
 			foreach(var info in GetProperties())
 			{
-				var value = RoleManager.GetConfigurationSetting(info.Name);
+				var value = RoleEnvironment.GetConfigurationSettingValue(info.Name);
 				if(!string.IsNullOrEmpty(value))
 				{
 					result.Add(info.Name, value);

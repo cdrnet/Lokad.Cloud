@@ -8,7 +8,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using Microsoft.Samples.ServiceHosting.StorageClient;
+using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.StorageClient.Protocol;
 
 namespace Lokad.Cloud.Azure
 {
@@ -33,8 +34,8 @@ namespace Lokad.Cloud.Azure
 		/// storage.</summary>
 		readonly object _sync = new object();
 
-		readonly QueueStorage _queueStorage;
-		readonly BlobStorage _blobStorage; // needed for overflowing messages
+		readonly CloudQueueClient _queueStorage;
+		readonly CloudBlobClient _blobStorage; // needed for overflowing messages
 		readonly IFormatter _formatter;
 
 		// messages currently being processed (boolean property indicates if the message is overflowing)
@@ -42,7 +43,7 @@ namespace Lokad.Cloud.Azure
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
-			QueueStorage queueStorage, BlobStorage blobStorage, IFormatter formatter)
+			CloudQueueClient queueStorage, CloudBlobClient blobStorage, IFormatter formatter)
 		{
 			_queueStorage = queueStorage;
 			_blobStorage = blobStorage;
@@ -61,9 +62,9 @@ namespace Lokad.Cloud.Azure
 
 		public IEnumerable<T> Get<T>(string queueName, int count)
 		{
-			var queue = _queueStorage.GetQueue(queueName);
+			var queue = _queueStorage.GetQueueReference(queueName);
 
-			IEnumerable<Message> rawMessages;
+			IEnumerable<CloudQueueMessage> rawMessages;
 
 			try
 			{
@@ -90,7 +91,7 @@ namespace Lokad.Cloud.Azure
 			{
 				foreach(var rawMessage in rawMessages)
 				{
-					var stream = new MemoryStream(rawMessage.ContentAsBytes());
+					var stream = new MemoryStream(rawMessage.AsBytes);
 					var innerMessage = _formatter.Deserialize(stream);
 
 					if(innerMessage is T)
@@ -104,7 +105,7 @@ namespace Lokad.Cloud.Azure
 						{
 							inProcMsg = new InProcessMessage()
 							{
-								RawMessages = new List<Message>() { rawMessage },
+								RawMessages = new List<CloudQueueMessage>() { rawMessage },
 								IsOverflowing = false
 							};
 							_inProcessMessages.Add(innerMessage, inProcMsg);
@@ -122,7 +123,7 @@ namespace Lokad.Cloud.Azure
 
 						var overflowingInProcMsg = new InProcessMessage()
 						{
-							RawMessages = new List<Message>() { rawMessage },
+							RawMessages = new List<CloudQueueMessage>() { rawMessage },
 							IsOverflowing = true
 						};
 						_inProcessMessages.Add(mw, overflowingInProcMsg);
@@ -133,16 +134,14 @@ namespace Lokad.Cloud.Azure
 			// unwrapping messages
             foreach(var mw in wrappedMessages)
             {
-            	var container = _blobStorage.GetBlobContainer(mw.ContainerName);
-            	var stream = new MemoryStream();
-            	var blobContents = new BlobContents(stream);
-            	var blobProperties = container.GetBlob(mw.BlobName, blobContents, false);
+            	var container = _blobStorage.GetContainerReference(mw.ContainerName);
+				var blob = container.GetBlockBlobReference(mw.BlobName);
 
 				// blob may not exists in (rare) case of failure just before queue deletion
 				// but after container deletion (or also timeout deletion).
-				if(null == blobProperties)
+				if(null == blob.Properties)
 				{
-					Message rawMessage;
+					CloudQueueMessage rawMessage;
 					lock (_sync)
 					{
 						rawMessage = _inProcessMessages[mw].RawMessages[0];
@@ -155,7 +154,10 @@ namespace Lokad.Cloud.Azure
 					continue;
 				}
 
-            	stream.Position = 0;
+				var stream = new MemoryStream();
+				blob.DownloadToStream(stream);
+				stream.Seek(0, SeekOrigin.Begin);
+
             	var innerMessage = (T)_formatter.Deserialize(stream);
 
 				// substitution: message wrapper replaced by actual item in '_inprocess' list
@@ -179,29 +181,26 @@ namespace Lokad.Cloud.Azure
 
 		public void PutRange<T>(string queueName, IEnumerable<T> messages)
 		{
-			var queue = _queueStorage.GetQueue(queueName);
+			var queue = _queueStorage.GetQueueReference(queueName);
 
 			foreach(var message in messages)
 			{
 				var stream = new MemoryStream();
 				_formatter.Serialize(stream, message);
-
 				var buffer = stream.GetBuffer();
 
-				if(buffer.Length >= Message.MaxMessageSize)
+				if(buffer.Length >= CloudQueueMessage.MaxMessageSize)
 				{
 					
 					// 7 days = maximal processing duration for messages in queue
 					var blobName = TemporaryBlobName.GetNew(DateTime.UtcNow.AddDays(7), queueName);
 
-					var blobContents = new BlobContents(buffer);
-					var blobProperties = new BlobProperties(blobName.ToString());
-
-					var container = _blobStorage.GetBlobContainer(blobName.ContainerName);
+					var container = _blobStorage.GetContainerReference(blobName.ContainerName);
 
 					try
 					{
-						container.CreateBlob(blobProperties, blobContents, false);
+						var blob = container.GetBlockBlobReference(blobName.ToString());
+						blob.UploadByteArray(buffer);
 					}
 					catch (StorageClientException ex)
 					{
@@ -211,8 +210,9 @@ namespace Lokad.Cloud.Azure
 							// (the container might have been freshly deleted).
 							PolicyHelper.SlowInstantiation.Do(() =>
 								{
-									container.CreateContainer();
-									container.CreateBlob(blobProperties, blobContents, false);
+									container.Create();
+									var myBlob = container.GetBlockBlobReference(blobName.ToString());
+									myBlob.UploadByteArray(buffer);
 								});
 							
 						}
@@ -236,7 +236,7 @@ namespace Lokad.Cloud.Azure
 
 				try
 				{
-					queue.PutMessage(new Message(buffer));
+					queue.AddMessage(new CloudQueueMessage(buffer));
 				}
 				catch (StorageClientException ex)
 				{
@@ -247,8 +247,8 @@ namespace Lokad.Cloud.Azure
 						// (the queue might also have been freshly deleted).
 						PolicyHelper.SlowInstantiation.Do(() =>
 							{
-								queue.CreateQueue();
-								queue.PutMessage(new Message(buffer));
+								queue.Create();
+								queue.AddMessage(new CloudQueueMessage(buffer));
 							});
 					}
 					else
@@ -263,8 +263,7 @@ namespace Lokad.Cloud.Azure
 		{
 			try
 			{
-				// HACK: not sure what is the return code of 'Clear'
-				_queueStorage.GetQueue(queueName).Clear();
+				_queueStorage.GetQueueReference(queueName).Clear();
 			}
 			catch (StorageClientException ex)
 			{
@@ -284,13 +283,13 @@ namespace Lokad.Cloud.Azure
 
 		public int DeleteRange<T>(string queueName, IEnumerable<T> messages)
 		{
-			var queue = _queueStorage.GetQueue(queueName);
+			var queue = _queueStorage.GetQueueReference(queueName);
 
 			int deletionCount = 0;
 
 			foreach(var message in messages)
 			{
-				Message rawMessage;
+				CloudQueueMessage rawMessage;
 				bool isOverflowing;
  
 				lock(_sync)
@@ -306,15 +305,16 @@ namespace Lokad.Cloud.Azure
 				// deleting the overflowing copy from the blob storage.
 				if(isOverflowing)
 				{
-					var stream = new MemoryStream(rawMessage.ContentAsBytes());
+					var stream = new MemoryStream(rawMessage.AsBytes);
 					var mw = (MessageWrapper)_formatter.Deserialize(stream);
 
-					var container = _blobStorage.GetBlobContainer(mw.ContainerName);
-					container.DeleteBlob(mw.BlobName);
+					var container = _blobStorage.GetContainerReference(mw.ContainerName);
+					var blob = container.GetBlockBlobReference(mw.BlobName);
+					blob.Delete();
 				}
 
-				if(queue.DeleteMessage(rawMessage))
-					deletionCount++;
+				queue.DeleteMessage(rawMessage);
+				deletionCount++;
 
 				lock(_sync)
 				{
@@ -330,14 +330,23 @@ namespace Lokad.Cloud.Azure
 
 		public bool DeleteQueue(string queueName)
 		{
-			return _queueStorage.GetQueue(queueName).DeleteQueue();
+			try
+			{
+				_queueStorage.GetQueueReference(queueName).Delete();
+				return true;
+			}
+			catch(StorageClientException ex)
+			{
+				if(ex.ErrorCode == StorageErrorCode.ResourceNotFound) return false;
+				throw;
+			}
 		}
 
 		public int GetApproximateCount(string queueName)
 		{
 			try
 			{
-				return _queueStorage.GetQueue(queueName).ApproximateCount();
+				return _queueStorage.GetQueueReference(queueName).RetrieveApproximateMessageCount();
 			}
 			catch (StorageClientException ex)
 			{
@@ -356,8 +365,8 @@ namespace Lokad.Cloud.Azure
 	/// i.e. were hidden from the queue because of calls to Get{T}.</summary>
 	internal class InProcessMessage
 	{
-		/// <summary>The multiple, different raw <see cref="T:Message" /> objects as returned from the queue storage.</summary>
-		public List<Message> RawMessages { get; set; }
+		/// <summary>The multiple, different raw <see cref="T:CloudQueueMessage" /> objects as returned from the queue storage.</summary>
+		public List<CloudQueueMessage> RawMessages { get; set; }
 
 		/// <summary>A flag indicating whether the original message was bigger than the max allowed size and was
 		/// therefore wrapped in <see cref="T:MessageWrapper" />.</summary>
