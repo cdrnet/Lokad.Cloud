@@ -1,19 +1,23 @@
-﻿#region Copyright (c) Lokad 2009
-// This code is released under the terms of the new BSD licence.
-// URL: http://www.lokad.com/
+﻿#region (c)2009 Lokad - New BSD license
+
+// Copyright (c) Lokad 2009 
+// Company: http://www.lokad.com
+// This code is released under the terms of the new BSD licence
+
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;
 using Lokad.Quality;
 using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.StorageClient;
-using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.Diagnostics;
+using Microsoft.WindowsAzure.ServiceRuntime;
+using Microsoft.WindowsAzure.StorageClient;
+using Module=Autofac.Builder.Module;
 
 namespace Lokad.Cloud.Azure
 {
@@ -34,23 +38,9 @@ namespace Lokad.Cloud.Azure
 		/// <summary>Provides configuration properties when they are not available from RoleManager.</summary>
 		public Dictionary<string, string> OverriddenProperties { get; set; }
 
-		static bool RetryPolicy(int retryCount, Exception lastException, out TimeSpan delay)
-		{
-			if(retryCount < 10 && lastException is StorageServerException)
-			{
-				delay = 5.Seconds();
-				return true;
-			}
-			else
-			{
-				delay = TimeSpan.Zero;
-				return false;
-			}
-		}
-
 		protected override void Load(ContainerBuilder builder)
 		{
-			if(RoleEnvironment.IsAvailable)
+			if (RoleEnvironment.IsAvailable)
 			{
 				ApplyOverridesFromRuntime();
 			}
@@ -59,17 +49,17 @@ namespace Lokad.Cloud.Azure
 				ApplyOverridesFromInternal();
 			}
 
-			if(!string.IsNullOrEmpty(DiagnosticsConnectionString))
+			if (!string.IsNullOrEmpty(DiagnosticsConnectionString))
 			{
 				var account = CloudStorageAccount.Parse(DiagnosticsConnectionString);
 				var config = DiagnosticMonitor.GetDefaultInitialConfiguration();
 
 				builder.Register(c =>
-				{
-					var monitor = DiagnosticMonitor.Start(account, config);
+					{
+						var monitor = DiagnosticMonitor.Start(account, config);
 
-					return monitor;
-				});
+						return monitor;
+					});
 			}
 
 			if (!string.IsNullOrEmpty(DataConnectionString))
@@ -77,22 +67,11 @@ namespace Lokad.Cloud.Azure
 				var account = CloudStorageAccount.Parse(DataConnectionString);
 
 				builder.Register(c =>
-				{
-					var queueService = account.CreateCloudQueueClient();
-
-					// TODO: verify a better handling of retry policy
-
-					/*ActionPolicy policy;
-					if (!c.TryResolve(out policy))
 					{
-						policy = DefaultPolicy();	
-					}*/
-					
-					//queueService.RetryPolicy = policy.Do;
-					//queueService.RetryPolicy = () => RetryPolicy;
-
-					return queueService;
-				});
+						var queueService = account.CreateCloudQueueClient();
+						queueService.RetryPolicy = BuildDefaultRetry();
+						return queueService;
+					});
 			}
 
 			if (!string.IsNullOrEmpty(DataConnectionString))
@@ -100,78 +79,63 @@ namespace Lokad.Cloud.Azure
 				var account = CloudStorageAccount.Parse(DataConnectionString);
 
 				builder.Register(c =>
-				{
-					var storage = account.CreateCloudBlobClient();
-
-					// TODO: verify a better handling of retry policy
-					
-					/*ActionPolicy policy;
-					if (!c.TryResolve(out policy))
 					{
-						policy = DefaultPolicy();
-					}*/
-
-					//storage.RetryPolicy = policy.Do;
-					//storage.RetryPolicy = () => RetryPolicy;
-
-					return storage;
-				});
+						var storage = account.CreateCloudBlobClient();
+						storage.RetryPolicy = BuildDefaultRetry();
+						return storage;
+					});
 			}
 
 			// registering the Lokad.Cloud providers
 			if (!string.IsNullOrEmpty(DataConnectionString))
 			{
 				builder.Register(c =>
-             	{
-             		IFormatter formatter;
-             		if (!c.TryResolve(out formatter))
-             		{
-             			formatter = new BinaryFormatter();
-             		}
+					{
+						IFormatter formatter;
+						if (!c.TryResolve(out formatter))
+						{
+							formatter = new BinaryFormatter();
+						}
 
-             		return (IBlobStorageProvider)new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
-             	});
+						return (IBlobStorageProvider) new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
+					});
 
 				builder.Register(c =>
-				{
-					IFormatter formatter;
-					if (!c.TryResolve(out formatter))
 					{
-						formatter = new BinaryFormatter();
-					}
+						IFormatter formatter;
+						if (!c.TryResolve(out formatter))
+						{
+							formatter = new BinaryFormatter();
+						}
 
-					return (IQueueStorageProvider)new QueueStorageProvider(
-						c.Resolve<CloudQueueClient>(),
-						c.Resolve<CloudBlobClient>(),
-						formatter);
-				});
+						return (IQueueStorageProvider) new QueueStorageProvider(
+							c.Resolve<CloudQueueClient>(),
+							c.Resolve<CloudBlobClient>(),
+							formatter);
+					});
 			}
 		}
 
-		static ActionPolicy DefaultPolicy()
+		static RetryPolicy BuildDefaultRetry()
 		{
-			return ActionPolicy
-				.With(HandleException)
-				.Retry(10, (e, i) => SystemUtil.Sleep(5.Seconds()));
-		}
-
-		static bool HandleException(Exception ex)
-		{
-			return ex is StorageServerException;
+			// [abdullin]: in short this gives us MinBackOff + 2^(10)*Rand.(~0.5.Seconds())
+			// at the last retry. Reflect the method for more details
+			var deltaBackoff = 0.5.Seconds();
+			return RetryPolicies.RetryExponential(10, deltaBackoff);
 		}
 
 		/// <summary>
 		/// Gets this type's properties whose value can be loaded by the IoC container.
 		/// </summary>
 		/// <returns>The properties.</returns>
-		public static System.Reflection.PropertyInfo[] GetProperties()
+		public static PropertyInfo[] GetProperties()
 		{
-			var properties = typeof(StorageModule).GetProperties();
+			var properties = typeof (StorageModule).GetProperties();
 
 			return
 				(from p in properties
-				 where p.Name != "OverriddenProperties"
-				 select p).ToArray();
+				where p.Name != "OverriddenProperties"
+				select p).ToArray();
 		}
 
 		/// <summary>
@@ -180,12 +144,12 @@ namespace Lokad.Cloud.Azure
 		/// <returns>The properties values.</returns>
 		public static Dictionary<string, string> GetPropertiesValuesFromRuntime()
 		{
-			Dictionary<string, string> result = new Dictionary<string, string>(5);
+			var result = new Dictionary<string, string>(5);
 
-			foreach(var info in GetProperties())
+			foreach (var info in GetProperties())
 			{
 				var value = RoleEnvironment.GetConfigurationSettingValue(info.Name);
-				if(!string.IsNullOrEmpty(value))
+				if (!string.IsNullOrEmpty(value))
 				{
 					result.Add(info.Name, value);
 				}
@@ -211,18 +175,17 @@ namespace Lokad.Cloud.Azure
 
 		void ApplyOverridesFromInternal()
 		{
-			if(OverriddenProperties == null) return;
+			if (OverriddenProperties == null) return;
 
-			foreach(var info in GetProperties())
+			foreach (var info in GetProperties())
 			{
-				string value = null;
+				string value;
 				OverriddenProperties.TryGetValue(info.Name, out value);
-				if(!string.IsNullOrEmpty(value))
+				if (!string.IsNullOrEmpty(value))
 				{
 					info.SetValue(this, value, null);
 				}
 			}
 		}
-
 	}
 }
