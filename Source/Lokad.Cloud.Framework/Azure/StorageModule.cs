@@ -49,7 +49,7 @@ namespace Lokad.Cloud.Azure
 				ApplyOverridesFromInternal();
 			}
 
-			if (!string.IsNullOrEmpty(DiagnosticsConnectionString))
+			/*if (!string.IsNullOrEmpty(DiagnosticsConnectionString))
 			{
 				var account = CloudStorageAccount.Parse(DiagnosticsConnectionString);
 				var config = DiagnosticMonitor.GetDefaultInitialConfiguration();
@@ -60,7 +60,7 @@ namespace Lokad.Cloud.Azure
 
 						return monitor;
 					});
-			}
+			}*/
 
 			if (!string.IsNullOrEmpty(DataConnectionString))
 			{
