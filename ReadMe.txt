@@ -14,9 +14,11 @@ This assembly is typically referenced in two places:
 - in the library containing your cloud services (back-end processing).
 - in the client app (eventually a web app) pushing and retrieving work.
 
-Lokad.Cloud.Framework is the sole assembly refered by the client app.
-(Lokad.Cloud.Framework embeds the Microsoft StorageClient)
+Lokad.Cloud.Framework is the sole assembly refered by the client app and it is
+based on the Nov.09 version of Windows Azure Tools, available here:
+http://www.microsoft.com/downloads/details.aspx?FamilyID=6967ff37-813e-47c7-b987-889124b43abd&displaylang=en
 
+Key roles:
 - Lokad.Cloud.WorkerRole is the cloud host.
 - Lokad.Cloud.WebRole is the administration console.
 
@@ -31,5 +33,3 @@ storage account).
 
 Finally, you need something to run on top of Lokad.Cloud, 
 http://code.google.com/p/lokad-cloud/wiki/GettingStarted
-
-
