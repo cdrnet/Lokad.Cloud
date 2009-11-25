@@ -12,11 +12,6 @@ using System.Text;
 using System.Xml.XPath;
 using Microsoft.WindowsAzure.StorageClient;
 
-// TODO: [vermorel] This class will most probably be reimplemented using Azure logger instead
-// http://davidaiken.com/windows-azure/windows-azure-online-log-reader/
-// For now, we are custom a custom logging framework, because azure logs can't be automatically
-// retrieved, and need to be manually managed through the Azure console WebUI.
-
 namespace Lokad.Cloud.Azure
 {
 	/// <summary>Log entry (when retrieving logs with the <see cref="CloudLogger"/>.
@@ -47,6 +42,7 @@ namespace Lokad.Cloud.Azure
 	{
 		public const string ContainerName = "lokad-cloud-logs";
 		public const string Delimiter = "/";
+		private static readonly char[] DelimiterCharArray = Delimiter.ToCharArray();
 
 		readonly IBlobStorageProvider _provider;
 		LogLevel _logLevelThreshold;
@@ -85,7 +81,7 @@ namespace Lokad.Cloud.Azure
  ex != null ? SecurityElement.Escape(ex.ToString()) : string.Empty);
 
 
-			// on first execution, container need to be created.
+			// on first execution, container needs to be created.
 			var policy = ActionPolicy.With(e =>
 				{
 					var storageException = e as StorageClientException;
@@ -109,38 +105,114 @@ namespace Lokad.Cloud.Azure
 			return level >= _logLevelThreshold;
 		}
 
+		private static string GetNamePrefix(string blobName)
+		{
+			return blobName.Substring(0, 23); // prefix is always 23 char long
+		}
+
+		private static LogEntry DecodeLogEntry(string blobName, string blobContent)
+		{
+			var prefix = GetNamePrefix(blobName);
+			var dateTime = ToDateTime(prefix);
+
+			var level = blobName.Substring(23).Split(DelimiterCharArray, StringSplitOptions.RemoveEmptyEntries)[0];
+
+			string message;
+			string error;
+			using(var stream = new StringReader(blobContent))
+			{
+				var xpath = new XPathDocument(stream);
+				var nav = xpath.CreateNavigator();
+				message = nav.SelectSingleNode("/log/message").InnerXml;
+				error = nav.SelectSingleNode("/log/error").InnerXml;
+			}
+
+			return new LogEntry
+			{
+				DateTime = dateTime,
+				Level = level,
+				Message = message,
+				Error = error
+			};
+		}
+
 		/// <summary>Lazily enumerates over the entire logs.</summary>
 		/// <returns></returns>
 		public IEnumerable<LogEntry> GetRecentLogs()
 		{
 			foreach(var blobName in _provider.List(ContainerName, string.Empty))
 			{
-				var prefix = blobName.Substring(0, 23); // prefix is always 23 char long
-				var dateTime = ToDateTime(prefix);
-
-				var level = blobName.Substring(23).Split(new []{'/'}, StringSplitOptions.RemoveEmptyEntries)[0];
-
-
 				var rawlog = _provider.GetBlob<string>(ContainerName, blobName);
 
-				string message;
-				string error;
-				using (var stream = new StringReader(rawlog))
+				yield return DecodeLogEntry(blobName, rawlog);
+			}
+		}
+
+		/// <summary>Lazily loads a page of logs.</summary>
+		/// <param name="pageIndex">The zero-based index of the page.</param>
+		/// <param name="pageSize">The size of the page.</param>
+		/// <returns>The logs (silently fails if the page is empty).</returns>
+		public IEnumerable<LogEntry> GetPagedLogs(int pageIndex, int pageSize)
+		{
+			Enforce.Argument(() => pageIndex, Rules.Is.AtLeast(0));
+			Enforce.Argument(() => pageSize, Rules.Is.AtLeast(2), Rules.Is.AtMost(100));
+
+			int skipItems = pageIndex * pageSize;
+
+			int count = 0;
+			foreach(var blobName in _provider.List(ContainerName, String.Empty))
+			{
+				if(count >= skipItems)
 				{
-					var xpath = new XPathDocument(stream);
-					var nav = xpath.CreateNavigator();
-					message = nav.SelectSingleNode("/log/message").InnerXml;
-					error = nav.SelectSingleNode("/log/error").InnerXml;
+					if(count - skipItems >= pageSize) yield break;
+
+					var content = _provider.GetBlob<string>(ContainerName, blobName);
+
+					yield return DecodeLogEntry(blobName, content);
+				}
+				count++;
+			}
+		}
+
+		/// <summary>Deletes all the logs older than <paramref name="maxWeeks"/> weeks.</summary>
+		/// <param name="maxWeeks">The max number of weeks of logs to preserve.</param>
+		/// <remarks>The implementation is far from being efficient, but it is expected to be used sparingly.</remarks>
+		public void DeleteOldLogs(int maxWeeks)
+		{
+			Enforce.Argument(() => maxWeeks, Rules.Is.AtLeast(1));
+
+			DeleteOldLogs(DateTime.Now.ToUniversalTime().AddDays(-7 * maxWeeks));
+		}
+
+		// This is used for testing only
+		// limit should be universal time
+		internal void DeleteOldLogs(DateTime limit)
+		{
+			// Algorithm:
+			// Iterate over the logs, queuing deletions up to 50 items at a time,
+			// then restart; continue until no deletions are queued
+
+			const int DeleteBatchSize = 50;
+			List<string> deleteQueue = new List<string>(DeleteBatchSize);
+
+			do
+			{
+				deleteQueue.Clear();
+
+				foreach(var blobName in _provider.List(ContainerName, string.Empty))
+				{
+					var prefix = GetNamePrefix(blobName);
+					var dateTime = ToDateTime(prefix);
+					if(dateTime < limit) deleteQueue.Add(blobName);
+
+					if(deleteQueue.Count == DeleteBatchSize) break;
 				}
 
-				yield return new LogEntry
-					{
-						DateTime = dateTime,
-						Level = level,
-						Message = message,
-						Error = error
-					};
-			}
+				foreach(string blobName in deleteQueue)
+				{
+					_provider.DeleteBlob(ContainerName, blobName);
+				}
+			} while(deleteQueue.Count > 0);
 		}
 
 		static string GetNewLogBlobName(LogLevel level)

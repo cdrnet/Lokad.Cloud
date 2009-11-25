@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
+using System.Linq;
 using Lokad.Cloud;
 using NUnit.Framework;
 
@@ -24,7 +25,7 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
-		public void GetLogs()
+		public void GetRecentLogs()
 		{
 			var logger = (CloudLogger)GlobalSetup.Container.Resolve<ILog>();
 
@@ -45,6 +46,49 @@ namespace Lokad.Cloud.Azure.Test
 			}
 
 			Assert.Greater(counter, 0, "#A02");
+		}
+
+		[Test]
+		public void GetPagedLogs()
+		{
+			var logger = (CloudLogger)GlobalSetup.Container.Resolve<ILog>();
+
+			// Add 30 log messages
+			for(int i = 0; i < 10; i++)
+			{
+				logger.Error(
+					new InvalidOperationException("CloudLoggerTests.Log"),
+					"My message with CloudLoggerTests.Log.");
+				logger.Warn("A test warning");
+				logger.Info(new TriggerRestartException("CloudLoggerTests.Log"), "Not a restart, just a test.");
+			}
+
+			Assert.AreEqual(10, logger.GetPagedLogs(0, 10).Count());
+			Assert.AreEqual(10, logger.GetPagedLogs(1, 10).Count());
+			Assert.AreEqual(10, logger.GetPagedLogs(2, 10).Count());
+			Assert.IsTrue(logger.GetPagedLogs(1, 22).Count() >= 8);
+			Assert.IsTrue(logger.GetPagedLogs(1, 25).Count() >= 5);
+			Assert.AreEqual(0, logger.GetPagedLogs(100000, 20).Count());
+		}
+
+		[Test]
+		public void DeleteOldLogs()
+		{
+			var logger = (CloudLogger)GlobalSetup.Container.Resolve<ILog>();
+
+			int initialCount = logger.GetRecentLogs().Count();
+
+			DateTime begin = DateTime.Now;
+			for(int i = 0; i < 10; i++)
+			{
+				logger.Info("Just a test message");
+			}
+
+			Assert.AreEqual(initialCount + 10, logger.GetRecentLogs().Count());
+
+			logger.DeleteOldLogs(begin.ToUniversalTime());
+
+			Assert.AreEqual(10, logger.GetRecentLogs().Count());
 		}
 
 		[Test]

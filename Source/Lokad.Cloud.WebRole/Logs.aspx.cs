@@ -4,6 +4,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.Caching;
 using Lokad.Cloud.Azure;
 
@@ -23,10 +24,70 @@ namespace Lokad.Cloud.Web
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			LogsView.DataSource = GetRecentLogs();
+			if(!Page.IsPostBack)
+			{
+				SetCurrentPageIndex(0);
+				LogsView.DataBind();
+			}
+		}
+
+		protected void DeleteButton_Click(object sender, EventArgs e)
+		{
+			Page.Validate("del");
+			if(!Page.IsValid) return;
+
+			_logger.DeleteOldLogs(int.Parse(WeeksBox.Text));
+
+			SetCurrentPageIndex(0);
 			LogsView.DataBind();
 		}
 
+		protected void LogsView_DataBinding(object sender, EventArgs e)
+		{
+			LogsView.DataSource = FetchLogs();
+		}
+
+		int GetCurrentPageIndex()
+		{
+			return int.Parse(PageIndex.Value);
+		}
+
+		void SetCurrentPageIndex(int index)
+		{
+			if(index >= 0) PageIndex.Value = index.ToString();
+			CurrentPage.Text = (index + 1).ToString();
+			PrevPage.Enabled = index > 0;
+		}
+
+		protected void PrevPage_Click(object sender, EventArgs e)
+		{
+			int index = GetCurrentPageIndex();
+			
+			SetCurrentPageIndex(index - 1);
+			LogsView.DataBind();
+		}
+
+		protected void NextPage_Click(object sender, EventArgs e)
+		{
+			int index = GetCurrentPageIndex();
+
+			SetCurrentPageIndex(index + 1);
+			LogsView.DataBind();
+		}
+
+		List<LogEntry> FetchLogs()
+		{
+			int currentIndex = GetCurrentPageIndex();
+			var logs = new List<LogEntry>(_logger.GetPagedLogs(currentIndex, MaxLogs));
+
+			var nextPageAvailable = logs.Count == MaxLogs;
+
+			NextPage.Enabled = nextPageAvailable;
+
+			return logs;
+		}
+
+		[Obsolete]
 		IEnumerable<object> GetRecentLogs()
 		{
 			// HACK: cache logic is completely custom and would probably need to
