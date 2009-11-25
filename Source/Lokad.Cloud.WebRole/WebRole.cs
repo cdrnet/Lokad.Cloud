@@ -13,6 +13,8 @@ namespace Lokad.Cloud.Web
 	{
 		public override bool OnStart()
 		{
+			RoleEnvironment.Changing += (sender, args) => { RoleEnvironment.RequestRecycle(); };
+
 			return base.OnStart();
 		}
 	}

@@ -5,6 +5,7 @@
 
 using System;
 using Microsoft.WindowsAzure.StorageClient;
+using Autofac;
 
 namespace Lokad.Cloud
 {
@@ -20,12 +21,15 @@ namespace Lokad.Cloud
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:StorageCredentialsVerifier" /> class.
 		/// </summary>
-		/// <param name="storage">The blob storage.</param>
-		public StorageCredentialsVerifier(CloudBlobClient storage)
+		/// <param name="container">The IoC container.</param>
+		public StorageCredentialsVerifier(IContainer container)
 		{
-			if(storage == null) throw new ArgumentNullException("storage");
-
-			_storage = storage;
+			try
+			{
+				_storage = container.Resolve<CloudBlobClient>();
+			}
+			catch(ComponentNotRegisteredException) { }
+			catch(DependencyResolutionException) { }
 		}
 
 		/// <summary>
@@ -34,6 +38,8 @@ namespace Lokad.Cloud
 		/// <returns><c>true</c> if the credentials are correct, <c>false</c> otherwise.</returns>
 		public bool VerifyCredentials()
 		{
+			if(_storage == null) return false;
+
 			try
 			{
 				var containers = _storage.ListContainers();

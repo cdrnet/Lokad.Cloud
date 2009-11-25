@@ -20,9 +20,7 @@ namespace Lokad.Cloud.Framework.Test
 		[Test]
 		public void VerifyCredentials()
 		{
-			var storage = GlobalSetup.Container.Resolve<CloudBlobClient>();
-
-			StorageCredentialsVerifier verifier = new StorageCredentialsVerifier(storage);
+			StorageCredentialsVerifier verifier = new StorageCredentialsVerifier(GlobalSetup.Container);
 
 			Assert.IsTrue(verifier.VerifyCredentials(), "Credentials should be verified");
 		}

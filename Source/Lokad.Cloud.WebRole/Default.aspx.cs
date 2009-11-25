@@ -17,8 +17,7 @@ namespace Lokad.Cloud.Web
 			// Verify storage credentials
 			if(!Page.IsPostBack)
 			{
-				var verifier = new StorageCredentialsVerifier(
-					GlobalSetup.Container.Resolve<CloudBlobClient>());
+				var verifier = new StorageCredentialsVerifier(GlobalSetup.Container);
 				_credentialsWarningPanel.Visible = !verifier.VerifyCredentials();
 			}
 

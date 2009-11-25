@@ -18,6 +18,7 @@ using Microsoft.WindowsAzure.Diagnostics;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.StorageClient;
 using Module=Autofac.Builder.Module;
+using System;
 
 namespace Lokad.Cloud.Azure
 {
@@ -64,55 +65,56 @@ namespace Lokad.Cloud.Azure
 
 			if (!string.IsNullOrEmpty(DataConnectionString))
 			{
-				var account = CloudStorageAccount.Parse(DataConnectionString);
+				CloudStorageAccount account = null;
+				if(CloudStorageAccount.TryParse(DataConnectionString, out account))
+				{
+					// Only register storage components if the storage credentials are OK
+					// This will cause exceptions to be thrown quite soon, but this way
+					// the roles' OnStart() method returns correctly, allowing the web role
+					// to display a warning to the user (the worker is recycled indefinitely
+					// as Run() throws almost immediately)
 
-				builder.Register(c =>
+					builder.Register(c =>
 					{
 						var queueService = account.CreateCloudQueueClient();
 						queueService.RetryPolicy = BuildDefaultRetry();
 						return queueService;
 					});
-			}
 
-			if (!string.IsNullOrEmpty(DataConnectionString))
-			{
-				var account = CloudStorageAccount.Parse(DataConnectionString);
-
-				builder.Register(c =>
+					builder.Register(c =>
 					{
 						var storage = account.CreateCloudBlobClient();
 						storage.RetryPolicy = BuildDefaultRetry();
 						return storage;
 					});
-			}
 
-			// registering the Lokad.Cloud providers
-			if (!string.IsNullOrEmpty(DataConnectionString))
-			{
-				builder.Register(c =>
-					{
-						IFormatter formatter;
-						if (!c.TryResolve(out formatter))
+
+					// registering the Lokad.Cloud providers
+					builder.Register(c =>
 						{
-							formatter = new BinaryFormatter();
-						}
+							IFormatter formatter;
+							if(!c.TryResolve(out formatter))
+							{
+								formatter = new BinaryFormatter();
+							}
 
-						return (IBlobStorageProvider) new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
-					});
+							return (IBlobStorageProvider)new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
+						});
 
-				builder.Register(c =>
-					{
-						IFormatter formatter;
-						if (!c.TryResolve(out formatter))
+					builder.Register(c =>
 						{
-							formatter = new BinaryFormatter();
-						}
+							IFormatter formatter;
+							if(!c.TryResolve(out formatter))
+							{
+								formatter = new BinaryFormatter();
+							}
 
-						return (IQueueStorageProvider) new QueueStorageProvider(
-							c.Resolve<CloudQueueClient>(),
-							c.Resolve<CloudBlobClient>(),
-							formatter);
-					});
+							return (IQueueStorageProvider)new QueueStorageProvider(
+								c.Resolve<CloudQueueClient>(),
+								c.Resolve<CloudBlobClient>(),
+								formatter);
+						});
+				}
 			}
 		}
 
