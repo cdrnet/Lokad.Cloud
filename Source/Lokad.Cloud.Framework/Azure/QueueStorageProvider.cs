@@ -91,8 +91,11 @@ namespace Lokad.Cloud.Azure
 			{
 				foreach(var rawMessage in rawMessages)
 				{
-					var stream = new MemoryStream(rawMessage.AsBytes);
-					var innerMessage = _formatter.Deserialize(stream);
+					object innerMessage;
+					using(var stream = new MemoryStream(rawMessage.AsBytes))
+					{
+						innerMessage = _formatter.Deserialize(stream);
+					}
 
 					if(innerMessage is T)
 					{
@@ -154,11 +157,13 @@ namespace Lokad.Cloud.Azure
 					continue;
 				}
 
-				var stream = new MemoryStream();
-				blob.DownloadToStream(stream);
-				stream.Seek(0, SeekOrigin.Begin);
-
-            	var innerMessage = (T)_formatter.Deserialize(stream);
+				T innerMessage;
+				using(var stream = new MemoryStream())
+				{
+					blob.DownloadToStream(stream);
+					stream.Seek(0, SeekOrigin.Begin);
+					innerMessage = (T)_formatter.Deserialize(stream);
+				}
 
 				// substitution: message wrapper replaced by actual item in '_inprocess' list
 				lock(_sync)
@@ -185,75 +190,85 @@ namespace Lokad.Cloud.Azure
 
 			foreach(var message in messages)
 			{
-				var stream = new MemoryStream();
-				_formatter.Serialize(stream, message);
-				var buffer = stream.GetBuffer();
-
-				if(buffer.Length >= CloudQueueMessage.MaxMessageSize)
+				using(var stream = new MemoryStream())
 				{
-					
-					// 7 days = maximal processing duration for messages in queue
-					var blobName = TemporaryBlobName.GetNew(DateTime.UtcNow.AddDays(7), queueName);
+					_formatter.Serialize(stream, message);
 
-					var container = _blobStorage.GetContainerReference(blobName.ContainerName);
+					byte[] messageContent = null;
+
+					if(stream.Length >= CloudQueueMessage.MaxMessageSize)
+					{
+						// 7 days = maximal processing duration for messages in queue
+						var blobName = TemporaryBlobName.GetNew(DateTime.UtcNow.AddDays(7), queueName);
+
+						var container = _blobStorage.GetContainerReference(blobName.ContainerName);
+
+						try
+						{
+							var blob = container.GetBlockBlobReference(blobName.ToString());
+							stream.Seek(0, SeekOrigin.Begin);
+							blob.UploadFromStream(stream);
+						}
+						catch(StorageClientException ex)
+						{
+							if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+							{
+								// It usually takes time before the container gets available.
+								// (the container might have been freshly deleted).
+								PolicyHelper.SlowInstantiation.Do(() =>
+									{
+										container.Create();
+										var myBlob = container.GetBlockBlobReference(blobName.ToString());
+										stream.Seek(0, SeekOrigin.Begin);
+										myBlob.UploadFromStream(stream);
+									});
+
+							}
+							else
+							{
+								throw;
+							}
+						}
+
+						var mw = new MessageWrapper
+							{
+								ContainerName = CloudService.TemporaryContainer,
+								BlobName = blobName.ToString()
+							};
+
+						using(var otherStream = new MemoryStream())
+						{
+							_formatter.Serialize(otherStream, mw);
+							// buffer gets replaced by the wrapper
+							messageContent = otherStream.ToArray();
+						}
+					}
+					else
+					{
+						messageContent = stream.ToArray();
+					}
 
 					try
 					{
-						var blob = container.GetBlockBlobReference(blobName.ToString());
-						blob.UploadByteArray(buffer);
+						queue.AddMessage(new CloudQueueMessage(messageContent));
 					}
-					catch (StorageClientException ex)
+					catch(StorageClientException ex)
 					{
-						if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+						// HACK: not storage status error code yet
+						if(ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
 						{
-							// It usually takes time before the container gets available.
-							// (the container might have been freshly deleted).
+							// It usually takes time before the queue gets available
+							// (the queue might also have been freshly deleted).
 							PolicyHelper.SlowInstantiation.Do(() =>
 								{
-									container.Create();
-									var myBlob = container.GetBlockBlobReference(blobName.ToString());
-									myBlob.UploadByteArray(buffer);
+									queue.Create();
+									queue.AddMessage(new CloudQueueMessage(messageContent));
 								});
-							
 						}
 						else
 						{
 							throw;
 						}
-					}
-
-					var mw = new MessageWrapper
-						{
-							ContainerName = CloudService.TemporaryContainer, 
-							BlobName = blobName.ToString()
-						};
-					stream = new MemoryStream();
-					_formatter.Serialize(stream, mw);
-
-					// buffer gets replaced by the wrapper
-					buffer = stream.GetBuffer();
-				}
-
-				try
-				{
-					queue.AddMessage(new CloudQueueMessage(buffer));
-				}
-				catch (StorageClientException ex)
-				{
-					// HACK: not storage status error code yet
-					if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
-					{
-						// It usually takes time before the queue gets available
-						// (the queue might also have been freshly deleted).
-						PolicyHelper.SlowInstantiation.Do(() =>
-							{
-								queue.Create();
-								queue.AddMessage(new CloudQueueMessage(buffer));
-							});
-					}
-					else
-					{
-						throw;
 					}
 				}
 			}
@@ -305,12 +320,14 @@ namespace Lokad.Cloud.Azure
 				// deleting the overflowing copy from the blob storage.
 				if(isOverflowing)
 				{
-					var stream = new MemoryStream(rawMessage.AsBytes);
-					var mw = (MessageWrapper)_formatter.Deserialize(stream);
+					using(var stream = new MemoryStream(rawMessage.AsBytes))
+					{
+						var mw = (MessageWrapper)_formatter.Deserialize(stream);
 
-					var container = _blobStorage.GetContainerReference(mw.ContainerName);
-					var blob = container.GetBlockBlobReference(mw.BlobName);
-					blob.Delete();
+						var container = _blobStorage.GetContainerReference(mw.ContainerName);
+						var blob = container.GetBlockBlobReference(mw.BlobName);
+						blob.Delete();
+					}
 				}
 
 				queue.DeleteMessage(rawMessage);

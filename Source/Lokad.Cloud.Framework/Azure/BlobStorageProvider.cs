@@ -72,90 +72,94 @@ namespace Lokad.Cloud.Azure
 
 		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite, out string etag)
 		{
-			var stream = new MemoryStream();
-			_formatter.Serialize(stream, item);
-			var buffer = stream.GetBuffer();
-
-			etag = null;
-
-			// StorageClient already deals with spliting large items
-			var container = _blobStorage.GetContainerReference(containerName);
-
-			try
+			using(var stream = new MemoryStream())
 			{
-				var blob = container.GetBlockBlobReference(blobName);
+				_formatter.Serialize(stream, item);
+
+				etag = null;
+
+				// StorageClient already deals with spliting large items
+				var container = _blobStorage.GetContainerReference(containerName);
+
 				try
 				{
-					blob.FetchAttributes();
-				}
-				catch { }
-
-				if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
-				{
-					blob.UploadByteArray(buffer);
-					blob.FetchAttributes();
-					etag = blob.Properties.ETag;
-					return true;
-				}
-
-				return false;
-			}
-			catch(StorageClientException ex)
-			{
-				// if the container does not exist, it gets created
-				if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
-				{
-					// caution the container might have been freshly deleted
-					var flag = false;
-					string tempEtag = null;
-					PolicyHelper.SlowInstantiation.Do(() =>
+					var blob = container.GetBlockBlobReference(blobName);
+					try
 					{
-						container.CreateIfNotExist();
+						blob.FetchAttributes();
+					}
+					catch { }
 
-						var myBlob = container.GetBlockBlobReference(blobName);
-						try
-						{
-							myBlob.FetchAttributes();
-						}
-						catch { }
-
-						if(myBlob.Properties.ETag == null || (myBlob.Properties.ETag != null && overwrite))
-						{
-							myBlob.UploadByteArray(buffer);
-							myBlob.FetchAttributes();
-							tempEtag = myBlob.Properties.ETag;
-							flag = true;
-						}
-					});
-
-					if(flag) etag = tempEtag;
-
-					return flag;
-				}
-				if(ex.ErrorCode == StorageErrorCode.BlobAlreadyExists && !overwrite)
-				{
-					// See http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/fff78a35-3242-4186-8aee-90d27fbfbfd4
-					// and http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/86b9f184-c329-4c30-928f-2991f31e904b/
+					if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
+					{
+						stream.Seek(0, SeekOrigin.Begin);
+						blob.UploadFromStream(stream);
+						blob.FetchAttributes();
+						etag = blob.Properties.ETag;
+						return true;
+					}
 
 					return false;
 				}
-
-				var blob = container.GetBlockBlobReference(blobName);
-				try
+				catch(StorageClientException ex)
 				{
-					blob.FetchAttributes();
-				}
-				catch { }
+					// if the container does not exist, it gets created
+					if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+					{
+						// caution the container might have been freshly deleted
+						var flag = false;
+						string tempEtag = null;
+						PolicyHelper.SlowInstantiation.Do(() =>
+						{
+							container.CreateIfNotExist();
 
-				if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
-				{
-					blob.UploadByteArray(buffer);
-					blob.FetchAttributes();
-					etag = blob.Properties.ETag;
-					return true;
-				}
+							var myBlob = container.GetBlockBlobReference(blobName);
+							try
+							{
+								myBlob.FetchAttributes();
+							}
+							catch { }
 
-				return false;
+							if(myBlob.Properties.ETag == null || (myBlob.Properties.ETag != null && overwrite))
+							{
+								stream.Seek(0, SeekOrigin.Begin);
+								myBlob.UploadFromStream(stream);
+								myBlob.FetchAttributes();
+								tempEtag = myBlob.Properties.ETag;
+								flag = true;
+							}
+						});
+
+						if(flag) etag = tempEtag;
+
+						return flag;
+					}
+					if(ex.ErrorCode == StorageErrorCode.BlobAlreadyExists && !overwrite)
+					{
+						// See http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/fff78a35-3242-4186-8aee-90d27fbfbfd4
+						// and http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/86b9f184-c329-4c30-928f-2991f31e904b/
+
+						return false;
+					}
+
+					var blob = container.GetBlockBlobReference(blobName);
+					try
+					{
+						blob.FetchAttributes();
+					}
+					catch { }
+
+					if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
+					{
+						stream.Seek(0, SeekOrigin.Begin);
+						blob.UploadFromStream(stream);
+						blob.FetchAttributes();
+						etag = blob.Properties.ETag;
+						return true;
+					}
+
+					return false;
+				}
 			}
 		}
 
@@ -169,31 +173,33 @@ namespace Lokad.Cloud.Azure
 		{
 			var container = _blobStorage.GetContainerReference(containerName);
 			var blob = container.GetBlockBlobReference(blobName);
-			var stream = new MemoryStream();
 
-			etag = null;
+			using(var stream = new MemoryStream())
+			{
+				etag = null;
 
-			// no such container, return default
-			try
-			{
-				blob.FetchAttributes();
-				blob.DownloadToStream(stream);
-				
-				etag = blob.Properties.ETag;
-			}
-			catch (StorageClientException ex)
-			{
-				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
-					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
-					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
+				// no such container, return default
+				try
 				{
-					return default(T);
-				}
-				throw;
-			}
+					blob.FetchAttributes();
+					blob.DownloadToStream(stream);
 
-			stream.Seek(0, SeekOrigin.Begin);
-			return (T)_formatter.Deserialize(stream);
+					etag = blob.Properties.ETag;
+				}
+				catch(StorageClientException ex)
+				{
+					if(ex.ErrorCode == StorageErrorCode.ContainerNotFound
+						|| ex.ErrorCode == StorageErrorCode.BlobNotFound
+						|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
+					{
+						return default(T);
+					}
+					throw;
+				}
+
+				stream.Seek(0, SeekOrigin.Begin);
+				return (T)_formatter.Deserialize(stream);
+			}
 		}
 
 		public T[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
@@ -244,11 +250,12 @@ namespace Lokad.Cloud.Azure
 				throw;
 			}
 
-			var stream = new MemoryStream();
-			blob.DownloadToStream(stream);
-			stream.Seek(0, SeekOrigin.Begin);
-			
-			return (T)_formatter.Deserialize(stream);
+			using(var stream = new MemoryStream())
+			{
+				blob.DownloadToStream(stream);
+				stream.Seek(0, SeekOrigin.Begin);
+				return (T)_formatter.Deserialize(stream);
+			}
 		}
 
 		public string GetBlobEtag(string containerName, string blobName)
@@ -302,11 +309,12 @@ namespace Lokad.Cloud.Azure
 			try
 			{
 				blob = container.GetBlockBlobReference(blobName);
-				var rstream = new MemoryStream();
-				blob.DownloadToStream(rstream);
-				rstream.Seek(0, SeekOrigin.Begin);
-
-				input = (T)_formatter.Deserialize(rstream);
+				using(var rstream = new MemoryStream())
+				{
+					blob.DownloadToStream(rstream);
+					rstream.Seek(0, SeekOrigin.Begin);
+					input = (T)_formatter.Deserialize(rstream);
+				}
 			}
 			catch (StorageClientException ex)
 			{
@@ -335,11 +343,12 @@ namespace Lokad.Cloud.Azure
 				return false;
 			}
 
-			var wstream = new MemoryStream();
-			_formatter.Serialize(wstream, result.Value);
-			var buffer = wstream.GetBuffer();
-
-			blob.UploadByteArray(buffer);
+			using(var wstream = new MemoryStream())
+			{
+				_formatter.Serialize(wstream, result.Value);
+				wstream.Seek(0, SeekOrigin.Begin);
+				blob.UploadFromStream(wstream);
+			}
 
 			return true;
 		}
