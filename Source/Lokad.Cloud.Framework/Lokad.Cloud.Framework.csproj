@@ -64,6 +64,9 @@
     <Reference Include="System.Data.Services.Client">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -89,6 +92,7 @@
     <Compile Include="Azure\StorageModule.cs" />
     <Compile Include="BaseTemporaryBlobName.cs" />
     <Compile Include="CloudInfrastructureProviders.cs" />
+    <Compile Include="CustomFormatter.cs" />
     <Compile Include="DelayedQueue.cs" />
     <Compile Include="Diagnostics\ExecutionProfilingMonitor.cs" />
     <Compile Include="Diagnostics\ExceptionTrackingMonitor.cs" />
