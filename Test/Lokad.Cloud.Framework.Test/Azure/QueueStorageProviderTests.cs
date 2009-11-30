@@ -188,7 +188,6 @@ namespace Lokad.Cloud.Azure.Test
 	}
 
 	[DataContract]
-	//[Serializable]
 	public class MyMessage
 	{
 		[DataMember(IsRequired = false)]

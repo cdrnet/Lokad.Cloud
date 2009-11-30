@@ -120,7 +120,6 @@ namespace Lokad.Cloud.Azure
 	}
 
 	/// <summary>Resolves assemblies by caching assemblies that were loaded.</summary>
-	[Serializable]
 	public sealed class AssemblyResolver
 	{
 		/// <summary>
