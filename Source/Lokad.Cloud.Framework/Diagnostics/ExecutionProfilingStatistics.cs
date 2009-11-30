@@ -4,16 +4,20 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 using Lokad.Diagnostics.Persist;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Diagnostics
 {
 	[Serializable]
+	[DataContract]
 	public class ExecutionProfilingStatistics
 	{
+		[DataMember]
 		public string Name { get; set; }
 
+		[DataMember]
 		public ExecutionData[] Statistics { get; set; }
 	}
 

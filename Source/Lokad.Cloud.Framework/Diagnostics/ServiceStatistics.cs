@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Diagnostics
@@ -12,14 +13,20 @@ namespace Lokad.Cloud.Diagnostics
 	/// Cloud Service Monitoring Statistics
 	/// </summary>
 	[Serializable]
+	[DataContract]
 	public class ServiceStatistics
 	{
+		[DataMember]
 		public string Name { get; set; }
 
+		[DataMember]
 		public DateTimeOffset FirstStartTime { get; set; }
+		[DataMember]
 		public DateTimeOffset LastUpdate { get; set; }
 
+		[DataMember]
 		public TimeSpan TotalProcessorTime { get; set; }
+		[DataMember]
 		public TimeSpan UserProcessorTime { get; set; }
 	}
 
