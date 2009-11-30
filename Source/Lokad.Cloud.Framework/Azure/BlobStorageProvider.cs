@@ -19,9 +19,9 @@ namespace Lokad.Cloud.Azure
 	public class BlobStorageProvider : IBlobStorageProvider
 	{
 		readonly CloudBlobClient _blobStorage;
-		readonly IFormatter _formatter;
+		readonly ICustomFormatter _formatter;
 
-		public BlobStorageProvider(CloudBlobClient blobStorage, IFormatter formatter)
+		public BlobStorageProvider(CloudBlobClient blobStorage, ICustomFormatter formatter)
 		{
 			_blobStorage = blobStorage;
 			_formatter = formatter;
@@ -198,7 +198,7 @@ namespace Lokad.Cloud.Azure
 				}
 
 				stream.Seek(0, SeekOrigin.Begin);
-				return (T)_formatter.Deserialize(stream);
+				return _formatter.Deserialize<T>(stream);
 			}
 		}
 
@@ -254,7 +254,7 @@ namespace Lokad.Cloud.Azure
 			{
 				blob.DownloadToStream(stream);
 				stream.Seek(0, SeekOrigin.Begin);
-				return (T)_formatter.Deserialize(stream);
+				return _formatter.Deserialize<T>(stream);
 			}
 		}
 
@@ -313,7 +313,7 @@ namespace Lokad.Cloud.Azure
 				{
 					blob.DownloadToStream(rstream);
 					rstream.Seek(0, SeekOrigin.Begin);
-					input = (T)_formatter.Deserialize(rstream);
+					input = _formatter.Deserialize<T>(rstream);
 				}
 			}
 			catch (StorageClientException ex)

@@ -21,21 +21,15 @@ namespace Lokad.Cloud.Mock
 		{
 			builder.Register(c =>
          	{
-         		IFormatter formatter;
-         		if (!c.TryResolve(out formatter))
-         		{
-         			formatter = new BinaryFormatter();
-         		}
-
          		return (IBlobStorageProvider)new MemoryBlobStorageProvider();
          	});
 
 			builder.Register(c =>
 			{
-				IFormatter formatter;
+				ICustomFormatter formatter;
 				if (!c.TryResolve(out formatter))
 				{
-					formatter = new BinaryFormatter();
+					formatter = new CustomFormatter();
 				}
 
 				return (IQueueStorageProvider)new MemoryQueueStorageProvider(formatter);

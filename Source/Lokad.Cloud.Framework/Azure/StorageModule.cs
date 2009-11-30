@@ -92,10 +92,10 @@ namespace Lokad.Cloud.Azure
 					// registering the Lokad.Cloud providers
 					builder.Register(c =>
 						{
-							IFormatter formatter;
+							ICustomFormatter formatter;
 							if(!c.TryResolve(out formatter))
 							{
-								formatter = new BinaryFormatter();
+								formatter = new CustomFormatter();
 							}
 
 							return (IBlobStorageProvider)new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
@@ -103,10 +103,10 @@ namespace Lokad.Cloud.Azure
 
 					builder.Register(c =>
 						{
-							IFormatter formatter;
+							ICustomFormatter formatter;
 							if(!c.TryResolve(out formatter))
 							{
-								formatter = new BinaryFormatter();
+								formatter = new CustomFormatter();
 							}
 
 							return (IQueueStorageProvider)new QueueStorageProvider(

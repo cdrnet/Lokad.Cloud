@@ -16,17 +16,13 @@ namespace Lokad.Cloud
 	/// <summary>Defines the interface for a custom formatter.</summary>
 	public interface ICustomFormatter
 	{
-		/// <summary>
-		/// Serializes an object to a stream.
-		/// </summary>
+		/// <summary>Serializes an object to a stream.</summary>
 		/// <typeparam name="T">The type of the object.</typeparam>
 		/// <param name="destination">The destination stream.</param>
 		/// <param name="instance">The object.</param>
 		void Serialize<T>(Stream destination, T instance);
 
-		/// <summary>
-		/// Deserializes an object from a stream.
-		/// </summary>
+		/// <summary>Deserializes an object from a stream.</summary>
 		/// <typeparam name="T">The type of the object.</typeparam>
 		/// <param name="source">The source stream.</param>
 		/// <returns>The deserialized object.</returns>

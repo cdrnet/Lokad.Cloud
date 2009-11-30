@@ -136,34 +136,62 @@ namespace Lokad.Cloud.Test
 			}
 		}
 
-		[DataContract]
-		[Serializable]
-		internal class TestClass
+		[Test]
+		public void UnknownType()
 		{
-			[DataMember]
-			public float Field;
+			CustomFormatter formatter = new CustomFormatter();
 
-			[DataMember]
-			public string Prop1 { get; set; }
-
-			[DataMember]
-			public int Prop2 { get; set; }
-
-			[DataMember]
-			public List<TestEnum> Flags { get; set; }
-
-			[DataMember(IsRequired = false)]
-			public object InvoiceId { get; set; }
-
-			public object Ignored { get; set; }
+			using(var stream = new MemoryStream())
+			{
+				var item = new WithObject() { Generic = DateTime.Now.Second > 30 ? (object)100 : (object)"hello" };
+				formatter.Serialize(stream, item);
+				stream.Seek(0, SeekOrigin.Begin);
+				var output = formatter.Deserialize<WithObject>(stream);
+				Assert.AreEqual(item.Generic, output.Generic);
+			}
 		}
+	}
 
-		[Serializable]
-		internal enum TestEnum
-		{
-			Item1,
-			Item2,
-			Item3
-		}
+	[DataContract]
+	internal class WithObject
+	{
+		[DataMember]
+		public object Generic { get; set; }
+	}
+
+	[DataContract]
+	internal class Container
+	{
+		[DataMember]
+		public TestClass Item { get; set; }
+	}
+
+	[DataContract]
+	internal class TestClass
+	{
+		[DataMember]
+		public float Field;
+
+		[DataMember]
+		public string Prop1 { get; set; }
+
+		[DataMember]
+		public int Prop2 { get; set; }
+
+		[DataMember]
+		public List<TestEnum> Flags { get; set; }
+
+		[DataMember(IsRequired = false)]
+		public object InvoiceId { get; set; }
+
+		public object Ignored { get; set; }
+	}
+
+	[Serializable]
+	internal enum TestEnum
+	{
+		Item1,
+		Item2,
+		Item3
 	}
 }

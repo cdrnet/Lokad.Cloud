@@ -36,14 +36,14 @@ namespace Lokad.Cloud.Azure
 
 		readonly CloudQueueClient _queueStorage;
 		readonly CloudBlobClient _blobStorage; // needed for overflowing messages
-		readonly IFormatter _formatter;
+		readonly ICustomFormatter _formatter;
 
 		// messages currently being processed (boolean property indicates if the message is overflowing)
 		private readonly Dictionary<object, InProcessMessage> _inProcessMessages;
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
-			CloudQueueClient queueStorage, CloudBlobClient blobStorage, IFormatter formatter)
+			CloudQueueClient queueStorage, CloudBlobClient blobStorage, ICustomFormatter formatter)
 		{
 			_queueStorage = queueStorage;
 			_blobStorage = blobStorage;
@@ -58,6 +58,24 @@ namespace Lokad.Cloud.Azure
 			{
 				yield return queue.Name;
 			}
+		}
+
+		object SafeDeserialize<T>(Stream source)
+		{
+			long position = source.Position;
+
+			object item = null;
+			try
+			{
+				item = _formatter.Deserialize<T>(source);
+			}
+			catch(SerializationException)
+			{
+				source.Position = position;
+				item = _formatter.Deserialize<MessageWrapper>(source);
+			}
+
+			return item;
 		}
 
 		public IEnumerable<T> Get<T>(string queueName, int count)
@@ -94,7 +112,7 @@ namespace Lokad.Cloud.Azure
 					object innerMessage;
 					using(var stream = new MemoryStream(rawMessage.AsBytes))
 					{
-						innerMessage = _formatter.Deserialize(stream);
+						innerMessage = SafeDeserialize<T>(stream);
 					}
 
 					if(innerMessage is T)
@@ -162,7 +180,7 @@ namespace Lokad.Cloud.Azure
 				{
 					blob.DownloadToStream(stream);
 					stream.Seek(0, SeekOrigin.Begin);
-					innerMessage = (T)_formatter.Deserialize(stream);
+					innerMessage = _formatter.Deserialize<T>(stream);
 				}
 
 				// substitution: message wrapper replaced by actual item in '_inprocess' list
@@ -238,7 +256,7 @@ namespace Lokad.Cloud.Azure
 
 						using(var otherStream = new MemoryStream())
 						{
-							_formatter.Serialize(otherStream, mw);
+							_formatter.Serialize<MessageWrapper>(otherStream, mw);
 							// buffer gets replaced by the wrapper
 							messageContent = otherStream.ToArray();
 						}
@@ -322,7 +340,7 @@ namespace Lokad.Cloud.Azure
 				{
 					using(var stream = new MemoryStream(rawMessage.AsBytes))
 					{
-						var mw = (MessageWrapper)_formatter.Deserialize(stream);
+						var mw = _formatter.Deserialize<MessageWrapper>(stream);
 
 						var container = _blobStorage.GetContainerReference(mw.ContainerName);
 						var blob = container.GetBlockBlobReference(mw.BlobName);

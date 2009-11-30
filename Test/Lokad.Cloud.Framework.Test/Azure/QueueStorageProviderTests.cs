@@ -7,6 +7,7 @@ using System.Linq;
 using NUnit.Framework;
 using Lokad.Cloud;
 using System.Text;
+using System.Runtime.Serialization;
 
 namespace Lokad.Cloud.Azure.Test
 {
@@ -186,11 +187,14 @@ namespace Lokad.Cloud.Azure.Test
 		public string StringValue;
 	}
 
-	[Serializable]
+	[DataContract]
+	//[Serializable]
 	public class MyMessage
 	{
+		[DataMember(IsRequired = false)]
 		public Guid MyGuid { get; private set; }
 
+		[DataMember]
 		public byte[] MyBuffer { get; set; }
 
 		public MyMessage()
