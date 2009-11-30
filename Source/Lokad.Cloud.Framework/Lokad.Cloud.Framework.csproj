@@ -101,7 +101,6 @@
     <Compile Include="Diagnostics\PartitionMonitor.cs" />
     <Compile Include="Diagnostics\PartitionStatistics.cs" />
     <Compile Include="Diagnostics\ServiceMonitor.cs" />
-    <Compile Include="Diagnostics\ServiceMonitorBlobName.cs" />
     <Compile Include="Diagnostics\IServiceMonitor.cs" />
     <Compile Include="Diagnostics\ServiceStatistics.cs" />
     <Compile Include="Mock\MemoryMonitor.cs" />

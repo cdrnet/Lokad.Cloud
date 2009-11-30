@@ -44,36 +44,39 @@ namespace Lokad.Cloud.Diagnostics
 			var data = counters.ToList().ToArray().ToPersistence();
 			counters.ResetAll();
 
-			Update("Default", d => Aggregate(d.Append(data).ToArray()));
+			Update("Default", data);
 		}
 
 		/// <summary>
-		/// Build a blob and put it to the storage
+		/// Update the statistics data with a set of additional new data items
 		/// </summary>
-		protected void Update(string contextName, Func<ExecutionData[],ExecutionData[]> updater)
+		public void Update(string contextName, IEnumerable<ExecutionData> additionalData)
 		{
 			ExecutionProfilingStatistics result;
 			_provider.AtomicUpdate(
 				ExecutionProfilingStatisticsName.New(contextName),
 				s =>
-				{
-					if (s == null)
 					{
-						return new ExecutionProfilingStatistics()
+						if (s == null)
 						{
-							Name = contextName,
-							Statistics = updater(new ExecutionData[] { })
-						};
-					}
+							return new ExecutionProfilingStatistics()
+								{
+									Name = contextName,
+									Statistics = additionalData.ToArray()
+								};
+						}
 
-					s.Statistics = updater(s.Statistics);
-					return s;
-				},
+						s.Statistics = Aggregate(s.Statistics.Append(additionalData)).ToArray();
+						return s;
+					},
 				out result
 				);
 		}
 
-		protected ExecutionData[] Aggregate(IEnumerable<ExecutionData> data)
+		/// <summary>
+		/// Aggregation Helper
+		/// </summary>
+		private ExecutionData[] Aggregate(IEnumerable<ExecutionData> data)
 		{
 			return data
 				.GroupBy(

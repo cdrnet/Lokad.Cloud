@@ -44,13 +44,13 @@ namespace Lokad.Cloud.Diagnostics
 			var data = counters.GetHistory().ToArray().ToPersistence();
 			counters.Clear();
 
-			Update("Default", d => Aggregate(d.Append(data).ToArray()));
+			Update("Default", data);
 		}
 
 		/// <summary>
-		/// Build a blob and put it to the storage
+		/// Update the statistics data with a set of additional new data items
 		/// </summary>
-		protected void Update(string contextName, Func<ExceptionData[], ExceptionData[]> updater)
+		public void Update(string contextName, IEnumerable<ExceptionData> additionalData)
 		{
 			ExceptionTrackingStatistics result;
 			_provider.AtomicUpdate(
@@ -62,18 +62,21 @@ namespace Lokad.Cloud.Diagnostics
 							return new ExceptionTrackingStatistics()
 								{
 									Name = contextName,
-									Statistics = updater(new ExceptionData[] {})
+									Statistics = additionalData.ToArray()
 								};
 						}
 
-						s.Statistics = updater(s.Statistics);
+						s.Statistics = Aggregate(s.Statistics.Append(additionalData)).ToArray();
 						return s;
 					},
 				out result
 				);
 		}
 
-		protected ExceptionData[] Aggregate(IEnumerable<ExceptionData> data)
+		/// <summary>
+		/// Aggregation Helper
+		/// </summary>
+		private ExceptionData[] Aggregate(IEnumerable<ExceptionData> data)
 		{
 			return data
 				.GroupBy(
