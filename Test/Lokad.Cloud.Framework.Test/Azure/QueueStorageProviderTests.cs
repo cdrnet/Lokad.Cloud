@@ -70,7 +70,7 @@ namespace Lokad.Cloud.Azure.Test
 			var retrieved = provider.Get<MyMessage>(QueueName, 1).First();
 
 			Assert.AreEqual(message.MyGuid, retrieved.MyGuid, "#A01");
-			Assert.AreEqual(message.MyBuffer.Length, retrieved.MyBuffer.Length, "#A02");
+			CollectionAssert.AreEquivalent(message.MyBuffer, retrieved.MyBuffer, "#A02");
 
 			for (int i = 0; i < message.MyBuffer.Length; i++ )
 			{

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.WindowsAzure.StorageClient;
 using Microsoft.WindowsAzure.StorageClient.Protocol;
+using Lokad.Quality;
 
 namespace Lokad.Cloud.Azure
 {
@@ -29,6 +30,8 @@ namespace Lokad.Cloud.Azure
 	/// </remarks>
 	public class QueueStorageProvider : IQueueStorageProvider
 	{
+		internal const string OverflowingMessagesContainerName = "lokad-cloud-overflowing-messages";
+
 		/// <summary>Root used to synchronize accesses to <c>_inprocess</c>. 
 		/// Caution: do not hold the lock while performing operations on the cloud
 		/// storage.</summary>
@@ -216,8 +219,7 @@ namespace Lokad.Cloud.Azure
 
 					if(stream.Length >= CloudQueueMessage.MaxMessageSize)
 					{
-						// 7 days = maximal processing duration for messages in queue
-						var blobName = TemporaryBlobName.GetNew(DateTime.UtcNow.AddDays(7), queueName);
+						var blobName = OverflowingMessageBlobName.GetNew();
 
 						var container = _blobStorage.GetContainerReference(blobName.ContainerName);
 
@@ -240,7 +242,6 @@ namespace Lokad.Cloud.Azure
 										stream.Seek(0, SeekOrigin.Begin);
 										myBlob.UploadFromStream(stream);
 									});
-
 							}
 							else
 							{
@@ -250,7 +251,7 @@ namespace Lokad.Cloud.Azure
 
 						var mw = new MessageWrapper
 							{
-								ContainerName = CloudService.TemporaryContainer,
+								ContainerName = blobName.ContainerName,
 								BlobName = blobName.ToString()
 							};
 
@@ -406,6 +407,32 @@ namespace Lokad.Cloud.Azure
 		/// <summary>A flag indicating whether the original message was bigger than the max allowed size and was
 		/// therefore wrapped in <see cref="T:MessageWrapper" />.</summary>
 		public bool IsOverflowing { get; set; }
+	}
+
+	public class OverflowingMessageBlobName : BaseBlobName
+	{
+		public override string ContainerName
+		{
+			get { return QueueStorageProvider.OverflowingMessagesContainerName; }
+		}
+
+		[UsedImplicitly, Rank(0)]
+		public Guid MessageId;
+
+		OverflowingMessageBlobName(Guid guid)
+		{
+			MessageId = guid;
+		}
+
+		public static OverflowingMessageBlobName GetNew()
+		{
+			return new OverflowingMessageBlobName(Guid.NewGuid());
+		}
+
+		public static OverflowingMessageBlobName Parse(string name)
+		{
+			return new OverflowingMessageBlobName(new Guid(name));
+		}
 	}
 
 }
