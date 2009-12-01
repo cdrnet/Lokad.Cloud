@@ -118,17 +118,6 @@ namespace Lokad.Cloud.Samples.MapReduce
 
 			return result;
 		}
-
-		/// <summary>Gets the map/reduce functions.</summary>
-		/// <returns>The functions.</returns>
-		public static MapReduceFunctions GetMapReduceFunctions()
-		{
-			return new MapReduceFunctions()
-				{
-					Mapper = (Func<byte[], Histogram>)ComputeHistogram,
-					Reducer = (Func<Histogram, Histogram, Histogram>)MergeHistograms
-				};
-		}
 	}
 
 }

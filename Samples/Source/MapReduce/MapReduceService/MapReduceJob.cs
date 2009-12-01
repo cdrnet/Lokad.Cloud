@@ -64,14 +64,14 @@ namespace Lokad.Cloud.Samples.MapReduce
 		/// <returns>The batch ID.</returns>
 		/// <exception cref="InvalidOperationException">If the method was already called.</exception>
 		/// <exception cref="ArgumentException">If <paramref name="items"/> contains less than two items.</exception>
-		public string PushItems(MapReduceFunctions functions, IList<TMapIn> items, int workerCount)
+		public string PushItems(IMapReduceFunctions functions, IList<TMapIn> items, int workerCount)
 		{
 			lock(_jobName)
 			{
 				if(_itemsPushed) throw new InvalidOperationException("A batch was already pushed to the work queue");
 
 				var blobSet = new MapReduceBlobSet(_blobStorage, _queueStorage);
-				blobSet.GenerateBlobSets(_jobName, new List<object>(from i in items select (object)i), functions, workerCount);
+				blobSet.GenerateBlobSets(_jobName, new List<object>(from i in items select (object)i), functions, workerCount, typeof(TMapIn), typeof(TMapOut));
 				_itemsPushed = true;
 
 				return _jobName;

@@ -17,16 +17,16 @@ namespace Lokad.Cloud
 	public interface ICustomFormatter
 	{
 		/// <summary>Serializes an object to a stream.</summary>
-		/// <typeparam name="T">The type of the object.</typeparam>
 		/// <param name="destination">The destination stream.</param>
 		/// <param name="instance">The object.</param>
-		void Serialize<T>(Stream destination, T instance);
+		void Serialize(Stream destination, object instance);
 
 		/// <summary>Deserializes an object from a stream.</summary>
 		/// <typeparam name="T">The type of the object.</typeparam>
 		/// <param name="source">The source stream.</param>
+		/// <param name="type">The type of the object.</param>
 		/// <returns>The deserialized object.</returns>
-		T Deserialize<T>(Stream source);
+		object Deserialize(Stream source, Type type);
 	}
 
 	/// <summary>
@@ -39,15 +39,15 @@ namespace Lokad.Cloud
 		DataContractSerializer _serializer = null;
 		Type _currentType;
 
-		void CreateSerializerIfNecessary<T>()
+		void CreateSerializerIfNecessary(Type type)
 		{
-			if(_serializer == null || _currentType != typeof(T)) _serializer = new DataContractSerializer(typeof(T));
-			_currentType = typeof(T);
+			if(_serializer == null || _currentType != type) _serializer = new DataContractSerializer(type);
+			_currentType = type;
 		}
 
-		public void Serialize<T>(Stream destination, T instance)
+		public void Serialize(Stream destination, object instance)
 		{
-			CreateSerializerIfNecessary<T>();
+			CreateSerializerIfNecessary(instance.GetType());
 
 			using(var compressed = destination.Compress(true))
 			using(var writer = XmlDictionaryWriter.CreateBinaryWriter(compressed, null, null, false))
@@ -57,15 +57,15 @@ namespace Lokad.Cloud
 			}
 		}
 
-		public T Deserialize<T>(Stream source)
+		public object Deserialize(Stream source, Type type)
 		{
-			CreateSerializerIfNecessary<T>();
+			CreateSerializerIfNecessary(type);
 
 			using(var decompressed = source.Decompress(true))
 			using(var reader = XmlDictionaryReader.CreateBinaryReader(decompressed, XmlDictionaryReaderQuotas.Max))
 			//using(var reader = XmlDictionaryReader.Create(XmlReader.Create(source), new XmlReaderSettings() { CloseInput = false }))
 			{
-				return (T)_serializer.ReadObject(reader);
+				return _serializer.ReadObject(reader);
 			}
 		}
 

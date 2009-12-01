@@ -48,6 +48,20 @@ namespace Lokad.Cloud
 		/// exists but could not be overwritten.</returns>
 		bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite, out string etag);
 
+		/// <summary>Puts a blob and optionally overwrite.</summary>
+		/// <param name="containerName">Name of the container.</param>
+		/// <param name="blobName">Name of the blob.</param>
+		/// <param name="item">Item to be put.</param>
+		/// <param name="type">The type of the blob.</param>
+		/// <param name="overwrite">Indicates whether existing blob should be overwritten
+		/// if it exists.</param>
+		/// <param name="etag">New etag (identifier used to track for blob change) if
+		/// the blob is written, or <c>null</c> if no blob is written.</param>
+		/// <remarks>Creates the container if it does not exist beforehand.</remarks>
+		/// <returns><c>true</c> if the blob has been put and <c>false</c> if the blob already
+		/// exists but could not be overwritten.</returns>
+		bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag);
+
 		/// <summary>Gets a blob.</summary>
 		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
 		/// returned.</returns>
@@ -63,6 +77,17 @@ namespace Lokad.Cloud
 		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
 		/// returned.</returns>
 		T GetBlob<T>(string containerName, string blobName, out string etag);
+
+		/// <summary>Gets a blob.</summary>
+		/// <param name="containerName">Name of the container.</param>
+		/// <param name="blobName">Name of the blob.</param>
+		/// <param name="type">The type of the blob.</param>
+		/// <param name="etag">Identifier assigned by the storage to the blob
+		/// that can be used to distinguish be successive version of the blob 
+		/// (useful to check for blob update).</param>
+		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
+		/// returned.</returns>
+		object GetBlob(string containerName, string blobName, Type type, out string etag);
 
 		/// <summary>
 		/// Gets a range of blobs.

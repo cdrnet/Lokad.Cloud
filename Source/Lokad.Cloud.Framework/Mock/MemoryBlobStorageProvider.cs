@@ -70,6 +70,11 @@ namespace Lokad.Cloud.Mock
 
 		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite, out string etag)
 		{
+			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
+		}
+
+		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag)
+		{
 			lock(_syncRoot)
 			{
 				etag = null;
@@ -77,7 +82,7 @@ namespace Lokad.Cloud.Mock
 				{
 					if(Containers[containerName].BlobNames.Contains(blobName))
 					{
-						if (!overwrite)
+						if(!overwrite)
 						{
 							return false;
 						}
@@ -86,12 +91,12 @@ namespace Lokad.Cloud.Mock
 						etag = Containers[containerName].BlobsEtag[blobName];
 						return true;
 					}
-					
+
 					Containers[containerName].AddBlob(blobName, item);
 					etag = Containers[containerName].BlobsEtag[blobName];
 					return true;
 				}
-				
+
 				Containers.Add(containerName, new MockContainer());
 				Containers[containerName].AddBlob(blobName, item);
 				etag = Containers[containerName].BlobsEtag[blobName];
@@ -107,17 +112,24 @@ namespace Lokad.Cloud.Mock
 
 		public T GetBlob<T>(string containerName, string blobName, out string etag)
 		{
-			lock (_syncRoot)
+			var output = GetBlob(containerName, blobName, typeof(T), out etag);
+			if(output == null) return default(T);
+			else return (T)output;
+		}
+
+		public object GetBlob(string containerName, string blobName, Type type, out string etag)
+		{
+			lock(_syncRoot)
 			{
-				if ( !Containers.ContainsKey(containerName) ||
-					 !Containers[containerName].BlobNames.Contains(blobName) )
+				if(!Containers.ContainsKey(containerName) ||
+					 !Containers[containerName].BlobNames.Contains(blobName))
 				{
 					etag = null;
-					return default(T);
+					return null;
 				}
-				
+
 				etag = Containers[containerName].BlobsEtag[blobName];
-				return (T)Containers[containerName].GetBlob(blobName);
+				return Containers[containerName].GetBlob(blobName);
 			}
 		}
 

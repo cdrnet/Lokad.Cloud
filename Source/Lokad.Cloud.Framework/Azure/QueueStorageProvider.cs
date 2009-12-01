@@ -67,12 +67,12 @@ namespace Lokad.Cloud.Azure
 			object item = null;
 			try
 			{
-				item = _formatter.Deserialize<T>(source);
+				item = _formatter.Deserialize(source, typeof(T));
 			}
 			catch(SerializationException)
 			{
 				source.Position = position;
-				item = _formatter.Deserialize<MessageWrapper>(source);
+				item = _formatter.Deserialize(source, typeof(MessageWrapper));
 			}
 
 			return item;
@@ -180,7 +180,7 @@ namespace Lokad.Cloud.Azure
 				{
 					blob.DownloadToStream(stream);
 					stream.Seek(0, SeekOrigin.Begin);
-					innerMessage = _formatter.Deserialize<T>(stream);
+					innerMessage = (T)_formatter.Deserialize(stream, typeof(T));
 				}
 
 				// substitution: message wrapper replaced by actual item in '_inprocess' list
@@ -256,7 +256,7 @@ namespace Lokad.Cloud.Azure
 
 						using(var otherStream = new MemoryStream())
 						{
-							_formatter.Serialize<MessageWrapper>(otherStream, mw);
+							_formatter.Serialize(otherStream, mw);
 							// buffer gets replaced by the wrapper
 							messageContent = otherStream.ToArray();
 						}
@@ -340,7 +340,7 @@ namespace Lokad.Cloud.Azure
 				{
 					using(var stream = new MemoryStream(rawMessage.AsBytes))
 					{
-						var mw = _formatter.Deserialize<MessageWrapper>(stream);
+						var mw = (MessageWrapper)_formatter.Deserialize(stream, typeof(MessageWrapper));
 
 						var container = _blobStorage.GetContainerReference(mw.ContainerName);
 						var blob = container.GetBlockBlobReference(mw.BlobName);

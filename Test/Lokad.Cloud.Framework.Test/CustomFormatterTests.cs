@@ -27,7 +27,7 @@ namespace Lokad.Cloud.Test
 				formatter.Serialize(stream, test);
 				long size = stream.Length;
 				stream.Seek(0, SeekOrigin.Begin);
-				Assert.AreEqual(test, formatter.Deserialize<string>(stream));
+				Assert.AreEqual(test, formatter.Deserialize(stream, typeof(string)));
 				Console.WriteLine(stream.CanSeek);
 			}
 
@@ -36,7 +36,7 @@ namespace Lokad.Cloud.Test
 				var test = 123;
 				formatter.Serialize(stream, test);
 				stream.Seek(0, SeekOrigin.Begin);
-				Assert.AreEqual(test, formatter.Deserialize<int>(stream));
+				Assert.AreEqual(test, formatter.Deserialize(stream, typeof(int)));
 			}
 
 			using(var stream = new MemoryStream())
@@ -44,7 +44,7 @@ namespace Lokad.Cloud.Test
 				var test = new byte[] { 1, 2, 3 };
 				formatter.Serialize(stream, test);
 				stream.Seek(0, SeekOrigin.Begin);
-				CollectionAssert.AreEquivalent(test, formatter.Deserialize<byte[]>(stream));
+				CollectionAssert.AreEquivalent(test, (byte[])formatter.Deserialize(stream, typeof(byte[])));
 			}
 
 			using(var stream = new MemoryStream())
@@ -83,7 +83,7 @@ namespace Lokad.Cloud.Test
 				formatter.Serialize(stream, items);
 				stream.Seek(0, SeekOrigin.Begin);
 
-				var output = formatter.Deserialize<TestClass[]>(stream);
+				var output = (TestClass[])formatter.Deserialize(stream, typeof(TestClass[]));
 
 				Assert.AreEqual(items.Length, output.Length);
 				for(int i = 0; i < items.Length; i++)
@@ -95,22 +95,6 @@ namespace Lokad.Cloud.Test
 					Assert.IsNull(output[i].Ignored);
 					Assert.AreEqual(items[i].InvoiceId, output[i].InvoiceId);
 				}
-			}
-
-			// Test required fields
-			using(var stream = new MemoryStream())
-			{
-				var item = new TestClass()
-				{
-					Field = 0,
-					Prop1 = null,
-					Prop2 = 10,
-					Flags = new List<TestEnum>()
-				};
-
-				formatter.Serialize(stream, item);
-
-				Assert.Throws<SerializationException>(() => formatter.Deserialize<TestClass>(stream));
 			}
 
 			// Test "big" object
@@ -129,7 +113,7 @@ namespace Lokad.Cloud.Test
 
 				stream.Seek(0, SeekOrigin.Begin);
 				begin = DateTime.Now;
-				var output = formatter.Deserialize<double[]>(stream);
+				var output = (double[])formatter.Deserialize(stream, typeof(double[]));
 				time = DateTime.Now - begin;
 
 				CollectionAssert.AreEquivalent(hugeArray, output);
@@ -146,7 +130,7 @@ namespace Lokad.Cloud.Test
 				var item = new WithObject() { Generic = DateTime.Now.Second > 30 ? (object)100 : (object)"hello" };
 				formatter.Serialize(stream, item);
 				stream.Seek(0, SeekOrigin.Begin);
-				var output = formatter.Deserialize<WithObject>(stream);
+				var output = (WithObject)formatter.Deserialize(stream, typeof(WithObject));
 				Assert.AreEqual(item.Generic, output.Generic);
 			}
 		}

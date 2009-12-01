@@ -67,7 +67,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 					var slices = Helpers.SliceBitmapAsPng(input, 14);
 
 					// Queue slices
-					_mapReduceJob.PushItems(Helpers.GetMapReduceFunctions(), slices, 4);
+					_mapReduceJob.PushItems(new HistogramMapReduceFunctions(), slices, 4);
 					//_currentHistogram = Helpers.ComputeHistogram(input);
 					//_pnlHistogram.Refresh();
 				}

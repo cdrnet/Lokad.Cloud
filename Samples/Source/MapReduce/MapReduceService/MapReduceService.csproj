@@ -39,6 +39,9 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -49,10 +52,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IMapReduceFunctions.cs" />
     <Compile Include="JobMessage.cs" />
     <Compile Include="MapReduceJob.cs" />
     <Compile Include="MapReduceBlobSet.cs" />
-    <Compile Include="MapReduceFunctions.cs" />
     <Compile Include="MapReduceService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

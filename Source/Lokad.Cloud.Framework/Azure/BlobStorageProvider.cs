@@ -72,6 +72,11 @@ namespace Lokad.Cloud.Azure
 
 		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite, out string etag)
 		{
+			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
+		}
+
+		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag)
+		{
 			using(var stream = new MemoryStream())
 			{
 				_formatter.Serialize(stream, item);
@@ -171,6 +176,13 @@ namespace Lokad.Cloud.Azure
 
 		public T GetBlob<T>(string containerName, string blobName, out string etag)
 		{
+			var output = GetBlob(containerName, blobName, typeof(T), out etag);
+			if(output == null) return default(T);
+			else return (T)output;
+		}
+
+		public object GetBlob(string containerName, string blobName, Type type, out string etag)
+		{
 			var container = _blobStorage.GetContainerReference(containerName);
 			var blob = container.GetBlockBlobReference(blobName);
 
@@ -192,13 +204,13 @@ namespace Lokad.Cloud.Azure
 						|| ex.ErrorCode == StorageErrorCode.BlobNotFound
 						|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 					{
-						return default(T);
+						return null;
 					}
 					throw;
 				}
 
 				stream.Seek(0, SeekOrigin.Begin);
-				return _formatter.Deserialize<T>(stream);
+				return _formatter.Deserialize(stream, type);
 			}
 		}
 
@@ -254,7 +266,7 @@ namespace Lokad.Cloud.Azure
 			{
 				blob.DownloadToStream(stream);
 				stream.Seek(0, SeekOrigin.Begin);
-				return _formatter.Deserialize<T>(stream);
+				return (T)_formatter.Deserialize(stream, typeof(T));
 			}
 		}
 
@@ -313,7 +325,7 @@ namespace Lokad.Cloud.Azure
 				{
 					blob.DownloadToStream(rstream);
 					rstream.Seek(0, SeekOrigin.Begin);
-					input = _formatter.Deserialize<T>(rstream);
+					input = (T)_formatter.Deserialize(rstream, typeof(T));
 				}
 			}
 			catch (StorageClientException ex)
