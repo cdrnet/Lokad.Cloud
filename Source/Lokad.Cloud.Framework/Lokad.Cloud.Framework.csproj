@@ -90,6 +90,7 @@
     <Compile Include="Azure\QueueStorageProvider.cs" />
     <Compile Include="Azure\ServiceBalancerCommand.cs" />
     <Compile Include="Azure\StorageModule.cs" />
+    <Compile Include="Azure\TableStorage.cs" />
     <Compile Include="BaseTemporaryBlobName.cs" />
     <Compile Include="CloudInfrastructureProviders.cs" />
     <Compile Include="CustomFormatter.cs" />

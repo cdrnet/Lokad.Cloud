@@ -48,6 +48,9 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data.Services.Client">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -66,6 +69,7 @@
     <Compile Include="Azure\CloudLoggerTests.cs" />
     <Compile Include="Azure\GlobalSetup.cs" />
     <Compile Include="Azure\QueueStorageProviderTests.cs" />
+    <Compile Include="Azure\TableStorageTests.cs" />
     <Compile Include="Azure\TypeMapperProviderTests.cs" />
     <Compile Include="BlobCounterTests.cs" />
     <Compile Include="BaseBlobNameTests.cs" />

@@ -88,6 +88,16 @@ namespace Lokad.Cloud.Azure
 						return storage;
 					});
 
+					builder.Register(c =>
+					{
+						var client = account.CreateCloudTableClient();
+						client.RetryPolicy = BuildDefaultRetry();
+
+						var context = new TableServiceContext(account.TableEndpoint.ToString(), account.Credentials);
+						context.RetryPolicy = BuildDefaultRetry();
+
+						return new TableStorage(client, context);
+					});
 
 					// registering the Lokad.Cloud providers
 					builder.Register(c =>
