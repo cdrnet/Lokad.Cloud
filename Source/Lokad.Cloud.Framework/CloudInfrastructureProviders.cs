@@ -4,6 +4,7 @@
 #endregion
 
 using Lokad.Cloud.Diagnostics;
+using Lokad.Cloud.Azure;
 
 namespace Lokad.Cloud
 {
@@ -24,14 +25,19 @@ namespace Lokad.Cloud
 		/// <summary>Error Logger</summary>
 		public ILog Log { get; private set; }
 
+		/// <summary>Table storage provider.</summary>
+		public TableStorage TableStorage { get; private set; }
+
 		/// <summary>IoC constructor.</summary>
 		public CloudInfrastructureProviders(
 			IBlobStorageProvider blobStorage, 
 			IQueueStorageProvider queueStorage,
+			TableStorage tableStorage,
 			ILog log)
 		{
 			BlobStorage = blobStorage;
 			QueueStorage = queueStorage;
+			TableStorage = tableStorage;
 			Log = log;
 		}
 	}

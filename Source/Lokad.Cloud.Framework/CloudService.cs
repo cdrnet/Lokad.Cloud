@@ -10,6 +10,7 @@ using System.Reflection;
 using Autofac;
 using Lokad.Quality;
 using Lokad.Threading;
+using Lokad.Cloud.Azure;
 
 namespace Lokad.Cloud
 {
@@ -101,6 +102,9 @@ namespace Lokad.Cloud
 
 		/// <summary>Error logger.</summary>
 		public ILog Log { get { return Providers.Log; } }
+
+		/// <summary>Shorthand for <c>Providers.TableStorage</c>.</summary>
+		public TableStorage TableStorage { get { return Providers.TableStorage; } }
 
 		/// <summary>Wrapper method for the <see cref="StartImpl"/> method. Checks
 		/// that the service status before executing the inner start.</summary>

@@ -9,6 +9,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 using Lokad.Cloud.Mock;
 using NUnit.Framework;
+using Lokad.Cloud.Azure;
+using Lokad.Cloud.Azure.Test;
 
 namespace Lokad.Cloud.Test.Mock.Services
 {
@@ -21,6 +23,7 @@ namespace Lokad.Cloud.Test.Mock.Services
 			var providersForCloudStorage = new CloudInfrastructureProviders(
 				new MemoryBlobStorageProvider(),
 				new MemoryQueueStorageProvider(new CustomFormatter()),
+				null, // TableStorage not needed
 				new MemoryLogger());
 			
 			var service = new SquareQueueService { Providers = providersForCloudStorage };
