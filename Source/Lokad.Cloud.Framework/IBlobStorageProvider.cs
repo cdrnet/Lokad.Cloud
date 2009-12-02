@@ -60,6 +60,9 @@ namespace Lokad.Cloud
 		/// <remarks>Creates the container if it does not exist beforehand.</remarks>
 		/// <returns><c>true</c> if the blob has been put and <c>false</c> if the blob already
 		/// exists but could not be overwritten.</returns>
+		/// <remarks>This method should only be used when the caller does not know the type of the
+		/// object stored in the blob at compile time, but it can only be determined at run time.
+		/// In all other cases, you should use the generic overloads of the method.</remarks>
 		bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag);
 
 		/// <summary>Gets a blob.</summary>
@@ -87,6 +90,9 @@ namespace Lokad.Cloud
 		/// (useful to check for blob update).</param>
 		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
 		/// returned.</returns>
+		/// <remarks>This method should only be used when the caller does not know the type of the
+		/// object stored in the blob at compile time, but it can only be determined at run time.
+		/// In all other cases, you should use the generic overloads of the method.</remarks>
 		object GetBlob(string containerName, string blobName, Type type, out string etag);
 
 		/// <summary>
