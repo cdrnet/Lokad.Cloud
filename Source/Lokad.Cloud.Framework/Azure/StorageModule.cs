@@ -20,6 +20,8 @@ using Microsoft.WindowsAzure.StorageClient;
 using Module=Autofac.Builder.Module;
 using System;
 
+// HACK: [Vermorel] Do we still need 'DiagnosticsConnectionString', it does not appear to be used anywhere.
+
 namespace Lokad.Cloud.Azure
 {
 	/// <summary>IoC module that auto-load <see cref="StorageAccountInfo"/>, 
@@ -86,17 +88,6 @@ namespace Lokad.Cloud.Azure
 						var storage = account.CreateCloudBlobClient();
 						storage.RetryPolicy = BuildDefaultRetry();
 						return storage;
-					});
-
-					builder.Register(c =>
-					{
-						var client = account.CreateCloudTableClient();
-						client.RetryPolicy = BuildDefaultRetry();
-
-						var context = new TableServiceContext(account.TableEndpoint.ToString(), account.Credentials);
-						context.RetryPolicy = BuildDefaultRetry();
-
-						return new TableStorage(client, context);
 					});
 
 					// registering the Lokad.Cloud providers
