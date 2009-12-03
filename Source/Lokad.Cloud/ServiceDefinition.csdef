@@ -8,7 +8,6 @@
 		</InputEndpoints>
 		<ConfigurationSettings>
 			<Setting name="DataConnectionString"/>
-			<Setting name="DiagnosticsConnectionString"/>
 			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
 			<Setting name="Admins" />
 		</ConfigurationSettings>
@@ -18,7 +17,6 @@
 		<LocalStorage name="LokadCloudStorage" sizeInMB="2"/>
 		<ConfigurationSettings>
 			<Setting name="DataConnectionString"/>
-			<Setting name="DiagnosticsConnectionString"/>
 		</ConfigurationSettings>
 	</WorkerRole>
 </ServiceDefinition>

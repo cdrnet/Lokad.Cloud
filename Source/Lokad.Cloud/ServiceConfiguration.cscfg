@@ -4,7 +4,6 @@
 		<Instances count="1"/>
 		<ConfigurationSettings>
 			<Setting name="DataConnectionString" value="DefaultEndpointsProtocol=https;AccountName=YOUR ACCOUNT NAME;AccountKey=YOUR ACCOUNT KEY" />
-			<Setting name="DiagnosticsConnectionString" value="DefaultEndpointsProtocol=https;AccountName=YOUR ACCOUNT NAME;AccountKey=YOUR ACCOUNT KEY" />
 			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
 			<Setting name="Admins" value="http://yourname.example.com/"/>
 		</ConfigurationSettings>
@@ -13,7 +12,6 @@
 		<Instances count="1"/>
 		<ConfigurationSettings>
 			<Setting name="DataConnectionString" value="DefaultEndpointsProtocol=https;AccountName=YOUR ACCOUNT NAME;AccountKey=YOUR ACCOUNT KEY" />
-			<Setting name="DiagnosticsConnectionString" value="DefaultEndpointsProtocol=https;AccountName=YOUR ACCOUNT NAME;AccountKey=YOUR ACCOUNT KEY" />
 		</ConfigurationSettings>
 	</Role>
 </ServiceConfiguration>

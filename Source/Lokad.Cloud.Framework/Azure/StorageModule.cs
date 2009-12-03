@@ -20,8 +20,6 @@ using Microsoft.WindowsAzure.StorageClient;
 using Module=Autofac.Builder.Module;
 using System;
 
-// HACK: [Vermorel] Do we still need 'DiagnosticsConnectionString', it does not appear to be used anywhere.
-
 namespace Lokad.Cloud.Azure
 {
 	/// <summary>IoC module that auto-load <see cref="StorageAccountInfo"/>, 
@@ -33,10 +31,6 @@ namespace Lokad.Cloud.Azure
 		/// <summary>The data connection string.</summary>
 		[UsedImplicitly]
 		public string DataConnectionString { get; set; }
-
-		/// <summary>The diagnostics connection string.</summary>
-		[UsedImplicitly]
-		public string DiagnosticsConnectionString { get; set; }
 
 		/// <summary>Provides configuration properties when they are not available from RoleManager.</summary>
 		public Dictionary<string, string> OverriddenProperties { get; set; }
@@ -51,19 +45,6 @@ namespace Lokad.Cloud.Azure
 			{
 				ApplyOverridesFromInternal();
 			}
-
-			/*if (!string.IsNullOrEmpty(DiagnosticsConnectionString))
-			{
-				var account = CloudStorageAccount.Parse(DiagnosticsConnectionString);
-				var config = DiagnosticMonitor.GetDefaultInitialConfiguration();
-
-				builder.Register(c =>
-					{
-						var monitor = DiagnosticMonitor.Start(account, config);
-
-						return monitor;
-					});
-			}*/
 
 			if (!string.IsNullOrEmpty(DataConnectionString))
 			{
