@@ -39,14 +39,14 @@ namespace Lokad.Cloud.Azure
 
 		readonly CloudQueueClient _queueStorage;
 		readonly CloudBlobClient _blobStorage; // needed for overflowing messages
-		readonly ICustomFormatter _formatter;
+		readonly IBinaryFormatter _formatter;
 
 		// messages currently being processed (boolean property indicates if the message is overflowing)
 		private readonly Dictionary<object, InProcessMessage> _inProcessMessages;
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
-			CloudQueueClient queueStorage, CloudBlobClient blobStorage, ICustomFormatter formatter)
+			CloudQueueClient queueStorage, CloudBlobClient blobStorage, IBinaryFormatter formatter)
 		{
 			_queueStorage = queueStorage;
 			_blobStorage = blobStorage;

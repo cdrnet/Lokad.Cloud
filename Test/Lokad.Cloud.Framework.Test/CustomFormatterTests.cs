@@ -19,7 +19,7 @@ namespace Lokad.Cloud.Test
 		[Test]
 		public void Serialize_Deserialize()
 		{
-			CustomFormatter formatter = new CustomFormatter();
+			CloudFormatter formatter = new CloudFormatter();
 
 			using(var stream = new MemoryStream())
 			{
@@ -123,7 +123,7 @@ namespace Lokad.Cloud.Test
 		[Test]
 		public void UnknownType()
 		{
-			CustomFormatter formatter = new CustomFormatter();
+			CloudFormatter formatter = new CloudFormatter();
 
 			using(var stream = new MemoryStream())
 			{

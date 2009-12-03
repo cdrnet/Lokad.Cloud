@@ -19,9 +19,9 @@ namespace Lokad.Cloud.Mock
 
 		readonly Dictionary<string, Queue<object>> _queueStorage;
 		readonly Dictionary<string, HashSet<object>> _queuesHashset;
-		readonly ICustomFormatter _formatter;
+		readonly IBinaryFormatter _formatter;
 
-		public MemoryQueueStorageProvider(ICustomFormatter formatter)
+		public MemoryQueueStorageProvider(IBinaryFormatter formatter)
 		{
 			_queueStorage = new Dictionary<string, Queue<object>>();
 			_queuesHashset = new Dictionary<string, HashSet<object>>();

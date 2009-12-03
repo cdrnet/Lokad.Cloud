@@ -19,9 +19,9 @@ namespace Lokad.Cloud.Azure
 	public class BlobStorageProvider : IBlobStorageProvider
 	{
 		readonly CloudBlobClient _blobStorage;
-		readonly ICustomFormatter _formatter;
+		readonly IBinaryFormatter _formatter;
 
-		public BlobStorageProvider(CloudBlobClient blobStorage, ICustomFormatter formatter)
+		public BlobStorageProvider(CloudBlobClient blobStorage, IBinaryFormatter formatter)
 		{
 			_blobStorage = blobStorage;
 			_formatter = formatter;

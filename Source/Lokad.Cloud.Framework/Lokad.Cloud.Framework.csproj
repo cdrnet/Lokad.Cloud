@@ -92,7 +92,7 @@
     <Compile Include="Azure\StorageModule.cs" />
     <Compile Include="BaseTemporaryBlobName.cs" />
     <Compile Include="CloudInfrastructureProviders.cs" />
-    <Compile Include="CustomFormatter.cs" />
+    <Compile Include="CloudFormatter.cs" />
     <Compile Include="DelayedQueue.cs" />
     <Compile Include="Diagnostics\ExecutionProfilingMonitor.cs" />
     <Compile Include="Diagnostics\ExceptionTrackingMonitor.cs" />
@@ -103,6 +103,7 @@
     <Compile Include="Diagnostics\ServiceMonitor.cs" />
     <Compile Include="Diagnostics\IServiceMonitor.cs" />
     <Compile Include="Diagnostics\ServiceStatistics.cs" />
+    <Compile Include="IBinaryFormatter.cs" />
     <Compile Include="Mock\MemoryMonitor.cs" />
     <Compile Include="Mock\MockStorageModule.cs" />
     <Compile Include="RankAttribute.cs" />

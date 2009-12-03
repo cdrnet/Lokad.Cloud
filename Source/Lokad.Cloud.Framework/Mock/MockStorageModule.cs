@@ -26,10 +26,10 @@ namespace Lokad.Cloud.Mock
 
 			builder.Register(c =>
 			{
-				ICustomFormatter formatter;
+				IBinaryFormatter formatter;
 				if (!c.TryResolve(out formatter))
 				{
-					formatter = new CustomFormatter();
+					formatter = new CloudFormatter();
 				}
 
 				return (IQueueStorageProvider)new MemoryQueueStorageProvider(formatter);
