@@ -10,11 +10,9 @@ using System.Xml;
 
 namespace Lokad.Cloud
 {
-
-
 	/// <summary>
-	/// Implements a custom formatter for data serialization.  The formatter
-	/// targets storage of persistent or transcient data in the cloud storage.
+	/// Implements a custom formatter for data serialization. The formatter
+	/// targets storage of persistent or transient data in the cloud storage.
 	/// </summary>
 	/// <typeparam name="T">The type of object to serialize.</typeparam>
 	/// <remarks>This class is not <b>thread-safe</b>.</remarks>
