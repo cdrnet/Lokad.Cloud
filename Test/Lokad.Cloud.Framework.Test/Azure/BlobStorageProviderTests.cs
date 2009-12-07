@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using Lokad.Cloud;
 using NUnit.Framework;
+using System.Runtime.Serialization;
 
 // TODO: refactor tests so that containers do not have to be created each time.
 
@@ -159,10 +160,70 @@ namespace Lokad.Cloud.Azure.Test
 			provider.DeleteContainer(privateContainerName);
 		}
 
+		[Test]
+		public void TransientType()
+		{
+			var privateContainerName = "test-" + Guid.NewGuid().ToString("N");
+
+			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+			provider.CreateContainer(privateContainerName);
+
+			var item1 = new Transient2() { Value2 = 100 };
+			provider.PutBlob(privateContainerName, "test", item1);
+			var item1Out = provider.GetBlob<Transient2>(privateContainerName, "test");
+			Assert.AreEqual(item1.Value2, item1Out.Value2);
+
+			var item2 = provider.GetBlob<Transient3>(privateContainerName, "test");
+			Assert.IsNull(item2);
+
+			provider.DeleteContainer(privateContainerName);
+		}
+
+		[Test]
+		public void TypeMismatch()
+		{
+			var privateContainerName = "test-" + Guid.NewGuid().ToString("N");
+
+			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+			provider.CreateContainer(privateContainerName);
+
+			provider.PutBlob(privateContainerName, "test", new Transient1() { Value = 10 });
+
+			Assert.Throws<InvalidOperationException>(() => provider.GetBlob<string>(privateContainerName, "test"));
+
+			provider.PutBlob(privateContainerName, "test", "string content");
+
+			provider.DeleteContainer(privateContainerName);
+		}
+
+	}
+
+	[DataContract]
+	[Transient(false)]
+	internal class Transient1
+	{
+		[DataMember]
+		public int Value;
+	}
+
+	[DataContract]
+	[Transient(false)]
+	internal class Transient2
+	{
+		[DataMember]
+		public int Value2;
+	}
+
+	[DataContract]
+	[Transient(false)]
+	internal class Transient3
+	{
+		[DataMember]
+		public int Value;
 	}
 
 	[Serializable]
-	public class MyBlob
+	internal class MyBlob
 	{
 		public Guid MyGuid { get; private set; }
 

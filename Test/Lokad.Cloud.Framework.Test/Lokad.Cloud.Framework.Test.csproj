@@ -85,6 +85,7 @@
     <Compile Include="DelayedQueueTests.cs" />
     <Compile Include="StorageCredentialsVerifierTests.cs" />
     <Compile Include="TemporaryBlobNameTests.cs" />
+    <Compile Include="TypeInformationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Source\Lokad.Cloud.Framework\Lokad.Cloud.Framework.csproj">

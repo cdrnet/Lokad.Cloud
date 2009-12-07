@@ -18,12 +18,18 @@ namespace Lokad.Cloud
 	/// <remarks>This class is not <b>thread-safe</b>.</remarks>
 	public class CloudFormatter : IBinaryFormatter
 	{
-		DataContractSerializer _serializer = null;
+		XmlObjectSerializer _serializer = null;
 		Type _currentType;
 
 		void CreateSerializerIfNecessary(Type type)
 		{
-			if(_serializer == null || _currentType != type) _serializer = new DataContractSerializer(type);
+			if(_serializer == null || _currentType != type)
+			{
+				var information = TypeInformation.GetInformation(type);
+
+				if(information.IsTransient) _serializer = new NetDataContractSerializer();
+				else _serializer = new DataContractSerializer(type);
+			}
 			_currentType = type;
 		}
 
