@@ -4,6 +4,7 @@
 #endregion
 
 using Lokad.Cloud.Diagnostics;
+using Lokad.Cloud.Diagnostics.Persistence;
 
 namespace Lokad.Cloud.Services
 {
@@ -17,6 +18,9 @@ namespace Lokad.Cloud.Services
 	public class MonitoringService : ScheduledService
 	{
 		/// <remarks>IoC Injected (optional, failover to default)</remarks>
+		public ICloudDiagnosticsRepository DiagnosticsRepository { get; set; }
+
+		/// <remarks>IoC Injected (optional, failover to default)</remarks>
 		public PartitionMonitor PartitionMonitor { get; set; }
 
 		/// <remarks>IoC Injected (optional, failover to default)</remarks>
@@ -28,21 +32,26 @@ namespace Lokad.Cloud.Services
 		/// <summary>Called by the framework.</summary>
 		protected override void StartOnSchedule()
 		{
+			if (DiagnosticsRepository == null)
+			{
+				DiagnosticsRepository = new BlobDiagnosticsRepository(BlobStorage);
+			}
+
 			if (PartitionMonitor == null)
 			{
-				PartitionMonitor = new PartitionMonitor(BlobStorage);
+				PartitionMonitor = new PartitionMonitor(DiagnosticsRepository);
 			}
 			PartitionMonitor.UpdateStatistics();
 
 			if (ExecutionProfiling == null)
 			{
-				ExecutionProfiling = new ExecutionProfilingMonitor(BlobStorage);
+				ExecutionProfiling = new ExecutionProfilingMonitor(DiagnosticsRepository);
 			}
 			ExecutionProfiling.UpdateStatistics();
 
 			if (ExceptionTracking == null)
 			{
-				ExceptionTracking = new ExceptionTrackingMonitor(BlobStorage);
+				ExceptionTracking = new ExceptionTrackingMonitor(DiagnosticsRepository);
 			}
 			ExceptionTracking.UpdateStatistics();
 		}

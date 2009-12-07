@@ -17,7 +17,7 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void Tracked_exceptions_make_it_to_the_statistics()
 		{
-			var monitor = new ExceptionTrackingMonitor(GlobalSetup.Container.Resolve<IBlobStorageProvider>());
+			var monitor = new ExceptionTrackingMonitor(GlobalSetup.Container.Resolve<ICloudDiagnosticsRepository>());
 
 			long count = monitor.GetStatistics()
 				.SelectMany(s => s.Statistics)

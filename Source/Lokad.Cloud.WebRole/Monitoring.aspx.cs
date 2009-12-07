@@ -7,15 +7,13 @@ namespace Lokad.Cloud.Web
 {
 	public partial class Monitoring : System.Web.UI.Page
 	{
-		readonly ServiceMonitor _services = (ServiceMonitor)GlobalSetup.Container.Resolve<IServiceMonitor>();
-		readonly PartitionMonitor _partitions = new PartitionMonitor(GlobalSetup.Container.Resolve<IBlobStorageProvider>());
-		readonly ExecutionProfilingMonitor _profiles = new ExecutionProfilingMonitor(GlobalSetup.Container.Resolve<IBlobStorageProvider>());
-		readonly ExceptionTrackingMonitor _exceptions = new ExceptionTrackingMonitor(GlobalSetup.Container.Resolve<IBlobStorageProvider>());
+		readonly TimeSpan _cacheRefreshPeriod = 2.Minutes();
+		readonly ICloudDiagnosticsRepository _repository = GlobalSetup.Container.Resolve<ICloudDiagnosticsRepository>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
 			PartitionView.DataSource = Cached(
-				() => _partitions.GetStatistics()
+				() => _repository.GetAllPartitionStatistics()
 					.Select(s => new
 						{
 							Partition = s.PartitionKey,
@@ -31,7 +29,7 @@ namespace Lokad.Cloud.Web
 			PartitionView.DataBind();
 
 			ServiceView.DataSource = Cached(
-				() => _services.GetStatistics()
+				() => _repository.GetAllServiceStatistics()
 					.Select(s => new
 						{
 							Service = s.Name,
@@ -44,7 +42,7 @@ namespace Lokad.Cloud.Web
 			ServiceView.DataBind();
 
 			ExecutionProfilesView.DataSource = Cached(
-				() => _profiles.GetStatistics()
+				() => _repository.GetAllExecutionProfilingStatistics()
 					.SelectMany(s => s.Statistics
 						.Where(d => d.OpenCount > 0)
 						.Select(d => new
@@ -61,7 +59,7 @@ namespace Lokad.Cloud.Web
 			ExecutionProfilesView.DataBind();
 
 			TrackedExceptionsView.DataSource = Cached(
-				() => _exceptions.GetStatistics()
+				() => _repository.GetAllExceptionTrackingStatistics()
 					.SelectMany(s => s.Statistics
 						.Select(d => new
 							{
@@ -75,6 +73,7 @@ namespace Lokad.Cloud.Web
 			TrackedExceptionsView.DataBind();
 		}
 
+		// TODO (ruegg, 20091207): Consider to simply use OutputCache instead
 		T Cached<T>(Func<T> f, string key)
 			where T : class
 		{
@@ -85,7 +84,7 @@ namespace Lokad.Cloud.Web
 					key,
 					value = f(),
 					null,
-					DateTime.Now + TimeSpan.FromMinutes(5),
+					DateTime.Now + _cacheRefreshPeriod,
 					Cache.NoSlidingExpiration,
 					CacheItemPriority.Normal,
 					null);

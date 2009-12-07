@@ -6,14 +6,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security;
 using Autofac.Builder;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.Diagnostics;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud
@@ -87,7 +84,7 @@ namespace Lokad.Cloud
 			builder.RegisterModule(storageModule);
 
 			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
-			builder.Register(c => new ServiceMonitor(c.Resolve<IBlobStorageProvider>())).As<IServiceMonitor>();
+			builder.RegisterModule(new DiagnosticsModule());
 
 			builder.Register(typeof(CloudInfrastructureProviders));
 			builder.Register(typeof(ServiceBalancerCommand));

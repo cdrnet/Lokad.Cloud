@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 // TODO: Discard old data (based on .LastUpdate)
 
@@ -17,19 +16,19 @@ namespace Lokad.Cloud.Diagnostics
 	/// </summary>
 	public class ServiceMonitor : IServiceMonitor
 	{
-		readonly IBlobStorageProvider _provider;
+		readonly ICloudDiagnosticsRepository _repository;
 
-		public ServiceMonitor(IBlobStorageProvider provider)
+		/// <summary>
+		/// Creates an instance of the <see cref="ServiceMonitor"/> class.
+		/// </summary>
+		public ServiceMonitor(ICloudDiagnosticsRepository repository)
 		{
-			_provider = provider;
+			_repository = repository;
 		}
 
 		public IEnumerable<ServiceStatistics> GetStatistics()
 		{
-			return _provider
-				.List(ServiceStatisticsName.GetPrefix())
-				.Select(name => _provider.GetBlobOrDelete(name))
-				.Where(s => null != s);
+			return _repository.GetAllServiceStatistics();
 		}
 
 		public IDisposable Monitor(CloudService service)
@@ -56,9 +55,8 @@ namespace Lokad.Cloud.Diagnostics
 			string serviceName = handle.Service.Name;
 			var process = Process.GetCurrentProcess();
 
-			ServiceStatistics result;
-			_provider.AtomicUpdate(
-				ServiceStatisticsName.New(serviceName),
+			_repository.UpdateServiceStatistics(
+				serviceName,
 				stat =>
 					{
 						if (stat == null)
@@ -77,9 +75,7 @@ namespace Lokad.Cloud.Diagnostics
 						stat.UserProcessorTime += process.UserProcessorTime - handle.UserProcessorTime;
 						stat.LastUpdate = DateTimeOffset.Now;
 						return stat;
-					},
-				out result
-				);
+					});
 		}
 
 		private class RunningServiceHandle

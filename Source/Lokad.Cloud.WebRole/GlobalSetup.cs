@@ -36,7 +36,7 @@ namespace Lokad.Cloud.Web
 			}
 
 			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
-			builder.Register(c => new ServiceMonitor(c.Resolve<IBlobStorageProvider>())).As<IServiceMonitor>();
+			builder.RegisterModule(new DiagnosticsModule());
 
 			Container = builder.Build();
 		}

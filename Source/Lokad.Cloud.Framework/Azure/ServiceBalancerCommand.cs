@@ -41,10 +41,12 @@ namespace Lokad.Cloud.Azure
 		public string ServiceInExecution { get; private set; }
 
 		/// <summary>IoC constructor.</summary>
-		public ServiceBalancerCommand(CloudInfrastructureProviders providers)
+		public ServiceBalancerCommand(
+			CloudInfrastructureProviders providers,
+			ICloudDiagnosticsRepository diagnosticsRepository)
 		{
 			_providers = providers;
-			_monitoring = new ServiceMonitor(providers.BlobStorage);
+			_monitoring = new ServiceMonitor(diagnosticsRepository);
 		}
 
 		public void Execute()

@@ -20,7 +20,7 @@ namespace Lokad.Cloud.Azure.Test
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
 			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
-			builder.Register(c => new ServiceMonitor(c.Resolve<IBlobStorageProvider>())).As<IServiceMonitor>();
+			builder.RegisterModule(new DiagnosticsModule());
 
 			builder.Register(typeof (CloudInfrastructureProviders));
 			builder.Register(typeof (ServiceBalancerCommand));

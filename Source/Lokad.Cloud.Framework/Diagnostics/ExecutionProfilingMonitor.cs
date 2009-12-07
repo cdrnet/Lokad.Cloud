@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lokad.Diagnostics;
@@ -20,19 +19,19 @@ namespace Lokad.Cloud.Diagnostics
 	/// </remarks>
 	public class ExecutionProfilingMonitor
 	{
-		readonly IBlobStorageProvider _provider;
+		readonly ICloudDiagnosticsRepository _repository;
 
-		public ExecutionProfilingMonitor(IBlobStorageProvider provider)
+		/// <summary>
+		/// Creates an instance of the <see cref="ExecutionProfilingMonitor"/> class.
+		/// </summary>
+		public ExecutionProfilingMonitor(ICloudDiagnosticsRepository repository)
 		{
-			_provider = provider;
+			_repository = repository;
 		}
 
 		public IEnumerable<ExecutionProfilingStatistics> GetStatistics()
 		{
-			return _provider
-				.List(ExecutionProfilingStatisticsName.GetPrefix())
-				.Select(name => _provider.GetBlobOrDelete(name))
-				.Where(s => null != s);
+			return _repository.GetAllExecutionProfilingStatistics();
 		}
 
 		/// <remarks>
@@ -52,9 +51,8 @@ namespace Lokad.Cloud.Diagnostics
 		/// </summary>
 		public void Update(string contextName, IEnumerable<ExecutionData> additionalData)
 		{
-			ExecutionProfilingStatistics result;
-			_provider.AtomicUpdate(
-				ExecutionProfilingStatisticsName.New(contextName),
+			_repository.UpdateExecutionProfilingStatistics(
+				contextName,
 				s =>
 					{
 						if (s == null)
@@ -68,9 +66,7 @@ namespace Lokad.Cloud.Diagnostics
 
 						s.Statistics = Aggregate(s.Statistics.Append(additionalData)).ToArray();
 						return s;
-					},
-				out result
-				);
+					});
 		}
 
 		/// <summary>

@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lokad.Diagnostics;
@@ -20,19 +19,19 @@ namespace Lokad.Cloud.Diagnostics
 	/// </remarks>
 	public class ExceptionTrackingMonitor
 	{
-		readonly IBlobStorageProvider _provider;
+		readonly ICloudDiagnosticsRepository _repository;
 
-		public ExceptionTrackingMonitor(IBlobStorageProvider provider)
+		/// <summary>
+		/// Creates an instance of the <see cref="ExceptionTrackingMonitor"/> class.
+		/// </summary>
+		public ExceptionTrackingMonitor(ICloudDiagnosticsRepository repository)
 		{
-			_provider = provider;
+			_repository = repository;
 		}
 
 		public IEnumerable<ExceptionTrackingStatistics> GetStatistics()
 		{
-			return _provider
-				.List(ExceptionTrackingStatisticsName.GetPrefix())
-				.Select(name => _provider.GetBlobOrDelete(name))
-				.Where(s => null != s);
+			return _repository.GetAllExceptionTrackingStatistics();
 		}
 
 		/// <remarks>
@@ -52,9 +51,8 @@ namespace Lokad.Cloud.Diagnostics
 		/// </summary>
 		public void Update(string contextName, IEnumerable<ExceptionData> additionalData)
 		{
-			ExceptionTrackingStatistics result;
-			_provider.AtomicUpdate(
-				ExceptionTrackingStatisticsName.New(contextName),
+			_repository.UpdateExceptionTrackingStatistics(
+				contextName,
 				s =>
 					{
 						if (s == null)
@@ -68,9 +66,7 @@ namespace Lokad.Cloud.Diagnostics
 
 						s.Statistics = Aggregate(s.Statistics.Append(additionalData)).ToArray();
 						return s;
-					},
-				out result
-				);
+					});
 		}
 
 		/// <summary>

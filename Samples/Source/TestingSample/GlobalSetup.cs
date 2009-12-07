@@ -1,8 +1,8 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿#region Copyright (c) Lokad 2009
+// This code is released under the terms of the new BSD licence.
+// URL: http://www.lokad.com/
+#endregion
+
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
@@ -23,7 +23,7 @@ namespace TestingSample
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
 			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
-			builder.Register(c => new ServiceMonitor(c.Resolve<IBlobStorageProvider>())).As<IServiceMonitor>();
+			builder.RegisterModule(new DiagnosticsModule());
 
 			builder.Register(typeof(CloudInfrastructureProviders));
 			builder.Register(typeof(ServiceBalancerCommand));

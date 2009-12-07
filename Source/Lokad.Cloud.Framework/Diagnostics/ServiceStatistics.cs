@@ -5,7 +5,6 @@
 
 using System;
 using System.Runtime.Serialization;
-using Lokad.Quality;
 
 namespace Lokad.Cloud.Diagnostics
 {
@@ -28,31 +27,5 @@ namespace Lokad.Cloud.Diagnostics
 		public TimeSpan TotalProcessorTime { get; set; }
 		[DataMember]
 		public TimeSpan UserProcessorTime { get; set; }
-	}
-
-	internal class ServiceStatisticsName : BaseTypedBlobName<ServiceStatistics>
-	{
-		public override string ContainerName
-		{
-			get { return "lokad-cloud-diag-service"; }
-		}
-
-		[UsedImplicitly, Rank(0)]
-		public readonly string ServiceName;
-
-		public ServiceStatisticsName(string serviceName)
-		{
-			ServiceName = serviceName;
-		}
-
-		public static ServiceStatisticsName New(string serviceName)
-		{
-			return new ServiceStatisticsName(serviceName);
-		}
-
-		public static BlobNamePrefix<ServiceStatisticsName> GetPrefix()
-		{
-			return GetPrefix(new ServiceStatisticsName(null), 0);
-		}
 	}
 }

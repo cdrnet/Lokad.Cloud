@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 // TODO: Discard old data (based on .LastUpdate)
 
@@ -17,12 +16,15 @@ namespace Lokad.Cloud.Diagnostics
 	/// </summary>
 	public class PartitionMonitor
 	{
+		readonly ICloudDiagnosticsRepository _repository;
 		readonly string _partitionKey;
-		readonly IBlobStorageProvider _provider;
 
-		public PartitionMonitor(IBlobStorageProvider provider)
+		/// <summary>
+		/// Creates an instance of the <see cref="PartitionMonitor"/> class.
+		/// </summary>
+		public PartitionMonitor(ICloudDiagnosticsRepository repository)
 		{
-			_provider = provider;
+			_repository = repository;
 			_partitionKey = String.Format(
 				"{0}-{1}",
 				System.Net.Dns.GetHostName(),
@@ -31,18 +33,14 @@ namespace Lokad.Cloud.Diagnostics
 
 		public IEnumerable<PartitionStatistics> GetStatistics()
 		{
-			return _provider
-				.List(PartitionStatisticsName.GetPrefix())
-				.Select(name => _provider.GetBlobOrDelete(name))
-				.Where(s => null != s);
+			return _repository.GetAllPartitionStatistics();
 		}
 
 		public void UpdateStatistics()
 		{
-			_provider.PutBlob(
-				PartitionStatisticsName.New(_partitionKey),
-				CollectStatistics(),
-				true);
+			_repository.SetPartitionStatistics(
+				_partitionKey,
+				CollectStatistics());
 		}
 
 		PartitionStatistics CollectStatistics()
