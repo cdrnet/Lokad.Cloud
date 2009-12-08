@@ -18,10 +18,10 @@ namespace Lokad.Cloud.Azure
 	/// <summary>Organize the executions of the services.</summary>
 	public class ServiceBalancerCommand : ICommand
 	{
-		/// <summary>Duration to keep pinging the same cloud service if service is active.</summary>
+		/// <summary>Duration (seconds) to keep pinging the same cloud service if service is active.</summary>
 		const int MoreOfTheSame = 60;
 
-		/// <summary>Resting duration expressed in seconds.</summary>
+		/// <summary>Resting duration (seconds).</summary>
 		const int IdleSleep = 5;
 
 		readonly object _sync = new object();

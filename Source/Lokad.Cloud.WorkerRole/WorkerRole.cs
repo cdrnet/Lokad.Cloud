@@ -18,37 +18,49 @@ namespace Lokad.Cloud
 	/// <summary>Entry point of Lokad.Cloud.</summary>
 	public class WorkerRole : RoleEntryPoint
 	{
-		bool _isHeathly = true;
+		bool _isHealthy = true;
 
+		/// <summary>
+		/// Called by Windows Azure to initialize the role instance.
+		/// </summary>
+		/// <returns>
+		/// True if initialization succeeds, False if it fails. The default implementation returns True.
+		/// </returns>
+		/// <remarks>
+		/// <para>Any exception that occurs within the OnStart method is an unhandled exception.</para>
+		/// </remarks>
 		public override bool OnStart()
 		{
-			RoleEnvironment.Changing += (sender, args) => { RoleEnvironment.RequestRecycle(); };
+			RoleEnvironment.Changing += (sender, args) => RoleEnvironment.RequestRecycle();
 
 			return base.OnStart();
 		}
 
+		/// <summary>
+		/// Called by Windows Azure after the role instance has been initialized. This
+		/// method serves as the main thread of execution for your role.
+		/// </summary>
+		/// <remarks>
+		/// <para>The role recycles when the Run method returns.</para>
+		/// <para>Any exception that occurs within the Run method is an unhandled exception.</para>
+		/// </remarks>
 		public override void Run()
 		{
-			var restartPolicy = new NoRestartFloodPolicy(isHeathly => { _isHeathly = isHeathly; });
+			var restartPolicy = new NoRestartFloodPolicy(isHealthy => { _isHealthy = isHealthy; });
 			restartPolicy.Do(() =>
 			{
 				var worker = new IsolatedWorker();
 				return worker.DoWork();
 			});
 		}
-
-		/*public override RoleStatus GetHealthStatus()
-		{
-			return _isHeathly ? RoleStatus.Healthy : RoleStatus.Unhealthy;
-		}*/
 	}
 
 	/// <summary>
-	/// Performs the work of the WorkerRole in an isolated AppDomain.
+	/// Performs the work of the <see cref="WorkerRole"/> in an isolated <see cref="AppDomain"/>.
 	/// </summary>
 	public class IsolatedWorker : MarshalByRefObject
 	{
-		/// <summary>Performs the work. </summary>
+		/// <summary>Performs the work.</summary>
 		/// <returns><c>true</c> if the assemblies were updated and a restart is needed.</returns>
 		public bool DoWork()
 		{
@@ -110,25 +122,25 @@ namespace Lokad.Cloud
 				}
 				catch(TypeLoadException typeLoadEx)
 				{
-					log.Log(LogLevel.Error, typeLoadEx,
-						string.Format("Type {0} could not be loaded (service: {1}).", GetServiceInExecution(balancer)));
-					restartForAssemblyUpdate = false;
+					log.Log(LogLevel.Error, typeLoadEx, string.Format(
+						"Type {0} could not be loaded (service: {1}).",
+						typeLoadEx.TypeName,
+						GetServiceInExecution(balancer)));
 				}
 				catch(FileLoadException fileLoadEx)
 				{
 					// Tentatively: referenced assembly is missing
-					log.Log(LogLevel.Error, fileLoadEx,
-						string.Format("Could not load assembly probably due to a missing reference assembly (service: {0}).",
+					log.Log(LogLevel.Error, fileLoadEx, string.Format(
+						"Could not load assembly probably due to a missing reference assembly (service: {0}).",
 						GetServiceInExecution(balancer)));
-					restartForAssemblyUpdate = false;
 				}
 				catch(SecurityException securityEx)
 				{
 					// Tentatively: assembly cannot be loaded due to security config
-					log.Log(LogLevel.Error, securityEx,
-						string.Format("Could not load assembly {0} probably due to security configuration (service: {1}).",
-						securityEx.FailedAssemblyInfo, GetServiceInExecution(balancer)));
-					restartForAssemblyUpdate = false;
+					log.Log(LogLevel.Error, securityEx, string.Format(
+						"Could not load assembly {0} probably due to security configuration (service: {1}).",
+						securityEx.FailedAssemblyInfo,
+						GetServiceInExecution(balancer)));
 				}
 				catch(TriggerRestartException)
 				{
@@ -138,9 +150,9 @@ namespace Lokad.Cloud
 				catch(Exception ex)
 				{
 					// Generic exception
-					log.Log(LogLevel.Error, ex,
-						string.Format("An unhandled exception occurred (service: {0}).", GetServiceInExecution(balancer)));
-					restartForAssemblyUpdate = false;
+					log.Log(LogLevel.Error, ex, string.Format(
+						"An unhandled exception occurred (service: {0}).",
+						GetServiceInExecution(balancer)));
 				}
 				
 				return restartForAssemblyUpdate;
@@ -149,11 +161,13 @@ namespace Lokad.Cloud
 
 		static string GetServiceInExecution(ServiceBalancerCommand balancer)
 		{
-			if(balancer == null) return "unknown";
-			else if(balancer.ServiceInExecution == null) return "unknown";
-			else return balancer.ServiceInExecution;
+			if (balancer == null || String.IsNullOrEmpty(balancer.ServiceInExecution))
+			{
+				return "unknown";
+			}
+			
+			return balancer.ServiceInExecution;
 		}
-
 	}
 
 }

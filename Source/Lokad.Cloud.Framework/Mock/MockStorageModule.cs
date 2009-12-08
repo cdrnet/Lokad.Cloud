@@ -3,14 +3,8 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using Autofac.Builder;
 using Lokad.Quality;
-using Lokad.Cloud.Mock;
 
 namespace Lokad.Cloud.Mock
 {
@@ -19,10 +13,7 @@ namespace Lokad.Cloud.Mock
 	{
 		protected override void Load(ContainerBuilder builder)
 		{
-			builder.Register(c =>
-         	{
-         		return (IBlobStorageProvider)new MemoryBlobStorageProvider();
-         	});
+			builder.Register(c => new MemoryBlobStorageProvider()).As<IBlobStorageProvider>();
 
 			builder.Register(c =>
 			{
@@ -32,8 +23,8 @@ namespace Lokad.Cloud.Mock
 					formatter = new CloudFormatter();
 				}
 
-				return (IQueueStorageProvider)new MemoryQueueStorageProvider(formatter);
-			});
+				return new MemoryQueueStorageProvider(formatter);
+			}).As<IQueueStorageProvider>();
 		}
 
 	}
