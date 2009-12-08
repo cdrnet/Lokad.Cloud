@@ -8,7 +8,6 @@ using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud;
 using Lokad.Cloud.Azure;
-using Lokad;
 using Lokad.Cloud.Diagnostics;
 
 namespace TestingSample
@@ -22,10 +21,13 @@ namespace TestingSample
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
-			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
+			// Cloud Infrastructure
+			builder.Register(typeof(CloudInfrastructureProviders));
+
+			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
 
-			builder.Register(typeof(CloudInfrastructureProviders));
+			// Services
 			builder.Register(typeof(ServiceBalancerCommand));
 
 			return builder.Build();

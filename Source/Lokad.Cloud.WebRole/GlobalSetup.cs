@@ -35,7 +35,7 @@ namespace Lokad.Cloud.Web
 				builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 			}
 
-			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
+			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
 
 			Container = builder.Build();
@@ -110,24 +110,33 @@ namespace Lokad.Cloud.Web
 
 			try
 			{
-				var request = (HttpWebRequest)HttpWebRequest.Create(DownloadUrl);
+				var request = (HttpWebRequest)WebRequest.Create(DownloadUrl);
 
 				var response = (HttpWebResponse)request.GetResponse();
-				if(response.StatusCode != HttpStatusCode.OK) return new Tuple<bool, string>(false, null);
+				if (response.StatusCode != HttpStatusCode.OK)
+				{
+					return new Tuple<bool, string>(false, null);
+				}
 
-				string responseContent = null;
+				string responseContent;
 				using(var reader = new StreamReader(response.GetResponseStream()))
 				{
 					responseContent = reader.ReadToEnd();
 				}
 
 				var match = VersionCheckRegex.Match(responseContent);
-				if(!match.Success) return new Tuple<bool, string>(false, null);
+				if (!match.Success)
+				{
+					return new Tuple<bool, string>(false, null);
+				}
 
 				var latestVersion = match.Groups[1].Value;
+				if (latestVersion != AssemblyVersion)
+				{
+					return new Tuple<bool, string>(true, latestVersion);
+				}
 
-				if(latestVersion == AssemblyVersion) return new Tuple<bool, string>(true, null);
-				else return new Tuple<bool, string>(true, latestVersion);
+				return new Tuple<bool, string>(true, null);
 			}
 			catch
 			{

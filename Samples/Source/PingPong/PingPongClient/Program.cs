@@ -6,10 +6,8 @@
 using System;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad.Cloud.Azure;
 using Lokad.Cloud;
 using Lokad.Cloud.Diagnostics;
-using ILog=Lokad.ILog;
 
 namespace PingPongClient
 {
@@ -55,7 +53,7 @@ namespace PingPongClient
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
-			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
+			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
 
 			return builder.Build();

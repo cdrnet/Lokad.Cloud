@@ -80,13 +80,16 @@ namespace Lokad.Cloud
 		public bool DoWorkInternal(Dictionary<string, string> overrides)
 		{
 			var builder = new ContainerBuilder();
+
+			// Cloud Infrastructure
 			var storageModule = new StorageModule {OverriddenProperties = overrides};
 			builder.RegisterModule(storageModule);
+			builder.Register(typeof(CloudInfrastructureProviders));
 
-			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>();
+			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
 
-			builder.Register(typeof(CloudInfrastructureProviders));
+			// Services
 			builder.Register(typeof(ServiceBalancerCommand));
 
 			using (var container = builder.Build())
