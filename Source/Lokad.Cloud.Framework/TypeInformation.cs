@@ -69,6 +69,8 @@ namespace Lokad.Cloud
 
 			if(isTransient)
 			{
+				string throwSetting = metadata[ThrownOnDeserializationErrorKey];
+				if(string.IsNullOrEmpty(throwSetting)) return null;
 				result.ThrowOnDeserializationError = bool.Parse(metadata[ThrownOnDeserializationErrorKey]);
 			}
 

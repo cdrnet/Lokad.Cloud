@@ -75,6 +75,16 @@ namespace Lokad.Cloud.Azure
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
+		static string UploadBlobContent(CloudBlob blob, Stream stream, Type type)
+		{
+			stream.Seek(0, SeekOrigin.Begin);
+			blob.UploadFromStream(stream);
+			TypeInformation.GetInformation(type).SaveInBlobMetadata(blob.Metadata);
+			blob.SetMetadata();
+			blob.FetchAttributes();
+			return blob.Properties.ETag;
+		}
+
 		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag)
 		{
 			using(var stream = new MemoryStream())
@@ -96,12 +106,7 @@ namespace Lokad.Cloud.Azure
 
 					if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
 					{
-						stream.Seek(0, SeekOrigin.Begin);
-						blob.UploadFromStream(stream);
-						TypeInformation.GetInformation(type).SaveInBlobMetadata(blob.Metadata);
-						blob.SetMetadata();
-						blob.FetchAttributes();
-						etag = blob.Properties.ETag;
+						etag = UploadBlobContent(blob, stream, type);
 						return true;
 					}
 
@@ -128,12 +133,7 @@ namespace Lokad.Cloud.Azure
 
 							if(myBlob.Properties.ETag == null || (myBlob.Properties.ETag != null && overwrite))
 							{
-								stream.Seek(0, SeekOrigin.Begin);
-								myBlob.UploadFromStream(stream);
-								TypeInformation.GetInformation(type).SaveInBlobMetadata(myBlob.Metadata);
-								myBlob.SetMetadata();
-								myBlob.FetchAttributes();
-								tempEtag = myBlob.Properties.ETag;
+								tempEtag = UploadBlobContent(myBlob, stream, type);
 								flag = true;
 							}
 						});
@@ -159,12 +159,7 @@ namespace Lokad.Cloud.Azure
 
 					if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
 					{
-						stream.Seek(0, SeekOrigin.Begin);
-						blob.UploadFromStream(stream);
-						TypeInformation.GetInformation(type).SaveInBlobMetadata(blob.Metadata);
-						blob.SetMetadata();
-						blob.FetchAttributes();
-						etag = blob.Properties.ETag;
+						etag = UploadBlobContent(blob, stream, type);
 						return true;
 					}
 
@@ -196,17 +191,13 @@ namespace Lokad.Cloud.Azure
 			using(var stream = new MemoryStream())
 			{
 				etag = null;
+				TypeInformation storedTypeInfo = null;
 
 				// no such container, return default
 				try
 				{
 					blob.FetchAttributes();
-
-					var storedTypeInfo = TypeInformation.LoadFromBlobMetadata(blob.Metadata);
-					if(!inputTypeInfo.Equals(storedTypeInfo))
-					{
-						throw new InvalidOperationException("Stored type does not match current type or current type's attributes");
-					}
+					storedTypeInfo = GetTypeInformationFromMetadata(blob, inputTypeInfo);
 
 					blob.DownloadToStream(stream);
 
@@ -223,28 +214,53 @@ namespace Lokad.Cloud.Azure
 					throw;
 				}
 
-				stream.Seek(0, SeekOrigin.Begin);
-
-				// If the type is transient, then a failed deserialization must be
-				// handled accordingly, otherwise default to built-in behavior
-
-				try
-				{
-					var output = _formatter.Deserialize(stream, type);
-					if(output.GetType() != type) throw new InvalidOperationException("Stored type is different from provider type");
-					return output;
-				}
-				catch
-				{
-					if(inputTypeInfo.IsTransient && !inputTypeInfo.ThrowOnDeserializationError.Value)
-					{
-						// Delete offending blob and return null
-						DeleteBlob(containerName, blobName);
-						return null;
-					}
-					else throw;
-				}
+				return DeserializeObject(containerName, blobName, blob, stream, type, inputTypeInfo, storedTypeInfo);
 			}
+		}
+
+		TypeInformation GetTypeInformationFromMetadata(CloudBlob blob, TypeInformation inputTypeInfo)
+		{
+			var storedTypeInfo = TypeInformation.LoadFromBlobMetadata(blob.Metadata);
+			if(storedTypeInfo != null && !inputTypeInfo.Equals(storedTypeInfo))
+			{
+				throw new InvalidOperationException("Stored type does not match current type or current type's attributes");
+			}
+			return storedTypeInfo;
+		}
+
+		object DeserializeObject(string containerName, string blobName, CloudBlob blob, Stream stream,
+			Type type, TypeInformation inputTypeInfo, TypeInformation storedTypeInfo)
+		{
+			// If the type is transient, then a failed deserialization must be
+			// handled accordingly, otherwise default to built-in behavior
+
+			stream.Seek(0, SeekOrigin.Begin);
+
+			object output = null;
+			try
+			{
+				output = _formatter.Deserialize(stream, type);
+				if(output.GetType() != type) throw new InvalidOperationException("Stored type is different from provided type");
+			}
+			catch
+			{
+				if(inputTypeInfo.IsTransient && !inputTypeInfo.ThrowOnDeserializationError.Value)
+				{
+					// Delete offending blob and return null
+					DeleteBlob(containerName, blobName);
+					return null;
+				}
+				else throw;
+			}
+
+			// Deserialization is OK: if blob did not have type metadata, set it now
+			if(storedTypeInfo == null)
+			{
+				inputTypeInfo.SaveInBlobMetadata(blob.Metadata);
+				blob.SetMetadata();
+			}
+
+			return output;
 		}
 
 		public T[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
@@ -274,10 +290,15 @@ namespace Lokad.Cloud.Azure
 
 			CloudBlockBlob blob = null;
 
+			TypeInformation inputTypeInfo = TypeInformation.GetInformation(typeof(T));
+			TypeInformation storedTypeInfo = null;
+
 			try
 			{
 				blob = container.GetBlockBlobReference(blobName);
 				blob.FetchAttributes();
+				storedTypeInfo = GetTypeInformationFromMetadata(blob, inputTypeInfo);
+
 				if(blob.Properties == null || blob.Properties.ETag == oldEtag)
 				{
 					return default(T);
@@ -298,8 +319,7 @@ namespace Lokad.Cloud.Azure
 			using(var stream = new MemoryStream())
 			{
 				blob.DownloadToStream(stream);
-				stream.Seek(0, SeekOrigin.Begin);
-				return (T)_formatter.Deserialize(stream, typeof(T));
+				return (T)DeserializeObject(containerName, blobName, blob, stream, typeof(T), inputTypeInfo, storedTypeInfo);
 			}
 		}
 
@@ -350,15 +370,20 @@ namespace Lokad.Cloud.Azure
 			var container = _blobStorage.GetContainerReference(containerName);
 			CloudBlockBlob blob = null;
 
+			TypeInformation inputTypeInfo = TypeInformation.GetInformation(typeof(T));
+			TypeInformation storedTypeInfo = null;
+
 			T input;
 			try
 			{
 				blob = container.GetBlockBlobReference(blobName);
+				blob.FetchAttributes();
+				storedTypeInfo = GetTypeInformationFromMetadata(blob, inputTypeInfo);
+
 				using(var rstream = new MemoryStream())
 				{
 					blob.DownloadToStream(rstream);
-					rstream.Seek(0, SeekOrigin.Begin);
-					input = (T)_formatter.Deserialize(rstream, typeof(T));
+					input = (T)DeserializeObject(containerName, blobName, blob, rstream, typeof(T), inputTypeInfo, storedTypeInfo);
 				}
 			}
 			catch (StorageClientException ex)
@@ -392,9 +417,7 @@ namespace Lokad.Cloud.Azure
 			{
 				_formatter.Serialize(wstream, result.Value);
 				wstream.Seek(0, SeekOrigin.Begin);
-				blob.UploadFromStream(wstream);
-				TypeInformation.GetInformation(typeof(T)).SaveInBlobMetadata(blob.Metadata);
-				blob.SetMetadata();
+				UploadBlobContent(blob, wstream, typeof(T));
 			}
 
 			return true;
