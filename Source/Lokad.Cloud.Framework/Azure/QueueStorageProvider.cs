@@ -20,12 +20,7 @@ namespace Lokad.Cloud.Azure
 	/// <remarks>
 	/// <para>
 	/// Overflowing messages are stored in blob storage and normally deleted as with
-	/// their originating correspondence in queue storage. Yet if messages aren't processed
-	/// in 7 days, then, they should be removed.
-	/// </para>
-	/// <para>
-	/// The pattern for blobname of overflowing message is:
-	/// <c>ExpirationDate / QueuName / GUID</c> 
+	/// their originating correspondence in queue storage.
 	/// </para>
 	/// <para>All the methods of <see cref="QueueStorageProvider"/> are thread-safe.</para>
 	/// </remarks>
