@@ -290,7 +290,7 @@ namespace Lokad.Cloud.Azure
 
 			CloudBlockBlob blob = null;
 
-			TypeInformation inputTypeInfo = TypeInformation.GetInformation(typeof(T));
+			var inputTypeInfo = TypeInformation.GetInformation(typeof(T));
 			TypeInformation storedTypeInfo = null;
 
 			try
@@ -370,7 +370,7 @@ namespace Lokad.Cloud.Azure
 			var container = _blobStorage.GetContainerReference(containerName);
 			CloudBlockBlob blob = null;
 
-			TypeInformation inputTypeInfo = TypeInformation.GetInformation(typeof(T));
+			var inputTypeInfo = TypeInformation.GetInformation(typeof(T));
 			TypeInformation storedTypeInfo = null;
 
 			T input;
