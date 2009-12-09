@@ -196,6 +196,60 @@ namespace Lokad.Cloud.Azure.Test
 			provider.DeleteContainer(privateContainerName);
 		}
 
+		[Test]
+		public void NullableType_Default()
+		{
+			var privateContainerName = "test-" + Guid.NewGuid().ToString("N");
+
+			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+			provider.CreateContainer(privateContainerName);
+
+			int? value1 = 10;
+			int? value2 = null;
+
+			provider.PutBlob(privateContainerName, "test1", value1);
+			provider.PutBlob(privateContainerName, "test2", value1);
+
+			var output1 = provider.GetBlob<int?>(privateContainerName, "test1");
+			var output2 = provider.GetBlob<int?>(privateContainerName, "test2");
+
+			Assert.AreEqual(value1.Value, output1.Value);
+			Assert.IsFalse(value2.HasValue);
+
+			provider.DeleteContainer(privateContainerName);
+		}
+
+		[Test]
+		public void NullableType_Transient_Struct()
+		{
+			var privateContainerName = "test-" + Guid.NewGuid().ToString("N");
+
+			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+			provider.CreateContainer(privateContainerName);
+
+			MyNullableStruct? value1 = new MyNullableStruct() { MyValue = 10 };
+			MyNullableStruct? value2 = null;
+
+			provider.PutBlob(privateContainerName, "test1", value1);
+			provider.PutBlob(privateContainerName, "test2", value1);
+
+			var output1 = provider.GetBlob<MyNullableStruct?>(privateContainerName, "test1");
+			var output2 = provider.GetBlob<MyNullableStruct?>(privateContainerName, "test2");
+
+			Assert.AreEqual(value1.Value, output1.Value);
+			Assert.IsFalse(value2.HasValue);
+
+			provider.DeleteContainer(privateContainerName);
+		}
+
+	}
+
+	[DataContract]
+	[Transient]
+	internal struct MyNullableStruct
+	{
+		[DataMember]
+		public int MyValue;
 	}
 
 	[DataContract]

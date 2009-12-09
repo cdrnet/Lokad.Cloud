@@ -32,7 +32,14 @@ namespace Lokad.Cloud
 		{
 			var result = new TypeInformation() { ThrowOnDeserializationError = null };
 
-			var transient = type.GetAttribute<TransientAttribute>(false);
+			Type myType = type;
+
+			if(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+			{
+				myType = type.GetGenericArguments()[0];
+			}
+
+			var transient = myType.GetAttribute<TransientAttribute>(false);
 
 			result.IsTransient = transient != null;
 			if(result.IsTransient) result.ThrowOnDeserializationError = transient.ThrowOnDeserializationError;

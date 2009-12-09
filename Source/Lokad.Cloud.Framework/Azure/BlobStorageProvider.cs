@@ -228,6 +228,13 @@ namespace Lokad.Cloud.Azure
 			return storedTypeInfo;
 		}
 
+		static bool AreSameType(Type actual, Type expected)
+		{
+			if(expected.IsGenericType && expected.GetGenericTypeDefinition() == typeof(Nullable<>)) expected = expected.GetGenericArguments()[0];
+
+			return actual == expected;
+		}
+
 		object DeserializeObject(string containerName, string blobName, CloudBlob blob, Stream stream,
 			Type type, TypeInformation inputTypeInfo, TypeInformation storedTypeInfo)
 		{
@@ -240,7 +247,7 @@ namespace Lokad.Cloud.Azure
 			try
 			{
 				output = _formatter.Deserialize(stream, type);
-				if(output.GetType() != type) throw new InvalidOperationException("Stored type is different from provided type");
+				if(!AreSameType(output.GetType(), type)) throw new InvalidOperationException("Stored type is different from provided type");
 			}
 			catch
 			{
