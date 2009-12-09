@@ -178,6 +178,24 @@ namespace Lokad.Cloud.Azure.Test
 				Assert.IsTrue(provider.Delete(QueueName, cls), "Delete failed");
 			}
 		}
+
+		[Test]
+		public void Delete_or_clear_also_removes_overflowing_blobs()
+		{
+			var queueProvider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
+			var blobProvider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+
+			string queueName1 = "test1-" + Guid.NewGuid().ToString("N");
+			string queueName2 = "test2-" + Guid.NewGuid().ToString("N");
+
+			queueProvider.Put<byte[]>(queueName1, new byte[20000]);
+			queueProvider.DeleteQueue(queueName1);
+			Assert.AreEqual(0, blobProvider.List(QueueStorageProvider.OverflowingMessagesContainerName, "").Count(), "DeleteQueue should also remove overflowing messages");
+
+			queueProvider.Put<byte[]>(queueName2, new byte[20000]);
+			queueProvider.Clear(queueName2);
+			Assert.AreEqual(0, blobProvider.List(QueueStorageProvider.OverflowingMessagesContainerName, "").Count(), "ClearQueue should also remove overflowing messages");
+		}
 	}
 
 	[Serializable]

@@ -452,14 +452,14 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
-		public IEnumerable<string> List(string containerName, string prefix)
+		internal static IEnumerable<string> List(string containerName, string prefix, CloudBlobClient client)
 		{
 			// HACK: quick and dirty implementation that replaces the old one below
 			// http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/c5e36676-8d07-46cc-b803-72621a0898b0/?prof=required
 
 			if(prefix == null) prefix = "";
 
-			var container = _blobStorage.GetContainerReference(containerName);
+			var container = client.GetContainerReference(containerName);
 
 			BlobRequestOptions options = new BlobRequestOptions();
 			options.UseFlatBlobListing = true;
@@ -505,41 +505,9 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
-		[Obsolete]
-		private IEnumerable<string> ListOld(string containerName, string prefix)
+		public IEnumerable<string> List(string containerName, string prefix)
 		{
-			throw new NotImplementedException();
-
-			/*var container = _blobStorage.GetContainerReference(containerName);
-
-			// Trick: 'ListBlobs' is lazilly enumerating over the blob storage
-			// only the minimal amount of network call will be made depending on
-			// the number of items actually enumerated.
-
-			var enumerator = container.ListBlobs(prefix, false).GetEnumerator();
-
-			while(true)
-			{
-				try
-				{
-					if(!enumerator.MoveNext())
-					{
-						yield break;
-					}
-				}
-				catch (StorageClientException ex)
-				{
-					// if the container does not exist, empty enumeration
-					if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
-					{
-						yield break;
-					}
-					throw;
-				}
-
-				// 'yield return' cannot appear in try/catch block
-				yield return ((BlobProperties)enumerator.Current).Name;
-			}*/
+			return List(containerName, prefix, _blobStorage);
 		}
 	}
 }

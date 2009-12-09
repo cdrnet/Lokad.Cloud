@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 using Microsoft.WindowsAzure.StorageClient;
 using Microsoft.WindowsAzure.StorageClient.Protocol;
 using Lokad.Quality;
+using Lokad.Threading;
 
 namespace Lokad.Cloud.Azure
 {
@@ -219,7 +220,7 @@ namespace Lokad.Cloud.Azure
 
 					if(stream.Length >= CloudQueueMessage.MaxMessageSize)
 					{
-						var blobName = OverflowingMessageBlobName.GetNew();
+						var blobName = OverflowingMessageBlobName.GetNew(queueName);
 
 						var container = _blobStorage.GetContainerReference(blobName.ContainerName);
 
@@ -293,11 +294,31 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
+		void DeleteOverflowingMessages(string queueName)
+		{
+			var toDelete = new List<string>();
+
+			foreach(var blob in BlobStorageProvider.List(OverflowingMessagesContainerName, queueName, _blobStorage))
+			{
+				toDelete.Add(blob);
+			}
+
+			var container = _blobStorage.GetContainerReference(OverflowingMessagesContainerName);
+
+			toDelete.ToArray().SelectInParallel(blobName =>
+			{
+				var blob = container.GetBlobReference(blobName);
+				blob.Delete();
+				return 0;
+			});
+		}
+
 		public void Clear(string queueName)
 		{
 			try
 			{
 				_queueStorage.GetQueueReference(queueName).Clear();
+				DeleteOverflowingMessages(queueName);
 			}
 			catch (StorageClientException ex)
 			{
@@ -369,6 +390,7 @@ namespace Lokad.Cloud.Azure
 			try
 			{
 				_queueStorage.GetQueueReference(queueName).Delete();
+				DeleteOverflowingMessages(queueName);
 				return true;
 			}
 			catch(StorageClientException ex)
@@ -417,21 +439,20 @@ namespace Lokad.Cloud.Azure
 		}
 
 		[UsedImplicitly, Rank(0)]
+		public string QueueName;
+
+		[UsedImplicitly, Rank(1)]
 		public Guid MessageId;
 
-		OverflowingMessageBlobName(Guid guid)
+		OverflowingMessageBlobName(string queueName, Guid guid)
 		{
+			QueueName = queueName;
 			MessageId = guid;
 		}
 
-		public static OverflowingMessageBlobName GetNew()
+		public static OverflowingMessageBlobName GetNew(string queueName)
 		{
-			return new OverflowingMessageBlobName(Guid.NewGuid());
-		}
-
-		public static OverflowingMessageBlobName Parse(string name)
-		{
-			return new OverflowingMessageBlobName(new Guid(name));
+			return new OverflowingMessageBlobName(queueName, Guid.NewGuid());
 		}
 	}
 
