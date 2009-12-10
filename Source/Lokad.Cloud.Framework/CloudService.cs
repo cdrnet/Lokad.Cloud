@@ -117,18 +117,18 @@ namespace Lokad.Cloud
 			{
 				var stateBlobName = new CloudServiceStateName(Name);
 
-				var state = BlobStorage.GetBlobOrDelete<CloudServiceState?>(stateBlobName);
+				var state = BlobStorage.GetBlobOrDelete(stateBlobName);
 
 				// no state can be retrieved, update blob storage
 				if(!state.HasValue)
 				{
 					var settings = GetType().GetAttribute<CloudServiceSettingsAttribute>(true);
 
-					state = null != settings ?
-							(settings.AutoStart ? CloudServiceState.Started : CloudServiceState.Stopped) :
-							CloudServiceState.Started;
+					state = null != settings
+						? (settings.AutoStart ? CloudServiceState.Started : CloudServiceState.Stopped)
+						: CloudServiceState.Started;
 
-					BlobStorage.PutBlob(stateBlobName, state);
+					BlobStorage.PutBlob(stateBlobName, state.Value);
 				}
 
 				_state = state.Value;

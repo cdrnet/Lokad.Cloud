@@ -66,9 +66,11 @@ namespace Lokad.Cloud
 		bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag);
 
 		/// <summary>Gets a blob.</summary>
-		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
-		/// returned.</returns>
-		T GetBlob<T>(string containerName, string blobName);
+		/// <returns>
+		/// If there is no such blob, the returned object
+		/// has its property HasValue set to <c>false</c>.
+		/// </returns>
+		Maybe<T> GetBlob<T>(string containerName, string blobName);
 
 		/// <summary>Gets a blob.</summary>
 		/// <typeparam name="T">Blob type.</typeparam>
@@ -77,9 +79,11 @@ namespace Lokad.Cloud
 		/// <param name="etag">Identifier assigned by the storage to the blob
 		/// that can be used to distinguish be successive version of the blob 
 		/// (useful to check for blob update).</param>
-		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
-		/// returned.</returns>
-		T GetBlob<T>(string containerName, string blobName, out string etag);
+		/// <returns>
+		/// If there is no such blob, the returned object
+		/// has its property HasValue set to <c>false</c>.
+		/// </returns>
+		Maybe<T> GetBlob<T>(string containerName, string blobName, out string etag);
 
 		/// <summary>Gets a blob.</summary>
 		/// <param name="containerName">Name of the container.</param>
@@ -88,12 +92,14 @@ namespace Lokad.Cloud
 		/// <param name="etag">Identifier assigned by the storage to the blob
 		/// that can be used to distinguish be successive version of the blob 
 		/// (useful to check for blob update).</param>
-		/// <returns>If there is no such blob, a <c>null</c> (or a default value) is
-		/// returned.</returns>
+		/// <returns>
+		/// If there is no such blob, the returned object
+		/// has its property HasValue set to <c>false</c>.
+		/// </returns>
 		/// <remarks>This method should only be used when the caller does not know the type of the
 		/// object stored in the blob at compile time, but it can only be determined at run time.
 		/// In all other cases, you should use the generic overloads of the method.</remarks>
-		object GetBlob(string containerName, string blobName, Type type, out string etag);
+		Maybe<object> GetBlob(string containerName, string blobName, Type type, out string etag);
 
 		/// <summary>
 		/// Gets a range of blobs.
@@ -104,7 +110,7 @@ namespace Lokad.Cloud
 		/// <param name="etags">Etag identifiers for all returned blobs.</param>
 		/// <returns>For each requested blob, an element in the array is returned in the same order.
 		/// If a specific blob was not found, the corresponding <b>etags</b> array element is <c>null</c>.</returns>
-		T[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags);
+		Maybe<T>[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags);
 
 		/// <summary>Gets a blob only if the etag has changed meantime.</summary>
 		/// <typeparam name="T">Type of the blob.</typeparam>
@@ -114,9 +120,11 @@ namespace Lokad.Cloud
 		/// be retrieved (except if the blob does not exist anymore).</param>
 		/// <param name="newEtag">New etag value. Will be <c>null</c> if the blob no more exist,
 		/// otherwise will be set to the current etag value of the blob.</param>
-		/// <returns> If the blob has not been modified, a <c>null</c> (or a default value) is returned.
-		/// If there is no such blob, a <c>null</c> (or a default value) is  returned.</returns>
-		T GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag);
+		/// <returns>
+		/// If the blob has not been modified or if there is no such blob,
+		/// then the returned object has its property HasValue set to <c>false</c>.
+		/// </returns>
+		Maybe<T> GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag);
 
 		/// <summary>
 		/// Gets the current etag of the blob, or <c>null</c> if the blob does not exists.
@@ -136,16 +144,16 @@ namespace Lokad.Cloud
 		/// then no update is performed and the method returns <c>false</c>.</returns>
 		/// <remarks>If there is not such blob available, the update is performed with
 		/// the default <c>T</c> value.</remarks>
-		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater, out Result<T> result);
+		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, Result<T>> updater, out Result<T> result);
 
 		/// <seealso cref="UpdateIfNotModified{T}(string,string,System.Func{T,Lokad.Result{T}},out Lokad.Result{T})"/>
-		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result);
+		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, T> updater, out T result);
 
 		/// <summary>Update a blob while guaranteeing an atomic update process.</summary>
-		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater);
+		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, Result<T>> updater);
 
 		/// <seealso cref="UpdateIfNotModified{T}(string,string,System.Func{T,Lokad.Result{T}})"/>
-		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater);
+		bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, T> updater);
 
 		/// <summary>Deletes a blob.</summary>
 		bool DeleteBlob(string containerName, string blobName);

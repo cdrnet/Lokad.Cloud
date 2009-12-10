@@ -104,20 +104,19 @@ namespace Lokad.Cloud.Mock
 			}
 		}
 
-		public T GetBlob<T>(string containerName, string blobName)
+		public Maybe<T> GetBlob<T>(string containerName, string blobName)
 		{
 			string ignoredEtag;
 			return GetBlob<T>(containerName, blobName, out ignoredEtag);
 		}
 
-		public T GetBlob<T>(string containerName, string blobName, out string etag)
+		public Maybe<T> GetBlob<T>(string containerName, string blobName, out string etag)
 		{
-			var output = GetBlob(containerName, blobName, typeof(T), out etag);
-			if(output == null) return default(T);
-			else return (T)output;
+			return GetBlob(containerName, blobName, typeof (T), out etag)
+				.Convert(o => (T) o, Maybe<T>.Empty);
 		}
 
-		public object GetBlob(string containerName, string blobName, Type type, out string etag)
+		public Maybe<object> GetBlob(string containerName, string blobName, Type type, out string etag)
 		{
 			lock(_syncRoot)
 			{
@@ -125,7 +124,7 @@ namespace Lokad.Cloud.Mock
 					 !Containers[containerName].BlobNames.Contains(blobName))
 				{
 					etag = null;
-					return null;
+					return Maybe<object>.Empty;
 				}
 
 				etag = Containers[containerName].BlobsEtag[blobName];
@@ -133,19 +132,19 @@ namespace Lokad.Cloud.Mock
 			}
 		}
 
-		public T[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
+		public Maybe<T>[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
 		{
 			// Copy-paste from BlobStorageProvider.cs
 
 			var tempResult = blobNames.SelectInParallel(blobName =>
 			{
 				string etag;
-				T blob = GetBlob<T>(containerName, blobName, out etag);
-				return new Tuple<T, string>(blob, etag);
+				Maybe<T> blob = GetBlob<T>(containerName, blobName, out etag);
+				return new Tuple<Maybe<T>, string>(blob, etag);
 			}, blobNames.Length);
 
 			etags = new string[blobNames.Length];
-			var result = new T[blobNames.Length];
+			var result = new Maybe<T>[blobNames.Length];
 
 			for(int i = 0; i < tempResult.Length; i++)
 			{
@@ -156,7 +155,7 @@ namespace Lokad.Cloud.Mock
 			return result;
 		}
 
-		public T GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag)
+		public Maybe<T> GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag)
 		{
 			lock(_syncRoot)
 			{
@@ -165,11 +164,11 @@ namespace Lokad.Cloud.Mock
 				if(currentEtag == oldEtag)
 				{
 					newEtag = null;
-					return default(T);
+					return Maybe<T>.Empty;
 				}
 				
 				newEtag = currentEtag;
-				return GetBlob<T>(containerName, blobName);
+				return GetBlob<T>(containerName, blobName).Value;
 			}
 		}
 
@@ -183,26 +182,27 @@ namespace Lokad.Cloud.Mock
 			}
 		}
 
-		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater, out Result<T> result)
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
 		{
 			lock (_syncRoot)
 			{
-				T input;
+				Maybe<T> input;
 				if (Containers.ContainsKey(containerName) )
 				{
 					if (Containers[containerName].BlobNames.Contains(blobName))
 					{
-						input = (T)Containers[containerName].GetBlob(blobName);
+						var blobData = Containers[containerName].GetBlob(blobName);
+						input = blobData == null ? Maybe<T>.Empty : (T) blobData;
 					}
 					else
 					{
-						input = default(T);
+						input = Maybe<T>.Empty;
 					}
 				}
 				else
 				{
 					Containers.Add(containerName, new MockContainer());
-					input = default(T);
+					input = Maybe<T>.Empty;
 				}
 
 				// updating the item
@@ -217,7 +217,7 @@ namespace Lokad.Cloud.Mock
 			}
 		}
 
-		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result)
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, T> updater, out T result)
 		{
 			Result<T> rresult;
 			var flag = UpdateIfNotModified(containerName, blobName, x => Result.CreateSuccess(updater(x)), out rresult);
@@ -226,13 +226,13 @@ namespace Lokad.Cloud.Mock
 			return flag;
 		}
 
-		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater)
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, Result<T>> updater)
 		{
 			Result<T> ignored;
 			return UpdateIfNotModified(containerName, blobName, updater, out ignored);
 		}
 
-		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, T> updater)
 		{
 			return UpdateIfNotModified<T>(containerName, blobName, x => Result.CreateSuccess(updater(x)));
 		}

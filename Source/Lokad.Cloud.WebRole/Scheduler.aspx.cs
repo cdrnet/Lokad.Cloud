@@ -36,10 +36,15 @@ namespace Lokad.Cloud.Web
 		{
 			foreach (var blobName in _provider.List(ScheduledServiceStateName.GetPrefix()))
 			{
+				var blob = _provider.GetBlobOrDelete(blobName);
+				if (!blob.HasValue)
+				{
+					continue;
+				}
+
 				yield return new Pair<string, ScheduledServiceState>(
-					// discarding the prefix for display purposes
 					blobName.ServiceName,
-					_provider.GetBlobOrDelete(blobName));
+					blob.Value);
 			}
 		}
 
@@ -49,8 +54,9 @@ namespace Lokad.Cloud.Web
 			var triggerInterval = int.Parse(NewIntervalBox.Text);
 
 			_provider.UpdateIfNotModified(blobName,
-				state =>
+				s =>
 					{
+						var state = s.Value;
 						state.TriggerInterval = triggerInterval.Seconds();
 						return state;
 					});

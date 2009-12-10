@@ -63,12 +63,15 @@ namespace Lokad.Cloud.Azure
 			_lastPackageCheck = DateTime.UtcNow;
 
 			// if no assemblies have been loaded yet, just skip the loading
-			if (null == buffer) return;
+			if (!buffer.HasValue)
+			{
+				return;
+			}
 
 			var resolver = new AssemblyResolver();
 			resolver.Attach();
 
-			using(var zipStream = new ZipInputStream(new MemoryStream(buffer)))
+			using(var zipStream = new ZipInputStream(new MemoryStream(buffer.Value)))
 			{
 				ZipEntry entry;
 				while((entry = zipStream.GetNextEntry()) != null)
@@ -85,7 +88,7 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
-		public byte[] LoadConfiguration()
+		public Maybe<byte[]> LoadConfiguration()
 		{
 			return _provider.GetBlob<byte[]>(ContainerName, ConfigurationBlobName, out _lastConfigurationEtag);
 		}

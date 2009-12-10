@@ -27,10 +27,13 @@ namespace Lokad.Cloud.Web
 				AssemblyLoader.ContainerName,
 				AssemblyLoader.PackageBlobName);
 
-			// do not return anything is no assembly is loaded
-			if(null == buffer) yield break;
+			// do not return anything if no assembly is loaded
+			if (!buffer.HasValue)
+			{
+				yield break;
+			}
 
-			using (var zipStream = new ZipInputStream(new MemoryStream(buffer)))
+			using (var zipStream = new ZipInputStream(new MemoryStream(buffer.Value)))
 			{
 				ZipEntry entry;
 				while ((entry = zipStream.GetNextEntry()) != null)

@@ -57,7 +57,7 @@ namespace Lokad.Cloud.Azure
 			var config = loader.LoadConfiguration();
 
 			// processing configuration file as retrieved from the blob storage.
-			if(null != config)
+			if (config.HasValue)
 			{
 				const string fileName = "lokad.cloud.clientapp.config";
 				string pathToFile;
@@ -76,7 +76,7 @@ namespace Lokad.Cloud.Azure
 				using (var stream = File.Open(pathToFile, FileMode.Create, FileAccess.ReadWrite))
 				{
 					// writing config locally
-					stream.Write(config, 0, config.Length);
+					stream.Write(config.Value, 0, config.Value.Length);
 				}
 
 				// HACK: need to copy settings locally first

@@ -55,7 +55,7 @@ namespace Lokad.Cloud.Diagnostics
 				contextName,
 				s =>
 					{
-						if (s == null)
+						if (!s.HasValue)
 						{
 							return new ExceptionTrackingStatistics()
 								{
@@ -64,8 +64,9 @@ namespace Lokad.Cloud.Diagnostics
 								};
 						}
 
-						s.Statistics = Aggregate(s.Statistics.Append(additionalData)).ToArray();
-						return s;
+						var stats = s.Value;
+						stats.Statistics = Aggregate(stats.Statistics.Append(additionalData)).ToArray();
+						return stats;
 					});
 		}
 

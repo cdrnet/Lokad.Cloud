@@ -52,7 +52,7 @@ namespace Lokad.Cloud.Test.Mock.Services
 			}
 
 			var blobNames = providersForCloudStorage.BlobStorage.List(containerName, "");
-			var sum = blobNames.Select(e => providersForCloudStorage.BlobStorage.GetBlob<double>(containerName, e)).Sum();
+			var sum = blobNames.Select(e => providersForCloudStorage.BlobStorage.GetBlob<double>(containerName, e).Value).Sum();
  
 			//0*0+1*1+2*2+3*3+...+9*9 = 285
 			Assert.AreEqual(285, sum, "result is different from expected.");	
@@ -113,7 +113,7 @@ namespace Lokad.Cloud.Test.Mock.Services
 				}
 				else
 				{
-					var value = blobStorage.GetBlob<double>(message.ContainerName, message.BlobName);
+					var value = blobStorage.GetBlob<double>(message.ContainerName, message.BlobName).Value;
 					blobStorage.PutBlob<double>(message.ContainerName, message.BlobName, value * value);
 
 					var counter = new BlobCounter(Providers.BlobStorage, message.BlobCounter);

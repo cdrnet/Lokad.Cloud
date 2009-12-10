@@ -23,9 +23,9 @@ namespace Lokad.Cloud.Web
 				var buffer = _blobStorage.GetBlob<byte[]>(
 					AssemblyLoader.ContainerName, AssemblyLoader.ConfigurationBlobName);
 
-				if (null != buffer)
+				if (buffer.HasValue)
 				{
-					ConfigurationBox.Text = _encoding.GetString(buffer);
+					ConfigurationBox.Text = _encoding.GetString(buffer.Value);
 				}
 			}
 		}

@@ -159,7 +159,7 @@ namespace Lokad.Cloud.Azure
             	
 				// blob may not exists in (rare) case of failure just before queue deletion
 				// but after container deletion (or also timeout deletion).
-				if(null == blobContent)
+				if (!blobContent.HasValue)
 				{
 					CloudQueueMessage rawMessage;
 					lock (_sync)
@@ -174,7 +174,7 @@ namespace Lokad.Cloud.Azure
 					continue;
 				}
 
-				T innerMessage = (T)blobContent;
+            	T innerMessage = (T) blobContent.Value;
 
 				// substitution: message wrapper replaced by actual item in '_inprocess' list
 				lock(_sync)

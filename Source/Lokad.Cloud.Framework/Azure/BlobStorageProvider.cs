@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization;
 using Lokad.Threading;
 using Microsoft.WindowsAzure.StorageClient;
 
@@ -66,7 +65,7 @@ namespace Lokad.Cloud.Azure
 
 		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite)
 		{
-			string ignored = null;
+			string ignored;
 			return PutBlob<T>(containerName, blobName, item, overwrite, out ignored);
 		}
 
@@ -168,30 +167,29 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
-		public T GetBlob<T>(string containerName, string blobName)
+		public Maybe<T> GetBlob<T>(string containerName, string blobName)
 		{
 			string ignoredEtag;
 			return GetBlob<T>(containerName, blobName, out ignoredEtag);
 		}
 
-		public T GetBlob<T>(string containerName, string blobName, out string etag)
+		public Maybe<T> GetBlob<T>(string containerName, string blobName, out string etag)
 		{
-			var output = GetBlob(containerName, blobName, typeof(T), out etag);
-			if(output == null) return default(T);
-			else return (T)output;
+			return GetBlob(containerName, blobName, typeof (T), out etag)
+				.Convert(o => (T) o, Maybe<T>.Empty);
 		}
 
-		public object GetBlob(string containerName, string blobName, Type type, out string etag)
+		public Maybe<object> GetBlob(string containerName, string blobName, Type type, out string etag)
 		{
 			var container = _blobStorage.GetContainerReference(containerName);
 			var blob = container.GetBlockBlobReference(blobName);
-
+			 
 			var inputTypeInfo = TypeInformation.GetInformation(type);
 
 			using(var stream = new MemoryStream())
 			{
 				etag = null;
-				TypeInformation storedTypeInfo = null;
+				TypeInformation storedTypeInfo;
 
 				// no such container, return default
 				try
@@ -209,12 +207,15 @@ namespace Lokad.Cloud.Azure
 						|| ex.ErrorCode == StorageErrorCode.BlobNotFound
 						|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 					{
-						return null;
+						return Maybe<object>.Empty;
 					}
 					throw;
 				}
 
-				return DeserializeObject(containerName, blobName, blob, stream, type, inputTypeInfo, storedTypeInfo);
+				var deserialized = DeserializeObject(containerName, blobName, blob, stream, type, inputTypeInfo, storedTypeInfo);
+				return (deserialized == null)
+					? Maybe<object>.Empty
+					: Maybe.From(deserialized);
 			}
 		}
 
@@ -243,7 +244,7 @@ namespace Lokad.Cloud.Azure
 
 			stream.Seek(0, SeekOrigin.Begin);
 
-			object output = null;
+			object output;
 			try
 			{
 				output = _formatter.Deserialize(stream, type);
@@ -257,7 +258,8 @@ namespace Lokad.Cloud.Azure
 					DeleteBlob(containerName, blobName);
 					return null;
 				}
-				else throw;
+				
+				throw;
 			}
 
 			// Deserialization is OK: if blob did not have type metadata, set it now
@@ -270,19 +272,20 @@ namespace Lokad.Cloud.Azure
 			return output;
 		}
 
-		public T[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
-		{	
+		public Maybe<T>[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
+		{
 			var tempResult = blobNames.SelectInParallel(blobName =>
 				{
-					string etag = null;
-					T blob = GetBlob<T>(containerName, blobName, out etag);
-					return new Tuple<T, string>(blob, etag);
+					string etag;
+					var blob = GetBlob<T>(containerName, blobName, out etag);
+					return new Tuple<Maybe<T>, string>(blob, etag);
 				}, blobNames.Length);
 
 			etags = new string[blobNames.Length];
-			var result = new T[blobNames.Length];
+			var result = new Maybe<T>[blobNames.Length];
 
-			for(int i = 0; i < tempResult.Length; i++) {
+			for (int i = 0; i < tempResult.Length; i++)
+			{
 				result[i] = tempResult[i].Item1;
 				etags[i] = tempResult[i].Item2;
 			}
@@ -290,15 +293,15 @@ namespace Lokad.Cloud.Azure
 			return result;
 		}
 
-		public T GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag)
+		public Maybe<T> GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag)
 		{
 			var container = _blobStorage.GetContainerReference(containerName);
 			newEtag = null;
 
-			CloudBlockBlob blob = null;
+			CloudBlockBlob blob;
 
-			var inputTypeInfo = TypeInformation.GetInformation(typeof(T));
-			TypeInformation storedTypeInfo = null;
+			var inputTypeInfo = TypeInformation.GetInformation(typeof (T));
+			TypeInformation storedTypeInfo;
 
 			try
 			{
@@ -306,27 +309,27 @@ namespace Lokad.Cloud.Azure
 				blob.FetchAttributes();
 				storedTypeInfo = GetTypeInformationFromMetadata(blob, inputTypeInfo);
 
-				if(blob.Properties == null || blob.Properties.ETag == oldEtag)
+				if (blob.Properties == null || blob.Properties.ETag == oldEtag)
 				{
-					return default(T);
+					return Maybe<T>.Empty;
 				}
 				newEtag = blob.Properties.ETag;
 			}
-			catch(StorageClientException ex)
+			catch (StorageClientException ex)
 			{
-				if(ex.ErrorCode == StorageErrorCode.ContainerNotFound
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
 					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
-					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
+						|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
-					return default(T);
+					return Maybe<T>.Empty;
 				}
 				throw;
 			}
 
-			using(var stream = new MemoryStream())
+			using (var stream = new MemoryStream())
 			{
 				blob.DownloadToStream(stream);
-				return (T)DeserializeObject(containerName, blobName, blob, stream, typeof(T), inputTypeInfo, storedTypeInfo);
+				return (T) DeserializeObject(containerName, blobName, blob, stream, typeof (T), inputTypeInfo, storedTypeInfo);
 			}
 		}
 
@@ -352,18 +355,18 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
-		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater)
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, T> updater)
 		{
 			return UpdateIfNotModified<T>(containerName, blobName, x => Result.CreateSuccess(updater(x)));
 		}
 
-		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater)
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, Result<T>> updater)
 		{
 			Result<T> ignored;
 			return UpdateIfNotModified(containerName, blobName, updater, out ignored);
 		}
 
-		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, T> updater, out T result)
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, T> updater, out T result)
 		{
 			Result<T> rresult;
 			var flag = UpdateIfNotModified(containerName, blobName, x => Result.CreateSuccess(updater(x)), out rresult);
@@ -372,35 +375,35 @@ namespace Lokad.Cloud.Azure
 			return flag;
 		}
 
-		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<T, Result<T>> updater, out Result<T> result)
+		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
 		{
 			var container = _blobStorage.GetContainerReference(containerName);
 			CloudBlockBlob blob = null;
 
 			var inputTypeInfo = TypeInformation.GetInformation(typeof(T));
-			TypeInformation storedTypeInfo = null;
 
-			T input;
+			Maybe<T> input;
 			try
 			{
 				blob = container.GetBlockBlobReference(blobName);
 				blob.FetchAttributes();
-				storedTypeInfo = GetTypeInformationFromMetadata(blob, inputTypeInfo);
+				var storedTypeInfo = GetTypeInformationFromMetadata(blob, inputTypeInfo);
 
-				using(var rstream = new MemoryStream())
+				using (var rstream = new MemoryStream())
 				{
 					blob.DownloadToStream(rstream);
-					input = (T)DeserializeObject(containerName, blobName, blob, rstream, typeof(T), inputTypeInfo, storedTypeInfo);
+					var blobData = DeserializeObject(containerName, blobName, blob, rstream, typeof(T), inputTypeInfo, storedTypeInfo);
+					input = blobData == null ? Maybe<T>.Empty : (T) blobData;
 				}
 			}
 			catch (StorageClientException ex)
 			{
 				// creating the container when missing
-				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound 
+				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
 					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
 					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
-					input = default(T);
+					input = Maybe<T>.Empty;
 					container.CreateIfNotExist();
 
 					// HACK: if the container has just been deleted,
@@ -411,16 +414,16 @@ namespace Lokad.Cloud.Azure
 					throw;
 				}
 			}
-			
+
 			// updating the item
 			result = updater(input);
 
-			if(!result.IsSuccess)
+			if (!result.IsSuccess)
 			{
 				return false;
 			}
 
-			using(var wstream = new MemoryStream())
+			using (var wstream = new MemoryStream())
 			{
 				_formatter.Serialize(wstream, result.Value);
 				wstream.Seek(0, SeekOrigin.Begin);
@@ -462,8 +465,10 @@ namespace Lokad.Cloud.Azure
 
 			var container = _blobStorage.GetContainerReference(containerName);
 
-			BlobRequestOptions options = new BlobRequestOptions();
-			options.UseFlatBlobListing = true;
+			var options = new BlobRequestOptions
+				{
+					UseFlatBlobListing = true
+				};
 
 			var enumerator = container.ListBlobs(options).GetEnumerator();
 

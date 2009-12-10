@@ -57,9 +57,9 @@ namespace Lokad.Cloud.Diagnostics
 
 			_repository.UpdateServiceStatistics(
 				serviceName,
-				stat =>
+				s =>
 					{
-						if (stat == null)
+						if (!s.HasValue)
 						{
 							return new ServiceStatistics
 								{
@@ -71,10 +71,11 @@ namespace Lokad.Cloud.Diagnostics
 								};
 						}
 
-						stat.TotalProcessorTime += process.TotalProcessorTime - handle.TotalProcessorTime;
-						stat.UserProcessorTime += process.UserProcessorTime - handle.UserProcessorTime;
-						stat.LastUpdate = DateTimeOffset.Now;
-						return stat;
+						var stats = s.Value;
+						stats.TotalProcessorTime += process.TotalProcessorTime - handle.TotalProcessorTime;
+						stats.UserProcessorTime += process.UserProcessorTime - handle.UserProcessorTime;
+						stats.LastUpdate = DateTimeOffset.Now;
+						return stats;
 					});
 		}
 

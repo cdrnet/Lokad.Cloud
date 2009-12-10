@@ -53,16 +53,16 @@ namespace Lokad.Cloud
 		{
 			// retrieving the state info if any
 			var stateName = new ScheduledServiceStateName(Name);
-			var state = BlobStorage.GetBlob<ScheduledServiceState>(stateName);
+			var state = BlobStorage.GetBlob(stateName);
 
-			if(!_isInitialized)
+			if (!_isInitialized)
 			{
-				if(null == state)
+				if (!state.HasValue)
 				{
 					var settings = GetType().GetAttribute<ScheduledServiceSettingsAttribute>(true);
 
 					// no trigger interval settings available => we don't execute the service.
-					if(settings == null)
+					if (settings == null)
 					{
 						return false;
 					}
@@ -70,19 +70,23 @@ namespace Lokad.Cloud
 					// recording a fresh schedule state in the cloud
 					_triggerInterval = settings.TriggerInterval.Seconds();
 
-					var writeSucceeded = BlobStorage.PutBlob(stateName, 
+					var writeSucceeded = BlobStorage.PutBlob(stateName,
 						new ScheduledServiceState
 							{
 								LastExecuted = DateTime.MinValue,
 								TriggerInterval = _triggerInterval
-							}, false);
+							},
+						false);
 
 					// if write fails, another worker is concurrently executing
-					if(!writeSucceeded) return false;
+					if (!writeSucceeded)
+					{
+						return false;
+					}
 				}
 				else
 				{
-					_triggerInterval = state.TriggerInterval;
+					_triggerInterval = state.Value.TriggerInterval;
 				}
 
 				_isInitialized = true;
@@ -92,28 +96,29 @@ namespace Lokad.Cloud
 			// update this value if it's old enough. When the update fails,
 			// it simply means that another worker is already on its ways
 			// to execute the service.
-			var updated = BlobStorage.UpdateIfNotModified<ScheduledServiceState>(stateName, 
+			var updated = BlobStorage.UpdateIfNotModified(
+				stateName,
 				currentState =>
 					{
 						var now = DateTime.UtcNow;
 
-						if(null == currentState)
+						if (!currentState.HasValue)
 						{
 							return Result.CreateSuccess(new ScheduledServiceState
 								{
-                                    TriggerInterval = _triggerInterval,
+									TriggerInterval = _triggerInterval,
 									LastExecuted = now
 								});
 						}
 
-						if (now.Subtract(currentState.LastExecuted) < _triggerInterval)
+						if (now.Subtract(currentState.Value.LastExecuted) < _triggerInterval)
 						{
 							return Result<ScheduledServiceState>.CreateError("No need to update.");
 						}
 
 						return Result.CreateSuccess(new ScheduledServiceState
 							{
-								TriggerInterval = currentState.TriggerInterval,
+								TriggerInterval = currentState.Value.TriggerInterval,
 								LastExecuted = now
 							});
 					});

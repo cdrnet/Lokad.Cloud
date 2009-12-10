@@ -54,10 +54,10 @@ namespace Lokad.Cloud.Samples.MapReduce
 			_queueStorage = queueStorage;
 		}
 
-		MapReduceConfiguration GetJobConfig(string jobName)
+		Maybe<MapReduceConfiguration> GetJobConfig(string jobName)
 		{
 			var configBlobName = MapReduceConfigurationName.Create(jobName);
-			var config = _blobStorage.GetBlob<MapReduceConfiguration>(configBlobName);
+			var config = _blobStorage.GetBlob(configBlobName);
 			return config;
 		}
 
@@ -150,7 +150,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 			// 7. Delete blobset
 
 			// 1. Load config
-			var config = GetJobConfig(jobName);
+			var config = GetJobConfig(jobName).Value;
 
 			var blobsetPrefix = InputBlobName.GetPrefix(jobName, blobSetId);
 			var mapResults = new List<object>();
@@ -158,19 +158,24 @@ namespace Lokad.Cloud.Samples.MapReduce
 			IMapReduceFunctions mapReduceFunctions = GetMapReduceFunctions(config.MapReduceFunctionsImplementor);
 			Type mapIn = Type.GetType(config.TMapInType);
 			Type mapOut = Type.GetType(config.TMapOutType);
-			
+
 			// 2. Do map for all blobs in the blobset
 			string ignored;
-			foreach(var blobName in _blobStorage.List(blobsetPrefix))
+			foreach (var blobName in _blobStorage.List(blobsetPrefix))
 			{
-				object inputBlob = _blobStorage.GetBlob(blobName.ContainerName, blobName.ToString(), mapIn, out ignored);
+				var inputBlob = _blobStorage.GetBlob(blobName.ContainerName, blobName.ToString(), mapIn, out ignored);
+				if (!inputBlob.HasValue)
+				{
+					continue;
+				}
 
-				object mapResult = InvokeAsDelegate(mapReduceFunctions.GetMapper(), inputBlob);
+				object mapResult = InvokeAsDelegate(mapReduceFunctions.GetMapper(), inputBlob.Value);
+
 				mapResults.Add(mapResult);
 			}
 
 			// 3. Do reduce for all mapped results
-			while(mapResults.Count > 1)
+			while (mapResults.Count > 1)
 			{
 				object item1 = mapResults[0];
 				object item2 = mapResults[1];
@@ -188,17 +193,17 @@ namespace Lokad.Cloud.Samples.MapReduce
 			// 5. Update counter
 			var counterName = BlobCounterName.Create(jobName);
 			var counter = new BlobCounter(_blobStorage, counterName);
-			var totalCompletedBlobSets = (int)counter.Increment(1);
-			
+			var totalCompletedBlobSets = (int) counter.Increment(1);
+
 			// 6. Queue aggregation if appropriate
-			if(totalCompletedBlobSets == config.BlobSetCount)
+			if (totalCompletedBlobSets == config.BlobSetCount)
 			{
-				_queueStorage.Put(JobsQueueName, new JobMessage()
-					{ JobName = jobName, BlobSetId = null, Type = MessageType.ReducedDataToAggregate });
+				_queueStorage.Put(JobsQueueName,
+					new JobMessage() {JobName = jobName, BlobSetId = null, Type = MessageType.ReducedDataToAggregate});
 			}
 
 			// 7. Delete blobset's blobs
-			foreach(var blobName in _blobStorage.List(blobsetPrefix))
+			foreach (var blobName in _blobStorage.List(blobsetPrefix))
 			{
 				_blobStorage.DeleteBlob(blobName);
 			}
@@ -214,7 +219,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 			// 4. Delete reduced data
 
 			// 1. Load config
-			var config = GetJobConfig(jobName);
+			var config = GetJobConfig(jobName).Value;
 
 			var reducedBlobPrefix = ReducedBlobName.GetPrefix(jobName);
 			var aggregateResults = new List<object>();
@@ -225,7 +230,13 @@ namespace Lokad.Cloud.Samples.MapReduce
 			string ignored;
 			foreach(var blobName in _blobStorage.List(reducedBlobPrefix))
 			{
-				aggregateResults.Add(_blobStorage.GetBlob(blobName.ContainerName, blobName.ToString(), mapOut, out ignored));
+				var blob = _blobStorage.GetBlob(blobName.ContainerName, blobName.ToString(), mapOut, out ignored);
+				if(!blob.HasValue)
+				{
+					continue;
+				}
+
+				aggregateResults.Add(blob.Value);
 			}
 
 			IMapReduceFunctions mapReduceFunctions = GetMapReduceFunctions(config.MapReduceFunctionsImplementor);
@@ -259,12 +270,15 @@ namespace Lokad.Cloud.Samples.MapReduce
 		public Tuple<int, int> GetCompletedBlobSets(string jobName)
 		{
 			var config = GetJobConfig(jobName);
-			if(config == null) throw new ArgumentException("Unknown job", "jobName");
+			if (!config.HasValue)
+			{
+				throw new ArgumentException("Unknown job", "jobName");
+			}
 
 			var counter = new BlobCounter(_blobStorage, BlobCounterName.Create(jobName));
 			int completedBlobsets = (int)counter.GetValue();
 
-			return new Tuple<int, int>(completedBlobsets, config.BlobSetCount);
+			return new Tuple<int, int>(completedBlobsets, config.Value.BlobSetCount);
 		}
 
 		/// <summary>Retrieves the aggregated result of a map/reduce job.</summary>
@@ -276,21 +290,27 @@ namespace Lokad.Cloud.Samples.MapReduce
 		public T GetAggregatedResult<T>(string jobName)
 		{
 			var config = GetJobConfig(jobName);
-			if(config == null) throw new ArgumentException("Unknown job", "jobName");
+			if (!config.HasValue)
+			{
+				throw new ArgumentException("Unknown job", "jobName");
+			}
 
 			var counter = new BlobCounter(_blobStorage, BlobCounterName.Create(jobName));
 			int completedBlobsets = (int)counter.GetValue();
 
-			if(completedBlobsets < config.BlobSetCount) throw new InvalidOperationException("Job is not complete (there still are blobsets to process)");
+			if (completedBlobsets < config.Value.BlobSetCount) throw new InvalidOperationException("Job is not complete (there still are blobsets to process)");
 
-			Type mapOut = Type.GetType(config.TMapOutType);
+			Type mapOut = Type.GetType(config.Value.TMapOutType);
 
 			var blobName = AggregatedBlobName.Create(jobName);
 			string ignored;
 			var aggregatedResult = _blobStorage.GetBlob(blobName.ContainerName, blobName.ToString(), mapOut, out ignored);
+			if(!aggregatedResult.HasValue)
+			{
+				throw new InvalidOperationException("Job is not complete (reduced items must still be aggregated)");
+			}
 
-			if(aggregatedResult == null) throw new InvalidOperationException("Job is not complete (reduced items must still be aggregated)");
-			else return (T)aggregatedResult;
+			return (T) aggregatedResult.Value;
 		}
 
 		/// <summary>Deletes all the data related to a job, regardless of the job status.</summary>

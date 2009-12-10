@@ -53,7 +53,8 @@ namespace Lokad.Cloud
 		/// <summary>Returns the value of the counter.</summary>
 		public decimal GetValue()
 		{
-			return _provider.GetBlob<decimal>(_containerName, _blobName);
+			var value = _provider.GetBlob<decimal>(_containerName, _blobName);
+			return value.HasValue ? value.Value : 0m;
 		}
 
 		/// <summary>Atomic increment the counter value.</summary>
@@ -61,7 +62,7 @@ namespace Lokad.Cloud
 		public decimal Increment(decimal increment)
 		{
 			decimal counter;
-			_provider.AtomicUpdate(_containerName, _blobName, x => x + increment, out counter);
+			_provider.AtomicUpdate(_containerName, _blobName, x => x.HasValue ? x.Value + increment : increment, out counter);
 
 			return counter;
 		}

@@ -30,12 +30,13 @@ namespace Lokad.Cloud.Services
 				if (DateTime.UtcNow > parsedName.TriggerTime)
 				{
 					var dm = BlobStorage.GetBlobOrDelete<DelayedMessage>(parsedName);
-					if(dm == null)
+					if (!dm.HasValue)
 					{
 						Log.WarnFormat("Deserialization failed for delayed message {0}, message was dropped.", parsedName.Identifier);
 						continue;
 					}
-					QueueStorage.Put(dm.QueueName, dm.InnerMessage);
+
+					QueueStorage.Put(dm.Value.QueueName, dm.Value.InnerMessage);
 					BlobStorage.DeleteBlob(parsedName);
 				}
 				else

@@ -143,8 +143,12 @@ namespace Lokad.Cloud.Azure
 			foreach(var blobName in _provider.List(ContainerName, string.Empty))
 			{
 				var rawlog = _provider.GetBlob<string>(ContainerName, blobName);
+				if (!rawlog.HasValue)
+				{
+					continue;
+				}
 
-				yield return DecodeLogEntry(blobName, rawlog);
+				yield return DecodeLogEntry(blobName, rawlog.Value);
 			}
 		}
 
@@ -167,8 +171,12 @@ namespace Lokad.Cloud.Azure
 					if(count - skipItems >= pageSize) yield break;
 
 					var content = _provider.GetBlob<string>(ContainerName, blobName);
+					if (!content.HasValue)
+					{
+						continue;
+					}
 
-					yield return DecodeLogEntry(blobName, content);
+					yield return DecodeLogEntry(blobName, content.Value);
 				}
 				count++;
 			}

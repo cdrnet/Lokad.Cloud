@@ -30,9 +30,10 @@ namespace Lokad.Cloud.Azure.Test
 
 			var retrievedBlob = provider.GetBlob<MyBlob>(ContainerName, BlobName);
 
-			Assert.AreEqual(blob.MyGuid, retrievedBlob.MyGuid, "#A01");
-			Assert.IsTrue(provider.List(ContainerName, "myprefix").Contains(BlobName), "#A02");
-			Assert.IsTrue(!provider.List(ContainerName, "notmyprefix").Contains(BlobName), "#A03");
+			Assert.IsTrue(retrievedBlob.HasValue, "#A01");
+			Assert.AreEqual(blob.MyGuid, retrievedBlob.Value.MyGuid, "#A02");
+			Assert.IsTrue(provider.List(ContainerName, "myprefix").Contains(BlobName), "#A03");
+			Assert.IsTrue(!provider.List(ContainerName, "notmyprefix").Contains(BlobName), "#A04");
 
 			// testing ETag
 			provider.DeleteBlob(ContainerName, BlobName);
@@ -55,9 +56,9 @@ namespace Lokad.Cloud.Azure.Test
 
 			// Test that blob is not retrieved because it is unchanged
 			newEtagOut = "dummy";
-			MyBlob output = provider.GetBlobIfModified<MyBlob>(ContainerName, BlobName, newEtag, out newEtagOut);
+			Maybe<MyBlob> output = provider.GetBlobIfModified<MyBlob>(ContainerName, BlobName, newEtag, out newEtagOut);
 			Assert.IsNull(newEtagOut, "Etag should be null because blob is unchanged");
-			Assert.IsNull(output, "Retrieved blob should be null because it is unchanged");
+			Assert.IsFalse(output.HasValue, "Retrieved blob should be null because it is unchanged");
 
 			provider.PutBlob(ContainerName, BlobName, 2);
 			newEtag = provider.GetBlobEtag(ContainerName, BlobName);
@@ -66,19 +67,19 @@ namespace Lokad.Cloud.Azure.Test
 			// Test that blob is retrieved because it is changed
 			string myPreviousEtag = newEtagOut;
 			newEtagOut = "dummy";
-			int outputInt = provider.GetBlobIfModified<int>(ContainerName, BlobName, myPreviousEtag, out newEtagOut);
+			Maybe<int> outputInt = provider.GetBlobIfModified<int>(ContainerName, BlobName, myPreviousEtag, out newEtagOut);
 			Assert.AreNotEqual(myPreviousEtag, newEtagOut, "Etag should be updated");
-			Assert.AreEqual(2, outputInt, "Wrong blob content");
+			Assert.AreEqual(2, outputInt.Value, "Wrong blob content");
 
 			// testing UpdateIfNotModified
 			provider.PutBlob(ContainerName, BlobName, 1);
 			int ignored;
-			var isUpdated = provider.UpdateIfNotModified(ContainerName, BlobName, i => i + 1, out ignored);
+			var isUpdated = provider.UpdateIfNotModified(ContainerName, BlobName, i => i.HasValue ? i.Value + 1 : 1, out ignored);
 
 			Assert.IsTrue(isUpdated, "#A00");
 
 			var val = provider.GetBlob<int>(ContainerName, BlobName);
-			Assert.AreEqual(2, val, "#A01");
+			Assert.AreEqual(2, val.Value, "#A01");
 
 			// PutBlob with etag out parameter
 			newEtagOut = "dummy";
@@ -91,7 +92,8 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.IsTrue(isSaved, "Blob should have been overwritten");
 			Assert.IsNotNull(newEtagOut, "Etag should be changed");
 
-			Assert.AreEqual(7, provider.GetBlob<int>(ContainerName, BlobName), "Blob was not correctly saved");
+			Assert.IsTrue(provider.GetBlob<int>(ContainerName, BlobName).HasValue, "Blob was not correctly saved.1");
+			Assert.AreEqual(7, provider.GetBlob<int>(ContainerName, BlobName).Value, "Blob was not correctly saved.2");
 
 			// cleanup
 			Assert.IsTrue(provider.DeleteBlob(ContainerName, BlobName), "#A04");
@@ -136,7 +138,8 @@ namespace Lokad.Cloud.Azure.Test
 			for(int i = 0; i < allBlobs.Length; i++)
 			{
 				Assert.IsNotNull(allEtags[i], "Etag should have been set");
-				Assert.AreEqual(inputBlobs[i].MyGuid, allBlobs[i].MyGuid, "Wrong blob content");
+				Assert.IsTrue(allBlobs[i].HasValue, "Blob should have content");
+				Assert.AreEqual(inputBlobs[i].MyGuid, allBlobs[i].Value.MyGuid, "Wrong blob content");
 			}
 
 			// Test missing blob
@@ -152,10 +155,11 @@ namespace Lokad.Cloud.Azure.Test
 			for(int i = 0; i < allBlobs.Length - 1; i++)
 			{
 				Assert.IsNotNull(allEtags[i], "Etag should have been set");
-				Assert.AreEqual(inputBlobs[i].MyGuid, allBlobs[i].MyGuid, "Wrong blob content");
+				Assert.IsTrue(allBlobs[i].HasValue, "Blob should have content");
+				Assert.AreEqual(inputBlobs[i].MyGuid, allBlobs[i].Value.MyGuid, "Wrong blob content");
 			}
 			Assert.IsNull(allEtags[allEtags.Length - 1], "Etag should be null");
-			Assert.IsNull(allBlobs[allBlobs.Length - 1], "Blob should be null");
+			Assert.IsFalse(allBlobs[allBlobs.Length - 1].HasValue, "Blob should not have a value");
 
 			provider.DeleteContainer(privateContainerName);
 		}
@@ -171,10 +175,10 @@ namespace Lokad.Cloud.Azure.Test
 			var item1 = new Transient2() { Value2 = 100 };
 			provider.PutBlob(privateContainerName, "test", item1);
 			var item1Out = provider.GetBlob<Transient2>(privateContainerName, "test");
-			Assert.AreEqual(item1.Value2, item1Out.Value2);
+			Assert.AreEqual(item1.Value2, item1Out.Value.Value2);
 
 			var item2 = provider.GetBlob<Transient3>(privateContainerName, "test");
-			Assert.IsNull(item2);
+			Assert.IsFalse(item2.HasValue);
 
 			provider.DeleteContainer(privateContainerName);
 		}

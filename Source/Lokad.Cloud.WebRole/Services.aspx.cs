@@ -27,14 +27,16 @@ namespace Lokad.Cloud.Web
 		{
 			foreach(var blobName in _provider.List(CloudServiceStateName.GetPrefix()))
 			{
-				var state = _provider.GetBlobOrDelete<CloudServiceState?>(blobName);
-
-				if (!state.HasValue) continue;
+				var state = _provider.GetBlobOrDelete(blobName);
+				if (!state.HasValue)
+				{
+					continue;
+				}
 
 				yield return new
 					{
 						Name = blobName.ServiceName,
-						State = state.ToString()
+						State = state.Value.ToString()
 					};
 			}
 		}
@@ -49,10 +51,11 @@ namespace Lokad.Cloud.Web
 				var blobName = new CloudServiceStateName(ServicesView.Rows[row].Cells[1].Text);
 
 				// inverting the service status
-				_provider.UpdateIfNotModified<CloudServiceState?>(blobName, 
-					s => s.HasValue ? 
-						(s.Value == CloudServiceState.Started ? CloudServiceState.Stopped : CloudServiceState.Started) :
-						CloudServiceState.Started);
+				_provider.UpdateIfNotModified(
+					blobName,
+					s => s.HasValue
+						? (s.Value == CloudServiceState.Started ? CloudServiceState.Stopped : CloudServiceState.Started)
+						: CloudServiceState.Started);
 
 				ServicesView.DataSource = GetServices();
 				ServicesView.DataBind();
