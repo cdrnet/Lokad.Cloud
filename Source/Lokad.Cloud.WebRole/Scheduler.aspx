@@ -14,11 +14,11 @@
 	<p>Manage scheduled execution of your services.<br/>
 	Current server time: <%= DateTime.UtcNow %></p>
 	
-	<p><asp:GridView ID="ScheduleView" runat="server" /></p>
+	<p><asp:GridView ID="ScheduleView" runat="server" OnDataBinding="ScheduleView_DataBinding" /></p>
 	<br />
 	<p>
 		Update trigger interval of scheduled service:<br />
-		<asp:DropDownList ID="ScheduleList" runat="server" />
+		<asp:DropDownList ID="ScheduleList" runat="server" OnDataBinding="ScheduleList_DataBinding" />
 		<asp:TextBox ID="NewIntervalBox" runat="server" Text="3600"/> seconds<br />
 		<asp:Button ID="UpdateIntervalButton" runat="server" Text="Update" 
 			OnClick="UpdateIntervalButton_OnClick"

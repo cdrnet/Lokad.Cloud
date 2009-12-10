@@ -13,7 +13,7 @@
 	<h1 class="separator">Assembly manager</h1>
 
 	<p>Content of the assembly archive:</p>
-	<asp:GridView ID="AssembliesView" runat="server" EmptyDataText="No file in archive yet." />
+	<asp:GridView ID="AssembliesView" runat="server" EmptyDataText="No file in archive yet." OnDataBinding="AssembliesView_DataBinding" />
 	
 	<br />
 	<p>Upload a stand-alone .NET assembly (DLL) or a ZIP archive containing multiple DLLs (previous assemblies will be deleted):

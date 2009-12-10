@@ -44,6 +44,10 @@ namespace Lokad.Cloud.Azure.Test
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			Assert.That(assemblies.Any(a => a.FullName.StartsWith("sample")));
 
+			// validate using management class
+			var cloudAssemblies = new Management.CloudAssemblies(provider);
+			Assert.That(cloudAssemblies.GetAssenblies().Any(a => a.AssemblyName.StartsWith("sample")));
+
 			// no update, checking
 			try
 			{
@@ -54,8 +58,8 @@ namespace Lokad.Cloud.Azure.Test
 				Assert.Fail("Package has not been updated yet.");
 			}
 
-			// forcing update
-			provider.PutBlob(AssemblyLoader.ContainerName, AssemblyLoader.PackageBlobName, buffer);
+			// forcing update, this time using the management class
+			cloudAssemblies.SetAssemblyZipContainer(buffer);
 
 			// update, re-checking
 			try

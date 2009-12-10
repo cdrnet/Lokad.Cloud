@@ -1,19 +1,24 @@
-﻿using System;
+﻿#region Copyright (c) Lokad 2009
+// This code is released under the terms of the new BSD licence.
+// URL: http://www.lokad.com/
+#endregion
+
+using System;
 using System.Linq;
 using System.Web.Caching;
-using Lokad.Cloud.Diagnostics;
+using Lokad.Cloud.Management;
 
 namespace Lokad.Cloud.Web
 {
 	public partial class Monitoring : System.Web.UI.Page
 	{
 		readonly TimeSpan _cacheRefreshPeriod = 2.Minutes();
-		readonly ICloudDiagnosticsRepository _repository = GlobalSetup.Container.Resolve<ICloudDiagnosticsRepository>();
+		readonly CloudStatistics _cloudStatistics = GlobalSetup.Container.Resolve<CloudStatistics>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
 			PartitionView.DataSource = Cached(
-				() => _repository.GetAllPartitionStatistics()
+				() => _cloudStatistics.GetPartitions()
 					.Select(s => new
 						{
 							Partition = s.PartitionKey,
@@ -29,7 +34,7 @@ namespace Lokad.Cloud.Web
 			PartitionView.DataBind();
 
 			ServiceView.DataSource = Cached(
-				() => _repository.GetAllServiceStatistics()
+				() => _cloudStatistics.GetServices()
 					.Select(s => new
 						{
 							Service = s.Name,
@@ -42,7 +47,7 @@ namespace Lokad.Cloud.Web
 			ServiceView.DataBind();
 
 			ExecutionProfilesView.DataSource = Cached(
-				() => _repository.GetAllExecutionProfilingStatistics()
+				() => _cloudStatistics.GetExecutionProfiles()
 					.SelectMany(s => s.Statistics
 						.Where(d => d.OpenCount > 0)
 						.Select(d => new
@@ -59,7 +64,7 @@ namespace Lokad.Cloud.Web
 			ExecutionProfilesView.DataBind();
 
 			TrackedExceptionsView.DataSource = Cached(
-				() => _repository.GetAllExceptionTrackingStatistics()
+				() => _cloudStatistics.GetTrackedExceptions()
 					.SelectMany(s => s.Statistics
 						.Select(d => new
 							{

@@ -36,10 +36,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Resource\Library\DotNetOpenAuth.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Resource\Library\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="Lokad.Shared, Version=1.2.47.0, Culture=neutral, PublicKeyToken=43f0664b2b4db1fc, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Resource\Library\Lokad.Shared.dll</HintPath>
@@ -94,7 +90,6 @@
     <Compile Include="Assemblies.aspx.designer.cs">
       <DependentUpon>Assemblies.aspx</DependentUpon>
     </Compile>
-    <Compile Include="AssemblyInspector.cs" />
     <Compile Include="Config.aspx.cs">
       <DependentUpon>Config.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

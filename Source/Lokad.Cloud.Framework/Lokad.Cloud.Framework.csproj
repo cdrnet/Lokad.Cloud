@@ -110,6 +110,16 @@
     <Compile Include="Diagnostics\IServiceMonitor.cs" />
     <Compile Include="Diagnostics\ServiceStatistics.cs" />
     <Compile Include="IBinaryFormatter.cs" />
+    <Compile Include="Management\AssemblyInspector.cs" />
+    <Compile Include="Management\CloudAssemblies.cs" />
+    <Compile Include="Management\CloudAssemblyInfo.cs" />
+    <Compile Include="Management\CloudConfiguration.cs" />
+    <Compile Include="Management\CloudStatistics.cs" />
+    <Compile Include="Management\ManagementModule.cs" />
+    <Compile Include="Management\ServiceInfo.cs" />
+    <Compile Include="Management\CloudServices.cs" />
+    <Compile Include="Management\ServiceSchedulingInfo.cs" />
+    <Compile Include="Management\CloudServiceScheduling.cs" />
     <Compile Include="Mock\MemoryMonitor.cs" />
     <Compile Include="Mock\MockStorageModule.cs" />
     <Compile Include="RankAttribute.cs" />

@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -11,7 +12,7 @@ using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
-using System.IO;
+using Lokad.Cloud.Management;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.StorageClient;
 
@@ -37,6 +38,9 @@ namespace Lokad.Cloud.Web
 
 			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
+
+			// Management
+			builder.RegisterModule(new ManagementModule());
 
 			Container = builder.Build();
 		}

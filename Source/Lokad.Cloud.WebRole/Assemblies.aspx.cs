@@ -2,69 +2,46 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web.UI.WebControls;
-using ICSharpCode.SharpZipLib.Zip;
-using Lokad.Cloud.Azure;
+using Lokad.Cloud.Management;
 
 namespace Lokad.Cloud.Web
 {
 	public partial class Assemblies : System.Web.UI.Page
 	{
-		readonly IBlobStorageProvider _provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+		readonly CloudAssemblies _cloudAssemblies = GlobalSetup.Container.Resolve<CloudAssemblies>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			AssembliesView.DataSource = GetZipEntries();
 			AssembliesView.DataBind();
 		}
 
-		IEnumerable<object> GetZipEntries()
+		protected void AssembliesView_DataBinding(object sender, EventArgs e)
 		{
-			var buffer = _provider.GetBlob<byte[]>(
-				AssemblyLoader.ContainerName,
-				AssemblyLoader.PackageBlobName);
-
-			// do not return anything if no assembly is loaded
-			if (!buffer.HasValue)
-			{
-				yield break;
-			}
-
-			using (var zipStream = new ZipInputStream(new MemoryStream(buffer.Value)))
-			{
-				ZipEntry entry;
-				while ((entry = zipStream.GetNextEntry()) != null)
+			AssembliesView.DataSource = _cloudAssemblies.GetAssenblies()
+				.Select(info => new
 				{
-					byte[] assemblyBytes = new byte[entry.Size];
-					zipStream.Read(assemblyBytes, 0, assemblyBytes.Length);
-
-					string version = "n/a";
-					using(var inspector = new AssemblyInspector(assemblyBytes))
-					{
-						version = inspector.AssemblyVersion;
-					}
-
-					yield return new
-					{
-						Name = entry.Name,
-						DateTime = entry.DateTime,
-						Version = version,
-						Size = entry.Size
-					};
-				}
-			}
-
+					Name = info.AssemblyName,
+					info.DateTime,
+					Version = info.Version.ToString(),
+					info.Size
+				});
 		}
 
 		protected void UploadButton_Click(object sender, EventArgs e)
 		{
 			Page.Validate("Upload");
-			if(!Page.IsValid) return;
+			if(!Page.IsValid)
+			{
+				return;
+			}
 
-			if(!AssemblyFileUpload.HasFile) // defensive design, the validator should prevent this
+			// defensive design, the validator should prevent this
+			if(!AssemblyFileUpload.HasFile)
 			{
 				return;
 			}
@@ -74,30 +51,14 @@ namespace Lokad.Cloud.Web
 			// If the file is a DLL, it must be compressed as ZIP
 			if(extension == ".dll")
 			{
-				using(var tempStream = new MemoryStream())
-				{
-					using(var zip = new ZipOutputStream(tempStream))
-					{
-						var entry = new ZipEntry(AssemblyFileUpload.FileName);
-						zip.PutNextEntry(entry);
-
-						var bytes = AssemblyFileUpload.FileBytes;
-						zip.Write(bytes, 0, bytes.Length);
-						zip.CloseEntry();
-					}
-
-					_provider.PutBlob(AssemblyLoader.ContainerName,
-						AssemblyLoader.PackageBlobName,
-						tempStream.ToArray(), true);
-				}
+				_cloudAssemblies.SetAssemblyDll(
+					AssemblyFileUpload.FileBytes,
+					AssemblyFileUpload.FileName);
 			}
 			else
 			{
-				// pushing new archive to storage
-				_provider.PutBlob(
-					AssemblyLoader.ContainerName,
-					AssemblyLoader.PackageBlobName,
-					AssemblyFileUpload.FileBytes, true);
+				_cloudAssemblies.SetAssemblyZipContainer(
+					AssemblyFileUpload.FileBytes);
 			}
 
 			AssembliesView.DataBind();
@@ -108,46 +69,39 @@ namespace Lokad.Cloud.Web
 		private static string GetLowercaseExtension(string fileName)
 		{
 			string extension = Path.GetExtension(fileName);
-			if(extension == null) return "";
+			if (extension == null)
+			{
+				return "";
+			}
 
-			extension = extension.ToLowerInvariant();
-			return extension;
+			return extension.ToLowerInvariant();
 		}
 
 		protected void UploadValidator_Validate(object source, ServerValidateEventArgs args)
 		{
-			args.IsValid = true;
-
 			// file must exists
-			args.IsValid &= AssemblyFileUpload.HasFile;
+			if (!AssemblyFileUpload.HasFile)
+			{
+				args.IsValid = false;
+				return;
+			}
 
 			// Extension must be ".zip" or ".dll"
 			var extension = GetLowercaseExtension(AssemblyFileUpload.FileName);
-			args.IsValid &= extension == ".zip" || extension == ".dll";
-
-			if(args.IsValid)
+			if (extension != ".zip" && extension != ".dll")
 			{
-				if(extension == ".zip")
-				{
-					// checking that the archive can be decompressed correctly.
-					try
-					{
-						using(var zipStream = new ZipInputStream(new MemoryStream(AssemblyFileUpload.FileBytes)))
-						{
-							ZipEntry entry;
-							while((entry = zipStream.GetNextEntry()) != null)
-							{
-								var buffer = new byte[entry.Size];
-								zipStream.Read(buffer, 0, buffer.Length);
-							}
-						}
-					}
-					catch(Exception)
-					{
-						args.IsValid = false;
-					}
-				}
+				args.IsValid = false;
+				return;
 			}
+
+			// In case of zip, checking that the archive can be decompressed correctly.
+			if (extension == ".zip" && !_cloudAssemblies.IsValidZipContainer(AssemblyFileUpload.FileBytes))
+			{
+				args.IsValid = false;
+				return;
+			}
+
+			args.IsValid = true;
 		}
 	}
 }

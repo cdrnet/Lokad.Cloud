@@ -2,95 +2,64 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-using System;
-using System.Collections.Generic;
-using System.Web.UI.WebControls;
 
-// TODO: blobs are sequentially enumerated, performance issue
-// if there are more than a few dozen services
+using System;
+using System.Linq;
+using System.Web.UI.WebControls;
+using Lokad.Cloud.Management;
 
 namespace Lokad.Cloud.Web
 {
 	public partial class Services : System.Web.UI.Page
 	{
-		readonly IBlobStorageProvider _provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+		readonly CloudServices _cloudServices = GlobalSetup.Container.Resolve<CloudServices>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			ServicesView.DataSource = GetServices();
 			ServicesView.DataBind();
-
 			ServiceList.DataBind();
 		}
 
-		IEnumerable<object> GetServices()
+		protected void ServicesView_DataBinding(object sender, EventArgs e)
 		{
-			foreach(var blobName in _provider.List(CloudServiceStateName.GetPrefix()))
-			{
-				var state = _provider.GetBlobOrDelete(blobName);
-				if (!state.HasValue)
-				{
-					continue;
-				}
-
-				yield return new
+			ServicesView.DataSource = _cloudServices.GetServices()
+				.Select(info => new
 					{
-						Name = blobName.ServiceName,
-						State = state.Value.ToString()
-					};
-			}
-		}
-
-		protected void ServicesView_OnRowCommand(object sender, GridViewCommandEventArgs e)
-		{
-			if(e.CommandName == "Toggle")
-			{
-				int row;
-				if(!int.TryParse(e.CommandArgument as string, out row)) return;
-
-				var blobName = new CloudServiceStateName(ServicesView.Rows[row].Cells[1].Text);
-
-				// inverting the service status
-				_provider.UpdateIfNotModified(
-					blobName,
-					s => s.HasValue
-						? (s.Value == CloudServiceState.Started ? CloudServiceState.Stopped : CloudServiceState.Started)
-						: CloudServiceState.Started);
-
-				ServicesView.DataSource = GetServices();
-				ServicesView.DataBind();
-			}
+						Name = info.ServiceName,
+						State = info.State.ToString()
+					});
 		}
 
 		protected void ServiceList_DataBinding(object sender, EventArgs e)
 		{
-			// Filter out built-in services
-			var services = new List<string>();
+			ServiceList.DataSource = _cloudServices.GetUserServiceNames();
+		}
 
-			foreach(var name in _provider.List(CloudServiceStateName.GetPrefix()))
+		protected void ServicesView_OnRowCommand(object sender, GridViewCommandEventArgs e)
+		{
+			if (e.CommandName == "Toggle")
 			{
-				// HACK: name of built-in services is hard-coded
-				if(name.ServiceName != typeof(Cloud.Services.GarbageCollectorService).FullName &&
-					name.ServiceName != typeof(Cloud.Services.DelayedQueueService).FullName &&
-					name.ServiceName != typeof(Cloud.Services.MonitoringService).FullName)
-				{
-					services.Add(name.ServiceName);
-				}
-			}
+				int row;
+				if (!int.TryParse(e.CommandArgument as string, out row)) return;
 
-			ServiceList.DataSource = services;
+				// inverting the service status
+				var serviceName = ServicesView.Rows[row].Cells[1].Text;
+				_cloudServices.ToggleServiceState(serviceName);
+
+				ServicesView.DataBind();
+			}
 		}
 
 		protected void DeleteButton_Click(object sender, EventArgs e)
 		{
 			Page.Validate("delete");
-			if(!Page.IsValid) return;
+			if (!Page.IsValid)
+			{
+				return;
+			}
 
 			var serviceName = ServiceList.SelectedValue;
-
-			var stateBlobName = new CloudServiceStateName(serviceName);
-
-			_provider.DeleteBlob(stateBlobName);
+			_cloudServices.RemoveServiceState(serviceName);
 
 			ServiceList.DataBind();
 		}
