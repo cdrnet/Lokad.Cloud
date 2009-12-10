@@ -203,7 +203,7 @@ namespace Lokad.Cloud.Azure
 				{
 					var prefix = GetNamePrefix(blobName);
 					var dateTime = ToDateTime(prefix);
-					if(dateTime <= limit) deleteQueue.Add(blobName);
+					if(dateTime < limit) deleteQueue.Add(blobName);
 
 					if(deleteQueue.Count == DeleteBatchSize) break;
 				}

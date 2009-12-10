@@ -195,6 +195,7 @@ namespace Lokad.Cloud.Azure.Test
 			queueProvider.Put<byte[]>(queueName2, new byte[20000]);
 			queueProvider.Clear(queueName2);
 			Assert.AreEqual(0, blobProvider.List(QueueStorageProvider.OverflowingMessagesContainerName, "").Count(), "ClearQueue should also remove overflowing messages");
+			queueProvider.DeleteQueue(queueName2);
 		}
 	}
 

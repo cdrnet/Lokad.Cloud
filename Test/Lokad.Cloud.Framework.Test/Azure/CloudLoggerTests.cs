@@ -79,6 +79,8 @@ namespace Lokad.Cloud.Azure.Test
 			int initialCount = logger.GetRecentLogs().Count();
 
 			DateTime begin = DateTime.Now;
+			System.Threading.Thread.Sleep(1000); // Wait to make sure that logs are created after 'begin'
+
 			for(int i = 0; i < 10; i++)
 			{
 				logger.Info("Just a test message");
