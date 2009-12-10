@@ -34,7 +34,7 @@ namespace Lokad.Cloud.Azure
 		readonly object _sync = new object();
 
 		readonly CloudQueueClient _queueStorage;
-		readonly CloudBlobClient _blobStorage; // needed for overflowing messages
+		readonly IBlobStorageProvider _blobStorage;
 		readonly IBinaryFormatter _formatter;
 
 		// messages currently being processed (boolean property indicates if the message is overflowing)
@@ -42,7 +42,7 @@ namespace Lokad.Cloud.Azure
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
-			CloudQueueClient queueStorage, CloudBlobClient blobStorage, IBinaryFormatter formatter)
+			CloudQueueClient queueStorage, IBlobStorageProvider blobStorage, IBinaryFormatter formatter)
 		{
 			_queueStorage = queueStorage;
 			_blobStorage = blobStorage;
@@ -154,12 +154,12 @@ namespace Lokad.Cloud.Azure
 			// unwrapping messages
             foreach(var mw in wrappedMessages)
             {
-            	var container = _blobStorage.GetContainerReference(mw.ContainerName);
-				var blob = container.GetBlockBlobReference(mw.BlobName);
-
+				string ignored;
+				var blobContent = _blobStorage.GetBlob(mw.ContainerName, mw.BlobName, typeof(T), out ignored);
+            	
 				// blob may not exists in (rare) case of failure just before queue deletion
 				// but after container deletion (or also timeout deletion).
-				if(null == blob.Properties)
+				if(null == blobContent)
 				{
 					CloudQueueMessage rawMessage;
 					lock (_sync)
@@ -174,13 +174,7 @@ namespace Lokad.Cloud.Azure
 					continue;
 				}
 
-				T innerMessage;
-				using(var stream = new MemoryStream())
-				{
-					blob.DownloadToStream(stream);
-					stream.Seek(0, SeekOrigin.Begin);
-					innerMessage = (T)_formatter.Deserialize(stream, typeof(T));
-				}
+				T innerMessage = (T)blobContent;
 
 				// substitution: message wrapper replaced by actual item in '_inprocess' list
 				lock(_sync)
@@ -217,33 +211,8 @@ namespace Lokad.Cloud.Azure
 					{
 						var blobName = OverflowingMessageBlobName.GetNew(queueName);
 
-						var container = _blobStorage.GetContainerReference(blobName.ContainerName);
-
-						try
-						{
-							var blob = container.GetBlockBlobReference(blobName.ToString());
-							stream.Seek(0, SeekOrigin.Begin);
-							blob.UploadFromStream(stream);
-						}
-						catch(StorageClientException ex)
-						{
-							if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
-							{
-								// It usually takes time before the container gets available.
-								// (the container might have been freshly deleted).
-								PolicyHelper.SlowInstantiation.Do(() =>
-									{
-										container.Create();
-										var myBlob = container.GetBlockBlobReference(blobName.ToString());
-										stream.Seek(0, SeekOrigin.Begin);
-										myBlob.UploadFromStream(stream);
-									});
-							}
-							else
-							{
-								throw;
-							}
-						}
+						// HACK: In this case serialization is performed another time (internally)
+						_blobStorage.PutBlob(blobName, message);
 
 						var mw = new MessageWrapper
 							{
@@ -293,17 +262,14 @@ namespace Lokad.Cloud.Azure
 		{
 			var toDelete = new List<string>();
 
-			foreach(var blob in BlobStorageProvider.List(OverflowingMessagesContainerName, queueName, _blobStorage))
+			foreach(var blob in _blobStorage.List(OverflowingMessagesContainerName, queueName))
 			{
 				toDelete.Add(blob);
 			}
 
-			var container = _blobStorage.GetContainerReference(OverflowingMessagesContainerName);
-
 			toDelete.ToArray().SelectInParallel(blobName =>
 			{
-				var blob = container.GetBlobReference(blobName);
-				blob.Delete();
+				_blobStorage.DeleteBlob(OverflowingMessagesContainerName, blobName);
 				return 0;
 			});
 		}
@@ -359,9 +325,7 @@ namespace Lokad.Cloud.Azure
 					{
 						var mw = (MessageWrapper)_formatter.Deserialize(stream, typeof(MessageWrapper));
 
-						var container = _blobStorage.GetContainerReference(mw.ContainerName);
-						var blob = container.GetBlockBlobReference(mw.BlobName);
-						blob.Delete();
+						_blobStorage.DeleteBlob(mw.ContainerName, mw.BlobName);
 					}
 				}
 

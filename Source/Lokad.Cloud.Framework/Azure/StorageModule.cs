@@ -89,7 +89,7 @@ namespace Lokad.Cloud.Azure
 
 							return (IQueueStorageProvider)new QueueStorageProvider(
 								c.Resolve<CloudQueueClient>(),
-								c.Resolve<CloudBlobClient>(),
+								c.Resolve<IBlobStorageProvider>(),
 								formatter);
 						});
 				}
