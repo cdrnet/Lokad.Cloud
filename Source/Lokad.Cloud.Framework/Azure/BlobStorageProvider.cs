@@ -452,14 +452,15 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
-		internal static IEnumerable<string> List(string containerName, string prefix, CloudBlobClient client)
+		public IEnumerable<string> List(string containerName, string prefix)
 		{
-			// HACK: quick and dirty implementation that replaces the old one below
+			// Enumerated blobs do not have a "name" property,
+			// thus the name must be extracted from their URI
 			// http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/c5e36676-8d07-46cc-b803-72621a0898b0/?prof=required
 
 			if(prefix == null) prefix = "";
 
-			var container = client.GetContainerReference(containerName);
+			var container = _blobStorage.GetContainerReference(containerName);
 
 			BlobRequestOptions options = new BlobRequestOptions();
 			options.UseFlatBlobListing = true;
@@ -503,11 +504,6 @@ namespace Lokad.Cloud.Azure
 
 				if(name.StartsWith(prefix)) yield return name;
 			}
-		}
-
-		public IEnumerable<string> List(string containerName, string prefix)
-		{
-			return List(containerName, prefix, _blobStorage);
 		}
 	}
 }
