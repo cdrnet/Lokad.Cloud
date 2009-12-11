@@ -5,6 +5,9 @@
 
 using System;
 
+// [vermorel] This attribute should be applicable to simple properties, 
+// to indicate that NDCS should be used instead.
+
 namespace Lokad.Cloud
 {
 	/// <summary>

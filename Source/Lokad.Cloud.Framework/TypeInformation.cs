@@ -4,9 +4,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections.Specialized;
 
 namespace Lokad.Cloud
@@ -30,9 +27,9 @@ namespace Lokad.Cloud
 		/// <returns>The type information.</returns>
 		public static TypeInformation GetInformation(Type type)
 		{
-			var result = new TypeInformation() { ThrowOnDeserializationError = null };
+			var result = new TypeInformation { ThrowOnDeserializationError = null };
 
-			Type myType = type;
+			var myType = type;
 
 			if(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
 			{
@@ -41,8 +38,12 @@ namespace Lokad.Cloud
 
 			var transient = myType.GetAttribute<TransientAttribute>(false);
 
-			result.IsTransient = transient != null;
-			if(result.IsTransient) result.ThrowOnDeserializationError = transient.ThrowOnDeserializationError;
+			if (transient != null)
+			{
+				result.IsTransient = true;
+				result.ThrowOnDeserializationError = transient.ThrowOnDeserializationError;
+			}
+
 			return result;
 		}
 
@@ -68,15 +69,15 @@ namespace Lokad.Cloud
 		/// <returns>The type information, if available, <c>null</c> otherwise.</returns>
 		public static TypeInformation LoadFromBlobMetadata(NameValueCollection metadata)
 		{
-			string transientString = metadata[IsTransientKey];
+			var transientString = metadata[IsTransientKey];
 			if(string.IsNullOrEmpty(transientString)) return null;
 
-			bool isTransient = bool.Parse(transientString);
-			TypeInformation result = new TypeInformation() { IsTransient = isTransient };
+			var isTransient = bool.Parse(transientString);
+			var result = new TypeInformation { IsTransient = isTransient };
 
 			if(isTransient)
 			{
-				string throwSetting = metadata[ThrownOnDeserializationErrorKey];
+				var throwSetting = metadata[ThrownOnDeserializationErrorKey];
 				if(string.IsNullOrEmpty(throwSetting)) return null;
 				result.ThrowOnDeserializationError = bool.Parse(metadata[ThrownOnDeserializationErrorKey]);
 			}
@@ -91,12 +92,11 @@ namespace Lokad.Cloud
 		/// <exception cref="T:System.NullReferenceException">The <paramref name="obj"/> parameter is null.</exception>
 		public override bool Equals(object obj)
 		{
-			if(object.ReferenceEquals(obj, null)) throw new NullReferenceException();
+			if(ReferenceEquals(obj, null)) throw new NullReferenceException();
 
-			TypeInformation realType = obj as TypeInformation;
+			var realType = obj as TypeInformation;
 
-			if(object.ReferenceEquals(realType, null)) return false;
-			else return Equals(realType);
+			return !ReferenceEquals(realType, null) && Equals(realType);
 		}
 
 		/// <summary>
@@ -106,7 +106,7 @@ namespace Lokad.Cloud
 		/// <returns><c>true</c> if <paramref name="info"/> is equal to the current instance, <c>false</c> otherwise.</returns>
 		public bool Equals(TypeInformation info)
 		{
-			if(object.ReferenceEquals(info, null)) throw new NullReferenceException();
+			if(ReferenceEquals(info, null)) throw new NullReferenceException();
 
 			return
 				info.IsTransient == IsTransient &&
