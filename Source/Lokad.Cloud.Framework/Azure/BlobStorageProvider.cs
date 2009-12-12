@@ -74,10 +74,15 @@ namespace Lokad.Cloud.Azure
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
-		static string UploadBlobContent(CloudBlob blob, Stream stream)
+		static string UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite)
 		{
-			stream.Seek(0, SeekOrigin.Begin);
-			blob.UploadFromStream(stream);
+			// TODO: BUG, need to fix access control, and to retrieve write status in 1 call.
+			var options = overwrite ?
+				new BlobRequestOptions {AccessCondition = AccessCondition.None} :
+				new BlobRequestOptions {AccessCondition = AccessCondition.IfNotModifiedSince(DateTime.MinValue)};
+
+			stream.Seek(0, SeekOrigin.Begin); 
+			blob.UploadFromStream(stream, options);
 			return blob.Properties.ETag;
 		}
 
@@ -99,7 +104,7 @@ namespace Lokad.Cloud.Azure
 
 					if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
 					{
-						etag = UploadBlobContent(blob, stream);
+						etag = UploadBlobContent(blob, stream, overwrite);
 						return true;
 					}
 
@@ -121,7 +126,7 @@ namespace Lokad.Cloud.Azure
 
 							if(myBlob.Properties.ETag == null || (myBlob.Properties.ETag != null && overwrite))
 							{
-								tempEtag = UploadBlobContent(myBlob, stream);
+								tempEtag = UploadBlobContent(myBlob, stream, overwrite);
 								flag = true;
 							}
 						});
@@ -142,7 +147,7 @@ namespace Lokad.Cloud.Azure
 
 					if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
 					{
-						etag = UploadBlobContent(blob, stream);
+						etag = UploadBlobContent(blob, stream, overwrite);
 						return true;
 					}
 
@@ -362,7 +367,7 @@ namespace Lokad.Cloud.Azure
 			{
 				_formatter.Serialize(wstream, result.Value);
 				wstream.Seek(0, SeekOrigin.Begin);
-				UploadBlobContent(blob, wstream);
+				UploadBlobContent(blob, wstream, true);
 			}
 
 			return true;
