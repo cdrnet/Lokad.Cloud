@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.WindowsAzure.StorageClient;
-using Microsoft.WindowsAzure.StorageClient.Protocol;
 using Lokad.Quality;
 using Lokad.Threading;
 
@@ -61,9 +60,9 @@ namespace Lokad.Cloud.Azure
 
 		object SafeDeserialize<T>(Stream source)
 		{
-			long position = source.Position;
+			var position = source.Position;
 
-			object item = null;
+			object item;
 			try
 			{
 				item = _formatter.Deserialize(source, typeof(T));
@@ -123,9 +122,9 @@ namespace Lokad.Cloud.Azure
 						InProcessMessage inProcMsg;
 						if(!_inProcessMessages.TryGetValue(innerMessage, out inProcMsg))
 						{
-							inProcMsg = new InProcessMessage()
+							inProcMsg = new InProcessMessage
 							{
-								RawMessages = new List<CloudQueueMessage>() { rawMessage },
+								RawMessages = new List<CloudQueueMessage> { rawMessage },
 								IsOverflowing = false
 							};
 							_inProcessMessages.Add(innerMessage, inProcMsg);
@@ -205,7 +204,7 @@ namespace Lokad.Cloud.Azure
 				{
 					_formatter.Serialize(stream, message);
 
-					byte[] messageContent = null;
+					byte[] messageContent;
 
 					if(stream.Length >= CloudQueueMessage.MaxMessageSize)
 					{

@@ -4,15 +4,16 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Lokad.Cloud
 {
 	/// <summary>Helper to facilitate blob storage enumeration.</summary>
-	[Serializable]
+	[Serializable, DataContract]
 	public class BlobNamePrefix<T> where T : BaseBlobName
 	{
-		public string Container { get; set; }
-		public string Prefix { get; set; }
+		[DataMember] public string Container { get; set; }
+		[DataMember] public string Prefix { get; set; }
 
 		public BlobNamePrefix(string container, string prefix)
 		{

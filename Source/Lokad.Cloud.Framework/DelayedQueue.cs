@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Lokad.Quality;
 
 namespace Lokad.Cloud
@@ -12,6 +13,9 @@ namespace Lokad.Cloud
 	/// <summary>Used as a wrapper for delayed messages (stored in the
 	/// blob storage waiting to be pushed into a queue).</summary>
 	/// <seealso cref="DelayedQueue.PutWithDelay{T}(T,System.DateTime)"/>
+	/// <remarks>
+	/// Due to genericity, this message is not tagged with <c>DataContract</c>.
+	/// </remarks>
 	[Serializable]
 	class DelayedMessage
 	{
@@ -30,7 +34,7 @@ namespace Lokad.Cloud
 		}
 	}
 
-	[Serializable]
+	[Serializable, DataContract]
 	class DelayedMessageName : BaseBlobName
 	{
 		public override string ContainerName
@@ -38,10 +42,8 @@ namespace Lokad.Cloud
 			get { return CloudService.DelayedMessageContainer; }
 		}
 
-		[Rank(0)]
-		public readonly DateTime TriggerTime;
-		[UsedImplicitly, Rank(1)]
-		public readonly Guid Identifier;
+		[Rank(0), DataMember] public readonly DateTime TriggerTime;
+		[UsedImplicitly, Rank(1), DataMember] public readonly Guid Identifier;
 
 		public DelayedMessageName(DateTime triggerTime, Guid identifier)
 		{

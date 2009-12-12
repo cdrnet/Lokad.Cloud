@@ -4,10 +4,7 @@
 #endregion
 
 using System;
-using System.Linq;
-using Lokad.Cloud;
 using NUnit.Framework;
-using System.Runtime.Serialization;
 
 // TODO: refactor tests so that containers do not have to be created each time.
 
@@ -19,86 +16,131 @@ namespace Lokad.Cloud.Azure.Test
 		private const string ContainerName = "tests-blobstorageprovider-mycontainer";
 		private const string BlobName = "myprefix/myblob";
 
-		[Test]
-		public void CreatePutGetDelete()
+		readonly IBlobStorageProvider Provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+
+		[TestFixtureSetUp]
+		public void Setup()
 		{
-			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
-			provider.CreateContainer(ContainerName);
+			Provider.CreateContainer(ContainerName);
+			Provider.DeleteBlob(ContainerName, BlobName);
+		}
 
+		[Test]
+		public void GetAndDelete()
+		{
+			Provider.DeleteBlob(ContainerName, BlobName);
+			Assert.IsFalse(Provider.GetBlob<int>(ContainerName, BlobName).HasValue, "#A00");
+		}
+
+		[Test]
+		public void BlobHasEtag()
+		{
+			Provider.PutBlob(ContainerName, BlobName, 1);
+			var etag = Provider.GetBlobEtag(ContainerName, BlobName);
+			Assert.IsNotNull(etag, "#A00");
+		}
+
+		[Test]
+		public void MissingBlobHasNoEtag()
+		{
+			Provider.DeleteBlob(ContainerName, BlobName);
+			var etag = Provider.GetBlobEtag(ContainerName, BlobName);
+			Assert.IsNull(etag, "#A00");
+		}
+
+		[Test]
+		public void PutBlobEnforceNoOverwrite()
+		{
+			Provider.PutBlob(ContainerName, BlobName, 1);
+
+			string etag;
+			var isSaved = Provider.PutBlob(ContainerName, BlobName, 6, false, out etag);
+			Assert.IsFalse(isSaved, "#A00");
+			Assert.IsNull(etag, "#A01");
+
+			Assert.IsTrue(Provider.GetBlob<int>(ContainerName, BlobName).HasValue, "#A02");
+			Assert.AreEqual(1, Provider.GetBlob<int>(ContainerName, BlobName).Value, "#A03");
+		}
+
+		[Test]
+		public void PutBlobEnforceOverwrite()
+		{
+			Provider.PutBlob(ContainerName, BlobName, 1);
+
+			string etag;
+			var isSaved = Provider.PutBlob(ContainerName, BlobName, 6, true, out etag);
+			Assert.IsTrue(isSaved, "#A00");
+			Assert.IsNotNull(etag, "#A01");
+
+			Assert.IsTrue(Provider.GetBlob<int>(ContainerName, BlobName).HasValue, "#A02");
+			Assert.AreEqual(6, Provider.GetBlob<int>(ContainerName, BlobName).Value, "#A03");
+		}
+
+		[Test]
+		public void EtagChangesOnlyWithBlogChange()
+		{
+			Provider.PutBlob(ContainerName, BlobName, 1);
+			var etag = Provider.GetBlobEtag(ContainerName, BlobName);
+			var newEtag = Provider.GetBlobEtag(ContainerName, BlobName);
+			Assert.AreEqual(etag, newEtag, "#A00");
+		}
+
+		[Test]
+		public void EtagChangesWithBlogChange()
+		{
+			Provider.PutBlob(ContainerName, BlobName, 1);
+			var etag = Provider.GetBlobEtag(ContainerName, BlobName);
+			Provider.PutBlob(ContainerName, BlobName, 1);
+			var newEtag = Provider.GetBlobEtag(ContainerName, BlobName);
+			Assert.AreNotEqual(etag, newEtag, "#A00.");
+		}
+
+		[Test]
+		public void CheckNoOverwriteCondition()
+		{
 			var blob = new MyBlob();
-			provider.PutBlob(ContainerName, BlobName, blob);
+			Provider.PutBlob(ContainerName, BlobName, 1);
+			Assert.IsFalse(Provider.PutBlob(ContainerName, BlobName, blob, false), "#A0");
+			Assert.AreEqual(1, Provider.GetBlob<int>(ContainerName, BlobName), "#A01");
+		}
 
-			var retrievedBlob = provider.GetBlob<MyBlob>(ContainerName, BlobName);
+		[Test]
+		public void GetBlobIfNotModifiedNoChangeNoRetrieval()
+		{
+			Provider.PutBlob(ContainerName, BlobName, 1);
+			var etag = Provider.GetBlobEtag(ContainerName, BlobName);
 
-			Assert.IsTrue(retrievedBlob.HasValue, "#A01");
-			Assert.AreEqual(blob.MyGuid, retrievedBlob.Value.MyGuid, "#A02");
-			Assert.IsTrue(provider.List(ContainerName, "myprefix").Contains(BlobName), "#A03");
-			Assert.IsTrue(!provider.List(ContainerName, "notmyprefix").Contains(BlobName), "#A04");
+			string newEtag;
+			var output = Provider.GetBlobIfModified<MyBlob>(ContainerName, BlobName, etag, out newEtag);
 
-			// testing ETag
-			provider.DeleteBlob(ContainerName, BlobName);
-			var etag = provider.GetBlobEtag(ContainerName, BlobName);
-			Assert.IsNull(etag, "Deleted blob has no etag.");
+			Assert.IsNull(newEtag, "#A00");
+			Assert.IsFalse(output.HasValue, "#A01");
+		}
 
-			provider.PutBlob(ContainerName, BlobName, 1);
-			etag = provider.GetBlobEtag(ContainerName, BlobName);
-			Assert.IsNotNull(etag, "Blob should have etag.");
+		[Test]
+		public void GetBlobIfNotModifiedChangeAndRetrieval()
+		{
+			Provider.PutBlob(ContainerName, BlobName, 1);
 
-			var newEtag = provider.GetBlobEtag(ContainerName, BlobName);
-			Assert.AreEqual(etag, newEtag, "Etag should be unchanged.");
+			string newEtag;
+			var output = Provider.GetBlobIfModified<MyBlob>(ContainerName, BlobName, "dummy", out newEtag);
+			Assert.IsNotNull(output, "#A00");
+		}
 
-			// Verify that overwrite flag works as expected
-			Assert.IsFalse(provider.PutBlob(ContainerName, BlobName, blob, false), "Blob should not be overwritten");
-			Assert.IsTrue(provider.PutBlob(ContainerName, BlobName, blob, true), "Blob should be overwritten");
-			string newEtagOut = provider.GetBlobEtag(ContainerName, BlobName);
-			Assert.AreNotEqual(newEtag, newEtagOut, "Etag should be changed");
-			newEtag = newEtagOut;
-
-			// Test that blob is not retrieved because it is unchanged
-			newEtagOut = "dummy";
-			Maybe<MyBlob> output = provider.GetBlobIfModified<MyBlob>(ContainerName, BlobName, newEtag, out newEtagOut);
-			Assert.IsNull(newEtagOut, "Etag should be null because blob is unchanged");
-			Assert.IsFalse(output.HasValue, "Retrieved blob should be null because it is unchanged");
-
-			provider.PutBlob(ContainerName, BlobName, 2);
-			newEtag = provider.GetBlobEtag(ContainerName, BlobName);
-			Assert.AreNotEqual(etag, newEtag, "Etag should be changed.");
-
-			// Test that blob is retrieved because it is changed
-			string myPreviousEtag = newEtagOut;
-			newEtagOut = "dummy";
-			Maybe<int> outputInt = provider.GetBlobIfModified<int>(ContainerName, BlobName, myPreviousEtag, out newEtagOut);
-			Assert.AreNotEqual(myPreviousEtag, newEtagOut, "Etag should be updated");
-			Assert.AreEqual(2, outputInt.Value, "Wrong blob content");
-
-			// testing UpdateIfNotModified
-			provider.PutBlob(ContainerName, BlobName, 1);
+		[Test]
+		public void UpdateIfNotModified()
+		{
+			Provider.PutBlob(ContainerName, BlobName, 1);
 			int ignored;
-			var isUpdated = provider.UpdateIfNotModified(ContainerName, BlobName, i => i.HasValue ? i.Value + 1 : 1, out ignored);
-
+			var isUpdated = Provider.UpdateIfNotModified(ContainerName, 
+				BlobName, i => i.HasValue ? i.Value + 1 : 1, out ignored);
 			Assert.IsTrue(isUpdated, "#A00");
 
-			var val = provider.GetBlob<int>(ContainerName, BlobName);
+			var val = Provider.GetBlob<int>(ContainerName, BlobName);
 			Assert.AreEqual(2, val.Value, "#A01");
-
-			// PutBlob with etag out parameter
-			newEtagOut = "dummy";
-			bool isSaved = provider.PutBlob(ContainerName, BlobName, 6, false, out newEtagOut);
-			Assert.IsFalse(isSaved, "Blob should not have been overwritten");
-			Assert.IsNull(newEtagOut, "Etag should be null");
-
-			newEtagOut = "dummy";
-			isSaved = provider.PutBlob(ContainerName, BlobName, 7, true, out newEtagOut);
-			Assert.IsTrue(isSaved, "Blob should have been overwritten");
-			Assert.IsNotNull(newEtagOut, "Etag should be changed");
-
-			Assert.IsTrue(provider.GetBlob<int>(ContainerName, BlobName).HasValue, "Blob was not correctly saved.1");
-			Assert.AreEqual(7, provider.GetBlob<int>(ContainerName, BlobName).Value, "Blob was not correctly saved.2");
-
-			// cleanup
-			Assert.IsTrue(provider.DeleteBlob(ContainerName, BlobName), "#A04");
-			Assert.IsTrue(provider.DeleteContainer(ContainerName), "#A05");
 		}
+
+		// TODO: CreatePutGetRangeDelete is way to complex as a unit test
 
 		[Test]
 		public void CreatePutGetRangeDelete()
@@ -108,7 +150,7 @@ namespace Lokad.Cloud.Azure.Test
 			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 			provider.CreateContainer(privateContainerName);
 
-			var blobNames = new string[]
+			var blobNames = new[]
 			{
 				BlobName + "-0",
 				BlobName + "-1",
@@ -116,7 +158,7 @@ namespace Lokad.Cloud.Azure.Test
 				BlobName + "-3"
 			};
 
-			var inputBlobs = new MyBlob[]
+			var inputBlobs = new[]
 			{
 				new MyBlob(),
 				new MyBlob(),
@@ -164,41 +206,6 @@ namespace Lokad.Cloud.Azure.Test
 			provider.DeleteContainer(privateContainerName);
 		}
 
-		[Test]
-		public void TransientType()
-		{
-			var privateContainerName = "test-" + Guid.NewGuid().ToString("N");
-
-			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
-			provider.CreateContainer(privateContainerName);
-
-			var item1 = new Transient2() { Value2 = 100 };
-			provider.PutBlob(privateContainerName, "test", item1);
-			var item1Out = provider.GetBlob<Transient2>(privateContainerName, "test");
-			Assert.AreEqual(item1.Value2, item1Out.Value.Value2);
-
-			var item2 = provider.GetBlob<Transient3>(privateContainerName, "test");
-			Assert.IsFalse(item2.HasValue);
-
-			provider.DeleteContainer(privateContainerName);
-		}
-
-		[Test]
-		public void TypeMismatch()
-		{
-			var privateContainerName = "test-" + Guid.NewGuid().ToString("N");
-
-			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
-			provider.CreateContainer(privateContainerName);
-
-			provider.PutBlob(privateContainerName, "test", new Transient1() { Value = 10 });
-
-			Assert.Throws<InvalidOperationException>(() => provider.GetBlob<string>(privateContainerName, "test"));
-
-			provider.PutBlob(privateContainerName, "test", "string content");
-
-			provider.DeleteContainer(privateContainerName);
-		}
 
 		[Test]
 		public void NullableType_Default()
@@ -223,61 +230,6 @@ namespace Lokad.Cloud.Azure.Test
 			provider.DeleteContainer(privateContainerName);
 		}
 
-		[Test]
-		public void NullableType_Transient_Struct()
-		{
-			var privateContainerName = "test-" + Guid.NewGuid().ToString("N");
-
-			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
-			provider.CreateContainer(privateContainerName);
-
-			MyNullableStruct? value1 = new MyNullableStruct() { MyValue = 10 };
-			MyNullableStruct? value2 = null;
-
-			provider.PutBlob(privateContainerName, "test1", value1);
-			provider.PutBlob(privateContainerName, "test2", value1);
-
-			var output1 = provider.GetBlob<MyNullableStruct?>(privateContainerName, "test1");
-			var output2 = provider.GetBlob<MyNullableStruct?>(privateContainerName, "test2");
-
-			Assert.AreEqual(value1.Value, output1.Value);
-			Assert.IsFalse(value2.HasValue);
-
-			provider.DeleteContainer(privateContainerName);
-		}
-
-	}
-
-	[DataContract]
-	[Transient]
-	internal struct MyNullableStruct
-	{
-		[DataMember]
-		public int MyValue;
-	}
-
-	[DataContract]
-	[Transient(false)]
-	internal class Transient1
-	{
-		[DataMember]
-		public int Value;
-	}
-
-	[DataContract]
-	[Transient(false)]
-	internal class Transient2
-	{
-		[DataMember]
-		public int Value2;
-	}
-
-	[DataContract]
-	[Transient(false)]
-	internal class Transient3
-	{
-		[DataMember]
-		public int Value;
 	}
 
 	[Serializable]

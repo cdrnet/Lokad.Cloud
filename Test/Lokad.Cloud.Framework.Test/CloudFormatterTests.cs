@@ -5,10 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-#region Copyright (c) Lokad 2009
-// This code is released under the terms of the new BSD licence.
-// URL: http://www.lokad.com/
-#endregion
 using NUnit.Framework;
 using System.IO;
 using System.Runtime.Serialization;
@@ -26,7 +22,7 @@ namespace Lokad.Cloud.Test
 		}
 
 		[DataContract]
-		internal class MockComplex
+		class MockComplex
 		{
 			[DataMember]
 			public float Field;
@@ -46,30 +42,16 @@ namespace Lokad.Cloud.Test
 			public object Ignored { get; set; }
 		}
 
-		[DataContract]
-		class MockWithBehavior
+		[Serializable]
+		class MockComplex2
 		{
-			[DataMember]
 			public string Prop1 { get; set; }
-
-			[DataMember, NetDataContractFormat]
-			public INoContract Prop2 { get; set; }
-		}
-
-		interface INoContract
-		{
-			
-		}
-
-		// No 'DataContract' attribute here
-		[Serializable]
-		class MockNoContract : INoContract
-		{
-			public int Prop1 { get; set; }
+			public int Prop2 { get; set; }
+			public List<MockEnum> Flags { get; set; }
 		}
 
 		[Serializable]
-		internal enum MockEnum
+		enum MockEnum
 		{
 			Item1,
 			Item2,
@@ -156,6 +138,25 @@ namespace Lokad.Cloud.Test
 				}
 			}
 
+			using (var stream = new MemoryStream())
+			{
+				var item = new MockComplex2
+					{
+						Prop1 = "0",
+						Prop2 = 0,
+						Flags = new List<MockEnum> {MockEnum.Item1},
+					};
+
+				formatter.Serialize(stream, item);
+				stream.Seek(0, SeekOrigin.Begin);
+
+				var output = (MockComplex2)formatter.Deserialize(stream, typeof(MockComplex2));
+
+				Assert.AreEqual(item.Prop1, output.Prop1);
+				Assert.AreEqual(item.Prop2, output.Prop2);
+				Assert.AreEqual(item.Flags.Count, output.Flags.Count);
+			}
+
 			// Test "big" object
 			using(var stream = new MemoryStream())
 			{
@@ -189,34 +190,6 @@ namespace Lokad.Cloud.Test
 			}
 		}
 
-		[Test]
-		public void GenericTypingWithNDCS()
-		{
-			// [Vermorel] Direct call to 'DCS' to bypass hacks in 'CloudFormatter'
-			// (more self-contained logic)
-
-			var formatter = new
-				DataContractSerializer(typeof(MockWithBehavior), new [] { typeof(MockNoContract)});
-
-			var prop2 = new MockNoContract {Prop1 = 42};
-			var input = new MockWithBehavior {Prop1 = "abc", Prop2 = prop2};
-
-			//var formatter = new CloudFormatter();
-			using (var stream = new MemoryStream())
-			{
-				formatter.WriteObject(stream, input);
-				stream.Seek(0, SeekOrigin.Begin);
-				var output = (MockWithBehavior)formatter.ReadObject(stream);
-
-				Assert.IsNotNull(output, "#A00");
-				Assert.AreEqual(input.Prop1, output.Prop1, "#A01");
-				Assert.IsNotNull(output.Prop2, "#A02");
-				var outputProp2 = output.Prop2 as MockNoContract;
-				Assert.IsNotNull(outputProp2, "#A03");
-				Assert.AreEqual(prop2.Prop1, outputProp2.Prop1, "#A04");
-			}
-		}
 	}
-
 
 }

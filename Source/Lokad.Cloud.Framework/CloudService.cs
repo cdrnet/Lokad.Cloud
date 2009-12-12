@@ -10,7 +10,6 @@ using System.Reflection;
 using Autofac;
 using Lokad.Quality;
 using Lokad.Threading;
-using Lokad.Cloud.Azure;
 
 namespace Lokad.Cloud
 {

@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System;
 using Microsoft.WindowsAzure.StorageClient;
 using Autofac;
 
@@ -15,7 +14,6 @@ namespace Lokad.Cloud
 	/// </summary>
 	public class StorageCredentialsVerifier
 	{
-
 		private CloudBlobClient _storage;
 
 		/// <summary>

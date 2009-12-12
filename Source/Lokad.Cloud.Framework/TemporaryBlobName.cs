@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 using Lokad.Cloud.Services;
 using Lokad.Quality;
 
@@ -13,7 +14,7 @@ namespace Lokad.Cloud
 	/// <remarks>Used in conjunction with the <see cref="GarbageCollectorService"/>.
 	/// Use the method <see cref="GetNew(System.DateTime)"/> to instantiate a new instance
 	/// directly linked to the garbage collected container.</remarks>
-	[Serializable]
+	[Serializable, DataContract]
 	public class TemporaryBlobName : BaseBlobName
 	{
 		public override string ContainerName
@@ -21,8 +22,8 @@ namespace Lokad.Cloud
 			get { return CloudService.TemporaryContainer; }
 		}
 
-		[UsedImplicitly, Rank(0)] public readonly DateTime Expiration;
-		[UsedImplicitly, Rank(1)] public readonly string Suffix;
+		[UsedImplicitly, Rank(0), DataMember] public readonly DateTime Expiration;
+		[UsedImplicitly, Rank(1), DataMember] public readonly string Suffix;
 
 		TemporaryBlobName(DateTime expiration, string suffix)
 		{

@@ -4,20 +4,20 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Lokad.Cloud
 {
 	/// <summary>Configuration state of the <seealso cref="ScheduledService"/>.</summary>
-	[Serializable]
+	[Serializable, DataContract]
 	public class ScheduledServiceState
 	{
-		public TimeSpan TriggerInterval { get; set; }
-		public DateTime LastExecuted { get; set; }
+		[DataMember] public TimeSpan TriggerInterval { get; set; }
+		[DataMember] public DateTime LastExecuted { get; set; }
 	}
 
 	public class ScheduledServiceStateName : BaseTypedBlobName<ScheduledServiceState>
 	{
-
 		public override string ContainerName
 		{
 			get { return ScheduledService.ScheduleStateContainer; }

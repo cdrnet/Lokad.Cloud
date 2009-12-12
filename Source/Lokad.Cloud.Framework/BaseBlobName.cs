@@ -15,7 +15,7 @@ using Lokad.Quality;
 namespace Lokad.Cloud
 {
 	/// <summary>Base class for strong-typed hierarchical blob names.</summary>
-	[Serializable]
+	[Serializable, DataContract]
 	public abstract class BaseBlobName
 	{
 		class InheritanceComparer : IComparer<Type>

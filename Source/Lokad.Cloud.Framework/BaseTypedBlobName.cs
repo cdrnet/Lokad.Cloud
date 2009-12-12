@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Lokad.Cloud
 {
@@ -12,7 +13,7 @@ namespace Lokad.Cloud
 	/// <typeparam name="T">Type contained in the blob.</typeparam>
 	/// <remarks>The type <c>T</c> is handy to strengthen
 	/// the <see cref="StorageExtensions"/>.</remarks>
-	[Serializable]
+	[Serializable, DataContract]
 	public abstract class BaseTypedBlobName<T> : BaseBlobName
 	{
 	}

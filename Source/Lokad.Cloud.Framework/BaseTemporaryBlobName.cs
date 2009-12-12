@@ -4,13 +4,14 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 using Lokad.Quality;
 
 namespace Lokad.Cloud
 {
 	/// <summary>Name associated to a strong typed fixed-lifespan item.</summary>
 	/// <typeparam name="T">Type referred by the blob name.</typeparam>
-	[Serializable]
+	[Serializable, DataContract]
 	public class BaseTemporaryBlobName<T> : BaseTypedBlobName<T>
 	{
 		/// <summary>Returns the garbage collected container.</summary>
@@ -19,8 +20,8 @@ namespace Lokad.Cloud
 			get { return CloudService.TemporaryContainer; }
 		}
 
-		[UsedImplicitly, Rank(0)] public readonly DateTime Expiration;
-		[UsedImplicitly, Rank(1)] public readonly string Prefix;
+		[UsedImplicitly, Rank(0), DataMember] public readonly DateTime Expiration;
+		[UsedImplicitly, Rank(1), DataMember] public readonly string Prefix;
 
 		/// <summary>Explicit constructor.</summary>
 		/// <param name="expiration">Date that triggers the garbage collection.</param>

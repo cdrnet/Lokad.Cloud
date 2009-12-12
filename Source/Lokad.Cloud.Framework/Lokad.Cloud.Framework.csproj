@@ -127,8 +127,6 @@
     <Compile Include="Mock\MockStorageModule.cs" />
     <Compile Include="RankAttribute.cs" />
     <Compile Include="Services\MonitoringService.cs" />
-    <Compile Include="TransientAttribute.cs" />
-    <Compile Include="TypeInformation.cs" />
     <Compile Include="TypeMapperProvider.cs" />
     <Compile Include="BaseTypedBlobName.cs" />
     <Compile Include="BlobCounter.cs" />
@@ -141,7 +139,6 @@
     <Compile Include="StorageExtensions.cs" />
     <Compile Include="IBlobStorageProvider.cs" />
     <Compile Include="IQueueStorageProvider.cs" />
-    <None Include="Cuid.cs" />
     <Compile Include="MessageWrapper.cs" />
     <Compile Include="Mock\MemoryBlobStorageProvider.cs" />
     <Compile Include="Mock\MemoryQueueStorageProvider.cs" />

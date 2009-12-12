@@ -77,7 +77,6 @@
     <Compile Include="BaseBlobNameTests.cs" />
     <None Include="App.config" />
     <None Include="App.template.config" />
-    <None Include="CuidTests.cs" />
     <Compile Include="CloudFormatterTests.cs" />
     <Compile Include="Diagnostics\ExceptionCounterTests.cs" />
     <Compile Include="MessageWrapperTests.cs" />
@@ -88,7 +87,6 @@
     <Compile Include="DelayedQueueTests.cs" />
     <Compile Include="StorageCredentialsVerifierTests.cs" />
     <Compile Include="TemporaryBlobNameTests.cs" />
-    <Compile Include="TypeInformationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Source\Lokad.Cloud.Framework\Lokad.Cloud.Framework.csproj">
