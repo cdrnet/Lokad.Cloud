@@ -21,12 +21,15 @@ namespace Lokad.Cloud
 		XmlObjectSerializer _serializer = null;
 		Type _currentType;
 
+		// TODO: [vermorel] I really don't like the idea of 'single type caching'
+		// it should really be made cleaner & more performant (looks really weird)
 		void CreateSerializerIfNecessary(Type type)
 		{
 			if(_serializer == null || _currentType != type)
 			{
 				var information = TypeInformation.GetInformation(type);
 
+				// TODO: [vermorel] Behavior should not be tuned at this level but through behavior override on 'DCS'.
 				if(information.IsTransient) _serializer = new NetDataContractSerializer();
 				else _serializer = new DataContractSerializer(type);
 			}
@@ -54,6 +57,5 @@ namespace Lokad.Cloud
 				return _serializer.ReadObject(reader);
 			}
 		}
-
 	}
 }

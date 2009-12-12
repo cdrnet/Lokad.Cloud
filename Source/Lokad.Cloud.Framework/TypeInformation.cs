@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Specialized;
 
+// TODO: [Vermorel] This class will be discarded in favor of an operation-behavior override of DCS toward NDCS.
+
 namespace Lokad.Cloud
 {
 	/// <summary>Contains information about a type.</summary>
