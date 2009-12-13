@@ -95,14 +95,7 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.AreNotEqual(etag, newEtag, "#A00.");
 		}
 
-		[Test]
-		public void CheckNoOverwriteCondition()
-		{
-			var blob = new MyBlob();
-			Provider.PutBlob(ContainerName, BlobName, 1);
-			Assert.IsFalse(Provider.PutBlob(ContainerName, BlobName, blob, false), "#A0");
-			Assert.AreEqual(1, Provider.GetBlob<int>(ContainerName, BlobName), "#A01");
-		}
+
 
 		[Test]
 		public void GetBlobIfNotModifiedNoChangeNoRetrieval()
