@@ -74,16 +74,29 @@ namespace Lokad.Cloud.Azure
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
-		static string UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite)
+		static Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite)
 		{
 			// TODO: BUG, need to fix access control, and to retrieve write status in 1 call.
 			var options = overwrite ?
 				new BlobRequestOptions {AccessCondition = AccessCondition.None} :
 				new BlobRequestOptions {AccessCondition = AccessCondition.IfNotModifiedSince(DateTime.MinValue)};
 
-			stream.Seek(0, SeekOrigin.Begin); 
-			blob.UploadFromStream(stream, options);
-			return blob.Properties.ETag;
+			stream.Seek(0, SeekOrigin.Begin);
+			try
+			{
+				blob.UploadFromStream(stream, options);
+			}
+			catch (StorageClientException ex)
+			{
+				if(ex.ErrorCode == StorageErrorCode.ConditionFailed)
+				{
+					return Maybe<string>.Empty;
+				}
+				
+				throw;
+			}
+			
+			return Maybe.From(blob.Properties.ETag);
 		}
 
 		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag)
@@ -98,13 +111,14 @@ namespace Lokad.Cloud.Azure
 
 				try
 				{
-					// TODO: BUG, we should rely on the REST API to enforce no overwrite
-					// We should avoid multiple REST calls whenever possible.
-					var blob = container.GetBlockBlobReference(blobName);
+					var blob = container.GetBlobReference(blobName);
 
-					if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
+					// single remote call
+					var result = UploadBlobContent(blob, stream, overwrite);
+
+					if(result.HasValue)
 					{
-						etag = UploadBlobContent(blob, stream, overwrite);
+						etag = result.Value;
 						return true;
 					}
 
@@ -115,26 +129,32 @@ namespace Lokad.Cloud.Azure
 					// if the container does not exist, it gets created
 					if(ex.ErrorCode == StorageErrorCode.ContainerNotFound)
 					{
-						// caution the container might have been freshly deleted
+						// caution: the container might have been freshly deleted
+						// (multiple retries are needed in such a situation)
 						var flag = false;
 						string tempEtag = null;
 						PolicyHelper.SlowInstantiation.Do(() =>
 						{
 							container.CreateIfNotExist();
 
-							var myBlob = container.GetBlockBlobReference(blobName);
+							// TODO: code segment below is duplicated from the one above
+							var myBlob = container.GetBlobReference(blobName);
 
-							if(myBlob.Properties.ETag == null || (myBlob.Properties.ETag != null && overwrite))
+							var myResult = UploadBlobContent(myBlob, stream, overwrite);
+
+							if (myResult.HasValue)
 							{
-								tempEtag = UploadBlobContent(myBlob, stream, overwrite);
+								tempEtag = myResult.Value;
 								flag = true;
 							}
+
 						});
 
 						if(flag) etag = tempEtag;
 
 						return flag;
 					}
+
 					if(ex.ErrorCode == StorageErrorCode.BlobAlreadyExists && !overwrite)
 					{
 						// See http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/fff78a35-3242-4186-8aee-90d27fbfbfd4
@@ -143,11 +163,15 @@ namespace Lokad.Cloud.Azure
 						return false;
 					}
 
-					var blob = container.GetBlockBlobReference(blobName);
+					// TODO: code segment below is duplicated from the one above
+					var blob = container.GetBlobReference(blobName);
 
-					if(blob.Properties.ETag == null || (blob.Properties.ETag != null && overwrite))
+					// single remote call
+					var result = UploadBlobContent(blob, stream, overwrite);
+
+					if (result.HasValue)
 					{
-						etag = UploadBlobContent(blob, stream, overwrite);
+						etag = result.Value;
 						return true;
 					}
 

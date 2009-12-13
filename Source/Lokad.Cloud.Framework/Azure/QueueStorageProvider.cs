@@ -140,9 +140,9 @@ namespace Lokad.Cloud.Azure
 						var mw = (MessageWrapper) innerMessage;
 						wrappedMessages.Add(mw);
 
-						var overflowingInProcMsg = new InProcessMessage()
-						{
-							RawMessages = new List<CloudQueueMessage>() { rawMessage },
+						var overflowingInProcMsg = new InProcessMessage
+							{
+							RawMessages = new List<CloudQueueMessage> { rawMessage },
 							IsOverflowing = true
 						};
 						_inProcessMessages.Add(mw, overflowingInProcMsg);
@@ -381,11 +381,11 @@ namespace Lokad.Cloud.Azure
 	/// i.e. were hidden from the queue because of calls to Get{T}.</summary>
 	internal class InProcessMessage
 	{
-		/// <summary>The multiple, different raw <see cref="T:CloudQueueMessage" /> objects as returned from the queue storage.</summary>
+		/// <summary>The multiple, different raw <see cref="CloudQueueMessage" /> objects as returned from the queue storage.</summary>
 		public List<CloudQueueMessage> RawMessages { get; set; }
 
 		/// <summary>A flag indicating whether the original message was bigger than the max allowed size and was
-		/// therefore wrapped in <see cref="T:MessageWrapper" />.</summary>
+		/// therefore wrapped in <see cref="MessageWrapper" />.</summary>
 		public bool IsOverflowing { get; set; }
 	}
 
