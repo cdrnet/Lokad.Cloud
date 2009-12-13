@@ -76,7 +76,6 @@ namespace Lokad.Cloud.Azure
 
 		static Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite)
 		{
-			// TODO: BUG, need to fix access control, and to retrieve write status in 1 call.
 			var options = overwrite ?
 				new BlobRequestOptions {AccessCondition = AccessCondition.None} :
 				new BlobRequestOptions {AccessCondition = AccessCondition.IfNotModifiedSince(DateTime.MinValue)};
@@ -218,7 +217,7 @@ namespace Lokad.Cloud.Azure
 					throw;
 				}
 
-				var deserialized = DeserializeObject(stream, type);
+				var deserialized = Deserialize(stream, type);
 				return (deserialized == null)
 					? Maybe<object>.Empty
 					: Maybe.From(deserialized);
@@ -232,7 +231,7 @@ namespace Lokad.Cloud.Azure
 			return actual == expected;
 		}
 
-		object DeserializeObject(Stream stream, Type type)
+		object Deserialize(Stream stream, Type type)
 		{
 			// If the type is transient, then a failed deserialization must be
 			// handled accordingly, otherwise default to built-in behavior
@@ -268,36 +267,52 @@ namespace Lokad.Cloud.Azure
 
 		public Maybe<T> GetBlobIfModified<T>(string containerName, string blobName, string oldEtag, out string newEtag)
 		{
-			var container = _blobStorage.GetContainerReference(containerName);
+			// 'oldEtag' is null, then behavior always match simple 'GetBlob'.
+			if(null == oldEtag)
+			{
+				GetBlob<T>(containerName, blobName, out newEtag);
+			}
+
 			newEtag = null;
 
-			CloudBlockBlob blob;
+			var container = _blobStorage.GetContainerReference(containerName);
+			var blob = container.GetBlobReference(blobName);
 
 			try
 			{
-				blob = container.GetBlockBlobReference(blobName);
+				var options = new BlobRequestOptions 
+				{ 
+					AccessCondition = AccessCondition.IfNoneMatch(oldEtag)
+				};
 
-				if (blob.Properties == null || blob.Properties.ETag == oldEtag)
+				using (var stream = new MemoryStream())
 				{
-					return Maybe<T>.Empty;
+					blob.DownloadToStream(stream, options);
+					newEtag = blob.Properties.ETag;
+
+					return (T)Deserialize(stream, typeof(T));
 				}
-				newEtag = blob.Properties.ETag;
 			}
 			catch (StorageClientException ex)
 			{
+				// call fails because blob has been modified (usual case)
+				if(ex.ErrorCode == StorageErrorCode.ConditionFailed ||
+					// HACK: BUG in StorageClient 1.0 
+					// see http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/4817cafa-12d8-4979-b6a7-7bda053e6b21
+					ex.Message == @"The condition specified using HTTP conditional header(s) is not met.")
+				{
+					return Maybe<T>.Empty;
+				}
+
+				// call fails due to misc problems
 				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
 					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
 						|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
 					return Maybe<T>.Empty;
 				}
-				throw;
-			}
 
-			using (var stream = new MemoryStream())
-			{
-				blob.DownloadToStream(stream);
-				return (T) DeserializeObject(stream, typeof (T));
+				throw;
 			}
 		}
 
@@ -356,7 +371,7 @@ namespace Lokad.Cloud.Azure
 				using (var rstream = new MemoryStream())
 				{
 					blob.DownloadToStream(rstream);
-					var blobData = DeserializeObject(rstream, typeof(T));
+					var blobData = Deserialize(rstream, typeof(T));
 					input = blobData == null ? Maybe<T>.Empty : (T) blobData;
 				}
 			}
