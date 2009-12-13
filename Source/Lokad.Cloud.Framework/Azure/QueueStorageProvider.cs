@@ -259,26 +259,20 @@ namespace Lokad.Cloud.Azure
 
 		void DeleteOverflowingMessages(string queueName)
 		{
-			var toDelete = new List<string>();
-
-			foreach(var blob in _blobStorage.List(OverflowingMessagesContainerName, queueName))
+			foreach(var blobName in _blobStorage.List(OverflowingMessagesContainerName, queueName))
 			{
-				toDelete.Add(blob);
-			}
-
-			toDelete.ToArray().SelectInParallel(blobName =>
-			{
+				// TODO: leverage lazy implementation of 'List' to speed-up the process here.
 				_blobStorage.DeleteBlob(OverflowingMessagesContainerName, blobName);
-				return 0;
-			});
+			}
 		}
 
 		public void Clear(string queueName)
 		{
 			try
 			{
-				_queueStorage.GetQueueReference(queueName).Clear();
+				// caution: call 'DeleteOverflowingMessages' first (BASE).
 				DeleteOverflowingMessages(queueName);
+				_queueStorage.GetQueueReference(queueName).Clear();
 			}
 			catch (StorageClientException ex)
 			{
@@ -343,12 +337,15 @@ namespace Lokad.Cloud.Azure
 			return deletionCount;
 		}
 
+		/// <remarks>This implementation takes care of deleting overflowing blobs 
+		/// as well.</remarks>
 		public bool DeleteQueue(string queueName)
 		{
 			try
 			{
-				_queueStorage.GetQueueReference(queueName).Delete();
+				// Caution: call to 'DeleteOverflowingMessages' comes first (BASE).
 				DeleteOverflowingMessages(queueName);
+				_queueStorage.GetQueueReference(queueName).Delete();
 				return true;
 			}
 			catch(StorageClientException ex)

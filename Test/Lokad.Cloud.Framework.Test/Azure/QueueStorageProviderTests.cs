@@ -5,7 +5,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using Lokad.Cloud;
 using System.Text;
 using System.Runtime.Serialization;
 
@@ -20,14 +19,15 @@ namespace Lokad.Cloud.Azure.Test
 		private static Random _rand = new Random();
 
 		[SetUp]
-		public void SetUp() {
+		public void SetUp() 
+		{
 			QueueName = BaseQueueName + Guid.NewGuid().ToString("N");
 		}
 
 		[TearDown]
-		public void TearDown() {
+		public void TearDown() 
+		{
 			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
-
 			provider.DeleteQueue(QueueName);
 		}
 
@@ -179,23 +179,68 @@ namespace Lokad.Cloud.Azure.Test
 			}
 		}
 
+		// TODO: create same unit test for Clear()
+
 		[Test]
-		public void Delete_or_clear_also_removes_overflowing_blobs()
+		public void DeleteRemovesOverflowingBlobs()
 		{
 			var queueProvider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
 			var blobProvider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 
-			string queueName1 = "test1-" + Guid.NewGuid().ToString("N");
-			string queueName2 = "test2-" + Guid.NewGuid().ToString("N");
+			var queueName = "test1-" + Guid.NewGuid().ToString("N");
 
-			queueProvider.Put<byte[]>(queueName1, new byte[20000]);
-			queueProvider.DeleteQueue(queueName1);
-			Assert.AreEqual(0, blobProvider.List(QueueStorageProvider.OverflowingMessagesContainerName, "").Count(), "DeleteQueue should also remove overflowing messages");
+			// CAUTION: we are now compressing serialization output.
+			// hence, we can't just pass an empty array, as it would be compressed at near 100%.
 
-			queueProvider.Put<byte[]>(queueName2, new byte[20000]);
-			queueProvider.Clear(queueName2);
-			Assert.AreEqual(0, blobProvider.List(QueueStorageProvider.OverflowingMessagesContainerName, "").Count(), "ClearQueue should also remove overflowing messages");
-			queueProvider.DeleteQueue(queueName2);
+			var data = new byte[20000];
+			_rand.NextBytes(data);
+
+			queueProvider.Put(queueName, data);
+
+			// HACK: implicit pattern for listing overflowing messages
+			var overflowingCount = blobProvider.List(
+				QueueStorageProvider.OverflowingMessagesContainerName, queueName).Count();
+
+			Assert.AreEqual(1, overflowingCount, "#A00");
+
+			queueProvider.DeleteQueue(queueName);
+
+			overflowingCount = blobProvider.List(
+				QueueStorageProvider.OverflowingMessagesContainerName, queueName).Count();
+
+			Assert.AreEqual(0, overflowingCount, "#A01");
+		}
+
+		[Test]
+		public void ClearRemovesOverflowingBlobs()
+		{
+			var queueProvider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
+			var blobProvider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+
+			var queueName = "test1-" + Guid.NewGuid().ToString("N");
+
+			// CAUTION: we are now compressing serialization output.
+			// hence, we can't just pass an empty array, as it would be compressed at near 100%.
+
+			var data = new byte[20000];
+			_rand.NextBytes(data);
+
+			queueProvider.Put(queueName, data);
+
+			// HACK: implicit pattern for listing overflowing messages
+			var overflowingCount = blobProvider.List(
+				QueueStorageProvider.OverflowingMessagesContainerName, queueName).Count();
+
+			Assert.AreEqual(1, overflowingCount, "#A00");
+
+			queueProvider.Clear(queueName);
+
+			overflowingCount = blobProvider.List(
+				QueueStorageProvider.OverflowingMessagesContainerName, queueName).Count();
+
+			Assert.AreEqual(0, overflowingCount, "#A01");
+
+			queueProvider.DeleteQueue(queueName);
 		}
 	}
 
