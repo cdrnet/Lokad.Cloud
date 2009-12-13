@@ -42,7 +42,10 @@ namespace Lokad.Cloud.Azure
 	{
 		public const string ContainerName = "lokad-cloud-logs";
 		public const string Delimiter = "/";
+		public const int DeleteBatchSize = 50;
+
 		private static readonly char[] DelimiterCharArray = Delimiter.ToCharArray();
+
 
 		readonly IBlobStorageProvider _provider;
 		LogLevel _logLevelThreshold;
@@ -200,8 +203,7 @@ namespace Lokad.Cloud.Azure
 			// Iterate over the logs, queuing deletions up to 50 items at a time,
 			// then restart; continue until no deletions are queued
 
-			const int DeleteBatchSize = 50;
-			List<string> deleteQueue = new List<string>(DeleteBatchSize);
+			var deleteQueue = new List<string>(DeleteBatchSize);
 
 			do
 			{
@@ -216,7 +218,7 @@ namespace Lokad.Cloud.Azure
 					if(deleteQueue.Count == DeleteBatchSize) break;
 				}
 
-				foreach(string blobName in deleteQueue)
+				foreach(var blobName in deleteQueue)
 				{
 					_provider.DeleteBlob(ContainerName, blobName);
 				}

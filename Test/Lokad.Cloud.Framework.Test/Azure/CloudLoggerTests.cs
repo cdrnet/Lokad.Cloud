@@ -4,7 +4,6 @@
 #endregion
 using System;
 using System.Linq;
-using Lokad.Cloud;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Azure.Test
@@ -12,32 +11,41 @@ namespace Lokad.Cloud.Azure.Test
 	[TestFixture]
 	public class CloudLoggerTests
 	{
+		readonly CloudLogger Logger = (CloudLogger)GlobalSetup.Container.Resolve<ILog>();
+
+		[TestFixtureSetUp]
+		public void Setup()
+		{
+			// HACK: deleting all logs to avoid serialization errors due to evolution
+			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+			foreach(var blobName in provider.List(CloudLogger.ContainerName, ""))
+			{
+				provider.DeleteBlob(CloudLogger.ContainerName, blobName);
+			}
+		}
+
 		[Test]
 		public void Log()
 		{
-			var logger = GlobalSetup.Container.Resolve<ILog>();
-
-			logger.Error(
+			Logger.Error(
 				new InvalidOperationException("CloudLoggerTests.Log"), 
 				"My message with CloudLoggerTests.Log.");
 
-			logger.Info(new TriggerRestartException("CloudLoggerTests.Log"), "Not a restart, just a test.");
+			Logger.Info(new TriggerRestartException("CloudLoggerTests.Log"), "Not a restart, just a test.");
 		}
 
 		[Test]
 		public void GetRecentLogs()
 		{
-			var logger = (CloudLogger)GlobalSetup.Container.Resolve<ILog>();
-
-			logger.Error(
+			Logger.Error(
 				new InvalidOperationException("CloudLoggerTests.Log"),
 				"My message with CloudLoggerTests.Log.");
 
-			logger.Info(new TriggerRestartException("CloudLoggerTests.Log"), "Not a restart, just a test.");
+			Logger.Info(new TriggerRestartException("CloudLoggerTests.Log"), "Not a restart, just a test.");
 
 			int counter = 0;
 
-			foreach(var entry in logger.GetRecentLogs())
+			foreach(var entry in Logger.GetRecentLogs())
 			{
 				Assert.IsNotNull(entry.Level, "#A00");
 				Assert.IsTrue(entry.Level.Length > 3, "#A01");
@@ -51,46 +59,42 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void GetPagedLogs()
 		{
-			var logger = (CloudLogger)GlobalSetup.Container.Resolve<ILog>();
-
 			// Add 30 log messages
 			for(int i = 0; i < 10; i++)
 			{
-				logger.Error(
+				Logger.Error(
 					new InvalidOperationException("CloudLoggerTests.Log"),
 					"My message with CloudLoggerTests.Log.");
-				logger.Warn("A test warning");
-				logger.Info(new TriggerRestartException("CloudLoggerTests.Log"), "Not a restart, just a test.");
+				Logger.Warn("A test warning");
+				Logger.Info(new TriggerRestartException("CloudLoggerTests.Log"), "Not a restart, just a test.");
 			}
 
-			Assert.AreEqual(10, logger.GetPagedLogs(0, 10).Count());
-			Assert.AreEqual(10, logger.GetPagedLogs(1, 10).Count());
-			Assert.AreEqual(10, logger.GetPagedLogs(2, 10).Count());
-			Assert.IsTrue(logger.GetPagedLogs(1, 22).Count() >= 8);
-			Assert.IsTrue(logger.GetPagedLogs(1, 25).Count() >= 5);
-			Assert.AreEqual(0, logger.GetPagedLogs(100000, 20).Count());
+			Assert.AreEqual(10, Logger.GetPagedLogs(0, 10).Count());
+			Assert.AreEqual(10, Logger.GetPagedLogs(1, 10).Count());
+			Assert.AreEqual(10, Logger.GetPagedLogs(2, 10).Count());
+			Assert.IsTrue(Logger.GetPagedLogs(1, 22).Count() >= 8);
+			Assert.IsTrue(Logger.GetPagedLogs(1, 25).Count() >= 5);
+			Assert.AreEqual(0, Logger.GetPagedLogs(100000, 20).Count());
 		}
 
 		[Test]
 		public void DeleteOldLogs()
 		{
-			var logger = (CloudLogger)GlobalSetup.Container.Resolve<ILog>();
+			int initialCount = Logger.GetRecentLogs().Count();
 
-			int initialCount = logger.GetRecentLogs().Count();
-
-			DateTime begin = DateTime.Now;
+			var begin = DateTime.Now;
 			System.Threading.Thread.Sleep(1000); // Wait to make sure that logs are created after 'begin'
 
 			for(int i = 0; i < 10; i++)
 			{
-				logger.Info("Just a test message");
+				Logger.Info("Just a test message");
 			}
 
-			Assert.AreEqual(initialCount + 10, logger.GetRecentLogs().Count());
+			Assert.AreEqual(initialCount + 10, Logger.GetRecentLogs().Count());
 
-			logger.DeleteOldLogs(begin.ToUniversalTime());
+			Logger.DeleteOldLogs(begin.ToUniversalTime());
 
-			Assert.AreEqual(10, logger.GetRecentLogs().Count());
+			Assert.AreEqual(10, Logger.GetRecentLogs().Count());
 		}
 
 		[Test]
