@@ -11,12 +11,12 @@ namespace Lokad.Cloud
 	/// <summary>The purpose of the <see cref="MessageWrapper"/> is to gracefully
 	/// handle messages that are too large of the queue storage (or messages that 
 	/// happen to be already stored in the Blob Storage).</summary>
-	[Serializable, DataContract]
+	[Serializable]
 	internal sealed class MessageWrapper : ISerializable
 	{
-		[DataMember] public string ContainerName { get; set; }
+		public string ContainerName { get; set; }
 
-		[DataMember] public string BlobName { get; set; }
+		public string BlobName { get; set; }
 
 		public MessageWrapper()
 		{
