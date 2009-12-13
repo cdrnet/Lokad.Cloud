@@ -217,31 +217,13 @@ namespace Lokad.Cloud.Azure
 					throw;
 				}
 
-				var deserialized = Deserialize(stream, type);
+				stream.Seek(0, SeekOrigin.Begin);
+				var deserialized = _formatter.Deserialize(stream, type);
+
 				return (deserialized == null)
 					? Maybe<object>.Empty
 					: Maybe.From(deserialized);
 			}
-		}
-
-		static bool AreSameType(Type actual, Type expected)
-		{
-			if(expected.IsGenericType && expected.GetGenericTypeDefinition() == typeof(Nullable<>)) expected = expected.GetGenericArguments()[0];
-
-			return actual == expected;
-		}
-
-		object Deserialize(Stream stream, Type type)
-		{
-			// If the type is transient, then a failed deserialization must be
-			// handled accordingly, otherwise default to built-in behavior
-
-			stream.Seek(0, SeekOrigin.Begin);
-
-			var output = _formatter.Deserialize(stream, type);
-			if (!AreSameType(output.GetType(), type)) throw new InvalidOperationException("Stored type is different from provided type");
-
-			return output;
 		}
 
 		public Maybe<T>[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
@@ -290,7 +272,8 @@ namespace Lokad.Cloud.Azure
 					blob.DownloadToStream(stream, options);
 					newEtag = blob.Properties.ETag;
 
-					return (T)Deserialize(stream, typeof(T));
+					stream.Seek(0, SeekOrigin.Begin);
+					return (T)_formatter.Deserialize(stream, typeof(T));
 				}
 			}
 			catch (StorageClientException ex)
@@ -371,7 +354,10 @@ namespace Lokad.Cloud.Azure
 				using (var rstream = new MemoryStream())
 				{
 					blob.DownloadToStream(rstream);
-					var blobData = Deserialize(rstream, typeof(T));
+
+					rstream.Seek(0, SeekOrigin.Begin);
+					var blobData = _formatter.Deserialize(rstream, typeof(T));
+
 					input = blobData == null ? Maybe<T>.Empty : (T) blobData;
 				}
 			}

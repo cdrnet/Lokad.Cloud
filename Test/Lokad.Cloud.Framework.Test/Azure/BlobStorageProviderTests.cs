@@ -111,13 +111,20 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
-		public void GetBlobIfNotModifiedChangeAndRetrieval()
+		public void GetBlobIfNotModifiedWithTypeMistmatch()
 		{
-			Provider.PutBlob(ContainerName, BlobName, 1);
+			Provider.PutBlob(ContainerName, BlobName, 1); // pushing Int32
 
-			string newEtag;
-			var output = Provider.GetBlobIfModified<MyBlob>(ContainerName, BlobName, "dummy", out newEtag);
-			Assert.IsNotNull(output, "#A00");
+			try
+			{
+				string newEtag; // pulling MyBlob
+				var output = Provider.GetBlobIfModified<MyBlob>(ContainerName, BlobName, "dummy", out newEtag);
+				Assert.Fail("#A00");
+			}
+			catch (InvalidCastException)
+			{
+				// expected condition
+			}
 		}
 
 		[Test]
