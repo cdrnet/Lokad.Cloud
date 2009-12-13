@@ -130,12 +130,18 @@ namespace Lokad.Cloud.Test
 			Assert.IsTrue(pd.ToString().StartsWith(pc.ToString()));
 		}
 
-		[Test, ExpectedException(typeof(ArgumentException))]
+		[Test]
 		public void Wrong_type_is_detected()
 		{
-			var original = new PatternB(Guid.NewGuid(), 1000);
-			var name = BaseBlobName.Print(original);
-			BaseBlobName.Parse<PatternA>(name);
+			try
+			{
+				var original = new PatternB(Guid.NewGuid(), 1000);
+				var name = BaseBlobName.Print(original);
+				BaseBlobName.Parse<PatternA>(name);
+
+				Assert.Fail("#A00");
+			}
+			catch (ArgumentException) {}
 		}
 
 		[Test]
