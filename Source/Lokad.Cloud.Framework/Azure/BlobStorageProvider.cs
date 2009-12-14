@@ -131,7 +131,7 @@ namespace Lokad.Cloud.Azure
 					{
 						// caution: the container might have been freshly deleted
 						// (multiple retries are needed in such a situation)
-						Maybe<string> tentativeEtag = null;
+						Maybe<string> tentativeEtag = Maybe<string>.Empty;
 						PolicyHelper.SlowInstantiation.Do(() =>
 						{
 							container.CreateIfNotExist();
