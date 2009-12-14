@@ -108,20 +108,21 @@ namespace Lokad.Cloud.Azure
 
 				var container = _blobStorage.GetContainerReference(containerName);
 
-				try
+				Func<Maybe<string>> doUpload = () =>
 				{
 					var blob = container.GetBlobReference(blobName);
 
 					// single remote call
 					var result = UploadBlobContent(blob, stream, overwrite);
 
-					if(result.HasValue)
-					{
-						etag = result.Value;
-						return true;
-					}
+					return result;
+				};
 
-					return false;
+				try
+				{
+					var result = doUpload();
+					etag = result.HasValue ? result.Value : null;
+					return result.HasValue;
 				}
 				catch(StorageClientException ex)
 				{
@@ -130,28 +131,17 @@ namespace Lokad.Cloud.Azure
 					{
 						// caution: the container might have been freshly deleted
 						// (multiple retries are needed in such a situation)
-						var flag = false;
-						string tempEtag = null;
+						Maybe<string> tentativeEtag = null;
 						PolicyHelper.SlowInstantiation.Do(() =>
 						{
 							container.CreateIfNotExist();
 
-							// TODO: code segment below is duplicated from the one above
-							var myBlob = container.GetBlobReference(blobName);
-
-							var myResult = UploadBlobContent(myBlob, stream, overwrite);
-
-							if (myResult.HasValue)
-							{
-								tempEtag = myResult.Value;
-								flag = true;
-							}
+							tentativeEtag = doUpload();
 
 						});
 
-						if(flag) etag = tempEtag;
-
-						return flag;
+						etag = tentativeEtag.HasValue ? tentativeEtag.Value : null;
+						return tentativeEtag.HasValue;
 					}
 
 					if(ex.ErrorCode == StorageErrorCode.BlobAlreadyExists && !overwrite)
@@ -162,19 +152,9 @@ namespace Lokad.Cloud.Azure
 						return false;
 					}
 
-					// TODO: code segment below is duplicated from the one above
-					var blob = container.GetBlobReference(blobName);
-
-					// single remote call
-					var result = UploadBlobContent(blob, stream, overwrite);
-
-					if (result.HasValue)
-					{
-						etag = result.Value;
-						return true;
-					}
-
-					return false;
+					var result = doUpload();
+					etag = result.HasValue ? result.Value : null;
+					return result.HasValue;
 				}
 			}
 		}
