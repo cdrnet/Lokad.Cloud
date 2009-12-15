@@ -4,9 +4,8 @@
 #endregion
 
 using System;
-using System.Configuration;
+using System.Linq;
 using DotNetOpenAuth.OpenId.RelyingParty;
-using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
 {
@@ -26,27 +25,15 @@ namespace Lokad.Cloud.Web
 
 		protected void OpenIdLogin_OnLoggingIn(object sender, OpenIdEventArgs e)
 		{
-			// HACK: logic to retrieve admins is duplicated with 'Default.aspx'
-			var admins = string.Empty;
-			if (RoleEnvironment.IsAvailable)
-			{
-				admins = RoleEnvironment.GetConfigurationSettingValue("Admins");
-			}
-			else
-			{
-				admins = ConfigurationManager.AppSettings["Admins"];
-			}
-			
-			foreach(var admin in admins.Split(new [] {" "}, StringSplitOptions.RemoveEmptyEntries))
-			{
-				if(e.ClaimedIdentifier == admin)
-				{
-					return;
-				}
-			}
+			var users = new LokadCloudUserRoles();
+			var isAdmin = users.GetAdministrators().Exists(
+				user => user.Credential == e.ClaimedIdentifier);
 
 			// if the user isn't listed as an administrator, cancel the login
-			e.Cancel = true;
+			if (!isAdmin)
+			{
+				e.Cancel = true;
+			}
 		}
 	}
 }

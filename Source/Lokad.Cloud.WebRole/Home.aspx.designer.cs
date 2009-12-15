@@ -23,39 +23,39 @@ namespace Lokad.Cloud.Web {
         protected global::System.Web.UI.WebControls.GridView AdminsView;
         
         /// <summary>
-        /// LokadCloudVersion control.
+        /// LokadCloudVersionLabel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label LokadCloudVersion;
+        protected global::System.Web.UI.WebControls.Label LokadCloudVersionLabel;
         
         /// <summary>
-        /// LokadCloudUpdateStatus control.
+        /// LokadCloudUpdateStatusLabel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label LokadCloudUpdateStatus;
+        protected global::System.Web.UI.WebControls.Label LokadCloudUpdateStatusLabel;
         
         /// <summary>
-        /// DownloadLokadCloud control.
+        /// DownloadLokadCloudLink control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink DownloadLokadCloud;
+        protected global::System.Web.UI.WebControls.HyperLink DownloadLokadCloudLink;
         
         /// <summary>
-        /// StorageAccountName control.
+        /// StorageAccountNameLabel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label StorageAccountName;
+        protected global::System.Web.UI.WebControls.Label StorageAccountNameLabel;
     }
 }

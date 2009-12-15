@@ -5,42 +5,41 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
 {
 	public partial class Home: System.Web.UI.Page
 	{
+		readonly LokadCloudVersion _version = GlobalSetup.Container.Resolve<LokadCloudVersion>();
+		readonly LokadCloudUserRoles _users = GlobalSetup.Container.Resolve<LokadCloudUserRoles>(); 
+
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			AdminsView.DataSource = GetAdmins();
+			AdminsView.DataSource = _users.GetAdministrators();
 			AdminsView.DataBind();
-			LokadCloudVersion.DataBind();
-			StorageAccountName.DataBind();
-			LokadCloudUpdateStatus.DataBind();
-			DownloadLokadCloud.DataBind();
-		}
 
-		IEnumerable<object> GetAdmins()
-		{
-			// HACK: logic to retrieve admins is duplicated with 'Default.aspx'
-			var admins = string.Empty;
-			if (RoleEnvironment.IsAvailable)
-			{
-				admins = RoleEnvironment.GetConfigurationSettingValue("Admins");
-			}
-			else
-			{
-				admins = ConfigurationManager.AppSettings["Admins"];
-			}
+			StorageAccountNameLabel.Text = GlobalSetup.StorageAccountName;
+			LokadCloudVersionLabel.Text = _version.RunningVersion.ToString();
 
-			foreach(var admin in admins.Split(new [] {" "}, StringSplitOptions.RemoveEmptyEntries))
+			switch (_version.VersionState)
 			{
-				yield return new
-					{
-						Credential = admin
-					};
+				case LokadCloudVersionState.UpToDate:
+					LokadCloudUpdateStatusLabel.Text = "Up-to-date";
+					DownloadLokadCloudLink.Visible = false;
+					break;
+
+				case LokadCloudVersionState.UpdateAvailable:
+					LokadCloudUpdateStatusLabel.Text = String.Format(
+						"New version available ({0})",
+						_version.NewestVersion.Value);
+					DownloadLokadCloudLink.Visible = true;
+					DownloadLokadCloudLink.NavigateUrl = _version.DownloadUri.ToString();
+					break;
+
+				default:
+					LokadCloudUpdateStatusLabel.Text = "Could not retrieve version info";
+					DownloadLokadCloudLink.Visible = false;
+					break;
 			}
 		}
 

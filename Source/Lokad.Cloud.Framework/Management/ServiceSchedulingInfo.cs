@@ -19,6 +19,6 @@ namespace Lokad.Cloud.Management
 		public TimeSpan TriggerInterval { get; set; }
 
 		/// <summary>Last execution time stamp</summary>
-		public DateTimeOffset LastExecuted { get; set; }
+		public DateTime LastExecuted { get; set; }
 	}
 }

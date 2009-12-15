@@ -14,11 +14,11 @@ namespace Lokad.Cloud.Management
 	{
 		protected override void Load(ContainerBuilder builder)
 		{
-			builder.Register<CloudConfiguration>();
-			builder.Register<CloudAssemblies>();
-			builder.Register<CloudServices>();
-			builder.Register<CloudServiceScheduling>();
-			builder.Register<CloudStatistics>();
+			builder.Register<CloudConfiguration>().FactoryScoped();
+			builder.Register<CloudAssemblies>().FactoryScoped();
+			builder.Register<CloudServices>().FactoryScoped();
+			builder.Register<CloudServiceScheduling>().FactoryScoped();
+			builder.Register<CloudStatistics>().FactoryScoped();
 		}
 	}
 }

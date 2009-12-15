@@ -32,17 +32,17 @@
 	<div class="box">
 		<ul>
 			<li>Lokad.Cloud Version: <b>
-				<asp:Label ID="LokadCloudVersion" runat="server" Text='<%# GlobalSetup.AssemblyVersion %>' /></b>
+				<asp:Label ID="LokadCloudVersionLabel" runat="server" /></b>
 				<ul>
 					<li>Status: <b>
-						<asp:Label ID="LokadCloudUpdateStatus" runat="server" Text='<%# GlobalSetup.IsLokadCloudUpToDate.HasValue ? (GlobalSetup.IsLokadCloudUpToDate.Value ? "Up-to-date" : ("New version avilable (" + GlobalSetup.NewLokadCloudVersion + ")")) : "Could not retrieve version info" %>' />
-						</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<asp:HyperLink ID="DownloadLokadCloud" runat="server" Visible='<%# GlobalSetup.IsLokadCloudUpToDate.HasValue && !GlobalSetup.IsLokadCloudUpToDate.Value %>'
-							NavigateUrl='<%# GlobalSetup.DownloadUrl %>' Text="Download" ToolTip="Go to the Lokad.Cloud download page (new window)" Target="_blank" />
+						<asp:Label ID="LokadCloudUpdateStatusLabel" runat="server" />
+						</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<asp:HyperLink ID="DownloadLokadCloudLink" runat="server"
+							Text="Download" ToolTip="Go to the Lokad.Cloud download page (new window)" Target="_blank" />
 					</li>
 				</ul>
 			</li>
 			<li>Storage Account Name: <b>
-				<asp:Label ID="StorageAccountName" runat="server" Text='<%# GlobalSetup.StorageAccountName %>' /></b>
+				<asp:Label ID="StorageAccountNameLabel" runat="server" /></b>
 			</li>
 		</ul>
 	</div>

@@ -119,6 +119,8 @@
     <Compile Include="Logs.aspx.designer.cs">
       <DependentUpon>Logs.aspx</DependentUpon>
     </Compile>
+    <Compile Include="LokadCloudUserRoles.cs" />
+    <Compile Include="LokadCloudVersion.cs" />
     <Compile Include="Monitoring.aspx.cs">
       <DependentUpon>Monitoring.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

@@ -3,10 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System.IO;
-using System.Net;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
@@ -41,19 +37,14 @@ namespace Lokad.Cloud.Web
 
 			// Management
 			builder.RegisterModule(new ManagementModule());
+			builder.Register<LokadCloudVersion>().SingletonScoped();
+			builder.Register<LokadCloudUserRoles>().FactoryScoped();
 
 			Container = builder.Build();
 		}
 
-		#region Non-IoC members
-
-		private static object _syncRoot = new object();
-		private static string _storageAccountName = null;
-		private static string _newLokadCloudVersion = "";
-		private static bool? _lokadCloudUpToDate = null;
-		private static readonly Regex VersionCheckRegex = new Regex(@"\<h2\>Download Version ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\<\/h2\>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-		public const string DownloadUrl = "http://build.lokad.com/distrib/Lokad.Cloud/";
+		private static readonly object _syncRoot = new object();
+		private static string _storageAccountName;
 
 		/// <summary>Storage account name, cached at startup.</summary>
 		public static string StorageAccountName
@@ -61,94 +52,19 @@ namespace Lokad.Cloud.Web
 			get
 			{
 				// This synchronization scheme is surely a bit overkill in this case...
-				if(null == _storageAccountName)
+				if (null == _storageAccountName)
 				{
-					lock(_syncRoot)
+					lock (_syncRoot)
 					{
-						if(null == _storageAccountName)
+						if (null == _storageAccountName)
+						{
 							_storageAccountName = Container.Resolve<CloudBlobClient>().Credentials.AccountName;
+						}
 					}
 				}
 
 				return _storageAccountName;
 			}
 		}
-
-		/// <summary>Assembly version, cached on startup.</summary>
-		public static readonly string AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
-		/// <summary>Info about Lokad.Cloud update status, cached at startup.</summary>
-		public static bool? IsLokadCloudUpToDate
-		{
-			get
-			{
-				if(!_lokadCloudUpToDate.HasValue)
-				{
-					lock(_syncRoot)
-					{
-						if(!_lokadCloudUpToDate.HasValue)
-						{
-							var result = GetLokadCloudUpdateStatus();
-							_newLokadCloudVersion = result.Item1 ? result.Item2 : null;
-							_lokadCloudUpToDate = result.Item1 ? (bool?)(_newLokadCloudVersion == null) : null;
-						}
-					}
-				}
-
-				return _lokadCloudUpToDate;
-			}
-		}
-
-		/// <summary>The new Lokad.Cloud version, if any.</summary>
-		public static string NewLokadCloudVersion
-		{
-			get { return _newLokadCloudVersion; }
-		}
-
-		/// <summary>Retrieves the update status of Lokad.Cloud from the Internet.</summary>
-		/// <returns>A value indicating whether the version check was completed and 
-		/// the new version of Lokad.Cloud, or <c>null</c> if no new version is found.</returns>
-		private static Tuple<bool, string> GetLokadCloudUpdateStatus()
-		{
-			// HACK: Temporary implementation that looks for version number strings in http://build.lokad.com/distrib/Lokad.Cloud/
-
-			try
-			{
-				var request = (HttpWebRequest)WebRequest.Create(DownloadUrl);
-
-				var response = (HttpWebResponse)request.GetResponse();
-				if (response.StatusCode != HttpStatusCode.OK)
-				{
-					return new Tuple<bool, string>(false, null);
-				}
-
-				string responseContent;
-				using(var reader = new StreamReader(response.GetResponseStream()))
-				{
-					responseContent = reader.ReadToEnd();
-				}
-
-				var match = VersionCheckRegex.Match(responseContent);
-				if (!match.Success)
-				{
-					return new Tuple<bool, string>(false, null);
-				}
-
-				var latestVersion = match.Groups[1].Value;
-				if (latestVersion != AssemblyVersion)
-				{
-					return new Tuple<bool, string>(true, latestVersion);
-				}
-
-				return new Tuple<bool, string>(true, null);
-			}
-			catch
-			{
-				return new Tuple<bool, string>(false, null);
-			}
-		}
-
-		#endregion
-
 	}
 }
