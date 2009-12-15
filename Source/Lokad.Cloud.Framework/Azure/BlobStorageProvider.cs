@@ -74,28 +74,37 @@ namespace Lokad.Cloud.Azure
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
-		static Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite)
+		static Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite, string expectedEtag)
 		{
-			var options = overwrite ?
-				new BlobRequestOptions {AccessCondition = AccessCondition.None} :
-				new BlobRequestOptions {AccessCondition = AccessCondition.IfNotModifiedSince(DateTime.MinValue)};
+			BlobRequestOptions options = null;
+			if(overwrite) options = new BlobRequestOptions { AccessCondition = AccessCondition.None };
+			else
+			{
+				if(string.IsNullOrEmpty(expectedEtag)) options = new BlobRequestOptions { AccessCondition = AccessCondition.IfNotModifiedSince(DateTime.MinValue) };
+				else options = new BlobRequestOptions { AccessCondition = AccessCondition.None };
+			}
 
 			stream.Seek(0, SeekOrigin.Begin);
 			try
 			{
 				blob.UploadFromStream(stream, options);
 			}
-			catch (StorageClientException ex)
+			catch(StorageClientException ex)
 			{
 				if(ex.ErrorCode == StorageErrorCode.ConditionFailed)
 				{
 					return Maybe<string>.Empty;
 				}
-				
+
 				throw;
 			}
-			
+
 			return Maybe.From(blob.Properties.ETag);
+		}
+
+		static Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite)
+		{
+			return UploadBlobContent(blob, stream, overwrite, null);
 		}
 
 		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag)
@@ -327,6 +336,7 @@ namespace Lokad.Cloud.Azure
 			CloudBlockBlob blob = null;
 
 			Maybe<T> input;
+			string originalEtag = null;
 			try
 			{
 				blob = container.GetBlockBlobReference(blobName);
@@ -334,6 +344,7 @@ namespace Lokad.Cloud.Azure
 				using (var rstream = new MemoryStream())
 				{
 					blob.DownloadToStream(rstream);
+					originalEtag = blob.Properties.ETag;
 
 					rstream.Seek(0, SeekOrigin.Begin);
 					var blobData = _formatter.Deserialize(rstream, typeof(T));
@@ -372,10 +383,8 @@ namespace Lokad.Cloud.Azure
 			{
 				_formatter.Serialize(wstream, result.Value);
 				wstream.Seek(0, SeekOrigin.Begin);
-				UploadBlobContent(blob, wstream, true);
+				return UploadBlobContent(blob, wstream, true, originalEtag).HasValue;
 			}
-
-			return true;
 		}
 
 		public bool DeleteBlob(string containerName, string blobName)
