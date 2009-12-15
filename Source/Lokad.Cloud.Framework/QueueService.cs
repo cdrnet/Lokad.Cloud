@@ -108,7 +108,7 @@ namespace Lokad.Cloud
 		/// <returns>Retrieved message (enumeration might be empty).</returns>
 		public IEnumerable<T> GetMore(int count, string queueName)
 		{
-			return QueueStorage.Get<T>(_queueName, count);
+			return QueueStorage.Get<T>(queueName, count);
 		}
 
 		/// <summary>Delete message retrieved either through <see cref="StartRange"/>
