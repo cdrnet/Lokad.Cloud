@@ -5,6 +5,7 @@
 
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using Lokad.Cloud.Azure.Test;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Test
@@ -19,11 +20,11 @@ namespace Lokad.Cloud.Test
 			var om = new MessageWrapper {ContainerName = "con", BlobName = "blo"};
 
 			var stream = new MemoryStream();
-			var formatter = new BinaryFormatter();
+			var formatter = GlobalSetup.Container.Resolve<IBinaryFormatter>();
 
 			formatter.Serialize(stream, om);
 			stream.Position = 0;
-			var omBis = (MessageWrapper) formatter.Deserialize(stream);
+			var omBis = (MessageWrapper) formatter.Deserialize(stream, typeof(MessageWrapper));
 
 			Assert.AreEqual(om.ContainerName, omBis.ContainerName, "#A00");
 			Assert.AreEqual(om.BlobName, omBis.BlobName, "#A01");

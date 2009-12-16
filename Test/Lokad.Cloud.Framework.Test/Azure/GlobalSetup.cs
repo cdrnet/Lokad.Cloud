@@ -19,6 +19,9 @@ namespace Lokad.Cloud.Azure.Test
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
+			// formatter
+			builder.Register(typeof (CloudFormatter)).As<IBinaryFormatter>();
+
 			// Cloud Infrastructure
 			builder.Register(typeof(CloudInfrastructureProviders));
 
