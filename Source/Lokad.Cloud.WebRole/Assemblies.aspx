@@ -14,7 +14,6 @@
 
 	<p>Content of the assembly archive:</p>
 	<asp:GridView ID="AssembliesView" runat="server" EmptyDataText="No file in archive yet." OnDataBinding="AssembliesView_DataBinding" />
-	
 	<br />
 	<p>Upload a stand-alone .NET assembly (DLL) or a ZIP archive containing multiple DLLs (previous assemblies will be deleted):
 	</p>
@@ -32,4 +31,9 @@
 		<asp:Label ID="UploadSucceededLabel" runat="server" EnableViewState="false" Visible="false"
 			Text="Upload succeeded" />
 	</p>
+	<asp:Panel ID="_assemblyWarningPanel" runat="server" CssClass="warning">
+		<asp:Label ID="_invalidAssemblyPackage" runat="server"
+			Text="At least one of the configured assemblies is corrupt or incompatible to this version and fails to load. Please check the error logs for more details, verify your package and try to upload again." />
+	</asp:Panel>
+	
 </asp:Content>

@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
@@ -14,6 +15,7 @@ namespace Lokad.Cloud.Web
 	public partial class Assemblies : System.Web.UI.Page
 	{
 		readonly CloudAssemblies _cloudAssemblies = GlobalSetup.Container.Resolve<CloudAssemblies>();
+		readonly ILog _log = GlobalSetup.Container.Resolve<ILog>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
@@ -22,14 +24,29 @@ namespace Lokad.Cloud.Web
 
 		protected void AssembliesView_DataBinding(object sender, EventArgs e)
 		{
-			AssembliesView.DataSource = _cloudAssemblies.GetAssenblies()
+			List<CloudAssemblyInfo> assemblyInfos;
+			try
+			{
+				assemblyInfos = _cloudAssemblies.GetAssemblies().ToList();
+			}
+			catch (Exception ex)
+			{
+				_log.Error(ex, "Assembly package failed to load in the management UI.");
+				_assemblyWarningPanel.Visible = true;
+				AssembliesView.DataSource = null;
+				return;
+			}
+
+			_assemblyWarningPanel.Visible = assemblyInfos.Exists(a => !a.IsValid);
+			AssembliesView.DataSource = assemblyInfos
 				.Select(info => new
-				{
-					Name = info.AssemblyName,
-					info.DateTime,
-					Version = info.Version.ToString(),
-					info.Size
-				});
+					{
+						Name = info.AssemblyName,
+						info.DateTime,
+						Version = info.Version.ToString(),
+						Size = PrettyFormatMemory(info.SizeBytes),
+						Status = info.IsValid ? "OK" : "Corrupt"
+					});
 		}
 
 		protected void UploadButton_Click(object sender, EventArgs e)
@@ -102,6 +119,11 @@ namespace Lokad.Cloud.Web
 			}
 
 			args.IsValid = true;
+		}
+
+		static string PrettyFormatMemory(long byteCount)
+		{
+			return String.Format("{0} KB", byteCount / 1024);
 		}
 	}
 }

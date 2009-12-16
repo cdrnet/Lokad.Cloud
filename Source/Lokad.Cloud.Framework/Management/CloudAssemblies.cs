@@ -17,19 +17,21 @@ namespace Lokad.Cloud.Management
 	public class CloudAssemblies
 	{
 		readonly IBlobStorageProvider _blobProvider;
+		readonly ILog _log;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CloudAssemblies"/> class.
 		/// </summary>
-		public CloudAssemblies(IBlobStorageProvider blobStorageProvider)
+		public CloudAssemblies(IBlobStorageProvider blobStorageProvider, ILog log)
 		{
 			_blobProvider = blobStorageProvider;
+			_log = log;
 		}
 
 		/// <summary>
 		/// Enumerate infos of all configured cloud service assemblies.
 		/// </summary>
-		public IEnumerable<CloudAssemblyInfo> GetAssenblies()
+		public IEnumerable<CloudAssemblyInfo> GetAssemblies()
 		{
 			var buffer = _blobProvider.GetBlob<byte[]>(
 				AssemblyLoader.ContainerName,
@@ -46,22 +48,32 @@ namespace Lokad.Cloud.Management
 				ZipEntry entry;
 				while ((entry = zipStream.GetNextEntry()) != null)
 				{
+					var isValid = true;
+					var version = new Version();
 					var assemblyBytes = new byte[entry.Size];
-					zipStream.Read(assemblyBytes, 0, assemblyBytes.Length);
 
-					Version version;
-					using (var inspector = new AssemblyInspector(assemblyBytes))
+					try
 					{
-						version = inspector.AssemblyVersion;
+						zipStream.Read(assemblyBytes, 0, assemblyBytes.Length);
+						using (var inspector = new AssemblyInspector(assemblyBytes))
+						{
+							version = inspector.AssemblyVersion;
+						}
+					}
+					catch (Exception ex)
+					{
+						isValid = false;
+						_log.Error(ex, "Assembly failed to unpack and load.");
 					}
 
 					yield return new CloudAssemblyInfo
-					{
-						AssemblyName = entry.Name,
-						DateTime = entry.DateTime,
-						Version = version,
-						Size = entry.Size
-					};
+						{
+							AssemblyName = entry.Name,
+							DateTime = entry.DateTime,
+							Version = version,
+							SizeBytes = entry.Size,
+							IsValid = isValid
+						};
 				}
 			}
 		}

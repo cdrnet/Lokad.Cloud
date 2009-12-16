@@ -12,16 +12,19 @@ namespace Lokad.Cloud.Management
 	/// </summary>
 	public class CloudAssemblyInfo
 	{
-		/// <summary>Name of the cloud assembly</summary>
+		/// <summary>Name of the cloud assembly.</summary>
 		public string AssemblyName { get; set; }
 
-		/// <summary>Time stamp of the cloud assembly</summary>
+		/// <summary>Time stamp of the cloud assembly.</summary>
 		public DateTime DateTime { get; set; }
 
-		/// <summary>Version of the cloud assembly</summary>
+		/// <summary>Version of the cloud assembly.</summary>
 		public Version Version { get; set; }
 
-		/// <summary>File size of the cloud assembly</summary>
-		public long Size { get; set; }
+		/// <summary>File size of the cloud assembly, in bytes.</summary>
+		public long SizeBytes { get; set; }
+
+		/// <summary>Assembly can be loaded successfully.</summary>
+		public bool IsValid { get; set; }
 	}
 }
