@@ -17,7 +17,7 @@ INSTRUMENTATION:
 1. CloudService Processing Time Instrumentation
 
 Is integrated automatically at the level of the service scheduler/balancer,
-capturing total and user processing time per server.
+capturing total and user processing time per service.
 
 2. Computing Environment/Partition Instrumentation (System Data, Processing, Memory)
 
@@ -33,7 +33,7 @@ default counters its also possible to push counter statistics of other,
 non-default counters tagged by a context, using the
 ExceptionTrackingMonitor.Update method.
 
-4. Custom Executiong Profiling Counters
+4. Custom Execution Profiling Counters
 
 Is run by the scheduled MonitoringService and captures any execution profiles
 and counters reported to the default execution counters provided by Lokad.Shared.
