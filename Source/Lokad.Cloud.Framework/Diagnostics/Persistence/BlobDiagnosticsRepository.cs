@@ -55,77 +55,77 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// <summary>
 		/// Get the statistics of all tracked exceptions.
 		/// </summary>
-		public IEnumerable<ExceptionTrackingStatistics> GetAllExceptionTrackingStatistics()
+		public IEnumerable<ExceptionTrackingStatistics> GetExceptionTrackingStatistics(string timeSegment)
 		{
 			return GetAll<ExceptionTrackingStatistics,ExceptionTrackingStatisticsName>(
-				ExceptionTrackingStatisticsName.GetPrefix());
+				ExceptionTrackingStatisticsName.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
 		/// Get the statistics of all execution profiles.
 		/// </summary>
-		public IEnumerable<ExecutionProfilingStatistics> GetAllExecutionProfilingStatistics()
+		public IEnumerable<ExecutionProfilingStatistics> GetExecutionProfilingStatistics(string timeSegment)
 		{
 			return GetAll<ExecutionProfilingStatistics, ExecutionProfilingStatisticsName>(
-				ExecutionProfilingStatisticsName.GetPrefix());
+				ExecutionProfilingStatisticsName.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
 		/// Get the statistics of all cloud partitions.
 		/// </summary>
-		public IEnumerable<PartitionStatistics> GetAllPartitionStatistics()
+		public IEnumerable<PartitionStatistics> GetAllPartitionStatistics(string timeSegment)
 		{
 			return GetAll<PartitionStatistics, PartitionStatisticsName>(
-				PartitionStatisticsName.GetPrefix());
+				PartitionStatisticsName.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
 		/// Get the statistics of all cloud services.
 		/// </summary>
-		public IEnumerable<ServiceStatistics> GetAllServiceStatistics()
+		public IEnumerable<ServiceStatistics> GetAllServiceStatistics(string timeSegment)
 		{
 			return GetAll<ServiceStatistics, ServiceStatisticsName>(
-				ServiceStatisticsName.GetPrefix());
+				ServiceStatisticsName.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
 		/// Update the statistics of a tracked exception.
 		/// </summary>
-		public void UpdateExceptionTrackingStatistics(string contextName, Func<Maybe<ExceptionTrackingStatistics>, ExceptionTrackingStatistics> updater)
+		public void UpdateExceptionTrackingStatistics(string timerSegment, string contextName, Func<Maybe<ExceptionTrackingStatistics>, ExceptionTrackingStatistics> updater)
 		{
-			Update(ExceptionTrackingStatisticsName.New(contextName), updater);
+			Update(ExceptionTrackingStatisticsName.New(timerSegment, contextName), updater);
 		}
 
 		/// <summary>
 		/// Update the statistics of an execution profile.
 		/// </summary>
-		public void UpdateExecutionProfilingStatistics(string contextName, Func<Maybe<ExecutionProfilingStatistics>, ExecutionProfilingStatistics> updater)
+		public void UpdateExecutionProfilingStatistics(string timerSegment, string contextName, Func<Maybe<ExecutionProfilingStatistics>, ExecutionProfilingStatistics> updater)
 		{
-			Update(ExecutionProfilingStatisticsName.New(contextName), updater);
+			Update(ExecutionProfilingStatisticsName.New(timerSegment, contextName), updater);
 		}
 
 		/// <summary>
 		/// Update the statistics of a cloud partition.
 		/// </summary>
-		public void UpdatePartitionStatistics(string partitionName, Func<Maybe<PartitionStatistics>, PartitionStatistics> updater)
+		public void UpdatePartitionStatistics(string timeSegment, string partitionName, Func<Maybe<PartitionStatistics>, PartitionStatistics> updater)
 		{
-			Update(PartitionStatisticsName.New(partitionName), updater);
+			Update(PartitionStatisticsName.New(timeSegment, partitionName), updater);
 		}
 
 		/// <summary>
 		/// Set the statistics of a cloud partition.
 		/// </summary>
-		public void SetPartitionStatistics(string partitionName, PartitionStatistics statistics)
+		public void SetPartitionStatistics(string timeSegment, string partitionName, PartitionStatistics statistics)
 		{
-			Set(PartitionStatisticsName.New(partitionName), statistics);
+			Set(PartitionStatisticsName.New(timeSegment, partitionName), statistics);
 		}
 
 		/// <summary>
 		/// Update the statistics of a cloud service.
 		/// </summary>
-		public void UpdateServiceStatistics(string serviceName, Func<Maybe<ServiceStatistics>, ServiceStatistics> updater)
+		public void UpdateServiceStatistics(string timeSegment, string serviceName, Func<Maybe<ServiceStatistics>, ServiceStatistics> updater)
 		{
-			Update(ServiceStatisticsName.New(serviceName), updater);
+			Update(ServiceStatisticsName.New(timeSegment, serviceName), updater);
 		}
 	}
 }

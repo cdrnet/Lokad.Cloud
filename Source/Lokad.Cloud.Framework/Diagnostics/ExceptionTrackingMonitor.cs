@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lokad.Diagnostics;
@@ -29,11 +30,6 @@ namespace Lokad.Cloud.Diagnostics
 			_repository = repository;
 		}
 
-		public IEnumerable<ExceptionTrackingStatistics> GetStatistics()
-		{
-			return _repository.GetAllExceptionTrackingStatistics();
-		}
-
 		/// <remarks>
 		/// Base implementation collects default counters of this worker only
 		/// </remarks>
@@ -51,7 +47,24 @@ namespace Lokad.Cloud.Diagnostics
 		/// </summary>
 		public void Update(string contextName, IEnumerable<ExceptionData> additionalData)
 		{
+			var dataList = additionalData.ToList();
+			if (dataList.Count == 0)
+			{
+				return;
+			}
+
+			var timestamp = DateTime.UtcNow;
+			Update(TimeSegments.Day(timestamp), contextName, dataList);
+			Update(TimeSegments.Month(timestamp), contextName, dataList);
+		}
+
+		/// <summary>
+		/// Update the statistics data with a set of additional new data items
+		/// </summary>
+		public void Update(string timeSegment, string contextName, IEnumerable<ExceptionData> additionalData)
+		{
 			_repository.UpdateExceptionTrackingStatistics(
+				timeSegment,
 				contextName,
 				s =>
 					{

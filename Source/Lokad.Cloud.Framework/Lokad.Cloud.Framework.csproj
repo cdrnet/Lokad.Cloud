@@ -112,6 +112,7 @@
     <Compile Include="Diagnostics\ServiceMonitor.cs" />
     <Compile Include="Diagnostics\IServiceMonitor.cs" />
     <Compile Include="Diagnostics\ServiceStatistics.cs" />
+    <Compile Include="Diagnostics\TimeSegments.cs" />
     <Compile Include="IBinaryFormatter.cs" />
     <Compile Include="Management\AssemblyInspector.cs" />
     <Compile Include="Management\CloudAssemblies.cs" />

@@ -48,6 +48,5 @@ see issue #78), we currently aggregate all statistics by object name and context
 
 Statistics can be retrieved:
 
-* From the CloudStatistics management class (recommended, but is expected to change soon)
-* From the monitors using their GetStatistics methods
+* From the CloudStatistics management class
 * Directly from the ICloudDiagnosticsRepository repository (not recommended)

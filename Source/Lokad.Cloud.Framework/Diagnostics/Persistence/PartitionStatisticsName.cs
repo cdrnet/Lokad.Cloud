@@ -15,21 +15,30 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		}
 
 		[UsedImplicitly, Rank(0)]
+		public readonly string TimeSegment;
+
+		[UsedImplicitly, Rank(1)]
 		public readonly string PartitionKey;
 
-		public PartitionStatisticsName(string partitionKey)
+		public PartitionStatisticsName(string timeSegment, string partitionKey)
 		{
+			TimeSegment = timeSegment;
 			PartitionKey = partitionKey;
 		}
 
-		public static PartitionStatisticsName New(string partitionKey)
+		public static PartitionStatisticsName New(string timeSegment, string partitionKey)
 		{
-			return new PartitionStatisticsName(partitionKey);
+			return new PartitionStatisticsName(timeSegment, partitionKey);
 		}
 
 		public static BlobNamePrefix<PartitionStatisticsName> GetPrefix()
 		{
-			return GetPrefix(new PartitionStatisticsName(null), 0);
+			return GetPrefix(new PartitionStatisticsName(null, null), 0);
+		}
+
+		public static BlobNamePrefix<PartitionStatisticsName> GetPrefix(string timeSegment)
+		{
+			return GetPrefix(new PartitionStatisticsName(timeSegment, null), 1);
 		}
 	}
 }

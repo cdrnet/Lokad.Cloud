@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Lokad.Cloud.Diagnostics;
 
@@ -24,27 +25,47 @@ namespace Lokad.Cloud.Management
 		}
 
 		/// <summary>Get the statistics of all cloud partitions.</summary>
-		public IEnumerable<PartitionStatistics> GetPartitions()
+		public IEnumerable<PartitionStatistics> GetPartitionsInPeriod(TimeSegmentPeriod period, DateTimeOffset date)
 		{
-			return _repository.GetAllPartitionStatistics();
+			return _repository.GetAllPartitionStatistics(TimeSegments.For(period, date));
+		}
+		/// <summary>Get the statistics of all cloud partitions.</summary>
+		public IEnumerable<PartitionStatistics> GetAllPartitions()
+		{
+			return _repository.GetAllPartitionStatistics(TimeSegments.MonthPrefix);
 		}
 
+		/// <summary>Get the statistics of monthly cloud services.</summary>
+		public IEnumerable<ServiceStatistics> GetServicesInPeriod(TimeSegmentPeriod period, DateTimeOffset date)
+		{
+			return _repository.GetAllServiceStatistics(TimeSegments.For(period, date));
+		}
 		/// <summary>Get the statistics of all cloud services.</summary>
-		public IEnumerable<ServiceStatistics> GetServices()
+		public IEnumerable<ServiceStatistics> GetAllServices()
 		{
-			return _repository.GetAllServiceStatistics();
+			return _repository.GetAllServiceStatistics(TimeSegments.MonthPrefix);
 		}
 
+		/// <summary>Get the statistics of monthly tracked exceptions.</summary>
+		public IEnumerable<ExceptionTrackingStatistics> GetTrackedExceptionsInPeriod(TimeSegmentPeriod period, DateTimeOffset date)
+		{
+			return _repository.GetExceptionTrackingStatistics(TimeSegments.For(period, date));
+		}
 		/// <summary>Get the statistics of all tracked exceptions.</summary>
-		public IEnumerable<ExceptionTrackingStatistics> GetTrackedExceptions()
+		public IEnumerable<ExceptionTrackingStatistics> GetAllTrackedExceptions()
 		{
-			return _repository.GetAllExceptionTrackingStatistics();
+			return _repository.GetExceptionTrackingStatistics(TimeSegments.MonthPrefix);
 		}
-
-		/// <summary>Get the statistics of all execution profiles.</summary>
-		public IEnumerable<ExecutionProfilingStatistics> GetExecutionProfiles()
+		
+		/// <summary>Get the statistics of monthly execution profiles.</summary>
+		public IEnumerable<ExecutionProfilingStatistics> GetExecutionProfilesInPeriod(TimeSegmentPeriod period, DateTimeOffset date)
 		{
-			return _repository.GetAllExecutionProfilingStatistics();
+			return _repository.GetExecutionProfilingStatistics(TimeSegments.For(period, date));
+		}
+		/// <summary>Get the statistics of all execution profiles.</summary>
+		public IEnumerable<ExecutionProfilingStatistics> GetAllExecutionProfiles()
+		{
+			return _repository.GetExecutionProfilingStatistics(TimeSegments.MonthPrefix);
 		}
 	}
 }

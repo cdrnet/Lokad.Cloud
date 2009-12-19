@@ -15,21 +15,30 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		}
 
 		[UsedImplicitly, Rank(0)]
+		public readonly string TimeSegment;
+
+		[UsedImplicitly, Rank(1)]
 		public readonly string ServiceName;
 
-		public ServiceStatisticsName(string serviceName)
+		public ServiceStatisticsName(string timeSegment, string serviceName)
 		{
+			TimeSegment = timeSegment;
 			ServiceName = serviceName;
 		}
 
-		public static ServiceStatisticsName New(string serviceName)
+		public static ServiceStatisticsName New(string timeSegment, string serviceName)
 		{
-			return new ServiceStatisticsName(serviceName);
+			return new ServiceStatisticsName(timeSegment, serviceName);
 		}
 
 		public static BlobNamePrefix<ServiceStatisticsName> GetPrefix()
 		{
-			return GetPrefix(new ServiceStatisticsName(null), 0);
+			return GetPrefix(new ServiceStatisticsName(null, null), 0);
+		}
+
+		public static BlobNamePrefix<ServiceStatisticsName> GetPrefix(string timeSegment)
+		{
+			return GetPrefix(new ServiceStatisticsName(timeSegment, null), 1);
 		}
 	}
 }

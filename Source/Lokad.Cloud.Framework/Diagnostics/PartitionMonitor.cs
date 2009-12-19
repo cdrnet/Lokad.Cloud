@@ -4,7 +4,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 // TODO: Discard old data (based on .LastUpdate)
@@ -25,22 +24,16 @@ namespace Lokad.Cloud.Diagnostics
 		public PartitionMonitor(ICloudDiagnosticsRepository repository)
 		{
 			_repository = repository;
-			_partitionKey = String.Format(
-				"{0}-{1}",
-				System.Net.Dns.GetHostName(),
-				Process.GetCurrentProcess().Id);
-		}
-
-		public IEnumerable<PartitionStatistics> GetStatistics()
-		{
-			return _repository.GetAllPartitionStatistics();
+			_partitionKey = System.Net.Dns.GetHostName();
 		}
 
 		public void UpdateStatistics()
 		{
-			_repository.SetPartitionStatistics(
-				_partitionKey,
-				CollectStatistics());
+			var statistics = CollectStatistics();
+			var timestamp = DateTime.UtcNow;
+
+			_repository.SetPartitionStatistics(TimeSegments.Day(timestamp), _partitionKey, statistics);
+			_repository.SetPartitionStatistics(TimeSegments.Month(timestamp), _partitionKey, statistics);
 		}
 
 		PartitionStatistics CollectStatistics()

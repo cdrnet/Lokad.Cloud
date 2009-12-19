@@ -23,6 +23,33 @@ namespace Lokad.Cloud.Web {
         protected global::Lokad.Cloud.Web.NavBar NavBar1;
         
         /// <summary>
+        /// MainScriptManager control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.ScriptManager MainScriptManager;
+        
+        /// <summary>
+        /// PartitionPanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel PartitionPanel;
+        
+        /// <summary>
+        /// PartitionSelector control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RadioButtonList PartitionSelector;
+        
+        /// <summary>
         /// PartitionView control.
         /// </summary>
         /// <remarks>
@@ -30,6 +57,24 @@ namespace Lokad.Cloud.Web {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView PartitionView;
+        
+        /// <summary>
+        /// ServicePanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel ServicePanel;
+        
+        /// <summary>
+        /// ServiceSelector control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RadioButtonList ServiceSelector;
         
         /// <summary>
         /// ServiceView control.
@@ -41,21 +86,57 @@ namespace Lokad.Cloud.Web {
         protected global::System.Web.UI.WebControls.GridView ServiceView;
         
         /// <summary>
-        /// ExecutionProfilesView control.
+        /// ProfilesPanel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView ExecutionProfilesView;
+        protected global::System.Web.UI.UpdatePanel ProfilesPanel;
         
         /// <summary>
-        /// TrackedExceptionsView control.
+        /// ProfilesSelector control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView TrackedExceptionsView;
+        protected global::System.Web.UI.WebControls.RadioButtonList ProfilesSelector;
+        
+        /// <summary>
+        /// ProfilesView control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView ProfilesView;
+        
+        /// <summary>
+        /// ExceptionsPanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel ExceptionsPanel;
+        
+        /// <summary>
+        /// ExceptionsSelector control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RadioButtonList ExceptionsSelector;
+        
+        /// <summary>
+        /// ExceptionsView control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView ExceptionsView;
     }
 }

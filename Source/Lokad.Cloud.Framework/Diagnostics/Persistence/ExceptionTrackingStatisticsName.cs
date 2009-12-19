@@ -15,21 +15,30 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		}
 
 		[UsedImplicitly, Rank(0)]
+		public readonly string TimeSegment;
+
+		[UsedImplicitly, Rank(1)]
 		public readonly string ContextName;
 
-		public ExceptionTrackingStatisticsName(string contextName)
+		public ExceptionTrackingStatisticsName(string timeSegment, string contextName)
 		{
+			TimeSegment = timeSegment;
 			ContextName = contextName;
 		}
 
-		public static ExceptionTrackingStatisticsName New(string contextName)
+		public static ExceptionTrackingStatisticsName New(string timeSegment, string contextName)
 		{
-			return new ExceptionTrackingStatisticsName(contextName);
+			return new ExceptionTrackingStatisticsName(timeSegment, contextName);
 		}
 
 		public static BlobNamePrefix<ExceptionTrackingStatisticsName> GetPrefix()
 		{
-			return GetPrefix(new ExceptionTrackingStatisticsName(null), 0);
+			return GetPrefix(new ExceptionTrackingStatisticsName(null, null), 0);
+		}
+
+		public static BlobNamePrefix<ExceptionTrackingStatisticsName> GetPrefix(string timeSegment)
+		{
+			return GetPrefix(new ExceptionTrackingStatisticsName(timeSegment, null), 1);
 		}
 	}
 }
