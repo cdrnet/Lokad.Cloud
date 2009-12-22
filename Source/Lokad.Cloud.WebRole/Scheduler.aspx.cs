@@ -30,7 +30,8 @@ namespace Lokad.Cloud.Web
 					{
 						Name = info.ServiceName,
 						info.LastExecuted,
-						info.TriggerInterval
+						info.TriggerInterval,
+						Scope = info.WorkerScoped ? "Worker" : "Cloud"
 					})
 				.ToList();
 		}

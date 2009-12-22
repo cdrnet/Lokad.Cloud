@@ -20,5 +20,8 @@ namespace Lokad.Cloud.Management
 
 		/// <summary>Last execution time stamp</summary>
 		public DateTime LastExecuted { get; set; }
+
+		/// <summary>True if the services is worker scoped instead of cloud scoped.</summary>
+		public bool WorkerScoped { get; set; }
 	}
 }

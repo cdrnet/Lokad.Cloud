@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Caching;
-using Lokad.Cloud.Management;
-using Lokad.Cloud.Diagnostics;
 using System.Web.UI.WebControls;
+using Lokad.Cloud.Diagnostics;
+using Lokad.Cloud.Management;
 
 namespace Lokad.Cloud.Web
 {
@@ -32,12 +32,15 @@ namespace Lokad.Cloud.Web
 				.Select<PartitionStatistics, object>(s => new
 					{
 						Partition = s.PartitionKey,
+						OS = PresentationHelpers.PrettyFormatOperatingSystem(s.OperatingSystem),
 						Runtime = s.Runtime,
 						Cores = s.ProcessorCount,
 						Threads = s.ThreadCount,
-						Processing = PrettyFormatTimeSpan(s.TotalProcessorTime),
-						Memory = PrettyFormatMemory(s.MemoryPrivateSize),
+						Total = s.TotalProcessorTime.PrettyFormat(),
+						Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat(),
+						Memory = PresentationHelpers.PrettyFormatMemoryMB(s.MemoryPrivateSize),
 					})
+				.Take(50)
 				.ToList();
 		}
 
@@ -47,8 +50,10 @@ namespace Lokad.Cloud.Web
 				.Select<ServiceStatistics, object>(s => new
 					{
 						Service = s.Name,
-						Processing = PrettyFormatTimeSpan(s.TotalProcessorTime),
+						Total = s.TotalProcessorTime.PrettyFormat(),
+						Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat()
 					})
+				.Take(50)
 				.ToList();
 		}
 
@@ -62,10 +67,11 @@ namespace Lokad.Cloud.Web
 							Context = s.Name,
 							Name = d.Name,
 							Count = d.OpenCount,
-							Processing = PrettyFormatTimeSpan(TimeSpan.FromTicks(d.RunningTime)),
+							Total = TimeSpan.FromTicks(d.RunningTime).PrettyFormat(),
+							Average = d.CloseCount == 0 ? "N/A" : TimeSpan.FromTicks(d.RunningTime / d.CloseCount).PrettyFormat(),
 							Success = String.Format("{0}%", 100*d.CloseCount/d.OpenCount)
 						}))
-				.Take(25)
+				.Take(50)
 				.ToList();
 		}
 
@@ -77,60 +83,11 @@ namespace Lokad.Cloud.Web
 						{
 							Context = s.Name,
 							Count = d.Count,
+							Message = d.Message,
 							Text = d.Text
 						}))
 				.Take(25)
 				.ToList();
-		}
-
-		static string PrettyFormatTimeSpan(TimeSpan timeSpan)
-		{
-			double delta = timeSpan.TotalSeconds;
-
-			const int second = 1;
-			const int minute = 60*second;
-			const int hour = 60*minute;
-			const int day = 24*hour;
-			const int month = 30*day;
-
-			if (delta < 1*minute) return timeSpan.Seconds == 1 ? "one second" : timeSpan.Seconds + " seconds";
-			if (delta < 2*minute) return "a minute";
-			if (delta < 45*minute) return timeSpan.Minutes + " minutes";
-			if (delta < 90*minute) return "an hour";
-			if (delta < 24*hour) return timeSpan.Hours + " hours";
-			if (delta < 48*hour) return (int) timeSpan.TotalHours + " hours";
-			if (delta < 30*day) return timeSpan.Days + " days";
-
-			if (delta < 12*month)
-			{
-				var months = (int) Math.Floor(timeSpan.Days/30.0);
-				return months <= 1 ? "one month" : months + " months";
-			}
-
-			var years = (int) Math.Floor(timeSpan.Days/365.0);
-			return years <= 1 ? "one year" : years + " years";
-		}
-
-		private string PrettyFormatRelativeDateTime(DateTimeOffset dateTime)
-		{
-			var now = DateTimeOffset.Now;
-
-			if(dateTime.UtcTicks == 0)
-			{
-				return String.Empty;
-			}
-
-			if(dateTime >= now)
-			{
-				return "just now";
-			}
-
-			return PrettyFormatTimeSpan(now - dateTime) + " ago";
-		}
-
-		static string PrettyFormatMemory(long byteCount)
-		{
-			return String.Format("{0} MB", byteCount/(1024*1024));
 		}
 
 		protected void PartitionView_DataBinding(object sender, EventArgs e)

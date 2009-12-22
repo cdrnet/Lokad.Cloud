@@ -13,9 +13,9 @@ namespace Lokad.Cloud.Services
 	/// </summary>
 	[ScheduledServiceSettings(
 		   AutoStart = true,
-		   Description = "Collects and persists monitoring statistics.",
 		   TriggerInterval = 5 * 60, // 1 execution every 5min
-		   SchedulePerWorker = true)] 
+		   SchedulePerWorker = true,
+		   Description = "Collects and persists monitoring statistics.")] 
 	public class MonitoringService : ScheduledService
 	{
 		/// <remarks>IoC Injected (optional, failover to default)</remarks>

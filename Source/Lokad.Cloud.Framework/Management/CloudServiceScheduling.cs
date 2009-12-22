@@ -46,7 +46,8 @@ namespace Lokad.Cloud.Management
 					{
 						ServiceName = blobName.ServiceName,
 						TriggerInterval = state.TriggerInterval,
-						LastExecuted = state.LastExecuted
+						LastExecuted = state.LastExecuted,
+						WorkerScoped = state.SchedulePerWorker
 					};
 			}
 		}

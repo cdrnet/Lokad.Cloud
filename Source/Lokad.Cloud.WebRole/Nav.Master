@@ -52,7 +52,7 @@
 				<div id="MainHeaderDiv">
 					<!-- Used for layout purposes only -->
 				</div>
-				<div id="Text" style="width:530px">
+				<div id="Text" style="width:730px">
 					<asp:ContentPlaceHolder ID="BodyPlaceHolder" runat="server"></asp:ContentPlaceHolder>
 				</div>
 				<div id="MainFooterDiv">

@@ -453,7 +453,9 @@ img.thumb { border: solid 1px #CCCCCC; }
 	.col2 li.left{ width: 362px;  }
 	.col2 li.right{ width: 362px;  }
 
-#Text p { padding: 0 0 1em 0;}
+#Text p { padding: 0 0 1em 0; width:530px}
+
+div.box { width:530px; }
 
 span.warning { color: #ff0000; }
 
@@ -462,7 +464,7 @@ span.warning { color: #ff0000; }
 .DefaultGrid
 {
 	border-collapse: collapse;
-	border: solid 1px #000000;
+	border: solid 1px #BBBBBB;
 }
 .Centered
 {

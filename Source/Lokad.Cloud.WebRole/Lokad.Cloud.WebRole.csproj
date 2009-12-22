@@ -142,6 +142,7 @@
     <Compile Include="NavBar.ascx.designer.cs">
       <DependentUpon>NavBar.ascx</DependentUpon>
     </Compile>
+    <Compile Include="PresentationHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scheduler.aspx.cs">
       <DependentUpon>Scheduler.aspx</DependentUpon>
