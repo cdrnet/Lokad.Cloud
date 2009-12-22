@@ -12,8 +12,14 @@ namespace Lokad.Cloud
 	[Serializable, DataContract]
 	public class ScheduledServiceState
 	{
-		[DataMember] public TimeSpan TriggerInterval { get; set; }
-		[DataMember] public DateTime LastExecuted { get; set; }
+		[DataMember]
+		public TimeSpan TriggerInterval { get; set; }
+
+		[DataMember]
+		public DateTime LastExecuted { get; set; }
+
+		[DataMember(IsRequired = false, EmitDefaultValue = true)]
+		public bool SchedulePerWorker { get; set; }
 	}
 
 	public class ScheduledServiceStateName : BaseTypedBlobName<ScheduledServiceState>
@@ -34,7 +40,6 @@ namespace Lokad.Cloud
 		{
 			return new BlobNamePrefix<ScheduledServiceStateName>(ScheduledService.ScheduleStateContainer, "");
 		}
-
 	}
 
 	/// <summary>This cloud service is automatically called by the framework
@@ -45,52 +50,12 @@ namespace Lokad.Cloud
 	{
 		internal const string ScheduleStateContainer = "lokad-cloud-schedule-state";
 
-		bool _isInitialized;
-		TimeSpan _triggerInterval;
+		DateTime _lastExecutedOnThisWorker;
 
 		/// <seealso cref="CloudService.StartImpl"/>
 		protected sealed override bool StartImpl()
 		{
-			// retrieving the state info if any
 			var stateName = new ScheduledServiceStateName(Name);
-			var state = BlobStorage.GetBlob(stateName);
-
-			if (!_isInitialized)
-			{
-				if (!state.HasValue)
-				{
-					var settings = GetType().GetAttribute<ScheduledServiceSettingsAttribute>(true);
-
-					// no trigger interval settings available => we don't execute the service.
-					if (settings == null)
-					{
-						return false;
-					}
-
-					// recording a fresh schedule state in the cloud
-					_triggerInterval = settings.TriggerInterval.Seconds();
-
-					var writeSucceeded = BlobStorage.PutBlob(stateName,
-						new ScheduledServiceState
-							{
-								LastExecuted = DateTime.MinValue,
-								TriggerInterval = _triggerInterval
-							},
-						false);
-
-					// if write fails, another worker is concurrently executing
-					if (!writeSucceeded)
-					{
-						return false;
-					}
-				}
-				else
-				{
-					_triggerInterval = state.Value.TriggerInterval;
-				}
-
-				_isInitialized = true;
-			}
 
 			// checking if the last update is not too recent, and eventually
 			// update this value if it's old enough. When the update fails,
@@ -104,29 +69,60 @@ namespace Lokad.Cloud
 
 						if (!currentState.HasValue)
 						{
-							return Result.CreateSuccess(new ScheduledServiceState
-								{
-									TriggerInterval = _triggerInterval,
-									LastExecuted = now
-								});
+							// Initialize State
+							var newState = GetDefaultState();
+							if (!newState.HasValue)
+							{
+								return Result<ScheduledServiceState>.CreateError("No settings available, service skipped.");
+							}
+
+							_lastExecutedOnThisWorker = now;
+							newState.Value.LastExecuted = now;
+							return Result.CreateSuccess(newState.Value);
 						}
 
-						if (now.Subtract(currentState.Value.LastExecuted) < _triggerInterval)
+						var state = currentState.Value;
+
+						if (state.SchedulePerWorker && now.Subtract(_lastExecutedOnThisWorker) < state.TriggerInterval
+							|| !state.SchedulePerWorker && now.Subtract(currentState.Value.LastExecuted) < state.TriggerInterval)
 						{
 							return Result<ScheduledServiceState>.CreateError("No need to update.");
 						}
 
-						return Result.CreateSuccess(new ScheduledServiceState
-							{
-								TriggerInterval = currentState.Value.TriggerInterval,
-								LastExecuted = now
-							});
+						_lastExecutedOnThisWorker = now;
+						state.LastExecuted = now;
+						return Result.CreateSuccess(state);
 					});
 
-			if (!updated) return false;
+			if (!updated)
+			{
+				return false;
+			}
 			
 			StartOnSchedule();
 			return true;
+		}
+
+		/// <summary>
+		/// Prepares this service's default state based on its settings attribute.
+		/// If case no attribute is found then Maybe.Empty is returned.
+		/// </summary>
+		private Maybe<ScheduledServiceState> GetDefaultState()
+		{
+			var settings = GetType().GetAttribute<ScheduledServiceSettingsAttribute>(true);
+
+			// no trigger interval settings available => we don't execute the service.
+			if (settings == null)
+			{
+				return Maybe<ScheduledServiceState>.Empty;
+			}
+
+			return new ScheduledServiceState
+				{
+					LastExecuted = DateTime.MinValue,
+					TriggerInterval = settings.TriggerInterval.Seconds(),
+					SchedulePerWorker = settings.SchedulePerWorker
+				};
 		}
 
 		/// <summary>Called by the framework.</summary>

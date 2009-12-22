@@ -28,6 +28,11 @@ namespace Lokad.Cloud.Diagnostics
 		[DataMember]
 		public TimeSpan UserProcessorTime { get; set; }
 
+		[DataMember(IsRequired = false, EmitDefaultValue = true)]
+		public TimeSpan LifetimeTotalProcessorTime { get; set; }
+		[DataMember(IsRequired = false, EmitDefaultValue = true)]
+		public TimeSpan LifetimeUserProcessorTime { get; set; }
+
 		[DataMember]
 		public int HandleCount { get; set; }
 		[DataMember]

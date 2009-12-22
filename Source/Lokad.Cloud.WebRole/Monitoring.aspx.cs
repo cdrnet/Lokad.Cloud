@@ -37,7 +37,6 @@ namespace Lokad.Cloud.Web
 						Threads = s.ThreadCount,
 						Processing = PrettyFormatTimeSpan(s.TotalProcessorTime),
 						Memory = PrettyFormatMemory(s.MemoryPrivateSize),
-						//Updated = PrettyFormatRelativeDateTime(s.LastUpdate)
 					})
 				.ToList();
 		}
@@ -49,8 +48,6 @@ namespace Lokad.Cloud.Web
 					{
 						Service = s.Name,
 						Processing = PrettyFormatTimeSpan(s.TotalProcessorTime),
-						Since = PrettyFormatRelativeDateTime(s.FirstStartTime),
-						//Updated = PrettyFormatRelativeDateTime(s.LastUpdate)
 					})
 				.ToList();
 		}
@@ -227,5 +224,7 @@ namespace Lokad.Cloud.Web
 
 			return value;
 		}
+
+		
 	}
 }

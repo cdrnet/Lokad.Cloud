@@ -113,14 +113,6 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		}
 
 		/// <summary>
-		/// Set the statistics of a cloud partition.
-		/// </summary>
-		public void SetPartitionStatistics(string timeSegment, string partitionName, PartitionStatistics statistics)
-		{
-			Set(PartitionStatisticsName.New(timeSegment, partitionName), statistics);
-		}
-
-		/// <summary>
 		/// Update the statistics of a cloud service.
 		/// </summary>
 		public void UpdateServiceStatistics(string timeSegment, string serviceName, Func<Maybe<ServiceStatistics>, ServiceStatistics> updater)

@@ -16,8 +16,11 @@ namespace Lokad.Cloud.Web
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			ServicesView.DataBind();
-			ServiceList.DataBind();
+			if (!IsPostBack)
+			{
+				ServicesView.DataBind();
+				ServiceList.DataBind();
+			}
 		}
 
 		protected void ServicesView_DataBinding(object sender, EventArgs e)

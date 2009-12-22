@@ -15,9 +15,12 @@ namespace Lokad.Cloud.Web
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			ScheduleView.DataBind();
-			ScheduleList.DataBind();
-			ServiceList.DataBind();
+			if (!IsPostBack)
+			{
+				ScheduleView.DataBind();
+				ScheduleList.DataBind();
+				ServiceList.DataBind();
+			}
 		}
 
 		protected void ScheduleView_DataBinding(object sender, EventArgs e)
@@ -28,18 +31,21 @@ namespace Lokad.Cloud.Web
 						Name = info.ServiceName,
 						info.LastExecuted,
 						info.TriggerInterval
-					});
+					})
+				.ToList();
 		}
 
 		protected void ScheduleList_DataBinding(object sender, EventArgs e)
 		{
 			ScheduleList.DataSource = _cloudServiceScheduling.GetSchedules()
-				.Select(info => info.ServiceName);
+				.Select(info => info.ServiceName)
+				.ToList();
 		}
 
 		protected void ServiceList_DataBinding(object sender, EventArgs e)
 		{
-			ServiceList.DataSource = _cloudServiceScheduling.GetScheduledUserServiceNames();
+			ServiceList.DataSource = _cloudServiceScheduling.GetScheduledUserServiceNames()
+				.ToList();
 		}
 
 		protected void UpdateIntervalButton_OnClick(object sender, EventArgs e)

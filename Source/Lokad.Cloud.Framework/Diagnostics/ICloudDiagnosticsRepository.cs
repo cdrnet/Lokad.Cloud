@@ -27,8 +27,6 @@ namespace Lokad.Cloud.Diagnostics
 		IEnumerable<PartitionStatistics> GetAllPartitionStatistics(string timeSegment);
 		/// <summary>Update the statistics of a cloud partition.</summary>
 		void UpdatePartitionStatistics(string timeSegment, string partitionName, Func<Maybe<PartitionStatistics>, PartitionStatistics> updater);
-		/// <summary>Set the statistics of a cloud partition.</summary>
-		void SetPartitionStatistics(string timeSegment, string partitionName, PartitionStatistics statistics);
 
 		/// <summary>Get the statistics of all cloud services.</summary>
 		IEnumerable<ServiceStatistics> GetAllServiceStatistics(string timeSegment);
