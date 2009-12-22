@@ -20,6 +20,26 @@
       <typeparam name="TModule">The type of the module.</typeparam>
       <param name="containerBuilder">The container builder.</param>
     </member>
+    <member name="T:Lokad.Logging.ListeningLogOptions">
+      <summary>
+            Log options
+            </summary>
+    </member>
+    <member name="P:Lokad.Logging.ListeningLogOptions.Pattern">
+      <summary>
+            Gets or sets the conversion pattern.
+            </summary>
+      <value>The conversion pattern.</value>
+      <seealso cref="F:log4net.Layout.PatternLayout.DefaultConversionPattern" />
+      <seealso cref="F:log4net.Layout.PatternLayout.DetailConversionPattern" />
+    </member>
+    <member name="P:Lokad.Logging.ListeningLogOptions.ImmediateFlush">
+      <summary>
+            Gets or sets a value indicating whether to auto flush the log.
+            </summary>
+      <value>
+        <c>true</c> if auto flush; otherwise, <c>false</c>.</value>
+    </member>
     <member name="T:Lokad.Logging.LoggingModule">
       <summary>
             Autofac extension module that provides integration with the log4net
@@ -61,6 +81,19 @@
             Logging is configured from file
             </summary>
     </member>
+    <member name="T:Lokad.Logging.LogOptions">
+      <summary>
+            Log options
+            </summary>
+    </member>
+    <member name="P:Lokad.Logging.LogOptions.Pattern">
+      <summary>
+            Gets or sets the conversion pattern.
+            </summary>
+      <value>The conversion pattern.</value>
+      <seealso cref="F:log4net.Layout.PatternLayout.DefaultConversionPattern" />
+      <seealso cref="F:log4net.Layout.PatternLayout.DetailConversionPattern" />
+    </member>
     <member name="T:Lokad.Logging.LogProviderWrapper">
       <summary>
             Uses <see cref="N:log4net" /> as the logging backend
@@ -100,10 +133,57 @@
              This class provides hookup routines to the logging library
             </summary>
     </member>
-    <member name="M:Lokad.Logging.LoggingStack.UseConsole">
+    <member name="M:Lokad.Logging.LoggingStack.UseConsoleLog(System.Action{Lokad.Logging.LogOptions})">
       <summary>
             Configures the logging system to write to console
             </summary>
+      <param name="configure">The configuration option.</param>
+      <returns>log syntax</returns>
+    </member>
+    <member name="M:Lokad.Logging.LoggingStack.UseTraceLog(System.Action{Lokad.Logging.ListeningLogOptions})">
+      <summary>
+            Configures the logging system to write to trace
+            </summary>
+      <param name="configure">The configuration option.</param>
+      <returns>log syntax</returns>
+    </member>
+    <member name="M:Lokad.Logging.LoggingStack.UseDebugLog(System.Action{Lokad.Logging.ListeningLogOptions})">
+      <summary>
+            Configures the logging system to write to the debug listeners
+            </summary>
+      <param name="configure">The configuration option.</param>
+      <returns>log syntax</returns>
+    </member>
+    <member name="M:Lokad.Logging.LoggingStack.UseTraceLog">
+      <summary>
+            Configures the logging system to write to console
+            </summary>
+      <returns>log syntax</returns>
+    </member>
+    <member name="M:Lokad.Logging.LoggingStack.UseDebugLog">
+      <summary>
+            Configures the logging system to write to console
+            </summary>
+      <returns>log syntax</returns>
+    </member>
+    <member name="M:Lokad.Logging.LoggingStack.UseConsoleLog">
+      <summary>
+            Configures the logging system to write to console
+            </summary>
+      <returns>log syntax</returns>
+    </member>
+    <member name="M:Lokad.Logging.LoggingStack.UseColoredConsoleLog(System.Action{Lokad.Logging.LogOptions})">
+      <summary>
+            Configures the logging system to write to console with colors
+            </summary>
+      <param name="configure">The configuration options.</param>
+      <returns>log syntax</returns>
+    </member>
+    <member name="M:Lokad.Logging.LoggingStack.UseColoredConsoleLog">
+      <summary>
+            Configures the logging system to write to console with colors
+            </summary>
+      <returns>log syntax</returns>
     </member>
     <member name="M:Lokad.Logging.LoggingStack.UseConfig">
       <summary>

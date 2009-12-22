@@ -9,6 +9,320 @@
              Assembly information class that is shared between all projects
             </summary>
     </member>
+    <member name="T:Lokad.CurrencyAmount">
+      <summary>
+            	Decimal that also has currency type assotiated. It is used
+            	for enforcing logical consistency within the billing.
+            
+            	We want to reduce chances of messing up by mixing different
+            	currencies together.
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyAmount.Zero">
+      <summary>
+            Default empty currency amount with undefined currency type
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyAmount.Currency">
+      <summary>Currency type</summary>
+    </member>
+    <member name="F:Lokad.CurrencyAmount.Value">
+      <summary>
+            	Value in the given currency
+            </summary>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.#ctor(Lokad.CurrencyType,System.Decimal)">
+      <summary>
+            	Initializes a new instance of the
+            	<see cref="T:Lokad.CurrencyAmount" />
+            	struct.
+            </summary>
+      <param name="currency">The currency.</param>
+      <param name="value">The value.</param>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.Equals(Lokad.CurrencyAmount)">
+      <summary>
+            	Indicates whether the current object is equal to another object of the same type.
+            </summary>
+      <param name="other">
+            	An object to compare with this object.
+            </param>
+      <returns>
+            	true if the current object is equal to the
+            	<paramref name="other" />
+            	parameter; otherwise, false.
+            </returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.Equals(System.Object)">
+      <summary>
+            	Determines whether the specified
+            	<see cref="T:System.Object" />
+            	is equal to this instance.
+            </summary>
+      <param name="obj">
+            	The
+            	<see cref="T:System.Object" />
+            	to compare with this instance.
+            </param>
+      <returns>
+        <c>true</c>
+            	if the specified
+            	<see cref="T:System.Object" />
+            	is equal to this instance; otherwise,
+            	<c>false</c>
+            	.
+            </returns>
+      <exception cref="T:System.NullReferenceException">
+            	The
+            	<paramref name="obj" />
+            	parameter is null.
+            </exception>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.GetHashCode">
+      <summary>
+            	Returns a hash code for this instance.
+            </summary>
+      <returns>
+            	A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
+            </returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.ToString(System.String,System.IFormatProvider)">
+      <summary>
+            	Returns a
+            	<see cref="T:System.String" />
+            	that represents this instance, using the 
+            	provided format options to pass to the
+            	<see cref="M:System.Decimal.ToString(System.String,System.IFormatProvider)" /></summary>
+      <param name="format">The format.</param>
+      <param name="formatProvider">The format provider.</param>
+      <returns>
+            	A
+            	<see cref="T:System.String" />
+            	that represents this instance.
+            </returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.ToString">
+      <summary>
+            	Returns a
+            	<see cref="T:System.String" />
+            	that represents this instance.
+            </summary>
+      <returns>
+            	A
+            	<see cref="T:System.String" />
+            	that represents this instance.
+            </returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.Round(System.Int32)">
+      <summary>
+            	Rounds the specified amount to the specified amount of decimals.
+            </summary>
+      <param name="decimals">The decimals.</param>
+      <returns>rounded instance</returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.Convert(System.Func{System.Decimal,System.Decimal})">
+      <summary>
+            	Converts this aurrency amount by applying the specified
+            	transformation function to the amount and returning new result instance.
+            </summary>
+      <param name="conversion">The conversion.</param>
+      <returns>new result instance</returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_Division(Lokad.CurrencyAmount,System.Decimal)">
+      <summary>
+            	Implements the operator /.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="value">The value.</param>
+      <returns>
+            	The result of the operator.
+            </returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_Multiply(Lokad.CurrencyAmount,System.Decimal)">
+      <summary>
+            	Implements the operator *.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="value">The value.</param>
+      <returns>
+            	The result of the operator.
+            </returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_Addition(Lokad.CurrencyAmount,System.Decimal)">
+      <summary>
+            	Implements the operator +.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="value">The value.</param>
+      <returns>
+            	The result of the operator.
+            </returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_Addition(Lokad.CurrencyAmount,Lokad.CurrencyAmount)">
+      <summary>
+            	Implements the operator +.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="amount">The amount to add.</param>
+      <returns>
+            	The result of the operator.
+            </returns>
+            ///
+            <exception cref="T:Lokad.CurrencyMismatchException">
+            	If currency types do not match
+            </exception></member>
+    <member name="M:Lokad.CurrencyAmount.op_Subtraction(Lokad.CurrencyAmount,Lokad.CurrencyAmount)">
+      <summary>
+            	Implements the operator -.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="amount">
+            	The amount to subtract.
+            </param>
+      <returns>
+            	The result of the operator.
+            </returns>
+      <exception cref="T:Lokad.CurrencyMismatchException">
+            	If currency types do not match
+            </exception>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_GreaterThan(Lokad.CurrencyAmount,Lokad.CurrencyAmount)">
+      <summary>
+            	Implements the operator &gt;.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="amount">
+            	The amount to compare with.
+            </param>
+      <returns>
+            	The result of the operator.
+            </returns>
+      <exception cref="T:Lokad.CurrencyMismatchException">
+            	If currency types do not match
+            </exception>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_GreaterThanOrEqual(Lokad.CurrencyAmount,Lokad.CurrencyAmount)">
+      <summary>
+            	Implements the operator &gt;=.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="amount">
+            	The amount to compare with.
+            </param>
+      <returns>
+            	The result of the operator.
+            </returns>
+      <exception cref="T:Lokad.CurrencyMismatchException">
+            	If currency types do not match
+            </exception>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_LessThanOrEqual(Lokad.CurrencyAmount,Lokad.CurrencyAmount)">
+      <summary>
+            	Implements the operator &lt;=.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="amount">
+            	The amount to compare with.
+            </param>
+      <returns>
+            	The result of the operator.
+            </returns>
+      <exception cref="T:Lokad.CurrencyMismatchException">
+            	If currency types do not match
+            </exception>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_LessThan(Lokad.CurrencyAmount,Lokad.CurrencyAmount)">
+      <summary>
+            	Implements the operator &lt;.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="amount">
+            	The amount to subtract.
+            </param>
+      <returns>
+            	The result of the operator.
+            </returns>
+      <exception cref="T:Lokad.CurrencyMismatchException">
+            	If currency types do not match
+            </exception>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_Equality(Lokad.CurrencyAmount,Lokad.CurrencyAmount)">
+      <summary>
+            	Implements the operator ==.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="amount">The amount.</param>
+      <returns>
+            	The result of the operator.
+            </returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_Inequality(Lokad.CurrencyAmount,Lokad.CurrencyAmount)">
+      <summary>
+            	Implements the operator !=.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <param name="amount">The amount.</param>
+      <returns>
+            	The result of the operator.
+            </returns>
+    </member>
+    <member name="M:Lokad.CurrencyAmount.op_UnaryNegation(Lokad.CurrencyAmount)">
+      <summary>
+            	Implements the operator -.
+            </summary>
+      <param name="originalValue">The original value.</param>
+      <returns>
+            	The result of the operator.
+            </returns>
+    </member>
+    <member name="T:Lokad.CurrencyMismatchException">
+      <summary>
+            	Exception related to the situations when currency logic is violated.
+            </summary>
+      <remarks>
+            	All currency conversion operations should be handled by the
+            	appropriate currency manager, that will take care of fetching the
+            	proper conversion rates
+            </remarks>
+    </member>
+    <member name="M:Lokad.CurrencyMismatchException.#ctor">
+      <summary>
+            	Initializes a new instance of the
+            	<see cref="T:Lokad.CurrencyMismatchException" />
+            	class.
+            </summary>
+    </member>
+    <member name="M:Lokad.CurrencyMismatchException.#ctor(System.String)">
+      <summary>
+            	Initializes a new instance of the
+            	<see cref="T:Lokad.CurrencyMismatchException" />
+            	class.
+            </summary>
+      <param name="message">The message.</param>
+    </member>
+    <member name="T:Lokad.CurrencyType">
+      <summary>
+            	Currency types supported by the Lokad business
+            </summary>
+      <remarks>
+            	Hardcoded for simplicity, but could be switched to string codes, if needed.
+            </remarks>
+    </member>
+    <member name="T:Lokad.ExtendDecimal">
+      <summary>
+            	Extensions around
+            	<see cref="T:Lokad.CurrencyAmount" /></summary>
+    </member>
+    <member name="M:Lokad.ExtendDecimal.In(System.Decimal,Lokad.CurrencyType)">
+      <summary>
+            	Converts the specified deimal to a currency.
+            </summary>
+      <param name="value">The value.</param>
+      <param name="currency">The currency.</param>
+      <returns>
+            	new instance of the currency amount
+            </returns>
+    </member>
     <member name="T:Lokad.Diagnostics.Persist.ConversionExtensions">
       <summary>
             Helper extensions for converting to/from data classes in the Diagnostics namespace
@@ -21,6 +335,13 @@
       <param name="statisticsArray">The immutable statistics objects.</param>
       <returns>array of persistence objects</returns>
     </member>
+    <member name="M:Lokad.Diagnostics.Persist.ConversionExtensions.FromPersistence(Lokad.Diagnostics.Persist.ExecutionData[])">
+      <summary>
+            Converts persistence objects to immutable statistics objects
+            </summary>
+      <param name="dataArray">The persistence data objects.</param>
+      <returns>array of statistics objects</returns>
+    </member>
     <member name="M:Lokad.Diagnostics.Persist.ConversionExtensions.ToPersistence(Lokad.Diagnostics.ExceptionStatistics[])">
       <summary>
             Converts statistics classes to the data objects.
@@ -28,12 +349,26 @@
       <param name="statisticsArray">The statistics array.</param>
       <returns>array of data objects</returns>
     </member>
+    <member name="M:Lokad.Diagnostics.Persist.ConversionExtensions.FromPersistence(Lokad.Diagnostics.Persist.ExceptionData[])">
+      <summary>
+            Converts data objects to statistics classes.
+            </summary>
+      <param name="dataArray">The persistence data array.</param>
+      <returns>array of statistics objects</returns>
+    </member>
     <member name="M:Lokad.Diagnostics.Persist.ConversionExtensions.ToPersistence(Lokad.Diagnostics.SystemDescriptor)">
       <summary>
-            Converts the descriptor instance to persistance object
+            Converts the descriptor instance to persistence object
             </summary>
       <param name="descriptor">The descriptor.</param>
       <returns>new persistence object</returns>
+    </member>
+    <member name="M:Lokad.Diagnostics.Persist.ConversionExtensions.FromPersistence(Lokad.Diagnostics.Persist.SystemData)">
+      <summary>
+            Converts the descriptor instance to persistence object
+            </summary>
+      <param name="data">The persistence data.</param>
+      <returns>new descriptor object</returns>
     </member>
     <member name="T:Lokad.Diagnostics.Persist.ExceptionData">
       <summary>
@@ -300,15 +635,21 @@
             Default empty instance.
             </summary>
     </member>
-    <member name="M:Lokad.Maybe`1.Convert``1(System.Func{`0,``0})">
+    <member name="M:Lokad.Maybe`1.GetValue(System.Func{`0})">
       <summary>
-            Converts this instance to <see cref="T:Lokad.Maybe`1" />, 
-            while applying <paramref name="converter" /> if there is a value.
+            Retrieves value from this instance, using a 
+            <paramref name="defaultValue" /> if it is absent.
             </summary>
-      <typeparam name="TTarget">The type of the target.</typeparam>
-      <param name="converter">The converter.</param>
-      <returns>
-      </returns>
+      <param name="defaultValue">The default value.</param>
+      <returns>value</returns>
+    </member>
+    <member name="M:Lokad.Maybe`1.GetValue(`0)">
+      <summary>
+            Retrieves value from this instance, using a 
+            <paramref name="defaultValue" /> if it is absent.
+            </summary>
+      <param name="defaultValue">The default value.</param>
+      <returns>value</returns>
     </member>
     <member name="M:Lokad.Maybe`1.Apply(System.Action{`0})">
       <summary>
@@ -332,21 +673,37 @@
       <returns>actual value</returns>
       <exception cref="T:System.Exception">if maybe does not have value</exception>
     </member>
-    <member name="M:Lokad.Maybe`1.GetValue(System.Func{`0})">
+    <member name="M:Lokad.Maybe`1.ExposeException(System.String)">
       <summary>
-            Retrieves value from this instance, using a 
-            <paramref name="defaultValue" /> if it is absent.
+            Throws the exception if maybe does not have value.
             </summary>
-      <param name="defaultValue">The default value.</param>
-      <returns>value</returns>
+      <returns>actual value</returns>
+      <exception cref="T:System.InvalidOperationException">if maybe does not have value</exception>
     </member>
-    <member name="M:Lokad.Maybe`1.GetValue(`0)">
+    <member name="M:Lokad.Maybe`1.ExposeException(System.String,System.Object[])">
       <summary>
-            Retrieves value from this instance, using a 
-            <paramref name="defaultValue" /> if it is absent.
+            Throws the exception if maybe does not have value.
             </summary>
-      <param name="defaultValue">The default value.</param>
-      <returns>value</returns>
+      <returns>actual value</returns>
+      <exception cref="T:System.InvalidOperationException">if maybe does not have value</exception>
+    </member>
+    <member name="M:Lokad.Maybe`1.Combine``1(System.Func{`0,Lokad.Maybe{``0}})">
+      <summary>
+            Combines this optional with the pipeline function
+            </summary>
+      <typeparam name="TTarget">The type of the target.</typeparam>
+      <param name="combinator">The combinator (pipeline funcion).</param>
+      <returns>optional result</returns>
+    </member>
+    <member name="M:Lokad.Maybe`1.Convert``1(System.Func{`0,``0})">
+      <summary>
+            Converts this instance to <see cref="T:Lokad.Maybe`1" />, 
+            while applying <paramref name="converter" /> if there is a value.
+            </summary>
+      <typeparam name="TTarget">The type of the target.</typeparam>
+      <param name="converter">The converter.</param>
+      <returns>
+      </returns>
     </member>
     <member name="M:Lokad.Maybe`1.Convert``1(System.Func{`0,``0},System.Func{``0})">
       <summary>
@@ -367,14 +724,6 @@
       <param name="converter">The converter.</param>
       <param name="defaultValue">The default value.</param>
       <returns>value</returns>
-    </member>
-    <member name="M:Lokad.Maybe`1.Combine``1(System.Func{`0,Lokad.Maybe{``0}})">
-      <summary>
-            Combines this optional with the pipeline function
-            </summary>
-      <typeparam name="TTarget">The type of the target.</typeparam>
-      <param name="combinator">The combinator (pipeline funcion).</param>
-      <returns>optional result</returns>
     </member>
     <member name="M:Lokad.Maybe`1.Equals(Lokad.Maybe{`0})">
       <summary>
@@ -433,6 +782,22 @@
       <param name="item">The item.</param>
       <returns>The result of the conversion.</returns>
     </member>
+    <member name="M:Lokad.Maybe`1.Join``1(``0)">
+      <summary>
+            Converts maybe into result, using the specified error as the failure
+            descriptor
+            </summary>
+      <typeparam name="TError">The type of the failure.</typeparam>
+      <param name="error">The error.</param>
+      <returns>result describing current maybe</returns>
+    </member>
+    <member name="M:Lokad.Maybe`1.JoinMessage(System.String)">
+      <summary>
+            Converts maybe into result, using the specified error as the failure
+            descriptor
+            </summary>
+      <returns>result describing current maybe</returns>
+    </member>
     <member name="M:Lokad.Maybe`1.ToString">
       <summary>
             Returns a <see cref="T:System.String" /> that represents this instance.
@@ -453,6 +818,186 @@
             </summary>
       <value>
         <c>true</c> if this instance has value; otherwise, <c>false</c>.</value>
+    </member>
+    <member name="T:Lokad.MaybeParse">
+      <summary>
+            	Helper routines for converting strings into Maybe
+            </summary>
+    </member>
+    <member name="M:Lokad.MaybeParse.Enum``1(System.String)">
+      <summary>
+            	Tries to parse the specified string into the enum, returning empty result
+            	on failure
+            </summary>
+      <typeparam name="TEnum">
+            	The type of the enum.
+            </typeparam>
+      <param name="value">The value.</param>
+      <returns>
+            	either enum or an empty result
+            </returns>
+    </member>
+    <member name="M:Lokad.MaybeParse.Enum``1(System.String,System.Boolean)">
+      <summary>
+            	Tries to parse the specified string into the enum, returning empty result
+            	on failure
+            </summary>
+      <typeparam name="TEnum">
+            	The type of the enum.
+            </typeparam>
+      <param name="value">The value.</param>
+      <param name="ignoreCase">
+            	if set to
+            	<c>true</c>
+            	then parsing will ignore case.
+            </param>
+      <returns>
+            	either enum or an empty result
+            </returns>
+    </member>
+    <member name="M:Lokad.MaybeParse.Decimal(System.String)">
+      <summary>
+            	Tries to parse the specified value into Decimal, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <returns>
+            	either parsed Decimal or an empty result
+            </returns>
+      <seealso cref="M:System.Decimal.TryParse(System.String,System.Decimal@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Decimal(System.String,System.Globalization.NumberStyles,System.IFormatProvider)">
+      <summary>
+            	Tries to parse the specified value into decimal, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <param name="numberStyles">
+            	The number styles to use.
+            </param>
+      <param name="formatProvider">
+            	The format provider to use.
+            </param>
+      <returns>
+            	either parsed decimal or an empty result
+            </returns>
+      <seealso cref="M:System.Decimal.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Decimal@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Int32(System.String)">
+      <summary>
+            	Tries to parse the specified value into Int32, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <returns>
+            	either parsed Int32 or an empty result
+            </returns>
+      <seealso cref="M:System.Int32.TryParse(System.String,System.Int32@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Int32(System.String,System.Globalization.NumberStyles,System.IFormatProvider)">
+      <summary>
+            	Tries to parse the specified value into Int32, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <param name="numberStyles">
+            	The number styles to use.
+            </param>
+      <param name="formatProvider">
+            	The format provider to use.
+            </param>
+      <returns>
+            	either parsed Int32 or an empty result
+            </returns>
+      <seealso cref="M:System.Int32.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Int32@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Double(System.String)">
+      <summary>
+            	Tries to parse the specified value into Double, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <returns>
+            	either parsed Double or an empty result
+            </returns>
+      <seealso cref="M:System.Double.TryParse(System.String,System.Double@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Double(System.String,System.Globalization.NumberStyles,System.IFormatProvider)">
+      <summary>
+            	Tries to parse the specified value into Double, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <param name="numberStyles">
+            	The number styles to use.
+            </param>
+      <param name="formatProvider">
+            	The format provider to use.
+            </param>
+      <returns>
+            	either parsed Double or an empty result
+            </returns>
+      <seealso cref="M:System.Double.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Double@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Single(System.String)">
+      <summary>
+            	Tries to parse the specified value into Single, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <returns>
+            	either parsed Single or an empty result
+            </returns>
+      <seealso cref="M:System.Single.TryParse(System.String,System.Single@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Single(System.String,System.Globalization.NumberStyles,System.IFormatProvider)">
+      <summary>
+            	Tries to parse the specified value into Single, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <param name="numberStyles">
+            	The number styles to use.
+            </param>
+      <param name="formatProvider">
+            	The format provider to use.
+            </param>
+      <returns>
+            	either parsed Single or an empty result
+            </returns>
+      <seealso cref="M:System.Single.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Single@)" />
+    </member>
+    <member name="T:Lokad.Quality.LocalizableAttribute">
+      <summary>
+            Indicates that marked elements is localizable or not.
+            </summary>
+    </member>
+    <member name="M:Lokad.Quality.LocalizableAttribute.#ctor(System.Boolean)">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Quality.LocalizableAttribute" /> class.
+            </summary>
+      <param name="isLocalizable">
+        <c>true</c> if a element should be localized; otherwise, <c>false</c>.</param>
+    </member>
+    <member name="M:Lokad.Quality.LocalizableAttribute.Equals(System.Object)">
+      <summary>
+            Returns whether the value of the given object is equal to the current <see cref="T:Lokad.Quality.LocalizableAttribute" />.
+            </summary>
+      <param name="obj">The object to test the value equality of. </param>
+      <returns>
+        <c>true</c> if the value of the given object is equal to that of the current; otherwise, <c>false</c>.
+            </returns>
+    </member>
+    <member name="M:Lokad.Quality.LocalizableAttribute.GetHashCode">
+      <summary>
+            Returns the hash code for this instance.
+            </summary>
+      <returns>A hash code for the current <see cref="T:Lokad.Quality.LocalizableAttribute" />.</returns>
+    </member>
+    <member name="P:Lokad.Quality.LocalizableAttribute.IsLocalizable">
+      <summary>
+            Gets a value indicating whether a element should be localized.
+            <value><c>true</c> if a element should be localized; otherwise, <c>false</c>.</value></summary>
     </member>
     <member name="T:Lokad.Rand">
       <summary>
@@ -546,6 +1091,12 @@
       <typeparam name="TEnum">The type of the enum.</typeparam>
       <returns>random Enum value</returns>
     </member>
+    <member name="M:Lokad.Rand.NextEnumExceptDefault``1">
+      <summary> Picks random <see cref="T:System.Enum" /> where the item is not equal to
+            default(TEnum)</summary>
+      <typeparam name="TEnum">The type of the enum.</typeparam>
+      <returns>random Enum value</returns>
+    </member>
     <member name="M:Lokad.Rand.NextBool(System.Double)">
       <summary>
             Returns <em>true</em> with the specified probability.
@@ -568,9 +1119,23 @@
       <returns>optional that might have the value</returns>
     </member>
     <member name="M:Lokad.Rand.NextGuid">
-      <summary>
-            Picks random <see cref="T:System.Guid" /></summary>
+      <summary> Picks random <see cref="T:System.Guid" /></summary>
       <returns>random value</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextGuids(System.Int32)">
+      <summary>
+            Creates an array of random <see cref="T:System.Guid" /></summary>
+      <param name="count">Number of items in the array.</param>
+      <returns>random value</returns>
+    </member>
+    <member name="M:Lokad.Rand.NextGuids(System.Int32,System.Int32)">
+      <summary>
+            Creates an array of random <see cref="T:System.Guid" /> and random length.
+            </summary>
+      <param name="lowerBound">The lower bound.</param>
+      <param name="upperBound">The upper bound.</param>
+      <returns>
+      </returns>
     </member>
     <member name="M:Lokad.Rand.NextDouble">
       <summary> Returns random double value with lowered precision </summary>
@@ -719,6 +1284,14 @@
       <param name="converter">The reflector.</param>
       <returns>
         <see cref="T:Lokad.Maybe`1" /> that represents the original value behind the <see cref="T:Lokad.Result`1" /> after the conversion</returns>
+    </member>
+    <member name="M:Lokad.Result`1.ToMaybe">
+      <summary>
+            Converts this <see cref="T:Lokad.Result`1" /> to <see cref="T:Lokad.Maybe`1" />, 
+            with the original value reference, if there is any.
+            </summary>
+      <returns>
+        <see cref="T:Lokad.Maybe`1" /> that represents the original value behind the <see cref="T:Lokad.Result`1" />.</returns>
     </member>
     <member name="M:Lokad.Result`1.ExposeException(System.Func{System.String,System.Exception})">
       <summary>
@@ -878,6 +1451,14 @@
       <returns>
         <see cref="T:Lokad.Maybe`1" /> that represents the original value behind the <see cref="T:Lokad.Result`1" /> after the conversion</returns>
     </member>
+    <member name="M:Lokad.Result`2.ToMaybe">
+      <summary>
+            Converts this <see cref="T:Lokad.Result`1" /> to <see cref="T:Lokad.Maybe`1" />, 
+            with the original value reference, if there is any.
+            </summary>
+      <returns>
+        <see cref="T:Lokad.Maybe`1" /> that represents the original value behind the <see cref="T:Lokad.Result`1" />.</returns>
+    </member>
     <member name="M:Lokad.Result`2.ExposeException(System.Func{`1,System.Exception})">
       <summary>
             Exposes result failure as the exception (providing compatibility, with the exception -expecting code).
@@ -952,19 +1533,6 @@
             </summary>
       <param name="message">The message.</param>
     </member>
-    <member name="M:Lokad.Reflection.ReflectLambdaException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
-      <summary>
-            Initializes a new instance of the <see cref="T:Lokad.Reflection.ReflectLambdaException" /> class.
-            </summary>
-      <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object data about the exception being thrown.</param>
-      <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual information about the source or destination.</param>
-      <exception cref="T:System.ArgumentNullException">
-            The <paramref name="info" /> parameter is null.
-            </exception>
-      <exception cref="T:System.Runtime.Serialization.SerializationException">
-            The class name is null or <see cref="P:System.Exception.HResult" /> is zero (0).
-            </exception>
-    </member>
     <member name="T:Lokad.Rules.BufferIs">
       <summary>
             Validation rules for byte arrays
@@ -1008,6 +1576,112 @@
       <typeparam name="TValue">The type of the value.</typeparam>
       <param name="valueRules">The value rules.</param>
       <returns>new validation rules</returns>
+    </member>
+    <member name="T:Lokad.Settings.ISettingsRepository">
+      <summary>
+            	Simple repository that merely loads all available
+            	and applicable settings for this instance.
+            	Tenant filtering and other options, if applicable,
+            	would be hidden behind this interface
+            </summary>
+    </member>
+    <member name="M:Lokad.Settings.ISettingsRepository.LoadSettings">
+      <summary>
+            	Loads the currently active settings from the repo.
+            </summary>
+      <returns>
+            	dictionary containing settings
+            </returns>
+    </member>
+    <member name="T:Lokad.Settings.ISettingsProvider">
+      <summary>
+            	Simple settings reader
+            </summary>
+    </member>
+    <member name="M:Lokad.Settings.ISettingsProvider.GetValue(System.String)">
+      <summary>
+            	Gets the value, using the given key name.
+            </summary>
+      <param name="name">The name.</param>
+      <returns>
+            	value for the specified key name, or empty result
+            </returns>
+    </member>
+    <member name="M:Lokad.Settings.ISettingsProvider.Filtered(Lokad.Settings.ISettingsKeyFilter)">
+      <summary>
+            	Creates new provider that contains only values filtered by the acceptor
+            </summary>
+      <param name="acceptor">The acceptor.</param>
+      <returns>
+            	new settings provider that had been filtered
+            </returns>
+    </member>
+    <member name="T:Lokad.Settings.DictionarySettingsProvider">
+      <summary>
+            Settings provider based on a simple dictionary
+            </summary>
+    </member>
+    <member name="M:Lokad.Settings.DictionarySettingsProvider.#ctor(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Settings.DictionarySettingsProvider" /> class.
+            </summary>
+      <param name="dictionary">The dictionary.</param>
+    </member>
+    <member name="T:Lokad.Settings.ExtendISettingsProvider">
+      <summary>
+            	Adds extensions for the simplicity of settings use.
+            </summary>
+    </member>
+    <member name="M:Lokad.Settings.ExtendISettingsProvider.AsSettingsProvider(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>
+            	Converts given dictionary to the settings provider.
+            </summary>
+      <param name="dict">The dict.</param>
+      <returns>
+            	new instance of the settings provider
+            </returns>
+    </member>
+    <member name="M:Lokad.Settings.ExtendISettingsProvider.FilteredByPrefix(Lokad.Settings.ISettingsProvider,System.String)">
+      <summary>
+            	Creates new settings provider, using the
+            	<see cref="T:Lokad.Settings.PrefixTruncatingKeyFilter" />
+            	for the path filtering logic
+            </summary>
+      <param name="settingsProvider">
+            	The settings provider.
+            </param>
+      <param name="prefix">
+            	The prefix to look for and then truncate.
+            </param>
+      <returns>
+            	new instance of the settings provider, created by filtering and applying transformations
+            </returns>
+    </member>
+    <member name="T:Lokad.Settings.ISettingsKeyFilter">
+      <summary>
+            	Implements filtering interface for the
+            	<see cref="T:Lokad.Settings.ISettingsProvider" /></summary>
+    </member>
+    <member name="M:Lokad.Settings.ISettingsKeyFilter.Filter(System.String)">
+      <summary>
+            	Filters the path, either accepting it (and optionally altering)
+            	or by returning empty result
+            </summary>
+      <param name="keyPath">The key path.</param>
+      <returns>filtered key path</returns>
+    </member>
+    <member name="T:Lokad.Settings.PrefixTruncatingKeyFilter">
+      <summary>
+            	Simple prefix-based path acceptor, that removes prefix from the path after match
+            </summary>
+    </member>
+    <member name="M:Lokad.Settings.PrefixTruncatingKeyFilter.#ctor(System.String)">
+      <summary>
+            	Initializes a new instance of the
+            	<see cref="T:Lokad.Settings.PrefixTruncatingKeyFilter" />
+            	class.
+            </summary>
+      <param name="prefix">The prefix.</param>
     </member>
     <member name="T:Lokad.Syntax">
       <summary>
@@ -2913,6 +3587,16 @@
       <returns>Parsed enum</returns>
       <exception cref="T:System.ArgumentNullException">If <paramref name="value" /> is null</exception>
     </member>
+    <member name="M:Lokad.EnumUtil.Parse``1(System.String,System.Boolean)">
+      <summary>
+            Parses the specified string into the <typeparamref name="TEnum" />, ignoring the case
+            </summary>
+      <typeparam name="TEnum">The type of the enum.</typeparam>
+      <param name="value">The value.</param>
+      <param name="ignoreCase">if set to <c>true</c> [ignore case].</param>
+      <returns>Parsed enum</returns>
+      <exception cref="T:System.ArgumentNullException">If <paramref name="value" /> is null</exception>
+    </member>
     <member name="M:Lokad.EnumUtil.ToIdentifier``1(``0)">
       <summary>
             Unwraps the enum by creating a string usable for identifiers and resource lookups.
@@ -2920,6 +3604,28 @@
       <typeparam name="TEnum">The type of the enum.</typeparam>
       <param name="enumItem">The enum item.</param>
       <returns>a string usable for identifiers and resource lookups</returns>
+    </member>
+    <member name="M:Lokad.EnumUtil.GetValues``1">
+      <summary>
+            Gets the values associated with the specified enum.
+            </summary>
+      <typeparam name="TEnum">The type of the enum.</typeparam>
+      <returns>array instance of the enum values</returns>
+    </member>
+    <member name="M:Lokad.EnumUtil.GetValuesWithoutDefault``1">
+      <summary>
+            Gets the values associated with the specified enum, 
+            with the exception of the default value
+            </summary>
+      <typeparam name="TEnum">The type of the enum.</typeparam>
+      <returns>array instance of the enum values</returns>
+    </member>
+    <member name="T:Lokad.EnumUtil`2">
+      <summary>
+            Ensures that enums can be converted between each other
+            </summary>
+      <typeparam name="TFromEnum">The type of from enum.</typeparam>
+      <typeparam name="TToEnum">The type of to enum.</typeparam>
     </member>
     <member name="T:Lokad.EnumUtil`1">
       <summary>
@@ -2930,6 +3636,20 @@
     <member name="F:Lokad.EnumUtil`1.Values">
       <summary>
             Values of the <typeparamref name="TEnum" /></summary>
+    </member>
+    <member name="F:Lokad.EnumUtil`1.ValuesWithoutDefault">
+      <summary>
+            Values of the <typeparamref name="TEnum" /> without the default value.
+            </summary>
+    </member>
+    <member name="M:Lokad.EnumUtil`1.ConvertSafelyFrom``1(``0)">
+      <summary>
+            Converts the safely from.
+            </summary>
+      <typeparam name="TSourceEnum">The type of the source enum.</typeparam>
+      <param name="enum">The @enum to convert from.</param>
+      <returns>converted enum</returns>
+      <exception cref="T:System.ArgumentException"> when conversion is not possible</exception>
     </member>
     <member name="T:Lokad.ExtendInt32">
       <summary> Extensions to the <see cref="T:System.Int32" /></summary>
@@ -4405,7 +5125,7 @@
     <member name="T:Lokad.Diagnostics.ExceptionCounters">
       <summary>
             Exception counter that persists unique information about exceptions being entered in an internal dictionary. 
-            Once it gets filled, exceptions with the least number of occurences are discarded.
+            Once it gets filled, exceptions with the least number of occurrences are discarded.
             </summary>
       <remarks>The class <see cref="T:Lokad.Diagnostics.ExceptionCounters" /> is designed as <strong>thread-safe</strong>.</remarks>
     </member>
@@ -4978,6 +5698,13 @@
       <param name="predicate">The predicate.</param>
       <returns>first value</returns>
     </member>
+    <member name="M:System.Linq.ExtendIEnumerable.FirstOrEmpty``1(System.Collections.Generic.IEnumerable{``0})">
+      <summary>
+            Retrieves first value from the <paramref name="sequence" /></summary>
+      <typeparam name="TSource">The type of the source sequence.</typeparam>
+      <param name="sequence">The source.</param>
+      <returns>first value or empty result, if it is not found</returns>
+    </member>
     <member name="M:System.Linq.ExtendIEnumerable.ToIndexed``1(System.Collections.Generic.IEnumerable{``0})">
       <summary>
             Applies the integral indexer to the sequence
@@ -5052,7 +5779,7 @@
     </member>
     <member name="T:Lokad.Diagnostics.ExecutionStatistics">
       <summary>
-            Statistics about some exection counter
+            Statistics about some execution counter
             </summary>
     </member>
     <member name="M:Lokad.Diagnostics.ExecutionStatistics.#ctor(System.String,System.Int64,System.Int64,System.Int64[],System.Int64)">
@@ -5392,15 +6119,39 @@
     </member>
     <member name="T:Lokad.Diagnostics.DebugLog">
       <summary>
-        <see cref="T:Lokad.ILog" /> that writes to the <see cref="P:System.Diagnostics.Debug.Listeners" /></summary>
+            Simple <see cref="T:Lokad.ILog" /> that writes to the <see cref="P:System.Diagnostics.Trace.Listeners" />, if the
+            <em>DEBUG</em> symbol is defined
+            </summary>
+      <remarks>Use Logging stack, if more flexibility is needed</remarks>
     </member>
     <member name="F:Lokad.Diagnostics.DebugLog.Instance">
-      <summary>
-            Singleton instance of the <see cref="T:Lokad.Diagnostics.DebugLog" /></summary>
+      <summary>  Singleton instance </summary>
     </member>
     <member name="F:Lokad.Diagnostics.DebugLog.Provider">
       <summary>
             Named provider for the <see cref="T:Lokad.Diagnostics.DebugLog" /></summary>
+    </member>
+    <member name="M:Lokad.Diagnostics.DebugLog.#ctor(System.String)">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Diagnostics.DebugLog" /> class.
+            </summary>
+      <param name="logName">Name of the log.</param>
+    </member>
+    <member name="T:Lokad.ILogProvider">
+      <summary>
+            Creates logs using the name
+            </summary>
+    </member>
+    <member name="T:Lokad.LambdaLogProvider">
+      <summary>
+            Log provider, that uses lambda expression
+            </summary>
+    </member>
+    <member name="M:Lokad.LambdaLogProvider.#ctor(System.Func{System.String,Lokad.ILog})">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.LambdaLogProvider" /> class.
+            </summary>
+      <param name="factory">The factory.</param>
     </member>
     <member name="T:Lokad.Diagnostics.NullLog">
       <summary>
@@ -5417,7 +6168,8 @@
     </member>
     <member name="T:Lokad.Diagnostics.TraceLog">
       <summary>
-        <see cref="T:Lokad.ILog" /> that writes to the <see cref="P:System.Diagnostics.Trace.Listeners" /></summary>
+            Simple <see cref="T:Lokad.ILog" /> that writes to the <see cref="P:System.Diagnostics.Trace.Listeners" /></summary>
+      <remarks>Use Logging stack, if more flexibility is needed</remarks>
     </member>
     <member name="F:Lokad.Diagnostics.TraceLog.Instance">
       <summary>  Singleton instance </summary>
@@ -5425,6 +6177,12 @@
     <member name="F:Lokad.Diagnostics.TraceLog.Provider">
       <summary>
             Named provider for the <see cref="T:Lokad.Diagnostics.TraceLog" /></summary>
+    </member>
+    <member name="M:Lokad.Diagnostics.TraceLog.#ctor(System.String)">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Diagnostics.TraceLog" /> class.
+            </summary>
+      <param name="logName">Name of the log.</param>
     </member>
     <member name="T:Lokad.ILogExtensions">
       <summary>
@@ -5645,11 +6403,6 @@
             <see cref="M:System.String.Format(System.String,System.Object[])" /></param>
       <param name="args">Arguments</param>
     </member>
-    <member name="T:Lokad.ILogProvider">
-      <summary>
-            Creates logs using the name
-            </summary>
-    </member>
     <member name="T:Lokad.ILogProviderExtensions">
       <summary>
             Extension methods for the <see cref="T:Lokad.INamedProvider`1" />
@@ -5689,6 +6442,19 @@
     </member>
     <member name="F:Lokad.LogLevel.Min">
       <summary> Smallest logging level</summary>
+    </member>
+    <member name="T:Lokad.Rules.LogScope">
+      <summary>
+        <see cref="T:Lokad.Rules.IScope" /> that maintains scope path and writes inner messages 
+            to the log  with the proper path
+            </summary>
+    </member>
+    <member name="M:Lokad.Rules.LogScope.#ctor(System.String,Lokad.ILogProvider)">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Rules.LogScope" /> class.
+            </summary>
+      <param name="name">The name.</param>
+      <param name="logProvider">The log provider.</param>
     </member>
     <member name="T:GlobalAssemblyInfo">
       <summary>
