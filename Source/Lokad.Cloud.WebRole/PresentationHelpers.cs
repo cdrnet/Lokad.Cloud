@@ -56,26 +56,5 @@ namespace Lokad.Cloud.Web
 
 			return PrettyFormat(now - dateTime) + " ago";
 		}
-
-		public static string PrettyFormatMemoryMB(long byteCount)
-		{
-			return String.Format("{0} MB", byteCount / (1024 * 1024));
-		}
-
-		public static string PrettyFormatMemoryKB(long byteCount)
-		{
-			return String.Format("{0} KB", byteCount / (1024));
-		}
-
-		public static string PrettyFormatOperatingSystem(string os)
-		{
-			if(string.IsNullOrEmpty(os))
-			{
-				return string.Empty;
-			}
-
-			os = os.Replace("Microsoft Windows ", string.Empty);
-			return os.Replace("Service Pack ", "SP");
-		}
 	}
 }

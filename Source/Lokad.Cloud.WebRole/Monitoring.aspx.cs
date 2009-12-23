@@ -32,13 +32,14 @@ namespace Lokad.Cloud.Web
 				.Select<PartitionStatistics, object>(s => new
 					{
 						Partition = s.PartitionKey,
-						OS = PresentationHelpers.PrettyFormatOperatingSystem(s.OperatingSystem),
+						//OS = PrettyFormatOperatingSystem(s.OperatingSystem),
 						Runtime = s.Runtime,
 						Cores = s.ProcessorCount,
 						Threads = s.ThreadCount,
 						Total = s.TotalProcessorTime.PrettyFormat(),
 						Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat(),
-						Memory = PresentationHelpers.PrettyFormatMemoryMB(s.MemoryPrivateSize),
+						Active = PrettyFormatActiveTime(s.ActiveTime, s.StartCount),
+						Memory = PrettyFormatMemoryMB(s.MemoryPrivateSize),
 					})
 				.Take(50)
 				.ToList();
@@ -69,7 +70,7 @@ namespace Lokad.Cloud.Web
 							Count = d.OpenCount,
 							Total = TimeSpan.FromTicks(d.RunningTime).PrettyFormat(),
 							Average = d.CloseCount == 0 ? "N/A" : TimeSpan.FromTicks(d.RunningTime / d.CloseCount).PrettyFormat(),
-							Success = String.Format("{0}%", 100*d.CloseCount/d.OpenCount)
+							Success = String.Format("{0}%", 100 * d.CloseCount / d.OpenCount)
 						}))
 				.Take(50)
 				.ToList();
@@ -182,6 +183,34 @@ namespace Lokad.Cloud.Web
 			return value;
 		}
 
-		
+		public static string PrettyFormatMemoryMB(long byteCount)
+		{
+			return String.Format("{0} MB", byteCount / (1024 * 1024));
+		}
+
+		public static string PrettyFormatOperatingSystem(string os)
+		{
+			if (string.IsNullOrEmpty(os))
+			{
+				return string.Empty;
+			}
+
+			os = os.Replace("Microsoft Windows ", string.Empty);
+			return os.Replace("Service Pack ", "SP");
+		}
+
+		public static string PrettyFormatActiveTime(TimeSpan activeTime, int startCount)
+		{
+			var time = activeTime.PrettyFormat();
+			if (startCount == 1)
+			{
+				return String.Concat(time, " (one restart)");
+			}
+			if (startCount > 0)
+			{
+				return String.Concat(time, " (", startCount.ToString(), " restarts)");
+			}
+			return time;
+		}
 	}
 }

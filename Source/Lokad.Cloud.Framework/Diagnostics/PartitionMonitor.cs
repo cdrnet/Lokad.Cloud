@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 // TODO: Discard old data (based on .LastUpdate)
 
@@ -43,23 +44,37 @@ namespace Lokad.Cloud.Diagnostics
 				partitionName,
 				s =>
 					{
+						var now = DateTimeOffset.Now;
+
 						if (!s.HasValue)
 						{
 							return new PartitionStatistics
 								{
+									// WORKER DETAILS
 									PartitionKey = partitionName,
+									InstanceId = RoleEnvironment.IsAvailable ? RoleEnvironment.CurrentRoleInstance.Id : "N/A",
+									OperatingSystem = Environment.OSVersion.ToString(),
+									Runtime = Environment.Version.ToString(),
+									ProcessorCount = Environment.ProcessorCount,
 
+									// WORKER AVAILABILITY
 									StartTime = process.StartTime,
-									LastUpdate = DateTimeOffset.Now,
+									StartCount = 0,
+									LastUpdate = now,
+									ActiveTime = new TimeSpan(),
+									LifetimeActiveTime = now - process.StartTime,
 
+									// THREADS & HANDLES
+									HandleCount = process.HandleCount,
+									ThreadCount = process.Threads.Count,
+
+									// CPU PROCESSING
 									TotalProcessorTime = new TimeSpan(),
 									UserProcessorTime = new TimeSpan(),
 									LifetimeTotalProcessorTime = process.TotalProcessorTime,
 									LifetimeUserProcessorTime = process.UserProcessorTime,
 
-									HandleCount = process.HandleCount,
-									ThreadCount = process.Threads.Count,
-
+									// MEMORY CONSUMPTION
 									MemorySystemNonPagedSize = process.NonpagedSystemMemorySize64,
 									MemorySystemPagedSize = process.PagedSystemMemorySize64,
 									MemoryVirtualPeakSize = process.PeakVirtualMemorySize64,
@@ -69,23 +84,56 @@ namespace Lokad.Cloud.Diagnostics
 									MemoryPagedSize = process.PagedMemorySize64,
 									MemoryPagedPeakSize = process.PeakPagedMemorySize64,
 
-									Runtime = Environment.Version.ToString(),
-									OperatingSystem = Environment.OSVersion.ToString(),
-									ProcessorCount = Environment.ProcessorCount
 								};
 						}
 
 						var stats = s.Value;
 
+						// WORKER DETAILS
+						stats.InstanceId = RoleEnvironment.IsAvailable ? RoleEnvironment.CurrentRoleInstance.Id : "N/A";
+						stats.OperatingSystem = Environment.OSVersion.ToString();
+						stats.Runtime = Environment.Version.ToString();
+						stats.ProcessorCount = Environment.ProcessorCount;
+
+						// WORKER AVAILABILITY
+						var wasRestarted = false;
+						if (process.StartTime > stats.StartTime)
+						{
+							wasRestarted = true;
+							stats.StartCount++;
+							stats.StartTime = process.StartTime;
+						}
+
+						stats.LastUpdate = now;
+
+						if (stats.LifetimeActiveTime.Ticks == 0)
+						{
+							// Upgrade old data structures
+							stats.ActiveTime = new TimeSpan();
+						}
+						else if (wasRestarted)
+						{
+							stats.ActiveTime += now - process.StartTime;
+						}
+						else
+						{
+							stats.ActiveTime += (now - process.StartTime) - stats.LifetimeActiveTime;
+						}
+						stats.LifetimeActiveTime = now - process.StartTime;
+
+						// THREADS & HANDLES
+						stats.HandleCount = process.HandleCount;
+						stats.ThreadCount = process.Threads.Count;
+
+						// CPU PROCESSING
 						if (stats.LifetimeTotalProcessorTime.Ticks == 0)
 						{
-							// Upgrade from old format
+							// Upgrade old data structures
 							stats.TotalProcessorTime = new TimeSpan();
 							stats.UserProcessorTime = new TimeSpan();
 						}
-						else if(process.TotalProcessorTime < stats.LifetimeTotalProcessorTime)
+						else if(wasRestarted)
 						{
-							// Partition restarted in this time segment
 							stats.TotalProcessorTime += process.TotalProcessorTime;
 							stats.UserProcessorTime += process.UserProcessorTime;
 						}
@@ -97,9 +145,7 @@ namespace Lokad.Cloud.Diagnostics
 						stats.LifetimeTotalProcessorTime = process.TotalProcessorTime;
 						stats.LifetimeUserProcessorTime = process.UserProcessorTime;
 
-						stats.HandleCount = process.HandleCount;
-						stats.ThreadCount = process.Threads.Count;
-
+						// MEMORY CONSUMPTION
 						stats.MemorySystemNonPagedSize = process.NonpagedSystemMemorySize64;
 						stats.MemorySystemPagedSize = process.PagedSystemMemorySize64;
 						stats.MemoryVirtualPeakSize = process.PeakVirtualMemorySize64;
@@ -109,7 +155,6 @@ namespace Lokad.Cloud.Diagnostics
 						stats.MemoryPagedSize = process.PagedMemorySize64;
 						stats.MemoryPagedPeakSize = process.PeakPagedMemorySize64;
 
-						stats.LastUpdate = DateTimeOffset.Now;
 						return stats;
 					});
 		}
