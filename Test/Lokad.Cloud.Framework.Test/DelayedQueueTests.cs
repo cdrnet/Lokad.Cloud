@@ -35,7 +35,7 @@ namespace Lokad.Cloud.Test
 
 			var delayer = new DelayedQueue(blobStorage);
 
-			DateTime trigger = DateTime.Now.AddMinutes(10);
+			DateTime trigger = DateTime.UtcNow.AddMinutes(5);
 
 			delayer.PutWithDelay(21, trigger, _testQueueName);
 

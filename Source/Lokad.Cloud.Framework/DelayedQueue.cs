@@ -98,7 +98,8 @@ namespace Lokad.Cloud
 			foreach(var message in messages)
 			{
 				var blobName = new DelayedMessageName(triggerTime, Guid.NewGuid());
-				_provider.PutBlob(blobName, message);
+				var envelope = new DelayedMessage(queueName, message);
+				_provider.PutBlob(blobName, envelope);
 			}
 		}
 
