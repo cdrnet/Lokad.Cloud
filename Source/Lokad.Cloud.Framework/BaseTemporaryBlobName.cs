@@ -20,7 +20,7 @@ namespace Lokad.Cloud
 			get { return CloudService.TemporaryContainer; }
 		}
 
-		[UsedImplicitly, Rank(0), DataMember] public readonly DateTime Expiration;
+		[UsedImplicitly, Rank(0), DataMember] public readonly DateTimeOffset Expiration;
 		[UsedImplicitly, Rank(1), DataMember] public readonly string Prefix;
 
 		/// <summary>Explicit constructor.</summary>
@@ -28,7 +28,7 @@ namespace Lokad.Cloud
 		/// <param name="prefix">Fixed prefix (typically used to avoid overlaps
 		/// between temporary blob name inheritor). If the prefix is <c>null</c>
 		/// then the <see cref="DefaultPrefix"/> get used instead.</param>
-		protected BaseTemporaryBlobName(DateTime expiration, string prefix)
+		protected BaseTemporaryBlobName(DateTimeOffset expiration, string prefix)
 		{
 			Expiration = expiration;
 			Prefix = prefix ?? DefaultPrefix;

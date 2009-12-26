@@ -28,12 +28,15 @@ namespace Lokad.Cloud.Test
 		[Test]
 		public void SpecializedTemporaryBlobNamesCanBeParsedAsBaseClass()
 		{
-			var dateTime = DateTime.UtcNow;
-			var testName = new TestTemporaryBlobName(dateTime, "test", Guid.NewGuid());
+			var now = DateTimeOffset.Now;
+			// round to milliseconds, our DateTime resolution in blob names
+			now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, now.Millisecond, now.Offset);
+
+			var testName = new TestTemporaryBlobName(now, "test", Guid.NewGuid());
 			var printed = BaseBlobName.Print(testName);
 
 			var parsed = BaseBlobName.Parse<TemporaryBlobName>(printed);
-			Assert.AreEqual(dateTime.ToString(), parsed.Expiration.ToString());
+			Assert.AreEqual(now, parsed.Expiration);
 			Assert.AreEqual("test", parsed.Suffix);
 		}
 
@@ -41,7 +44,7 @@ namespace Lokad.Cloud.Test
 		{
 			[UsedImplicitly, Rank(0)] public readonly Guid Id;
 
-			public TestTemporaryBlobName(DateTime expiration, string prefix, Guid id)
+			public TestTemporaryBlobName(DateTimeOffset expiration, string prefix, Guid id)
 				: base(expiration, prefix)
 			{
 				Id = id;

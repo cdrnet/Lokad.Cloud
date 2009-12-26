@@ -21,31 +21,27 @@ namespace Lokad.Cloud.Services
 		protected override void StartOnSchedule()
 		{
 			// lazy enumeration over the delayed messages
-			string nullPrefix = null;
+			const string nullPrefix = null;
 			foreach (var blobName in BlobStorage.List<DelayedMessageName>(nullPrefix))
 			{
 				var parsedName = BaseBlobName.Parse<DelayedMessageName>(blobName);
-
-				// if the overflowing message is expired, delete it
-				if (DateTime.UtcNow > parsedName.TriggerTime)
-				{
-					var dm = BlobStorage.GetBlobOrDelete<DelayedMessage>(parsedName);
-					if (!dm.HasValue)
-					{
-						Log.WarnFormat("Deserialization failed for delayed message {0}, message was dropped.", parsedName.Identifier);
-						continue;
-					}
-
-					QueueStorage.Put(dm.Value.QueueName, dm.Value.InnerMessage);
-					BlobStorage.DeleteBlob(parsedName);
-				}
-				else
+				if (DateTimeOffset.Now <= parsedName.TriggerTime)
 				{
 					// delayed messages are iterated in date-increasing order
 					// as soon a non-expired delayed message is encountered
 					// just stop the process.
 					break;
 				}
+
+				var dm = BlobStorage.GetBlobOrDelete<DelayedMessage>(parsedName);
+				if (!dm.HasValue)
+				{
+					Log.WarnFormat("Deserialization failed for delayed message {0}, message was dropped.", parsedName.Identifier);
+					continue;
+				}
+
+				QueueStorage.Put(dm.Value.QueueName, dm.Value.InnerMessage);
+				BlobStorage.DeleteBlob(parsedName);
 			}
 		}
 	}

@@ -22,23 +22,23 @@ namespace Lokad.Cloud
 			get { return CloudService.TemporaryContainer; }
 		}
 
-		[UsedImplicitly, Rank(0), DataMember] public readonly DateTime Expiration;
+		[UsedImplicitly, Rank(0), DataMember] public readonly DateTimeOffset Expiration;
 		[UsedImplicitly, Rank(1), DataMember] public readonly string Suffix;
 
-		TemporaryBlobName(DateTime expiration, string suffix)
+		TemporaryBlobName(DateTimeOffset expiration, string suffix)
 		{
 			Expiration = expiration;
 			Suffix = suffix;
 		}
 
 		/// <summary>Gets a full name for a temporary blob.</summary>
-		public static TemporaryBlobName GetNew(DateTime expiration)
+		public static TemporaryBlobName GetNew(DateTimeOffset expiration)
 		{
 			return new TemporaryBlobName(expiration, Guid.NewGuid().ToString("N"));
 		}
 
 		/// <summary>Gets a full name for a temporary blob.</summary>
-		public static TemporaryBlobName GetNew(DateTime expiration, string prefix)
+		public static TemporaryBlobName GetNew(DateTimeOffset expiration, string prefix)
 		{
 			// hyphen used on purpose, not to interfere with parsing later on.
 			return new TemporaryBlobName(expiration, prefix + "-" + Guid.NewGuid().ToString("N"));

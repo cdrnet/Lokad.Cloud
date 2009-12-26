@@ -15,7 +15,7 @@ namespace TestingSample
 	public class OrderMessage
 	{
 		/// <summary>The date/time the order was placed on.</summary>
-		public DateTime OrderPlacedOn { get; set; }
+		public DateTimeOffset OrderPlacedOn { get; set; }
 
 		/// <summary>The supplier ID.</summary>
 		public string SupplierId { get; set; }

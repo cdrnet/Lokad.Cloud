@@ -42,10 +42,10 @@ namespace Lokad.Cloud
 			get { return CloudService.DelayedMessageContainer; }
 		}
 
-		[Rank(0), DataMember] public readonly DateTime TriggerTime;
+		[Rank(0), DataMember] public readonly DateTimeOffset TriggerTime;
 		[UsedImplicitly, Rank(1), DataMember] public readonly Guid Identifier;
 
-		public DelayedMessageName(DateTime triggerTime, Guid identifier)
+		public DelayedMessageName(DateTimeOffset triggerTime, Guid identifier)
 		{
 			TriggerTime = triggerTime;
 			Identifier = identifier;
@@ -70,21 +70,21 @@ namespace Lokad.Cloud
 
 		/// <summary>Put a message into the queue implicitly associated to the type <c>T</c> at the
 		/// time specified by the <c>triggerTime</c>.</summary>
-		public void PutWithDelay<T>(T message, DateTime triggerTime)
+		public void PutWithDelay<T>(T message, DateTimeOffset triggerTime)
 		{
 			PutWithDelay(message, triggerTime, TypeMapper.GetStorageName(typeof(T)));
 		}
 
 		/// <summary>Put a message into the queue identified by <c>queueName</c> at the
 		/// time specified by the <c>triggerTime</c>.</summary>
-		public void PutWithDelay<T>(T message, DateTime triggerTime, string queueName)
+		public void PutWithDelay<T>(T message, DateTimeOffset triggerTime, string queueName)
 		{
 			PutRangeWithDelay(new[] { message }, triggerTime, queueName);
 		}
 
 		/// <summary>Put messages into the queue implicitly associated to the type <c>T</c> at the
 		/// time specified by the <c>triggerTime</c>.</summary>
-		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime)
+		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTimeOffset triggerTime)
 		{
 			PutRangeWithDelay(messages, triggerTime, TypeMapper.GetStorageName(typeof(T)));
 		}
@@ -93,7 +93,7 @@ namespace Lokad.Cloud
 		/// time specified by the <c>triggerTime</c>.</summary>
 		/// <remarks>This method acts as a delayed put operation, the message not being put
 		/// before the <c>triggerTime</c> is reached.</remarks>
-		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTime triggerTime, string queueName)
+		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTimeOffset triggerTime, string queueName)
 		{
 			foreach(var message in messages)
 			{

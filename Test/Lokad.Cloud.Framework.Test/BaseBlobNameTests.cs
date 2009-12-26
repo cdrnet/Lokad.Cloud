@@ -205,9 +205,17 @@ namespace Lokad.Cloud.Test
 			Assert.AreEqual(utcNow, utcName.AbsoluteTime, "DateTimeOffset-local-utc");
 			Assert.AreEqual(localNow, utcName.AbsoluteTime, "DateTimeOffset-local-local");
 
-			Assert.AreNotEqual(unsafeNow, utcName.UserTime, "DateTime-utc");
+			if (unsafeNow != unsafeUtcNow)
+			{
+				// in case current machine runs NOT at UTC time
+				Assert.AreNotEqual(unsafeNow, utcName.UserTime, "DateTime-utc");
+			}
 			Assert.AreEqual(unsafeUtcNow, utcName.UserTime, "DateTime-utc-utc");
-			Assert.AreNotEqual(unsafeLocalNow, utcName.UserTime, "DateTime-utc-local");
+			if (unsafeNow != unsafeLocalNow)
+			{
+				// in case current machine runs NOT at UTC-2 time
+				Assert.AreNotEqual(unsafeLocalNow, utcName.UserTime, "DateTime-utc-local");
+			}
 		}
 	}
 }

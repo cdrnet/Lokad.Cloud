@@ -39,7 +39,7 @@ namespace Lokad.Cloud.Test.Mock.Services
 			var squareMessage = new SquareMessage
 				{
 					ContainerName = containerName,
-					Expiration = DateTime.Now + new TimeSpan(10, 0, 0, 0),
+					Expiration = DateTimeOffset.Now + new TimeSpan(10, 0, 0, 0),
 					IsStart = true
 				};
 
@@ -63,7 +63,7 @@ namespace Lokad.Cloud.Test.Mock.Services
 		{
 			public bool IsStart { get; set; }
 
-			public DateTime Expiration { get; set; }
+			public DateTimeOffset Expiration { get; set; }
 
 			public string ContainerName { get; set;}
 

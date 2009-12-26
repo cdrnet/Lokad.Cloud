@@ -34,7 +34,7 @@ namespace TestingSample
 		public void PlaceOrder(string supplierId, IEnumerable<string> parts)
 		{
 			_queueStorage.Put(QueueName,
-				new OrderMessage() { OrderPlacedOn = DateTime.Now, SupplierId = supplierId, Parts = new List<string>(parts) });
+				new OrderMessage() { OrderPlacedOn = DateTimeOffset.Now, SupplierId = supplierId, Parts = new List<string>(parts) });
 		}
 	}
 }
