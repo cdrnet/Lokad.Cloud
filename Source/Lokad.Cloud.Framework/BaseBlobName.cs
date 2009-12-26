@@ -130,12 +130,18 @@ namespace Lokad.Cloud
 			public static T Parse(string value)
 			{
 				if (string.IsNullOrEmpty(value))
+				{
 					throw new ArgumentNullException("value");
+				}
 
 				var split = value.Split(new[] { Delimeter }, StringSplitOptions.RemoveEmptyEntries);
 
-				if (split.Length != Fields.Length)
+				// In order to support parsing blob names also to blob name supper classes
+				// in case of inheritance, we simply ignore supplement items in the name
+				if (split.Length < Fields.Length)
+				{
 					throw new ArgumentException("Number of items in the string is invalid. Are you missing something?", "value");
+				}
 
 				var parameters = new object[Fields.Length];
 
