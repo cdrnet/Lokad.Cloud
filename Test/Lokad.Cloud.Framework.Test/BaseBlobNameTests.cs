@@ -72,6 +72,23 @@ namespace Lokad.Cloud.Test
 			}
 		}
 
+		class PatternE : BaseBlobName
+		{
+			// not a field
+			public override string ContainerName { get { return "my-test-container"; } }
+
+			[Rank(0)]
+			public readonly DateTime UserTime;
+			[Rank(1)]
+			public readonly DateTimeOffset AbsoluteTime;
+
+			public PatternE(DateTime userTime, DateTimeOffset absoluteTime)
+			{
+				UserTime = userTime;
+				AbsoluteTime = absoluteTime;
+			}
+		}
+
 
 		[Test]
 		public void Conversion_round_trip()
@@ -153,6 +170,44 @@ namespace Lokad.Cloud.Test
 			Assert.IsTrue(pattern.ToString().StartsWith(BaseBlobName.PartialPrint(pattern, 1)));
 			Assert.IsTrue(pattern.ToString().StartsWith(BaseBlobName.PartialPrint(pattern, 2)));
 			Assert.IsTrue(pattern.ToString().StartsWith(BaseBlobName.PartialPrint(pattern, 3)));
+		}
+
+		[Test]
+		public void Time_zone_safe_when_using_DateTimeOffset()
+		{
+			var localOffset = TimeSpan.FromHours(-2);
+			var now = DateTimeOffset.Now;
+			// round to milliseconds, our DateTime resolution in blob names
+			now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, now.Millisecond, now.Offset);
+			var unsafeNow = now.DateTime;
+
+			var utcNow = now.ToUniversalTime();
+			var localNow = now.ToOffset(localOffset);
+			var unsafeUtcNow = utcNow.UtcDateTime;
+			var unsafeLocalNow = localNow.DateTime;
+
+			var localString = BaseBlobName.Print(new PatternE(unsafeLocalNow, localNow));
+			var localName = BaseBlobName.Parse<PatternE>(localString);
+
+			Assert.AreEqual(now, localName.AbsoluteTime, "DateTimeOffset-local");
+			Assert.AreEqual(utcNow, localName.AbsoluteTime, "DateTimeOffset-local-utc");
+			Assert.AreEqual(localNow, localName.AbsoluteTime, "DateTimeOffset-local-local");
+
+			Assert.AreNotEqual(unsafeNow, localName.UserTime, "DateTime-local");
+			Assert.AreNotEqual(unsafeUtcNow, localName.UserTime, "DateTime-local-utc");
+			Assert.AreEqual(unsafeLocalNow, localName.UserTime, "DateTime-local-local");
+
+			Assert.AreNotEqual(unsafeUtcNow, localName.UserTime, "DateTime-local");
+			var utcString = BaseBlobName.Print(new PatternE(unsafeUtcNow, utcNow));
+			var utcName = BaseBlobName.Parse<PatternE>(utcString);
+
+			Assert.AreEqual(now, utcName.AbsoluteTime, "DateTimeOffset-utc");
+			Assert.AreEqual(utcNow, utcName.AbsoluteTime, "DateTimeOffset-local-utc");
+			Assert.AreEqual(localNow, utcName.AbsoluteTime, "DateTimeOffset-local-local");
+
+			Assert.AreNotEqual(unsafeNow, utcName.UserTime, "DateTime-utc");
+			Assert.AreEqual(unsafeUtcNow, utcName.UserTime, "DateTime-utc-utc");
+			Assert.AreNotEqual(unsafeLocalNow, utcName.UserTime, "DateTime-utc-local");
 		}
 	}
 }

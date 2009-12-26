@@ -45,16 +45,23 @@ namespace Lokad.Cloud
 		{
 			// adding overrides
 
-			// GUID does not have default converter
+			// Guid: does not have default converter
+			Printers.Add(typeof(Guid), o => ((Guid)o).ToString("N"));
 			Parsers.Add(typeof(Guid), s => new Guid(s));
 
-			Parsers.Add(typeof(DateTime), s => 
-				DateTime.ParseExact(s, DateFormatInBlobName, CultureInfo.InvariantCulture));
-
-			Printers.Add(typeof(DateTime), 
+			// DateTime: sortable ascending;
+			// NOTE: not time zone safe, users have to deal with that temselves
+			Printers.Add(typeof(DateTime),
 				o => ((DateTime)o).ToString(DateFormatInBlobName, CultureInfo.InvariantCulture));
+			Parsers.Add(typeof(DateTime),
+				s => DateTime.ParseExact(s, DateFormatInBlobName, CultureInfo.InvariantCulture));
 
-			Printers.Add(typeof(Guid), o => ((Guid)o).ToString("N"));
+			// DateTimeOffset: sortable ascending;
+			// time zone safe, but always returned with UTC/zero offset (comparisons can deal with that)
+			Printers.Add(typeof(DateTimeOffset),
+				o => ((DateTimeOffset)o).UtcDateTime.ToString(DateFormatInBlobName, CultureInfo.InvariantCulture));
+			Parsers.Add(typeof(DateTimeOffset),
+				s => new DateTimeOffset(DateTime.SpecifyKind(DateTime.ParseExact(s, DateFormatInBlobName, CultureInfo.InvariantCulture), DateTimeKind.Utc)));
 		}
 
 		public override string ToString()
