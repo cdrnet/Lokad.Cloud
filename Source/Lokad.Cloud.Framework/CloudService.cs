@@ -74,7 +74,7 @@ namespace Lokad.Cloud
 		CloudServiceState _state = CloudServiceState.Started;
 
 		/// <summary>Indicates the last time the service has checked its execution status.</summary>
-		DateTime _lastStateCheck = DateTime.MinValue;
+		DateTimeOffset _lastStateCheck = DateTimeOffset.MinValue;
 
 		/// <summary>Indicates the frequency where the service is actually checking for its state.</summary>
 		static TimeSpan StateCheckInterval
@@ -109,7 +109,7 @@ namespace Lokad.Cloud
 		/// then a <see cref="TimeoutException"/> is thrown.</remarks>
 		public bool Start()
 		{
-			var now = DateTime.UtcNow;
+			var now = DateTimeOffset.Now;
 
 			// checking service state at regular interval
 			if(now.Subtract(_lastStateCheck) > StateCheckInterval)

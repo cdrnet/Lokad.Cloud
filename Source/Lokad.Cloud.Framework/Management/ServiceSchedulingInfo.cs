@@ -19,7 +19,7 @@ namespace Lokad.Cloud.Management
 		public TimeSpan TriggerInterval { get; set; }
 
 		/// <summary>Last execution time stamp</summary>
-		public DateTime LastExecuted { get; set; }
+		public DateTimeOffset LastExecuted { get; set; }
 
 		/// <summary>True if the services is worker scoped instead of cloud scoped.</summary>
 		public bool WorkerScoped { get; set; }

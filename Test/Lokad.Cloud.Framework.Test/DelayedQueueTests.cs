@@ -4,20 +4,16 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Lokad.Cloud.Mock;
 using NUnit.Framework;
 using Lokad.Cloud.Azure.Test;
-using System.Threading;
 
 namespace Lokad.Cloud.Test
 {
 	[TestFixture]
 	public class DelayedQueueTests
 	{
-		string _testQueueName = null;
+		string _testQueueName;
 
 		[SetUp]
 		public void SetUp()
@@ -32,15 +28,14 @@ namespace Lokad.Cloud.Test
 			// output container directly (thus this is not a black-box test)
 
 			var blobStorage = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
-
 			var delayer = new DelayedQueue(blobStorage);
 
-			DateTime trigger = DateTime.UtcNow.AddMinutes(5);
+			var trigger = DateTimeOffset.Now.AddMinutes(5);
 
 			delayer.PutWithDelay(21, trigger, _testQueueName);
 
 			var msgName = new DelayedMessageName(trigger, Guid.Empty);
-			var prefix = DelayedMessageName.GetPrefix(msgName, 1);
+			var prefix = BaseBlobName.GetPrefix(msgName, 1);
 
 			var blobNames = blobStorage.List(prefix);
 

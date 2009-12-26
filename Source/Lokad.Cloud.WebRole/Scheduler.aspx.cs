@@ -29,7 +29,7 @@ namespace Lokad.Cloud.Web
 				.Select(info => new
 					{
 						Name = info.ServiceName,
-						info.LastExecuted,
+						LastExecuted = info.LastExecuted.UtcDateTime,
 						info.TriggerInterval,
 						Scope = info.WorkerScoped ? "Worker" : "Cloud"
 					})

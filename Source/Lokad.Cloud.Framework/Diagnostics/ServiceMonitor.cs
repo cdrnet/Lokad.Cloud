@@ -48,7 +48,7 @@ namespace Lokad.Cloud.Diagnostics
 		{
 			var serviceName = handle.Service.Name;
 			var process = Process.GetCurrentProcess();
-			var timestamp = DateTime.UtcNow;
+			var timestamp = DateTimeOffset.Now;
 
 			UpdateStatistics(TimeSegments.Day(timestamp), serviceName, handle, process);
             UpdateStatistics(TimeSegments.Month(timestamp), serviceName, handle, process);

@@ -31,7 +31,7 @@ namespace Lokad.Cloud.Diagnostics
 		public void UpdateStatistics()
 		{
 			var process = Process.GetCurrentProcess();
-			var timestamp = DateTime.UtcNow;
+			var timestamp = DateTimeOffset.Now;
 
 			UpdateStatistics(TimeSegments.Day(timestamp), _partitionKey, process);
 			UpdateStatistics(TimeSegments.Month(timestamp), _partitionKey, process);

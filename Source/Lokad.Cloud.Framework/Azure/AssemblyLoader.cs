@@ -46,7 +46,7 @@ namespace Lokad.Cloud.Azure
 
 		string _lastConfigurationEtag;
 
-		DateTime _lastPackageCheck;
+		DateTimeOffset _lastPackageCheck;
 
 		/// <summary>Build a new package loader.</summary>
 		public AssemblyLoader(IBlobStorageProvider provider)
@@ -60,7 +60,7 @@ namespace Lokad.Cloud.Azure
 		public void LoadPackage()
 		{
 			var buffer = _provider.GetBlob<byte[]>(ContainerName, PackageBlobName, out _lastPackageEtag);
-			_lastPackageCheck = DateTime.UtcNow;
+			_lastPackageCheck = DateTimeOffset.Now;
 
 			// if no assemblies have been loaded yet, just skip the loading
 			if (!buffer.HasValue)
@@ -101,7 +101,7 @@ namespace Lokad.Cloud.Azure
 		/// <see cref="UpdateCheckFrequency"/>.</param>
 		public void CheckUpdate(bool delayCheck)
 		{
-			var now = DateTime.UtcNow;
+			var now = DateTimeOffset.Now;
 
 			// limiting the frequency where the actual update check is performed.
 			if(now.Subtract(_lastPackageCheck) > UpdateCheckFrequency || !delayCheck)

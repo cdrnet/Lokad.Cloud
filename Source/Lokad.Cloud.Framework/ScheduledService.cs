@@ -16,7 +16,7 @@ namespace Lokad.Cloud
 		public TimeSpan TriggerInterval { get; set; }
 
 		[DataMember]
-		public DateTime LastExecuted { get; set; }
+		public DateTimeOffset LastExecuted { get; set; }
 
 		[DataMember(IsRequired = false, EmitDefaultValue = true)]
 		public bool SchedulePerWorker { get; set; }
@@ -50,7 +50,7 @@ namespace Lokad.Cloud
 	{
 		internal const string ScheduleStateContainer = "lokad-cloud-schedule-state";
 
-		DateTime _lastExecutedOnThisWorker;
+		DateTimeOffset _lastExecutedOnThisWorker;
 
 		/// <seealso cref="CloudService.StartImpl"/>
 		protected sealed override bool StartImpl()
@@ -65,7 +65,7 @@ namespace Lokad.Cloud
 				stateName,
 				currentState =>
 					{
-						var now = DateTime.UtcNow;
+						var now = DateTimeOffset.Now;
 
 						if (!currentState.HasValue)
 						{
@@ -119,7 +119,7 @@ namespace Lokad.Cloud
 
 			return new ScheduledServiceState
 				{
-					LastExecuted = DateTime.MinValue,
+					LastExecuted = DateTimeOffset.MinValue,
 					TriggerInterval = settings.TriggerInterval.Seconds(),
 					SchedulePerWorker = settings.SchedulePerWorker
 				};

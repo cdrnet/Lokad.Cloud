@@ -192,7 +192,7 @@ namespace Lokad.Cloud.Azure
 		{
 			Enforce.Argument(() => maxWeeks, Rules.Is.AtLeast(1));
 
-			DeleteOldLogs(DateTime.Now.ToUniversalTime().AddDays(-7 * maxWeeks));
+			DeleteOldLogs(DateTime.UtcNow.AddDays(-7 * maxWeeks));
 		}
 
 		// This is used for testing only

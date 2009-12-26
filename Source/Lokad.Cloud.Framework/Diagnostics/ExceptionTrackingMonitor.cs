@@ -53,7 +53,7 @@ namespace Lokad.Cloud.Diagnostics
 				return;
 			}
 
-			var timestamp = DateTime.UtcNow;
+			var timestamp = DateTimeOffset.Now;
 			Update(TimeSegments.Day(timestamp), contextName, dataList);
 			Update(TimeSegments.Month(timestamp), contextName, dataList);
 		}
