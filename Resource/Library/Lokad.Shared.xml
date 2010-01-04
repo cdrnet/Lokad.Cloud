@@ -883,6 +883,16 @@
             </returns>
       <seealso cref="M:System.Decimal.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Decimal@)" />
     </member>
+    <member name="M:Lokad.MaybeParse.DecimalInvariant(System.String)">
+      <summary>
+            	Tries to parse the specified value into decimal, using the invariant culture
+            	info and returning	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <returns>
+            	either parsed decimal or an empty result
+            </returns>
+    </member>
     <member name="M:Lokad.MaybeParse.Int32(System.String)">
       <summary>
             	Tries to parse the specified value into Int32, returning
@@ -911,6 +921,56 @@
             </returns>
       <seealso cref="M:System.Int32.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Int32@)" />
     </member>
+    <member name="M:Lokad.MaybeParse.Int32Invariant(System.String)">
+      <summary>
+            	Tries to parse the specified string value into Int32, 
+            	using an invariant culture and returning empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <returns>
+            	either parsed Int32 or an empty result
+            </returns>
+      <seealso cref="M:System.Int32.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Int32@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Int64(System.String)">
+      <summary>
+            	Tries to parse the specified value into Int64, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <returns>
+            	either parsed Int64 or an empty result
+            </returns>
+      <seealso cref="M:System.Int64.TryParse(System.String,System.Int64@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Int64(System.String,System.Globalization.NumberStyles,System.IFormatProvider)">
+      <summary>
+            	Tries to parse the specified value into Int64, returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <param name="numberStyles">
+            	The number styles to use.
+            </param>
+      <param name="formatProvider">
+            	The format provider to use.
+            </param>
+      <returns>
+            	either parsed Int64 or an empty result
+            </returns>
+      <seealso cref="M:System.Int64.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Int64@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.Int64Invariant(System.String)">
+      <summary>
+            	Tries to parse the specified string value into Int64, 
+            	using an invariant culture and returning empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <returns>
+            	either parsed Int64 or an empty result
+            </returns>
+      <seealso cref="M:System.Int64.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Int64@)" />
+    </member>
     <member name="M:Lokad.MaybeParse.Double(System.String)">
       <summary>
             	Tries to parse the specified value into Double, returning
@@ -934,6 +994,18 @@
       <param name="formatProvider">
             	The format provider to use.
             </param>
+      <returns>
+            	either parsed Double or an empty result
+            </returns>
+      <seealso cref="M:System.Double.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Double@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.DoubleInvariant(System.String)">
+      <summary>
+            	Attempts to parse the specified value into Double, 
+            	using invariant culture and returning
+            	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
       <returns>
             	either parsed Double or an empty result
             </returns>
@@ -966,6 +1038,137 @@
             	either parsed Single or an empty result
             </returns>
       <seealso cref="M:System.Single.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Single@)" />
+    </member>
+    <member name="M:Lokad.MaybeParse.SingleInvariant(System.String)">
+      <summary>
+            	Tries to parse the specified value into Single, using invariant culture
+            	and returning 	empty result on failure.
+            </summary>
+      <param name="value">The value.</param>
+      <returns>
+            	either parsed Single or an empty result
+            </returns>
+      <seealso cref="M:System.Single.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Single@)" />
+    </member>
+    <member name="T:Lokad.Quality.ClassDesignAttribute">
+      <summary>
+            Base attribute for marking classes with some design constraints
+            </summary>
+    </member>
+    <member name="M:Lokad.Quality.ClassDesignAttribute.#ctor(System.String,System.String[])">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Quality.ClassDesignAttribute" /> class.
+            </summary>
+      <param name="firstDesignTag">The first design tag.</param>
+      <param name="otherDesignTags">The other design tags.</param>
+    </member>
+    <member name="M:Lokad.Quality.ClassDesignAttribute.#ctor(System.String)">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Quality.ClassDesignAttribute" /> class.
+            </summary>
+      <param name="classDesignTag">The class design tag.</param>
+    </member>
+    <member name="M:Lokad.Quality.ClassDesignAttribute.#ctor(Lokad.Quality.DesignTag,Lokad.Quality.DesignTag[])">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Quality.ClassDesignAttribute" /> class.
+            </summary>
+      <param name="firstDesignTag">The first design tag.</param>
+      <param name="otherDesignTags">The other design tags.</param>
+    </member>
+    <member name="P:Lokad.Quality.ClassDesignAttribute.ClassDesignTags">
+      <summary>
+            Gets the class design tags.
+            </summary>
+      <value>The class design tags.</value>
+    </member>
+    <member name="T:Lokad.Quality.DesignTag">
+      <summary>
+            	Predefined class design tags
+            </summary>
+    </member>
+    <member name="F:Lokad.Quality.DesignTag.Undefined">
+      <summary>Undefined</summary>
+    </member>
+    <member name="F:Lokad.Quality.DesignTag.Model">
+      <summary>
+            	The object is a data model
+            </summary>
+    </member>
+    <member name="F:Lokad.Quality.DesignTag.ImmutableWithFields">
+      <summary>
+            	The object is immutable, using readonly fields
+            </summary>
+    </member>
+    <member name="F:Lokad.Quality.DesignTag.ImmutableWithProperties">
+      <summary>
+            	The object is immutable, using properties with private setters
+            </summary>
+    </member>
+    <member name="T:Lokad.DesignOfClass">
+      <summary>
+            	Class design markers for the Lokad namespace
+            </summary>
+    </member>
+    <member name="T:Lokad.DesignOfClass.ImmutableFieldsModel">
+      <summary>
+            	Indicates that a class is an immutable model with fields
+            </summary>
+    </member>
+    <member name="M:Lokad.DesignOfClass.ImmutableFieldsModel.#ctor">
+      <summary>
+            	Initializes a new instance of the
+            	<see cref="T:Lokad.DesignOfClass.ImmutableFieldsModel" />
+            	class.
+            </summary>
+    </member>
+    <member name="T:Lokad.DesignOfClass.ImmutablePropertiesModel">
+      <summary>
+            	Indicates that a class is an immutable model with properties
+            </summary>
+    </member>
+    <member name="M:Lokad.DesignOfClass.ImmutablePropertiesModel.#ctor">
+      <summary>
+            	Initializes a new instance of the
+            	<see cref="T:Lokad.DesignOfClass.ImmutablePropertiesModel" />
+            	class.
+            </summary>
+    </member>
+    <member name="T:Lokad.Quality.DesignUtil">
+      <summary>
+            	Helper class for managing designs
+            </summary>
+    </member>
+    <member name="T:Lokad.Quality.DesignUtil.ClassCache`1">
+      <summary>
+            Simple type cache
+            </summary>
+      <typeparam name="T">
+      </typeparam>
+    </member>
+    <member name="M:Lokad.Quality.DesignUtil.ConvertTagToString(Lokad.Quality.DesignTag)">
+      <summary>
+            	Converts the tag to string.
+            </summary>
+      <param name="tag">The tag.</param>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:Lokad.Quality.DesignUtil.GetClassDesignTags(System.Type,System.Boolean)">
+      <summary>
+            	Gets the class design tags.
+            </summary>
+      <param name="type">The type.</param>
+      <param name="inherit">
+            	if set to
+            	<c>true</c>
+            	[inherit].
+            </param>
+      <returns>
+            	array of class design tags
+            </returns>
+      <remarks>
+            	it is advised to cache the results, if performance is important
+            </remarks>
     </member>
     <member name="T:Lokad.Quality.LocalizableAttribute">
       <summary>
@@ -1845,6 +2048,11 @@
         <para>This attribute is used as a marker for code validation that actually enforced the rule</para>
       </summary>
     </member>
+    <member name="M:Lokad.Quality.ImmutableAttribute.#ctor">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Quality.ImmutableAttribute" /> class.
+            </summary>
+    </member>
     <member name="T:Lokad.Quality.NoCodeCoverageAttribute">
       <summary>
             Attribute used to inform code coverage tool to ignore marked code block
@@ -2239,117 +2447,6 @@
       <summary>
               Looks up a localized string similar to Value should be less than '{0}'..
             </summary>
-    </member>
-    <member name="T:Lokad.Rules.RuleAssert`1">
-      <summary>
-            Helper class to simplify testing of rules.
-            </summary>
-      <typeparam name="TTarget">The type of the target for rules.</typeparam>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert`1.#ctor(Lokad.Rules.Rule{`0}[])">
-      <summary>
-            Initializes a new instance of the <see cref="T:Lokad.Rules.RuleAssert`1" /> class.
-            </summary>
-      <param name="rules">The rules.</param>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert`1.ExpectError(`0[])">
-      <summary>
-            Expects that every single item in <paramref name="testCases" />
-            returns <see cref="F:Lokad.Rules.RuleLevel.Error" />.
-            </summary>
-      <param name="testCases">The test cases.</param>
-      <returns>same instance for inlining</returns>
-      <exception cref="T:Lokad.Rules.RuleException">when expectation is not met</exception>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert`1.ExpectWarn(`0[])">
-      <summary>
-            Expects that every single item in <paramref name="testCases" />
-            returns <see cref="F:Lokad.Rules.RuleLevel.Warn" />.
-            </summary>
-      <param name="testCases">The test cases.</param>
-      <returns>same instance for inlining</returns>
-      <exception cref="T:Lokad.Rules.RuleException">when expectation is not met</exception>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert`1.ExpectNone(`0[])">
-      <summary>
-            Expects that every single item in <paramref name="testCases" />
-            returns <see cref="F:Lokad.Rules.RuleLevel.None" />.
-            </summary>
-      <param name="testCases">The test cases.</param>
-      <returns>same instance for inlining</returns>
-      <exception cref="T:Lokad.Rules.RuleException">when expectation is not met</exception>
-    </member>
-    <member name="T:Lokad.Rules.RuleAssert">
-      <summary> Helper class to simplify testing with rules. </summary>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert.For``1(Lokad.Rules.Rule{``0}[])">
-      <summary>
-            Initializes a new instance of the <see cref="T:Lokad.Rules.RuleAssert`1" /> class.
-            </summary>
-      <param name="rules">The rules.</param>
-      <typeparam name="TTarget">The type of the target.</typeparam>
-      <returns>new instance of the rule tester.</returns>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert.IsError``1(``0,Lokad.Rules.Rule{``0}[])">
-      <summary>
-            Expects that the <paramref name="rules" /> return <see cref="F:Lokad.Rules.RuleLevel.Error" />,
-            when executed against the <paramref name="testCase" />.
-            </summary>
-      <typeparam name="TTarget">The type of the target.</typeparam>
-      <param name="testCase">The test case.</param>
-      <param name="rules">The rules.</param>
-      <exception cref="T:Lokad.Rules.RuleException">when the expectation is not met.</exception>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert.IsNone``1(``0,Lokad.Rules.Rule{``0}[])">
-      <summary>
-            Expects that the <paramref name="rules" /> return <see cref="F:Lokad.Rules.RuleLevel.None" />,
-            when executed against the <paramref name="testCase" />.
-            </summary>
-      <typeparam name="TTarget">The type of the target.</typeparam>
-      <param name="testCase">The test case.</param>
-      <param name="rules">The rules.</param>
-      <exception cref="T:Lokad.Rules.RuleException">when the expectation is not met.</exception>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert.IsWarn``1(``0,Lokad.Rules.Rule{``0}[])">
-      <summary>
-            Expects that the <paramref name="rules" /> return <see cref="F:Lokad.Rules.RuleLevel.Warn" />,
-            when executed against the <paramref name="testCase" />.
-            </summary>
-      <typeparam name="TTarget">The type of the target.</typeparam>
-      <param name="testCase">The test case.</param>
-      <param name="rules">The rules.</param>
-      <exception cref="T:Lokad.Rules.RuleException">when the expectation is not met.</exception>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert.That``1(System.Func{``0},System.Linq.Expressions.Expression{System.Predicate{``0}}[])">
-      <summary>
-            Checks that the specified <paramref name="argumentReference" /> 
-            passes the check specified in <paramref name="expressions" /></summary>
-      <typeparam name="TTarget">The type of the target.</typeparam>
-      <param name="argumentReference">The argument reference.</param>
-      <param name="expressions">The expressions to check against.</param>
-      <exception cref="T:Lokad.Rules.RuleException">If the check fails</exception>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert.That``1(``0,System.Linq.Expressions.Expression{System.Predicate{``0}}[])">
-      <summary>
-            Checks that the specified <paramref name="item" /> 
-            passes the check specified in <paramref name="expressions" /></summary>
-      <typeparam name="TTarget">The type of the target.</typeparam>
-      <param name="item">The argument reference.</param>
-      <param name="expressions">The expressions to check against.</param>
-      <exception cref="T:Lokad.Rules.RuleException">If the check fails</exception>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert.IsTrue(System.Linq.Expressions.Expression{System.Func{System.Boolean}})">
-      <summary>
-            Determines whether the specified expression is true.
-            </summary>
-      <param name="expression">The expression.</param>
-      <exception cref="T:Lokad.Rules.RuleException">if the check fails</exception>
-    </member>
-    <member name="M:Lokad.Rules.RuleAssert.IsFalse(System.Linq.Expressions.Expression{System.Func{System.Boolean}})">
-      <summary>
-            Determines whether the specified expression is true.
-            </summary>
-      <param name="expression">The expression.</param>
     </member>
     <member name="T:Lokad.Rules.IScope">
       <summary>
