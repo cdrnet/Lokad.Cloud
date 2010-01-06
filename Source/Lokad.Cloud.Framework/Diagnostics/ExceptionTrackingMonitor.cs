@@ -18,7 +18,7 @@ namespace Lokad.Cloud.Diagnostics
 	/// Inherit from this class and override UpdateStatistics()
 	/// to load data from non-default counter sources.
 	/// </remarks>
-	public class ExceptionTrackingMonitor
+	internal class ExceptionTrackingMonitor
 	{
 		readonly ICloudDiagnosticsRepository _repository;
 

@@ -24,6 +24,7 @@ namespace Lokad.Cloud.Diagnostics
 			// Cloud Monitoring
 			builder.Register<BlobDiagnosticsRepository>().As<ICloudDiagnosticsRepository>();
 			builder.Register<ServiceMonitor>().As<IServiceMonitor>();
+			builder.Register<DiagnosticsAcquisition>();
 		}
 	}
 }

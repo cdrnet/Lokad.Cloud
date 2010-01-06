@@ -28,6 +28,7 @@ namespace Lokad.Cloud.Azure
 
 		readonly CloudInfrastructureProviders _providers;
 		readonly IServiceMonitor _monitoring;
+		readonly DiagnosticsAcquisition _diagnostics;
 
 		CloudService[] _services;
 
@@ -47,6 +48,7 @@ namespace Lokad.Cloud.Azure
 		{
 			_providers = providers;
 			_monitoring = new ServiceMonitor(diagnosticsRepository);
+			_diagnostics = new DiagnosticsAcquisition(diagnosticsRepository);
 		}
 
 		public void Execute()
@@ -94,6 +96,9 @@ namespace Lokad.Cloud.Azure
 
 			_services = CloudService.GetAllServices(clientContainer).ToArray();
 
+			// give the client a chance to register external diagnostics sources
+			clientContainer.InjectUnsetProperties(_diagnostics);
+
 			var index = 0;
 
 			// numbers of services that did not execute in a row
@@ -106,19 +111,34 @@ namespace Lokad.Cloud.Azure
 				var isRunOnce = false;
 				var isRun = true;
 
-				using (_monitoring.Monitor(service))
+				try
 				{
-					// 'more of the same pattern'
-					// as long the service is active, keep triggering the same service
-					// for at least 1min (in order to avoid a single service to monopolize CPU)
-					var start = DateTimeOffset.Now;
-					while (DateTimeOffset.Now.Subtract(start) < MoreOfTheSame.Seconds() && isRun && !_isStopRequested)
+					using (_monitoring.Monitor(service))
 					{
-						// No exceptions caught here
-						ServiceInExecution = service.Name;
-						isRun = service.Start();
-						isRunOnce |= isRun;
+						// 'more of the same pattern'
+						// as long the service is active, keep triggering the same service
+						// for at least 1min (in order to avoid a single service to monopolize CPU)
+						var start = DateTimeOffset.Now;
+						while (DateTimeOffset.Now.Subtract(start) < MoreOfTheSame.Seconds() && isRun && !_isStopRequested)
+						{
+							// No exceptions caught here
+							ServiceInExecution = service.Name;
+							isRun = service.Start();
+							isRunOnce |= isRun;
+						}
 					}
+				}
+				catch
+				{
+					// try to dump diagnostics, but suppress error if it fails
+					// (likely because of the same issue the service itself already failed, which is logged)
+					try
+					{
+						_diagnostics.CollectStatistics();
+					}
+					catch {}
+
+					throw;
 				}
 
 				ServiceInExecution = null;

@@ -96,11 +96,13 @@
     <Compile Include="CloudInfrastructureProviders.cs" />
     <Compile Include="CloudFormatter.cs" />
     <Compile Include="DelayedQueue.cs" />
+    <Compile Include="Diagnostics\DiagnosticsAcquisition.cs" />
     <Compile Include="Diagnostics\DiagnosticsModule.cs" />
     <Compile Include="Diagnostics\ExecutionProfilingMonitor.cs" />
     <Compile Include="Diagnostics\ExceptionTrackingMonitor.cs" />
     <Compile Include="Diagnostics\ExceptionTrackingStatistics.cs" />
     <Compile Include="Diagnostics\ExecutionProfilingStatistics.cs" />
+    <Compile Include="Diagnostics\ICloudDiagnosticsSource.cs" />
     <Compile Include="Diagnostics\PartitionMonitor.cs" />
     <Compile Include="Diagnostics\PartitionStatistics.cs" />
     <Compile Include="Diagnostics\ICloudDiagnosticsRepository.cs" />

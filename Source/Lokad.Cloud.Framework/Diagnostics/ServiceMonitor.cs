@@ -13,7 +13,7 @@ namespace Lokad.Cloud.Diagnostics
 	/// <summary>
 	/// Cloud Service Monitoring Data Provider
 	/// </summary>
-	public class ServiceMonitor : IServiceMonitor
+	internal class ServiceMonitor : IServiceMonitor
 	{
 		readonly ICloudDiagnosticsRepository _repository;
 

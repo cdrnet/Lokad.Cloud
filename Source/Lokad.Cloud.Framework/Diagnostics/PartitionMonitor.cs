@@ -14,7 +14,7 @@ namespace Lokad.Cloud.Diagnostics
 	/// <summary>
 	/// Cloud Partition & Worker Monitoring Data Provider
 	/// </summary>
-	public class PartitionMonitor
+	internal class PartitionMonitor
 	{
 		readonly ICloudDiagnosticsRepository _repository;
 		readonly string _partitionKey;
