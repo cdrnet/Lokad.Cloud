@@ -18,7 +18,7 @@ namespace Lokad.Cloud.Diagnostics
 		readonly PartitionMonitor _partitionMonitor;
 
 		/// <remarks>IoC Injected, but optional</remarks>
-		public IEnumerable<ICloudDiagnosticsSource> DiagnosticsSources { get; set; }
+		public ICloudDiagnosticsSource DiagnosticsSource { get; set; }
 
 		public DiagnosticsAcquisition(ICloudDiagnosticsRepository repository)
 		{
@@ -37,14 +37,11 @@ namespace Lokad.Cloud.Diagnostics
 			_exceptionTracking.UpdateStatistics();
 			_partitionMonitor.UpdateStatistics();
 
-			if (DiagnosticsSources != null)
+			if (DiagnosticsSource != null)
 			{
-				foreach (var source in DiagnosticsSources)
-				{
-					source.GetIncrementalStatistics(
-						_executionProfiling.Update,
-						_exceptionTracking.Update);
-				}
+				DiagnosticsSource.GetIncrementalStatistics(
+					_executionProfiling.Update,
+					_exceptionTracking.Update);
 			}
 		}
 

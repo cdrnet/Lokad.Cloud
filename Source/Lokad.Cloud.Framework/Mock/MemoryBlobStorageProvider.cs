@@ -257,7 +257,7 @@ namespace Lokad.Cloud.Mock
 			{
 				if (!Containers.Keys.Contains(containerName))
 				{
-					throw new InvalidOperationException("ContainerName : " + containerName + " does not exist.");
+					return Enumerable.Empty<string>();
 				}
 
 				return Containers[containerName].BlobNames.Where(name => name.StartsWith(prefix));

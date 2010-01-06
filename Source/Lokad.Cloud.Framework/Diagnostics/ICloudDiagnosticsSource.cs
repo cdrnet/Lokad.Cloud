@@ -13,8 +13,8 @@ namespace Lokad.Cloud.Diagnostics
 	/// Extension interface for custom or external diagnostics providers.
 	/// </summary>
 	/// <remarks>
-	/// Any diagnostics source registered in IoC as member of
-	/// IEnumerable{ICloudDiagnosticsSource} will be queried by the diagnostics
+	/// If a diagnostics source is registered in IoC as member of
+	/// ICloudDiagnosticsSource, it will be queried by the diagnostics
 	/// infrastructure in regular intervals.
 	/// </remarks>
 	public interface ICloudDiagnosticsSource
