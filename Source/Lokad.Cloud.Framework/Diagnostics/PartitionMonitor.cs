@@ -5,7 +5,7 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.WindowsAzure.ServiceRuntime;
+using Lokad.Cloud.Azure;
 
 // TODO: Discard old data (based on .LastUpdate)
 
@@ -18,6 +18,7 @@ namespace Lokad.Cloud.Diagnostics
 	{
 		readonly ICloudDiagnosticsRepository _repository;
 		readonly string _partitionKey;
+		readonly string _instanceId;
 
 		/// <summary>
 		/// Creates an instance of the <see cref="PartitionMonitor"/> class.
@@ -25,7 +26,8 @@ namespace Lokad.Cloud.Diagnostics
 		public PartitionMonitor(ICloudDiagnosticsRepository repository)
 		{
 			_repository = repository;
-			_partitionKey = System.Net.Dns.GetHostName();
+			_partitionKey = CloudEnvironment.PartitionKey;
+			_instanceId = CloudEnvironment.PartitionInstanceId.GetValue("N/A");
 		}
 
 		public void UpdateStatistics()
@@ -33,15 +35,15 @@ namespace Lokad.Cloud.Diagnostics
 			var process = Process.GetCurrentProcess();
 			var timestamp = DateTimeOffset.Now;
 
-			UpdateStatistics(TimeSegments.Day(timestamp), _partitionKey, process);
-			UpdateStatistics(TimeSegments.Month(timestamp), _partitionKey, process);
+			UpdateStatistics(TimeSegments.Day(timestamp), process);
+			UpdateStatistics(TimeSegments.Month(timestamp), process);
 		}
 
-		void UpdateStatistics(string timeSegment, string partitionName, Process process)
+		void UpdateStatistics(string timeSegment, Process process)
 		{
 			_repository.UpdatePartitionStatistics(
 				timeSegment,
-				partitionName,
+				_partitionKey,
 				s =>
 					{
 						var now = DateTimeOffset.Now;
@@ -51,8 +53,8 @@ namespace Lokad.Cloud.Diagnostics
 							return new PartitionStatistics
 								{
 									// WORKER DETAILS
-									PartitionKey = partitionName,
-									InstanceId = RoleEnvironment.IsAvailable ? RoleEnvironment.CurrentRoleInstance.Id : "N/A",
+									PartitionKey = _partitionKey,
+									InstanceId = _instanceId,
 									OperatingSystem = Environment.OSVersion.ToString(),
 									Runtime = Environment.Version.ToString(),
 									ProcessorCount = Environment.ProcessorCount,
@@ -90,7 +92,7 @@ namespace Lokad.Cloud.Diagnostics
 						var stats = s.Value;
 
 						// WORKER DETAILS
-						stats.InstanceId = RoleEnvironment.IsAvailable ? RoleEnvironment.CurrentRoleInstance.Id : "N/A";
+						stats.InstanceId = _instanceId;
 						stats.OperatingSystem = Environment.OSVersion.ToString();
 						stats.Runtime = Environment.Version.ToString();
 						stats.ProcessorCount = Environment.ProcessorCount;

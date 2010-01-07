@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using Lokad.Cloud.Azure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
@@ -19,7 +20,7 @@ namespace Lokad.Cloud.Web
 	{
 		public IEnumerable<LokadCloudUserRoleInfo> GetAdministrators()
 		{
-			var admins = RoleEnvironment.IsAvailable
+			var admins = CloudEnvironment.IsAvailable
 				? RoleEnvironment.GetConfigurationSettingValue("Admins")
 				: ConfigurationManager.AppSettings["Admins"];
 

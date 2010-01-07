@@ -87,6 +87,7 @@
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Azure\BlobStorageProvider.cs" />
+    <Compile Include="Azure\CloudEnvironment.cs" />
     <Compile Include="Azure\CloudLogger.cs" />
     <Compile Include="ServiceFabric\Runtime\AssemblyLoader.cs" />
     <Compile Include="ServiceFabric\Runtime\NoRestartFloodPolicy.cs" />

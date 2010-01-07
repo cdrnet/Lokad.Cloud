@@ -11,7 +11,7 @@ namespace Lokad.Cloud
 	/// <summary>Entry point of Lokad.Cloud.</summary>
 	public class WorkerRole : RoleEntryPoint
 	{
-		WorkerServiceRuntime _serviceRuntime;
+		readonly WorkerServiceRuntime _serviceRuntime;
 
 		public WorkerRole()
 		{

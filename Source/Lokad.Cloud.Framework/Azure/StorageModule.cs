@@ -33,7 +33,7 @@ namespace Lokad.Cloud.Azure
 
 		protected override void Load(ContainerBuilder builder)
 		{
-			if (RoleEnvironment.IsAvailable)
+			if (CloudEnvironment.IsAvailable)
 			{
 				ApplyOverridesFromRuntime();
 			}

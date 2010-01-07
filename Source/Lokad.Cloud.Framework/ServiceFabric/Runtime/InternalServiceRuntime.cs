@@ -6,8 +6,8 @@
 using System.IO;
 using Autofac;
 using Autofac.Configuration;
+using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
-using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
@@ -134,21 +134,15 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// </summary>
 		static void ApplyConfiguration(byte[] config, IContainer container)
 		{
-			const string fileName = "lokad.cloud.clientapp.config";
-			string pathToFile;
-
-			// HACK: hard-code string for local storage name
-			if (RoleEnvironment.IsAvailable)
-			{
-				var localResource = RoleEnvironment.GetLocalResource("LokadCloudStorage");
-				pathToFile = Path.Combine(localResource.RootPath, fileName);
-			}
-			else
-			{
-				pathToFile = Path.Combine(Path.GetTempPath(), fileName);
-			}
-
 			// HACK: need to copy settings locally first
+			// HACK: hard-code string for local storage name
+			const string fileName = "lokad.cloud.clientapp.config";
+			const string resourceName = "LokadCloudStorage";
+
+			var pathToFile = Path.Combine(
+				CloudEnvironment.GetLocalStoragePath(resourceName),
+				fileName);
+
 			File.WriteAllBytes(pathToFile, config);
 			var configReader = new ConfigurationSettingsReader("autofac", pathToFile);
 
