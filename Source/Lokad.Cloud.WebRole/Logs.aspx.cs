@@ -8,9 +8,6 @@ using System.Collections.Generic;
 using System.Web.Caching;
 using Lokad.Cloud.Azure;
 
-// TODO: only most recent logs gets displayed for now.
-// It's not possible (yet) to browse all logs.
-
 namespace Lokad.Cloud.Web
 {
 	public partial class Logs : System.Web.UI.Page
@@ -75,16 +72,33 @@ namespace Lokad.Cloud.Web
 			LogsView.DataBind();
 		}
 
+		protected void OnLevelChanged(object sender, EventArgs e)
+		{
+			SetCurrentPageIndex(0);
+			LogsView.DataBind();
+		}
+
 		List<LogEntry> FetchLogs()
 		{
 			int currentIndex = GetCurrentPageIndex();
-			var logs = new List<LogEntry>(_logger.GetPagedLogs(currentIndex, MaxLogs));
+			var logs = new List<LogEntry>(_logger.GetPagedLogs(currentIndex, MaxLogs, GetSelectedLevelThreshold()));
 
 			var nextPageAvailable = logs.Count == MaxLogs;
 
 			NextPage.Enabled = nextPageAvailable;
 
 			return logs;
+		}
+
+		LogLevel GetSelectedLevelThreshold()
+		{
+			var selectedString = LevelSelector.SelectedValue;
+			if(String.IsNullOrEmpty(selectedString))
+			{
+				return LogLevel.Min;
+			}
+
+			return EnumUtil.Parse<LogLevel>(selectedString);
 		}
 
 		[Obsolete]

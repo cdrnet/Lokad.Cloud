@@ -25,6 +25,14 @@
 	<br />
 	
 	<asp:HiddenField ID="PageIndex" runat="server" Value="0" />
+	<asp:RadioButtonList ID="LevelSelector" runat="server" 
+        RepeatDirection="Horizontal" AutoPostBack="true" 
+        OnSelectedIndexChanged="OnLevelChanged">
+        <asp:ListItem>Debug</asp:ListItem>
+        <asp:ListItem>Info</asp:ListItem>
+        <asp:ListItem>Warn</asp:ListItem>
+        <asp:ListItem>Error</asp:ListItem>
+    </asp:RadioButtonList>
 	<asp:GridView ID="LogsView" runat="server" EmptyDataText="No logs yet." OnDataBinding="LogsView_DataBinding" />
 	<center>
 		<asp:LinkButton ID="PrevPage" runat="server" Text="&laquo; Prev" OnClick="PrevPage_Click" />

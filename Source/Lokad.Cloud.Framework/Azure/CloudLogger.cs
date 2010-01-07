@@ -161,17 +161,30 @@ namespace Lokad.Cloud.Azure
 		/// <returns>The logs (silently fails if the page is empty).</returns>
 		public IEnumerable<LogEntry> GetPagedLogs(int pageIndex, int pageSize)
 		{
+			return GetPagedLogs(pageIndex, pageSize, LogLevel.Min);
+		}
+
+		/// <summary>Lazily loads a page of logs.</summary>
+		/// <param name="pageIndex">The zero-based index of the page.</param>
+		/// <param name="pageSize">The size of the page.</param>
+		/// <param name="levelThreshold">Minimal log level (inclusive) for entries to be included.</param>
+		/// <returns>The logs (silently fails if the page is empty).</returns>
+		public IEnumerable<LogEntry> GetPagedLogs(int pageIndex, int pageSize, LogLevel levelThreshold)
+		{
 			Enforce.Argument(() => pageIndex, Rules.Is.AtLeast(0));
 			Enforce.Argument(() => pageSize, Rules.Is.AtLeast(2), Rules.Is.AtMost(100));
 
 			int skipItems = pageIndex * pageSize;
 
 			int count = 0;
-			foreach(var blobName in _provider.List(ContainerName, String.Empty))
+			foreach (var blobName in _provider.List(ContainerName, String.Empty))
 			{
-				if(count >= skipItems)
+				if (count >= skipItems)
 				{
-					if(count - skipItems >= pageSize) yield break;
+					if (count - skipItems >= pageSize)
+					{
+						yield break;
+					}
 
 					var content = _provider.GetBlob<string>(ContainerName, blobName);
 					if (!content.HasValue)
@@ -179,7 +192,13 @@ namespace Lokad.Cloud.Azure
 						continue;
 					}
 
-					yield return DecodeLogEntry(blobName, content.Value);
+					var entry = DecodeLogEntry(blobName, content.Value);
+					if(EnumUtil.Parse<LogLevel>(entry.Level) < levelThreshold)
+					{
+						continue;
+					}
+
+					yield return entry;
 				}
 				count++;
 			}
