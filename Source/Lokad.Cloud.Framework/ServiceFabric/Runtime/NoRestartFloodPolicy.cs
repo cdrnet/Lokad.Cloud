@@ -6,34 +6,47 @@
 using System;
 using System.Threading;
 
-namespace Lokad.Cloud.Azure
+namespace Lokad.Cloud.ServiceFabric.Runtime
 {
-	/// <summary>Helper class to deal with pathological situations where
-	/// a worker crashes at start-up time (typically because initialization
-	/// or assembly loading goes wrong). Instead of performing a high-frequency
-	/// restart (producing junk logs among other), when restart flood is detected
-	/// restarts are forcefully slowed down.</summary>
-	public class NoRestartFloodPolicy
+	/// <summary>
+	/// Helper class to deal with pathological situations where a worker crashes at
+	/// start-up time (typically because initialization or assembly loading goes
+	/// wrong). Instead of performing a high-frequency restart (producing junk logs
+	/// among other), when restart flood is detected restarts are forcefully slowed
+	/// down.
+	/// </summary>
+	internal class NoRestartFloodPolicy
 	{
-		/// <summary>Minimal duration between worker restart to be considered
-		/// as a regular situation (restart can happen from time to time).</summary>
+		/// <summary>
+		/// Minimal duration between worker restart to be considered as a regular
+		/// situation (restart can happen from time to time).
+		/// </summary>
 		static TimeSpan FloodFrequencyThreshold { get { return 1.Minutes(); } }
 
-		/// <summary>Delay to be applied before the next restart when a
-		/// flooding situation is detected.</summary>
+		/// <summary>
+		/// Delay to be applied before the next restart when a flooding situation is
+		/// detected.
+		/// </summary>
 		static TimeSpan DelayWhenFlooding { get { return 5.Minutes(); } }
 
 		Action<bool> _isRestartFlooding;
 
-		/// <summary>Initializes a new instance of the <see cref="NoRestartFloodPolicy"/> class.</summary>
-		/// <param name="isRestartFlooding">The parameter indicates whether the worker is healthy (<c>true</c>) or not (<c>false</c>).</param>
+		/// <summary>
+		/// Initializes a new instance of the <see cref="NoRestartFloodPolicy"/>class.
+		/// </summary>
+		/// <param name="isRestartFlooding">
+		/// The parameter indicates whether the worker is healthy (<c>true</c>) or not
+		/// (<c>false</c>).
+		/// </param>
 		public NoRestartFloodPolicy(Action<bool> isRestartFlooding)
 		{
 			_isRestartFlooding = isRestartFlooding;
 		}
 
-		/// <summary>Endlessly restart the provided action, but
-		/// avoiding restart flooding patterns.</summary>
+		/// <summary>
+		/// Endlessly restart the provided action, but avoiding restart flooding
+		/// patterns.
+		/// </summary>
 		public void Do(Func<bool> workButNotFloodRestart)
 		{
 			while(true)

@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using ICSharpCode.SharpZipLib.Zip;
-using Lokad.Cloud.Azure;
+using Lokad.Cloud.ServiceFabric.Runtime;
 
 namespace Lokad.Cloud.Management
 {

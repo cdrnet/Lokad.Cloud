@@ -16,6 +16,6 @@ the service runtime environment should therefore not reference or
 use anything in this namespace at all.
 
 TODO:
-* Further refactoring
+* Further refactoring (some of the classes will likely end up in ServiceFabric)
 * Unit Testing
 * API

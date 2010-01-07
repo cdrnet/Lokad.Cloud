@@ -28,9 +28,6 @@ namespace Lokad.Cloud.Azure.Test
 			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
 
-			// Services
-			builder.Register(typeof (ServiceBalancerCommand));
-
 			return builder.Build();
 		}
 

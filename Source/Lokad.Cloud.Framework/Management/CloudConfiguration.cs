@@ -5,7 +5,7 @@
 
 using System;
 using System.Text;
-using Lokad.Cloud.Azure;
+using Lokad.Cloud.ServiceFabric.Runtime;
 
 namespace Lokad.Cloud.Management
 {

@@ -86,13 +86,12 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Azure\AssemblyLoader.cs" />
     <Compile Include="Azure\BlobStorageProvider.cs" />
     <Compile Include="Azure\CloudLogger.cs" />
-    <Compile Include="Azure\NoRestartFloodPolicy.cs" />
+    <Compile Include="ServiceFabric\Runtime\AssemblyLoader.cs" />
+    <Compile Include="ServiceFabric\Runtime\NoRestartFloodPolicy.cs" />
     <Compile Include="Azure\PolicyHelper.cs" />
     <Compile Include="Azure\QueueStorageProvider.cs" />
-    <Compile Include="Azure\ServiceBalancerCommand.cs" />
     <Compile Include="Azure\StorageModule.cs" />
     <Compile Include="BaseTemporaryBlobName.cs" />
     <Compile Include="CloudInfrastructureProviders.cs" />
@@ -131,6 +130,10 @@
     <Compile Include="Mock\MemoryMonitor.cs" />
     <Compile Include="Mock\MockStorageModule.cs" />
     <Compile Include="RankAttribute.cs" />
+    <Compile Include="ServiceFabric\Runtime\IsolatedWorker.cs" />
+    <Compile Include="ServiceFabric\Runtime\Scheduler.cs" />
+    <Compile Include="ServiceFabric\Runtime\InternalServiceRuntime.cs" />
+    <Compile Include="ServiceFabric\Runtime\WorkerServiceRuntime.cs" />
     <Compile Include="Services\MonitoringService.cs" />
     <Compile Include="TypeMapperProvider.cs" />
     <Compile Include="BaseTypedBlobName.cs" />
@@ -161,6 +164,8 @@
     <Content Include="Azure\ReadMe.txt" />
     <Content Include="Diagnostics\ReadMe.txt" />
     <Content Include="Management\ReadMe.txt" />
+    <Content Include="ServiceFabric\ReadMe.txt" />
+    <Content Include="ServiceFabric\Runtime\ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

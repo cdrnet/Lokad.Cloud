@@ -7,7 +7,6 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud;
-using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
 
 namespace TestingSample
@@ -26,9 +25,6 @@ namespace TestingSample
 
 			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
-
-			// Services
-			builder.Register(typeof(ServiceBalancerCommand));
 
 			return builder.Build();
 		}

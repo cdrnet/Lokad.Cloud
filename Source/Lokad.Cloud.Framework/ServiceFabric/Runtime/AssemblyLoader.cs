@@ -15,11 +15,13 @@ using ICSharpCode.SharpZipLib.Zip;
 // would be loaded in a separate AppDomain in order to speed-up the deployement
 // of a new app.
 
-namespace Lokad.Cloud.Azure
+namespace Lokad.Cloud.ServiceFabric.Runtime
 {
-	/// <remarks>Since the assemblies are loaded in the current <c>AppDomain</c>, this
-	/// class should be a natural candidate for a singleton design pattern. Yet, keeping
-	/// it as a plain class facilitates the IoC instantiation.</remarks>
+	/// <remarks>
+	/// Since the assemblies are loaded in the current <c>AppDomain</c>, this class
+	/// should be a natural candidate for a singleton design pattern. Yet, keeping
+	/// it as a plain class facilitates the IoC instantiation.
+	/// </remarks>
 	public class AssemblyLoader
 	{
 		/// <summary>Name of the container used to store the assembly package.</summary>
@@ -104,20 +106,22 @@ namespace Lokad.Cloud.Azure
 			var now = DateTimeOffset.Now;
 
 			// limiting the frequency where the actual update check is performed.
-			if(now.Subtract(_lastPackageCheck) > UpdateCheckFrequency || !delayCheck)
+			if (delayCheck && now.Subtract(_lastPackageCheck) <= UpdateCheckFrequency)
 			{
-				var newPackageEtag = _provider.GetBlobEtag(ContainerName, PackageBlobName);
-				var newConfigurationEtag = _provider.GetBlobEtag(ContainerName, ConfigurationBlobName);
+				return;
+			}
 
-				if(!string.Equals(_lastPackageEtag, newPackageEtag))
-				{
-					throw new TriggerRestartException("Assemblies update has been detected.");
-				}
+			var newPackageEtag = _provider.GetBlobEtag(ContainerName, PackageBlobName);
+			var newConfigurationEtag = _provider.GetBlobEtag(ContainerName, ConfigurationBlobName);
 
-				if (!string.Equals(_lastConfigurationEtag, newConfigurationEtag))
-				{
-					throw new TriggerRestartException("Configuration update has been detected.");
-				}
+			if (!string.Equals(_lastPackageEtag, newPackageEtag))
+			{
+				throw new TriggerRestartException("Assemblies update has been detected.");
+			}
+
+			if (!string.Equals(_lastConfigurationEtag, newConfigurationEtag))
+			{
+				throw new TriggerRestartException("Configuration update has been detected.");
 			}
 		}
 	}
@@ -226,5 +230,4 @@ namespace Lokad.Cloud.Azure
 			_assemblyCache[args.LoadedAssembly.FullName] = args.LoadedAssembly;
 		}
 	}
-
 }
