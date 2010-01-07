@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 namespace Lokad.Cloud.Diagnostics
 {
 	/// <summary>
-	/// Cloud Partition & Worker Monitoring Statistics
+	/// Cloud Partition and Worker Monitoring Statistics
 	/// </summary>
 	/// <remarks>
 	/// Properties prefixed with Lifetime refer to the lifetime of the partition's

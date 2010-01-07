@@ -3,8 +3,12 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Autofac;
+using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
@@ -48,7 +52,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 		public void Execute()
 		{
-			var clientContainer = RuntimeContainer; //.CreateInnerContainer();
+			var clientContainer = RuntimeContainer;
 
 			var loader = new AssemblyLoader(_providers.BlobStorage);
 			loader.LoadPackage();
@@ -63,7 +67,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			// give the client a chance to register external diagnostics sources
 			clientContainer.InjectProperties(_diagnostics);
 
-			_scheduler = new Scheduler(() => CloudService.GetAllServices(clientContainer), RunService);
+			_scheduler = new Scheduler(() => LoadServices(clientContainer), RunService);
 			foreach (var action in _scheduler.Schedule())
 			{
 				if(_isStopRequested)
@@ -94,6 +98,28 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			{
 				_scheduler.AbortWaitingSchedule();
 			}
+		}
+
+		/// <summary>
+		/// Load and get all service instances using the provided IoC container
+		/// </summary>
+		IEnumerable<CloudService> LoadServices(IContainer container)
+		{
+			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
+				.Select(a => a.GetExportedTypes()).SelectMany(x => x)
+				.Where(t => t.IsSubclassOf(typeof (CloudService)) && !t.IsAbstract && !t.IsGenericType)
+				.ToList();
+
+			var builder = new ContainerBuilder();
+			foreach (var type in serviceTypes)
+			{
+				builder.Register(type)
+					.OnActivating(ActivatingHandler.InjectUnsetProperties)
+					.FactoryScoped();
+			}
+			builder.Build(container);
+
+			return serviceTypes.Select(type => (CloudService) container.Resolve(type));
 		}
 
 		/// <summary>

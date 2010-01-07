@@ -12,7 +12,7 @@ using Lokad.Cloud.Azure;
 namespace Lokad.Cloud.Diagnostics
 {
 	/// <summary>
-	/// Cloud Partition & Worker Monitoring Data Provider
+	/// Cloud Partition and Worker Monitoring Data Provider
 	/// </summary>
 	internal class PartitionMonitor
 	{

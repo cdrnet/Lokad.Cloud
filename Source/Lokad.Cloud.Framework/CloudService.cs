@@ -5,9 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Autofac;
 using Lokad.Quality;
 using Lokad.Threading;
 
@@ -210,35 +207,6 @@ namespace Lokad.Cloud
 		public void PutRangeWithDelay<T>(IEnumerable<T> messages, DateTimeOffset triggerTime, string queueName)
 		{
 			new DelayedQueue(BlobStorage).PutRangeWithDelay(messages, triggerTime, queueName);
-		}
-
-		/// <summary>Get all services instantiated through reflection.</summary>
-		public static IEnumerable<CloudService> GetAllServices(IContainer container)
-		{
-			// invoking all loaded services through reflexion
-			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
-				.Select(a => a.GetExportedTypes()).SelectMany(x => x)
-				.Where(t => t.IsSubclassOf(typeof(CloudService)) && !t.IsAbstract && !t.IsGenericType);
-
-			var services = new List<CloudService>();
-			foreach(var t in serviceTypes)
-			{
-				// assuming that a default constructor is available
-				// but throwing a meaningfull exception if not
-				try
-				{
-					services.Add((CloudService)t.GetConstructors().First().Invoke(new object[0]));
-				}
-				catch (TargetInvocationException ex)
-				{
-					throw new NotSupportedException(
-						string.Format("Missing default constructor for {0}.", t.Name), ex);
-				}
-			}
-
-			services.ForEach(s => container.InjectProperties(s));
-
-			return services;
 		}
 	}
 }
