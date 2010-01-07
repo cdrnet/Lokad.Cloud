@@ -17,15 +17,17 @@ namespace Lokad.Cloud.Services
 		   Description = "Collects and persists monitoring statistics.")] 
 	public class MonitoringService : ScheduledService
 	{
-		/// <remarks>IoC Injected</remarks>
-		public DiagnosticsAcquisition DiagnosticsAcquisition { get; set; }
+		readonly DiagnosticsAcquisition _diagnosticsAcquisition;
+
+		public MonitoringService(DiagnosticsAcquisition diagnosticsAcquisition)
+		{
+			_diagnosticsAcquisition = diagnosticsAcquisition;
+		}
 
 		/// <summary>Called by the framework.</summary>
 		protected override void StartOnSchedule()
 		{
-			DiagnosticsAcquisition.CollectStatistics();
+			_diagnosticsAcquisition.CollectStatistics();
 		}
-
-		
 	}
 }

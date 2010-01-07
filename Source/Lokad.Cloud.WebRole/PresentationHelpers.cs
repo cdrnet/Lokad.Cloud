@@ -4,7 +4,6 @@
 #endregion
 
 using System;
-using System.Text.RegularExpressions;
 
 namespace Lokad.Cloud.Web
 {
@@ -14,18 +13,20 @@ namespace Lokad.Cloud.Web
 	{
 		public static string PrettyFormat(this TimeSpan timeSpan)
 		{
-			double delta = timeSpan.TotalSeconds;
-
 			const int second = 1;
 			const int minute = 60 * second;
 			const int hour = 60 * minute;
 			const int day = 24 * hour;
 			const int month = 30 * day;
 
+			double delta = timeSpan.TotalSeconds;
+
+			if (delta < 1) return timeSpan.Milliseconds + " ms";
 			if (delta < 1 * minute) return timeSpan.Seconds == 1 ? "one second" : timeSpan.Seconds + " seconds";
 			if (delta < 2 * minute) return "a minute";
-			if (delta < 45 * minute) return timeSpan.Minutes + " minutes";
-			if (delta < 90 * minute) return "an hour";
+			if (delta < 50 * minute) return timeSpan.Minutes + " minutes";
+			if (delta < 70 * minute) return "an hour";
+			if (delta < 2 * hour) return (int)timeSpan.TotalMinutes + " minutes";
 			if (delta < 24 * hour) return timeSpan.Hours + " hours";
 			if (delta < 48 * hour) return (int)timeSpan.TotalHours + " hours";
 			if (delta < 30 * day) return timeSpan.Days + " days";

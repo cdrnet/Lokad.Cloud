@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Lokad.Diagnostics;
 using Lokad.Threading;
 using Microsoft.WindowsAzure.StorageClient;
 
@@ -20,10 +21,25 @@ namespace Lokad.Cloud.Azure
 		readonly CloudBlobClient _blobStorage;
 		readonly IBinaryFormatter _formatter;
 
+		readonly ExecutionCounter _countPutBlob;
+		readonly ExecutionCounter _countGetBlob;
+		readonly ExecutionCounter _countGetBlobIfModified;
+		readonly ExecutionCounter _countUpdateIfNotModified;
+		readonly ExecutionCounter _countDeleteBlob;
+
 		public BlobStorageProvider(CloudBlobClient blobStorage, IBinaryFormatter formatter)
 		{
 			_blobStorage = blobStorage;
 			_formatter = formatter;
+
+			ExecutionCounters.Default.RegisterRange(new[]
+				{
+					_countPutBlob = new ExecutionCounter("BlobStorageProvider.PutBlob", 0, 0),
+					_countGetBlob = new ExecutionCounter("BlobStorageProvider.GetBlob", 0, 0),
+					_countGetBlobIfModified = new ExecutionCounter("BlobStorageProvider.GetBlobIfModified", 0, 0),
+					_countUpdateIfNotModified = new ExecutionCounter("BlobStorageProvider.UpdateIfNotModified", 0, 0),
+					_countDeleteBlob = new ExecutionCounter("BlobStorageProvider.DeleteBlob", 0, 0),
+				});
 		}
 
 		public bool CreateContainer(string containerName)
@@ -109,6 +125,8 @@ namespace Lokad.Cloud.Azure
 
 		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag)
 		{
+			var timestamp = _countPutBlob.Open();
+
 			using(var stream = new MemoryStream())
 			{
 				_formatter.Serialize(stream, item);
@@ -130,8 +148,15 @@ namespace Lokad.Cloud.Azure
 				try
 				{
 					var result = doUpload();
-					etag = result.HasValue ? result.Value : null;
-					return result.HasValue;
+					if (!result.HasValue)
+					{
+						etag = null;
+						return false;
+					}
+
+					etag = result.Value;
+					_countPutBlob.Close(timestamp);
+					return true;
 				}
 				catch(StorageClientException ex)
 				{
@@ -149,8 +174,15 @@ namespace Lokad.Cloud.Azure
 
 						});
 
-						etag = tentativeEtag.HasValue ? tentativeEtag.Value : null;
-						return tentativeEtag.HasValue;
+						if (!tentativeEtag.HasValue)
+						{
+							etag = null;
+							return false;
+						}
+
+						etag = tentativeEtag.Value;
+						_countPutBlob.Close(timestamp);
+						return true;
 					}
 
 					if(ex.ErrorCode == StorageErrorCode.BlobAlreadyExists && !overwrite)
@@ -162,8 +194,15 @@ namespace Lokad.Cloud.Azure
 					}
 
 					var result = doUpload();
-					etag = result.HasValue ? result.Value : null;
-					return result.HasValue;
+					if (!result.HasValue)
+					{
+						etag = null;
+						return false;
+					}
+
+					etag = result.Value;
+					_countPutBlob.Close(timestamp);
+					return true;
 				}
 			}
 		}
@@ -182,6 +221,8 @@ namespace Lokad.Cloud.Azure
 
 		public Maybe<object> GetBlob(string containerName, string blobName, Type type, out string etag)
 		{
+			var timestamp = _countGetBlob.Open();
+
 			var container = _blobStorage.GetContainerReference(containerName);
 			var blob = container.GetBlockBlobReference(blobName);
 			 
@@ -209,9 +250,13 @@ namespace Lokad.Cloud.Azure
 				stream.Seek(0, SeekOrigin.Begin);
 				var deserialized = _formatter.Deserialize(stream, type);
 
-				return (deserialized == null)
-					? Maybe<object>.Empty
-					: Maybe.From(deserialized);
+				if (deserialized == null)
+				{
+					return Maybe<object>.Empty;
+				}
+
+				_countGetBlob.Close(timestamp);
+				return Maybe.From(deserialized);
 			}
 		}
 
@@ -241,8 +286,10 @@ namespace Lokad.Cloud.Azure
 			// 'oldEtag' is null, then behavior always match simple 'GetBlob'.
 			if(null == oldEtag)
 			{
-				GetBlob<T>(containerName, blobName, out newEtag);
+				return GetBlob<T>(containerName, blobName, out newEtag);
 			}
+
+			var timestamp = _countGetBlobIfModified.Open();
 
 			newEtag = null;
 
@@ -262,7 +309,9 @@ namespace Lokad.Cloud.Azure
 					newEtag = blob.Properties.ETag;
 
 					stream.Seek(0, SeekOrigin.Begin);
-					return (T)_formatter.Deserialize(stream, typeof(T));
+					var deserialized = (T)_formatter.Deserialize(stream, typeof(T));
+					_countGetBlobIfModified.Close(timestamp);
+					return deserialized;
 				}
 			}
 			catch (StorageClientException ex)
@@ -332,6 +381,8 @@ namespace Lokad.Cloud.Azure
 
 		public bool UpdateIfNotModified<T>(string containerName, string blobName, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
 		{
+			var timestamp = _countUpdateIfNotModified.Open();
+
 			var container = _blobStorage.GetContainerReference(containerName);
 			CloudBlockBlob blob = null;
 
@@ -383,18 +434,28 @@ namespace Lokad.Cloud.Azure
 			{
 				_formatter.Serialize(wstream, result.Value);
 				wstream.Seek(0, SeekOrigin.Begin);
-				return UploadBlobContent(blob, wstream, true, originalEtag).HasValue;
+				var success = UploadBlobContent(blob, wstream, true, originalEtag).HasValue;
+				if(success)
+				{
+					_countUpdateIfNotModified.Close(timestamp);
+				}
+				return success;
 			}
+
+			
 		}
 
 		public bool DeleteBlob(string containerName, string blobName)
 		{
+			var timestamp = _countDeleteBlob.Open();
+
 			var container = _blobStorage.GetContainerReference(containerName);
 
 			try
 			{
 				var blob = container.GetBlockBlobReference(blobName);
 				blob.Delete();
+				_countDeleteBlob.Close(timestamp);
 				return true;
 			}
 			catch (StorageClientException ex) // no such container, return false

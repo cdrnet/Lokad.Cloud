@@ -15,7 +15,7 @@ namespace Lokad.Cloud.Web
 {
 	public partial class Monitoring : System.Web.UI.Page
 	{
-		readonly TimeSpan _cacheRefreshPeriod = 5.Minutes();
+		readonly TimeSpan _cacheRefreshPeriod = 2.Minutes();
 		readonly CloudStatistics _cloudStatistics = GlobalSetup.Container.Resolve<CloudStatistics>();
 
 		protected void Page_Load(object sender, EventArgs e)
