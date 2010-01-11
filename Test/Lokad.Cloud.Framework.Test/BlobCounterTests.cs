@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using Lokad.Cloud.Azure.Test;
+using Lokad.Threading;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Test
@@ -48,59 +49,27 @@ namespace Lokad.Cloud.Test
 		[Test]
 		public void IncrementMultiThread()
 		{
-			//setting the provider
 			var provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 			provider.CreateContainer(ContainerName);
-			
-			//creating the threads
-			const int threadsCount = 20;
-			var threads = Enumerable.Range(0, threadsCount)
-									.Select(i => new Thread(Increment))
-									.ToArray();
-
-			var random = new Random();
-			var increments = Range.Array(threadsCount).Select(e => Range.Array(100).Select(i => random.Next(20) - 10).ToArray()).ToArray();
-			int sum = increments.Sum(e => e.Sum());
 
 			//creating thread parameters
-			var counter = new BlobCounter(provider, ContainerName, "SomeBlobName");
-			counter.Reset(0);
+			var count = new BlobCounter(provider, ContainerName, "SomeBlobName");
+			count.Reset(0);
 
-			Thread.Sleep(2000);
-
-			var threadParameters = Enumerable.Range(0, threadsCount).Select(i =>
-				new CounterParameters()
+			var random = new Random();
+			const int threadsCount = 8;
+			var increments = Range.Array(threadsCount).Select(e => Range.Array(10).Select(i => random.Next(20) - 10).ToArray()).ToArray();
+			var localSums = increments.SelectInParallel(e =>
 				{
-					BlobCounter = new BlobCounter(provider, ContainerName, "SomeBlobName"),
-					Increments = increments[i] 
-				}).ToArray();
+					var counter = new BlobCounter(provider, ContainerName, "SomeBlobName");
+					foreach (var increment in e)
+					{
+						counter.Increment(increment);
+					}
+					return e.Sum();
+				});
 
-			//Starting threads
-			Enumerable.Range(0, threadsCount).ForEach(i => threads[i].Start(threadParameters[i]));
-
-			Thread.Sleep(2000);
-
-			Assert.AreEqual(sum, counter.GetValue(), "values should be equal, BlobCounter supposed to be thread-safe");
-		}
-
-		static void Increment(object parameters)
-		{
-			if (parameters is CounterParameters)
-			{
-				var currentCounters = (CounterParameters)parameters;
-				
-				foreach (var increment in currentCounters.Increments)
-				{
-					currentCounters.BlobCounter.Increment(increment);
-				}				
-			}
-		}
-
-		class CounterParameters
-		{
-			public BlobCounter BlobCounter { get; set; }
-
-			public int[] Increments { get; set; }
+			Assert.AreEqual(localSums.Sum(), count.GetValue(), "values should be equal, BlobCounter supposed to be thread-safe");
 		}
 	}
 }
