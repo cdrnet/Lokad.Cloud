@@ -4,6 +4,8 @@
 #endregion
 
 using System;
+using System.Linq;
+using Lokad.Threading;
 using NUnit.Framework;
 
 // TODO: refactor tests so that containers do not have to be created each time.
@@ -95,8 +97,6 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.AreNotEqual(etag, newEtag, "#A00.");
 		}
 
-
-
 		[Test]
 		public void GetBlobIfNotModifiedNoChangeNoRetrieval()
 		{
@@ -127,8 +127,10 @@ namespace Lokad.Cloud.Azure.Test
 			}
 		}
 
+		/// <summary>This test does not check the behavior of 'UpdateIfNotModified'
+		/// in case of concurrency stress.</summary>
 		[Test]
-		public void UpdateIfNotModified()
+		public void UpdateIfNotModifiedNoStress()
 		{
 			Provider.PutBlob(ContainerName, BlobName, 1);
 			int ignored;
@@ -138,6 +140,29 @@ namespace Lokad.Cloud.Azure.Test
 
 			var val = Provider.GetBlob<int>(ContainerName, BlobName);
 			Assert.AreEqual(2, val.Value, "#A01");
+		}
+
+		/// <summary>Loose check of the behavior of 'UpdateIfNotModified'
+		/// under concurrency stress.</summary>
+		[Test]
+		public void UpdateIfNotModifiedWithStress()
+		{
+			Provider.PutBlob(ContainerName, BlobName, 0);
+
+			var array = new bool[8];
+
+			int ignored;
+
+			array = array.SelectInParallel(
+				k => Provider.UpdateIfNotModified(ContainerName,
+					BlobName, i => i.HasValue ? i.Value + 1 : 1, out ignored), array.Length);
+
+			Assert.IsTrue(array.Any(x => x), "#A00 write should have happened at least once.");
+			Assert.IsTrue(array.Any(x => !x), "#A01 conflict should have happened at least once.");
+
+			var count = Provider.GetBlob<int>(ContainerName, BlobName).Value;
+
+			Assert.AreEqual(count, array.Count(x => x), "#A02 number of writes should match counter value.");
 		}
 
 		// TODO: CreatePutGetRangeDelete is way to complex as a unit test
