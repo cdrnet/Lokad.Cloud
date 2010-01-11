@@ -43,19 +43,13 @@ namespace Lokad.Cloud
 		/// <param name="func"></param>
 		static void RetryUpdate(Func<bool> func)
 		{
-			// HACK: hard-coded constants, the whole counter system have to be perfected.
-			const int InitMaxSleepInMs = 50;
-			const int MaxSleepInMs = 2000;
-
-			var maxSleepInMs = InitMaxSleepInMs;
+			// HACK: hard-coded constant, the whole counter system have to be perfected.
+			const int MaxSleepInMs = 50;
 
 			while (!func())
 			{
-				var sleepTime = _rand.Next(maxSleepInMs).Milliseconds();
+				var sleepTime = _rand.Next(MaxSleepInMs).Milliseconds();
 				Thread.Sleep(sleepTime);
-
-				maxSleepInMs += 50;
-				maxSleepInMs = Math.Min(maxSleepInMs, MaxSleepInMs);
 			}
 		}
 

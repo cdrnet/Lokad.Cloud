@@ -50,7 +50,8 @@ namespace Lokad.Cloud
 			_blobName = blobName;
 		}
 
-		/// <summary>Returns the value of the counter.</summary>
+		/// <summary>Returns the value of the counter (or zero if there is no value to
+		/// be returned).</summary>
 		public decimal GetValue()
 		{
 			var value = _provider.GetBlob<decimal>(_containerName, _blobName);

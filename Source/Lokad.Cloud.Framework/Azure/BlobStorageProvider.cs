@@ -90,6 +90,7 @@ namespace Lokad.Cloud.Azure
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
+		// TODO: #84 the handling of the 'expectedEtag' is incorrect here
 		static Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite, string expectedEtag)
 		{
 			BlobRequestOptions options = null;
