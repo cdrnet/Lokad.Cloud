@@ -90,15 +90,25 @@ namespace Lokad.Cloud.Azure
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
-		// TODO: #84 the handling of the 'expectedEtag' is incorrect here
+		/// <param name="overwrite">If <c>false</c>, then no write happens if the blob already exists.</param>
+		/// <param name="expectedEtag">When specified, no writing occurs unless the blob etag
+		/// matches the one specified as argument.</param>
+		/// <returns></returns>
 		static Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite, string expectedEtag)
 		{
 			BlobRequestOptions options = null;
-			if(overwrite) options = new BlobRequestOptions { AccessCondition = AccessCondition.None };
-			else
+			
+			if(!overwrite) // no overwrite authorized, blob must NOT exists
 			{
-				if(string.IsNullOrEmpty(expectedEtag)) options = new BlobRequestOptions { AccessCondition = AccessCondition.IfNotModifiedSince(DateTime.MinValue) };
-				else options = new BlobRequestOptions { AccessCondition = AccessCondition.None };
+				options = new BlobRequestOptions { AccessCondition = AccessCondition.IfNotModifiedSince(DateTime.MinValue) };
+			}
+			else // overwrite is OK
+			{
+				options = string.IsNullOrEmpty(expectedEtag) ?
+					// case with no etag constraint
+					new BlobRequestOptions { AccessCondition = AccessCondition.None } :
+					// case with etag constraint
+					new BlobRequestOptions { AccessCondition = AccessCondition.IfMatch(expectedEtag) };
 			}
 
 			stream.Seek(0, SeekOrigin.Begin);
@@ -435,15 +445,19 @@ namespace Lokad.Cloud.Azure
 			{
 				_formatter.Serialize(wstream, result.Value);
 				wstream.Seek(0, SeekOrigin.Begin);
-				var success = UploadBlobContent(blob, wstream, true, originalEtag).HasValue;
+
+				var success = string.IsNullOrEmpty(originalEtag) ? 
+					// no etag, then we should not overwrite a blob created meantime
+					UploadBlobContent(blob, wstream, false, null).HasValue : 
+					// existing etag, then we should not overwrite a different etag
+					UploadBlobContent(blob, wstream, true, originalEtag).HasValue;
+
 				if(success)
 				{
 					_countUpdateIfNotModified.Close(timestamp);
 				}
 				return success;
 			}
-
-			
 		}
 
 		public bool DeleteBlob(string containerName, string blobName)
