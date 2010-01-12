@@ -36,9 +36,10 @@ namespace Lokad.Cloud.Web
 						Runtime = s.Runtime,
 						Cores = s.ProcessorCount,
 						Threads = s.ThreadCount,
-						Total = s.TotalProcessorTime.PrettyFormat(),
-						Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat(),
+						Processing = s.TotalProcessorTime.PrettyFormat(),
+						//Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat(),
 						Active = PrettyFormatActiveTime(s.ActiveTime, s.StartCount),
+						Usage = PrettyFormatUsage(s.TotalProcessorTime, s.ActiveTime),
 						Memory = PrettyFormatMemoryMB(s.MemoryPrivateSize),
 					})
 				.Take(50)
@@ -51,7 +52,7 @@ namespace Lokad.Cloud.Web
 				.Select<ServiceStatistics, object>(s => new
 					{
 						Service = s.Name,
-						Total = s.TotalProcessorTime.PrettyFormat(),
+						Processing = s.TotalProcessorTime.PrettyFormat(),
 						Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat()
 					})
 				.Take(50)
@@ -211,6 +212,17 @@ namespace Lokad.Cloud.Web
 				return String.Concat(time, " (", startCount.ToString(), " restarts)");
 			}
 			return time;
+		}
+
+		public static string PrettyFormatUsage(TimeSpan cpuTime, TimeSpan activeTime)
+		{
+			var activeSeconds = activeTime.TotalSeconds;
+			if(activeSeconds == 0d)
+			{
+				return "0%";
+			}
+
+			return Math.Round(cpuTime.TotalSeconds/activeSeconds*100d) + "%";
 		}
 	}
 }
