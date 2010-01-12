@@ -8,8 +8,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using Microsoft.WindowsAzure.StorageClient;
 using Lokad.Quality;
+using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Azure
 {
@@ -75,7 +75,7 @@ namespace Lokad.Cloud.Azure
 			return item;
 		}
 
-		public IEnumerable<T> Get<T>(string queueName, int count)
+		public IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout)
 		{
 			var queue = _queueStorage.GetQueueReference(queueName);
 
@@ -83,7 +83,7 @@ namespace Lokad.Cloud.Azure
 
 			try
 			{
-				rawMessages = queue.GetMessages(count);
+				rawMessages = queue.GetMessages(count, visibilityTimeout);
 			}
 			catch (StorageClientException ex)
 			{
@@ -97,9 +97,12 @@ namespace Lokad.Cloud.Azure
 			}
 
 			// skip empty queue
-			if (null == rawMessages) return new T[0];
+			if (null == rawMessages)
+			{
+				return new T[0];
+			}
 
-			var messages = new List<T>(rawMessages.Count());
+			var messages = new List<T>(count);
 			var wrappedMessages = new List<MessageWrapper>();
 
 			lock (_sync)
@@ -317,7 +320,10 @@ namespace Lokad.Cloud.Azure
 				{
 					// ignoring message if already deleted
 					InProcessMessage inProcMsg;
-					if (!_inProcessMessages.TryGetValue(message, out inProcMsg)) continue;
+					if (!_inProcessMessages.TryGetValue(message, out inProcMsg))
+					{
+						continue;
+					}
 
 					rawMessage = inProcMsg.RawMessages[0];
 					isOverflowing = inProcMsg.IsOverflowing;
@@ -342,7 +348,10 @@ namespace Lokad.Cloud.Azure
 					var inProcMsg = _inProcessMessages[message];
 					inProcMsg.RawMessages.RemoveAt(0);
 
-					if (0 == inProcMsg.RawMessages.Count) _inProcessMessages.Remove(message);
+					if (0 == inProcMsg.RawMessages.Count)
+					{
+						_inProcessMessages.Remove(message);
+					}
 				}
 			}
 

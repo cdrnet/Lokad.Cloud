@@ -22,6 +22,7 @@ namespace Lokad.Cloud
 	public abstract class QueueService<T> : CloudService
 	{
 		readonly int _batchSize;
+		readonly TimeSpan _visibilityTimeout;
 
 		// not read-only because 'Providers' is not available when 'QueueService' gets instanciated.
 		string _queueName;
@@ -47,13 +48,16 @@ namespace Lokad.Cloud
 				_queueName = TypeMapper.GetStorageName(typeof(T));
 				_batchSize = 1;
 			}
+
+			// 1.5 * execution timeout, but limited to 2h max
+			_visibilityTimeout = TimeSpan.FromSeconds(Math.Max(1, Math.Min(7200, (1.25*ExecutionTimeout.TotalSeconds))));
 		}
 
 		/// <summary>Do not try to override this method, use <see cref="StartRange"/>
 		/// instead.</summary>
 		protected sealed override bool StartImpl()
 		{
-			var messages = QueueStorage.Get<T>(_queueName, _batchSize);
+			var messages = QueueStorage.Get<T>(_queueName, _batchSize, _visibilityTimeout);
 
 			var count = messages.Count();
 			if (count > 0) StartRange(messages);
@@ -99,7 +103,7 @@ namespace Lokad.Cloud
 		/// before asking for more.</remarks>
 		public IEnumerable<T> GetMore(int count)
 		{
-			return QueueStorage.Get<T>(_queueName, count);
+			return QueueStorage.Get<T>(_queueName, count, _visibilityTimeout);
 		}
 
 		/// <summary>Get more message from an arbitrary queue.</summary>
@@ -108,7 +112,7 @@ namespace Lokad.Cloud
 		/// <returns>Retrieved message (enumeration might be empty).</returns>
 		public IEnumerable<T> GetMore(int count, string queueName)
 		{
-			return QueueStorage.Get<T>(queueName, count);
+			return QueueStorage.Get<T>(queueName, count, _visibilityTimeout);
 		}
 
 		/// <summary>Delete message retrieved either through <see cref="StartRange"/>

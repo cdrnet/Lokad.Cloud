@@ -197,5 +197,15 @@ namespace Lokad.Cloud
 		{
 			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
 		}
+
+		/// <summary>Gets messages from a queue with a visibility timeout of 2 hours.</summary>
+		/// <typeparam name="T">Type of the messages.</typeparam>
+		/// <param name="queueName">Identifier of the queue to be pulled.</param>
+		/// <param name="count">Maximal number of messages to be retrieved.</param>
+		/// <returns>Enumeration of messages, possibly empty.</returns>
+		public static IEnumerable<T> Get<T>(this IQueueStorageProvider provider, string queueName, int count)
+		{
+			return provider.Get<T>(queueName, count, new TimeSpan(2, 0, 0));
+		}
 	}
 }

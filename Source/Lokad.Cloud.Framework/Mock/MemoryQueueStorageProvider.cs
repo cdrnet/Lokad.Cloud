@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace Lokad.Cloud.Mock
 			return _queueStorage.Keys.Where(e => e.StartsWith(prefix));
 		}
 
-		public IEnumerable<T> Get<T>(string queueName, int count)
+		public IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout)
 		{
 			lock (_sync)
 			{

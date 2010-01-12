@@ -64,11 +64,12 @@ namespace Lokad.Cloud
 		/// <remarks>The timeout provided by Windows Azure for message consumption
 		/// on queue is set at 2h. Yet, in order to avoid race condition between
 		/// message silent re-inclusion in queue and message deletion, the timeout here
-		/// is shortened at 1h58.</remarks>
-		static TimeSpan ExecutionTimeout { get { return new TimeSpan(1, 58, 0); } }
+		/// is default at 1h58.</remarks>
+		protected readonly TimeSpan ExecutionTimeout;
 
 		/// <summary>Indicates the state of the service, as retrieved during the last check.</summary>
-		CloudServiceState _state = CloudServiceState.Started;
+		CloudServiceState _state;
+		readonly CloudServiceState _defaultState;
 
 		/// <summary>Indicates the last time the service has checked its execution status.</summary>
 		DateTimeOffset _lastStateCheck = DateTimeOffset.MinValue;
@@ -99,6 +100,27 @@ namespace Lokad.Cloud
 		/// <summary>Error logger.</summary>
 		public ILog Log { get { return Providers.Log; } }
 
+		protected CloudService()
+		{
+			// default setting
+			_defaultState = CloudServiceState.Started;
+			_state = _defaultState;
+			ExecutionTimeout = new TimeSpan(1, 58, 0);
+
+			var settings = GetType().GetAttribute<CloudServiceSettingsAttribute>(true);
+			if (null == settings)
+			{
+				return;
+			}
+
+			_defaultState = settings.AutoStart ? CloudServiceState.Started : CloudServiceState.Stopped;
+			_state = _defaultState;
+			if(settings.ProcessingTimeoutSeconds > 0)
+			{
+				ExecutionTimeout = TimeSpan.FromSeconds(settings.ProcessingTimeoutSeconds);
+			}
+		}
+
 		/// <summary>Wrapper method for the <see cref="StartImpl"/> method. Checks
 		/// that the service status before executing the inner start.</summary>
 		/// <returns>See <seealso cref="StartImpl"/> for the semantic of the return value.</returns>
@@ -118,12 +140,7 @@ namespace Lokad.Cloud
 				// no state can be retrieved, update blob storage
 				if(!state.HasValue)
 				{
-					var settings = GetType().GetAttribute<CloudServiceSettingsAttribute>(true);
-
-					state = null != settings
-						? (settings.AutoStart ? CloudServiceState.Started : CloudServiceState.Stopped)
-						: CloudServiceState.Started;
-
+					state = _defaultState;
 					BlobStorage.PutBlob(stateBlobName, state.Value);
 				}
 

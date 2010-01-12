@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 
 namespace Lokad.Cloud
@@ -24,8 +25,12 @@ namespace Lokad.Cloud
 		/// <typeparam name="T">Type of the messages.</typeparam>
 		/// <param name="queueName">Identifier of the queue to be pulled.</param>
 		/// <param name="count">Maximal number of messages to be retrieved.</param>
+		/// <param name="visibilityTimeout">
+		/// The visibility timeout, indicating when the not yet deleted message should
+		/// become visible in the queue again.
+		/// </param>
 		/// <returns>Enumeration of messages, possibly empty.</returns>
-		IEnumerable<T> Get<T>(string queueName, int count);
+		IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout);
 
 		/// <summary>Put a message on a queue.</summary>
 		void Put<T>(string queueName, T message);

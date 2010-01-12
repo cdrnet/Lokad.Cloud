@@ -23,7 +23,8 @@ namespace Lokad.Cloud
 		public string Description { get; set; }
 
 		/// <summary>Execution time-out for the <c>StartImpl</c> methods of 
-		/// <see cref="CloudService"/> inheritors.</summary>
-		public TimeSpan ProcessingTimeout { get; set; }
+		/// <see cref="CloudService"/> inheritors. When processing messages it is
+		/// recommended to keep the timeout below 2 hours, or 7200 seconds.</summary>
+		public int ProcessingTimeoutSeconds { get; set; }
 	}
 }
