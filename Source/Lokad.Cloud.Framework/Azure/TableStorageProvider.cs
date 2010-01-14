@@ -76,17 +76,7 @@ namespace Lokad.Cloud.Azure
 				foreach(var fatEntity in query.Execute())
 				{
 					// TODO: need to be handling continuous tokens here
-
-					var stream = new MemoryStream(fatEntity.GetData()) {Position = 0};
-					var val = (T)_formatter.Deserialize(stream, typeof (T));
-
-					yield return new CloudEntity<T>
-						{
-							PartitionKey = fatEntity.PartitionKey,
-							RowRey = fatEntity.RowKey,
-							Timestamp = fatEntity.Timestamp,
-							Value = val
-						};
+					yield return FatEntity.Convert<T>(fatEntity, _formatter);
 				}
 			}
 		}

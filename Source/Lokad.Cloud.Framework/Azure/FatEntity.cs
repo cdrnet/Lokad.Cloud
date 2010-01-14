@@ -4,6 +4,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.WindowsAzure.StorageClient;
 
@@ -110,6 +111,39 @@ namespace Lokad.Cloud.Azure
 					setters[i](null); // discarding potential leftover
 				}
 			}
+		}
+
+		/// <summary>Converts a <c>FatEntity</c> toward a <c>CloudEntity</c>.</summary>
+		public static CloudEntity<T> Convert<T>(FatEntity fatEntity, IBinaryFormatter formatter)
+		{
+			var stream = new MemoryStream(fatEntity.GetData()) { Position = 0 };
+			var val = (T)formatter.Deserialize(stream, typeof(T));
+
+			return new CloudEntity<T>
+			{
+				PartitionKey = fatEntity.PartitionKey,
+				RowRey = fatEntity.RowKey,
+				Timestamp = fatEntity.Timestamp,
+				Value = val
+			};
+		}
+
+		/// <summary>Converts a <c>CloudEntity</c> toward a <c>FatEntity</c>.</summary>
+		public static FatEntity Convert<T>(CloudEntity<T> cloudEntity, IBinaryFormatter formatter)
+		{
+			var stream = new MemoryStream();
+			formatter.Serialize(stream, cloudEntity.Value);
+
+			var fatEntity = new FatEntity
+				{
+					PartitionKey = cloudEntity.PartitionKey,
+					RowKey = cloudEntity.RowRey,
+					Timestamp = cloudEntity.Timestamp
+				};
+
+			fatEntity.SetData(stream.ToArray());
+
+			return fatEntity;
 		}
 	}
 }
