@@ -18,9 +18,9 @@ using Module=Autofac.Builder.Module;
 
 namespace Lokad.Cloud.Azure
 {
-	/// <summary>IoC module that auto-load <see cref="StorageAccountInfo"/>, 
-	/// <see cref="BlobStorage"/> and <see cref="QueueStorage"/> from the 
-	/// properties.</summary>
+	/// <summary>IoC module that auto-load storage credential along with 
+	/// <see cref="BlobStorageProvider"/>, <see cref="QueueStorageProvider"/> and
+	/// <see cref="TableStorageProvider"/> from the IoC settings.</summary>
 	[NoCodeCoverage]
 	public sealed class StorageModule : Module
 	{
@@ -67,6 +67,13 @@ namespace Lokad.Cloud.Azure
 						return storage;
 					});
 
+					builder.Register(c =>
+					{
+						var storage = account.CreateCloudTableClient();
+						storage.RetryPolicy = BuildDefaultRetry();
+						return storage;
+					});
+
 					// registering the Lokad.Cloud providers
 					builder.Register(c =>
 						{
@@ -92,6 +99,17 @@ namespace Lokad.Cloud.Azure
 								c.Resolve<IBlobStorageProvider>(),
 								formatter);
 						});
+
+					builder.Register(c =>
+					{
+						IBinaryFormatter formatter;
+						if (!c.TryResolve(out formatter))
+						{
+							formatter = new CloudFormatter();
+						}
+
+						return (ITableStorageProvider)new TableStorageProvider(c.Resolve<CloudTableClient>(), formatter);
+					});
 				}
 			}
 		}

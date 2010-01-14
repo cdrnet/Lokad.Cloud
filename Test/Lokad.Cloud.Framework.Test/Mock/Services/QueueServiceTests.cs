@@ -5,12 +5,8 @@
 
 using System;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-
 using Lokad.Cloud.Mock;
 using NUnit.Framework;
-using Lokad.Cloud.Azure;
-using Lokad.Cloud.Azure.Test;
 
 namespace Lokad.Cloud.Test.Mock.Services
 {
@@ -20,9 +16,12 @@ namespace Lokad.Cloud.Test.Mock.Services
 		[Test]
 		public void SquareServiceTest()
 		{
+			// TODO: missing MemoryTableStorageProvider
+
 			var providersForCloudStorage = new CloudInfrastructureProviders(
 				new MemoryBlobStorageProvider(),
 				new MemoryQueueStorageProvider(new CloudFormatter()),
+				null,
 				new MemoryLogger());
 			
 			var service = new SquareQueueService { Providers = providersForCloudStorage };

@@ -1,10 +1,7 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
-
-using Lokad.Cloud.Diagnostics;
-using Lokad.Cloud.Azure;
 
 namespace Lokad.Cloud
 {
@@ -22,6 +19,9 @@ namespace Lokad.Cloud
 		/// <summary>Abstracts the Queue Storage.</summary>
 		public IQueueStorageProvider QueueStorage { get; private set; }
 
+		/// <summary>Abstracts the Table Storage.</summary>
+		public ITableStorageProvider TableStorage { get; private set; }
+
 		/// <summary>Error Logger</summary>
 		public ILog Log { get; private set; }
 
@@ -29,10 +29,12 @@ namespace Lokad.Cloud
 		public CloudInfrastructureProviders(
 			IBlobStorageProvider blobStorage, 
 			IQueueStorageProvider queueStorage,
+			ITableStorageProvider tableStorage,
 			ILog log)
 		{
 			BlobStorage = blobStorage;
 			QueueStorage = queueStorage;
+			TableStorage = tableStorage;
 			Log = log;
 		}
 	}
