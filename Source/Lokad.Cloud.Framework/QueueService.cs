@@ -21,11 +21,9 @@ namespace Lokad.Cloud
 	/// </remarks>
 	public abstract class QueueService<T> : CloudService
 	{
+		readonly string _queueName;
 		readonly int _batchSize;
 		readonly TimeSpan _visibilityTimeout;
-
-		// not read-only because 'Providers' is not available when 'QueueService' gets instanciated.
-		string _queueName;
 
 		/// <summary>Name of the queue associated to the service.</summary>
 		public override string Name
@@ -49,7 +47,7 @@ namespace Lokad.Cloud
 				_batchSize = 1;
 			}
 
-			// 1.5 * execution timeout, but limited to 2h max
+			// 1.25 * execution timeout, but limited to 2h max
 			_visibilityTimeout = TimeSpan.FromSeconds(Math.Max(1, Math.Min(7200, (1.25*ExecutionTimeout.TotalSeconds))));
 		}
 

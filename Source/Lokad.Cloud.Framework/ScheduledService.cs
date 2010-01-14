@@ -105,7 +105,7 @@ namespace Lokad.Cloud
 
 		/// <summary>
 		/// Prepares this service's default state based on its settings attribute.
-		/// If case no attribute is found then Maybe.Empty is returned.
+		/// In case no attribute is found then Maybe.Empty is returned.
 		/// </summary>
 		private Maybe<ScheduledServiceState> GetDefaultState()
 		{

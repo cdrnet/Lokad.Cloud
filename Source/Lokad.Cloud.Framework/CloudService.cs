@@ -100,6 +100,9 @@ namespace Lokad.Cloud
 		/// <summary>Error logger.</summary>
 		public ILog Log { get { return Providers.Log; } }
 
+		/// <summary>
+		/// Default constructor
+		/// </summary>
 		protected CloudService()
 		{
 			// default setting
@@ -107,6 +110,7 @@ namespace Lokad.Cloud
 			_state = _defaultState;
 			ExecutionTimeout = new TimeSpan(1, 58, 0);
 
+			// overwrite settings with config in the attribute - if available
 			var settings = GetType().GetAttribute<CloudServiceSettingsAttribute>(true);
 			if (null == settings)
 			{

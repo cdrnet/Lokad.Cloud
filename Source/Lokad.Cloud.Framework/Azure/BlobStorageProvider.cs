@@ -20,6 +20,7 @@ namespace Lokad.Cloud.Azure
 	{
 		readonly CloudBlobClient _blobStorage;
 		readonly IBinaryFormatter _formatter;
+		readonly ActionPolicy _azureServerPolicy;
 
 		readonly ExecutionCounter _countPutBlob;
 		readonly ExecutionCounter _countGetBlob;
@@ -31,6 +32,7 @@ namespace Lokad.Cloud.Azure
 		{
 			_blobStorage = blobStorage;
 			_formatter = formatter;
+			_azureServerPolicy = AzurePolicies.TransientServerErrorBackOff;
 
 			ExecutionCounters.Default.RegisterRange(new[]
 				{
@@ -47,13 +49,17 @@ namespace Lokad.Cloud.Azure
 			var container = _blobStorage.GetContainerReference(containerName);
 			try
 			{
-				container.Create();
+				_azureServerPolicy.Do(container.Create);
 				return true;
 			}
 			catch(StorageClientException ex)
 			{
 				if(ex.ErrorCode == StorageErrorCode.ContainerAlreadyExists
-					|| ex.ErrorCode == StorageErrorCode.ResourceAlreadyExists) return false;
+					|| ex.ErrorCode == StorageErrorCode.ResourceAlreadyExists)
+				{
+					return false;
+				}
+
 				throw;
 			}
 		}
@@ -63,13 +69,17 @@ namespace Lokad.Cloud.Azure
 			var container = _blobStorage.GetContainerReference(containerName);
 			try
 			{
-				container.Delete();
+				_azureServerPolicy.Do(container.Delete);
 				return true;
 			}
 			catch(StorageClientException ex)
 			{
 				if(ex.ErrorCode == StorageErrorCode.ContainerNotFound
-					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound) return false;
+					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
+				{
+					return false;
+				}
+
 				throw;
 			}
 		}
@@ -90,50 +100,6 @@ namespace Lokad.Cloud.Azure
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
-		/// <param name="overwrite">If <c>false</c>, then no write happens if the blob already exists.</param>
-		/// <param name="expectedEtag">When specified, no writing occurs unless the blob etag
-		/// matches the one specified as argument.</param>
-		/// <returns></returns>
-		static Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite, string expectedEtag)
-		{
-			BlobRequestOptions options = null;
-			
-			if(!overwrite) // no overwrite authorized, blob must NOT exists
-			{
-				options = new BlobRequestOptions { AccessCondition = AccessCondition.IfNotModifiedSince(DateTime.MinValue) };
-			}
-			else // overwrite is OK
-			{
-				options = string.IsNullOrEmpty(expectedEtag) ?
-					// case with no etag constraint
-					new BlobRequestOptions { AccessCondition = AccessCondition.None } :
-					// case with etag constraint
-					new BlobRequestOptions { AccessCondition = AccessCondition.IfMatch(expectedEtag) };
-			}
-
-			stream.Seek(0, SeekOrigin.Begin);
-			try
-			{
-				blob.UploadFromStream(stream, options);
-			}
-			catch(StorageClientException ex)
-			{
-				if(ex.ErrorCode == StorageErrorCode.ConditionFailed)
-				{
-					return Maybe<string>.Empty;
-				}
-
-				throw;
-			}
-
-			return Maybe.From(blob.Properties.ETag);
-		}
-
-		static Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite)
-		{
-			return UploadBlobContent(blob, stream, overwrite, null);
-		}
-
 		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag)
 		{
 			var timestamp = _countPutBlob.Open();
@@ -141,8 +107,6 @@ namespace Lokad.Cloud.Azure
 			using(var stream = new MemoryStream())
 			{
 				_formatter.Serialize(stream, item);
-
-				etag = null;
 
 				var container = _blobStorage.GetContainerReference(containerName);
 
@@ -176,13 +140,12 @@ namespace Lokad.Cloud.Azure
 					{
 						// caution: the container might have been freshly deleted
 						// (multiple retries are needed in such a situation)
-						Maybe<string> tentativeEtag = Maybe<string>.Empty;
-						PolicyHelper.SlowInstantiation.Do(() =>
+						var tentativeEtag = Maybe<string>.Empty;
+						AzurePolicies.SlowInstantiation.Do(() =>
 						{
-							container.CreateIfNotExist();
+							_azureServerPolicy.Get<bool>(container.CreateIfNotExist);
 
 							tentativeEtag = doUpload();
-
 						});
 
 						if (!tentativeEtag.HasValue)
@@ -200,7 +163,8 @@ namespace Lokad.Cloud.Azure
 					{
 						// See http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/fff78a35-3242-4186-8aee-90d27fbfbfd4
 						// and http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/86b9f184-c329-4c30-928f-2991f31e904b/
-
+						
+						etag = null;
 						return false;
 					}
 
@@ -216,6 +180,53 @@ namespace Lokad.Cloud.Azure
 					return true;
 				}
 			}
+		}
+
+		Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite)
+		{
+			return UploadBlobContent(blob, stream, overwrite, null);
+		}
+
+		/// <param name="overwrite">If <c>false</c>, then no write happens if the blob already exists.</param>
+		/// <param name="expectedEtag">When specified, no writing occurs unless the blob etag
+		/// matches the one specified as argument.</param>
+		/// <returns></returns>
+		Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite, string expectedEtag)
+		{
+			BlobRequestOptions options;
+
+			if (!overwrite) // no overwrite authorized, blob must NOT exists
+			{
+				options = new BlobRequestOptions { AccessCondition = AccessCondition.IfNotModifiedSince(DateTime.MinValue) };
+			}
+			else // overwrite is OK
+			{
+				options = string.IsNullOrEmpty(expectedEtag) ?
+					// case with no etag constraint
+					new BlobRequestOptions { AccessCondition = AccessCondition.None } :
+					// case with etag constraint
+					new BlobRequestOptions { AccessCondition = AccessCondition.IfMatch(expectedEtag) };
+			}
+
+			try
+			{
+				_azureServerPolicy.Do(() =>
+					{
+						stream.Seek(0, SeekOrigin.Begin);
+						blob.UploadFromStream(stream, options);
+					});
+			}
+			catch (StorageClientException ex)
+			{
+				if (ex.ErrorCode == StorageErrorCode.ConditionFailed)
+				{
+					return Maybe<string>.Empty;
+				}
+
+				throw;
+			}
+
+			return Maybe.From(blob.Properties.ETag);
 		}
 
 		public Maybe<T> GetBlob<T>(string containerName, string blobName)
@@ -241,10 +252,14 @@ namespace Lokad.Cloud.Azure
 			{
 				etag = null;
 
-				// no such container, return default
+				// if no such container, return empty
 				try
 				{
-					blob.DownloadToStream(stream);
+					_azureServerPolicy.Do(() =>
+						{
+							stream.Seek(0, SeekOrigin.Begin);
+							blob.DownloadToStream(stream);
+						});
 					etag = blob.Properties.ETag;
 				}
 				catch(StorageClientException ex)
@@ -255,6 +270,7 @@ namespace Lokad.Cloud.Azure
 					{
 						return Maybe<object>.Empty;
 					}
+
 					throw;
 				}
 
@@ -316,7 +332,12 @@ namespace Lokad.Cloud.Azure
 
 				using (var stream = new MemoryStream())
 				{
-					blob.DownloadToStream(stream, options);
+					_azureServerPolicy.Do(() =>
+						{
+							stream.Seek(0, SeekOrigin.Begin);
+							blob.DownloadToStream(stream, options);
+						});
+
 					newEtag = blob.Properties.ETag;
 
 					stream.Seek(0, SeekOrigin.Begin);
@@ -339,7 +360,7 @@ namespace Lokad.Cloud.Azure
 				// call fails due to misc problems
 				if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
 					|| ex.ErrorCode == StorageErrorCode.BlobNotFound
-						|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
+					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
 					return Maybe<T>.Empty;
 				}
@@ -355,7 +376,7 @@ namespace Lokad.Cloud.Azure
 			try
 			{
 				var blob = container.GetBlockBlobReference(blobName);
-				blob.FetchAttributes();
+				_azureServerPolicy.Do(blob.FetchAttributes);
 				return blob.Properties.ETag;
 			}
 			catch (StorageClientException ex)
@@ -405,7 +426,12 @@ namespace Lokad.Cloud.Azure
 
 				using (var rstream = new MemoryStream())
 				{
-					blob.DownloadToStream(rstream);
+					_azureServerPolicy.Do(() =>
+						{
+							rstream.Seek(0, SeekOrigin.Begin);
+							blob.DownloadToStream(rstream);
+						});
+
 					originalEtag = blob.Properties.ETag;
 
 					rstream.Seek(0, SeekOrigin.Begin);
@@ -422,10 +448,11 @@ namespace Lokad.Cloud.Azure
 					|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
 				{
 					input = Maybe<T>.Empty;
-					container.CreateIfNotExist();
 
-					// HACK: if the container has just been deleted,
-					// creation could be delayed and would need a proper handling.
+					// caution: the container might have been freshly deleted
+					// (multiple retries are needed in such a situation)
+					AzurePolicies.SlowInstantiation.Do(() =>
+						_azureServerPolicy.Get<bool>(container.CreateIfNotExist));
 				}
 				else
 				{
@@ -469,7 +496,7 @@ namespace Lokad.Cloud.Azure
 			try
 			{
 				var blob = container.GetBlockBlobReference(blobName);
-				blob.Delete();
+				_azureServerPolicy.Do(blob.Delete);
 				_countDeleteBlob.Close(timestamp);
 				return true;
 			}
@@ -506,7 +533,7 @@ namespace Lokad.Cloud.Azure
 			{
 				try
 				{
-					if(!enumerator.MoveNext())
+					if(!_azureServerPolicy.Get<bool>(enumerator.MoveNext))
 					{
 						yield break;
 					}

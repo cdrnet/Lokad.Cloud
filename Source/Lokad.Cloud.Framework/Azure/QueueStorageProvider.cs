@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using Lokad.Quality;
 using Microsoft.WindowsAzure.StorageClient;
@@ -34,6 +33,7 @@ namespace Lokad.Cloud.Azure
 		readonly CloudQueueClient _queueStorage;
 		readonly IBlobStorageProvider _blobStorage;
 		readonly IBinaryFormatter _formatter;
+		readonly ActionPolicy _azureServerPolicy;
 
 		// messages currently being processed (boolean property indicates if the message is overflowing)
 		private readonly Dictionary<object, InProcessMessage> _inProcessMessages;
@@ -45,6 +45,7 @@ namespace Lokad.Cloud.Azure
 			_queueStorage = queueStorage;
 			_blobStorage = blobStorage;
 			_formatter = formatter;
+			_azureServerPolicy = AzurePolicies.TransientServerErrorBackOff;
 
 			_inProcessMessages = new Dictionary<object, InProcessMessage>(20);
 		}
@@ -83,7 +84,7 @@ namespace Lokad.Cloud.Azure
 
 			try
 			{
-				rawMessages = queue.GetMessages(count, visibilityTimeout);
+				rawMessages = _azureServerPolicy.Get(() => queue.GetMessages(count, visibilityTimeout));
 			}
 			catch (StorageClientException ex)
 			{
@@ -169,7 +170,7 @@ namespace Lokad.Cloud.Azure
 						_inProcessMessages.Remove(mw);
 					}
 
-					queue.DeleteMessage(rawMessage);
+					_azureServerPolicy.Do(() => queue.DeleteMessage(rawMessage));
 
 					// skipping the message if it can't be unwrapped
 					continue;
@@ -228,7 +229,7 @@ namespace Lokad.Cloud.Azure
 
 					try
 					{
-						queue.AddMessage(queueMessage);
+						_azureServerPolicy.Do(() => queue.AddMessage(queueMessage));
 					}
 					catch (StorageClientException ex)
 					{
@@ -237,7 +238,7 @@ namespace Lokad.Cloud.Azure
 						{
 							// It usually takes time before the queue gets available
 							// (the queue might also have been freshly deleted).
-							PolicyHelper.SlowInstantiation.Do(() =>
+							AzurePolicies.SlowInstantiation.Do(() =>
 								{
 									queue.Create();
 									queue.AddMessage(queueMessage);
@@ -287,7 +288,8 @@ namespace Lokad.Cloud.Azure
 			{
 				// caution: call 'DeleteOverflowingMessages' first (BASE).
 				DeleteOverflowingMessages(queueName);
-				_queueStorage.GetQueueReference(queueName).Clear();
+				var queue = _queueStorage.GetQueueReference(queueName);
+				_azureServerPolicy.Do(queue.Clear);
 			}
 			catch (StorageClientException ex)
 			{
@@ -340,7 +342,7 @@ namespace Lokad.Cloud.Azure
 					}
 				}
 
-				queue.DeleteMessage(rawMessage);
+				_azureServerPolicy.Do(() => queue.DeleteMessage(rawMessage));
 				deletionCount++;
 
 				lock (_sync)
@@ -366,7 +368,8 @@ namespace Lokad.Cloud.Azure
 			{
 				// Caution: call to 'DeleteOverflowingMessages' comes first (BASE).
 				DeleteOverflowingMessages(queueName);
-				_queueStorage.GetQueueReference(queueName).Delete();
+				var queue = _queueStorage.GetQueueReference(queueName);
+				_azureServerPolicy.Do(queue.Delete);
 				return true;
 			}
 			catch (StorageClientException ex)
@@ -380,7 +383,8 @@ namespace Lokad.Cloud.Azure
 		{
 			try
 			{
-				return _queueStorage.GetQueueReference(queueName).RetrieveApproximateMessageCount();
+				var queue = _queueStorage.GetQueueReference(queueName);
+				return _azureServerPolicy.Get<int>(queue.RetrieveApproximateMessageCount);
 			}
 			catch (StorageClientException ex)
 			{
