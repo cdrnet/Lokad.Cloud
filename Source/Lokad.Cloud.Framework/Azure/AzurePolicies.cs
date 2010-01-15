@@ -4,6 +4,8 @@
 #endregion
 
 using System;
+using System.Data.Services.Client;
+using System.Text.RegularExpressions;
 using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Azure
@@ -21,8 +23,12 @@ namespace Lokad.Cloud.Azure
 		/// </summary>
 		public static ActionPolicy TransientServerErrorBackOff { get; private set; }
 
+		/// <summary>Similar to <see cref="TransientServerErrorBackOff"/>, yet
+		/// the Table Storage comes with its own set or exceptions/.</summary>
+		public static ActionPolicy TransientTableErrorBackOff { get; private set; }
+
 		/// <summary>
-		/// Very patient retry policy to deal with container or queue instantiation
+		/// Very patient retry policy to deal with container, queue or table instantiation
 		/// that happens just after a deletion.
 		/// </summary>
 		public static ActionPolicy SlowInstantiation { get; private set; }
@@ -33,6 +39,9 @@ namespace Lokad.Cloud.Azure
 		static AzurePolicies()
 		{
 			TransientServerErrorBackOff = ActionPolicy.With(TransientServerErrorExceptionFilter)
+				.Retry(30, OnTransientServerErrorRetry);
+
+			TransientTableErrorBackOff = ActionPolicy.With(TransientTableErrorExceptionFilter)
 				.Retry(30, OnTransientServerErrorRetry);
 
 			SlowInstantiation = ActionPolicy.With(SlowInstantiationExceptionFilter)
@@ -78,6 +87,30 @@ namespace Lokad.Cloud.Azure
 			return false;
 		}
 
+		static bool TransientTableErrorExceptionFilter(Exception exception)
+		{
+			var serverException = exception as DataServiceRequestException;
+			if (serverException == null)
+			{
+				// we only handle server exceptions
+				return false;
+			}
+
+			var errorCode = GetErrorCode(serverException);
+
+			if (errorCode == StorageErrorCodeStrings.InternalError
+				|| errorCode == StorageErrorCodeStrings.ServerBusy
+				|| errorCode == TableErrorCodeStrings.TableServerOutOfMemory)
+				// OperationTimedOut is ignored on purpose (to be more precisely handled in the provider)
+				// Indeed, time-out is aggressively set at 30s for the Table Storage
+				// hence, if a request fails, we should rather reduce the number for transferred entities
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 		static bool SlowInstantiationExceptionFilter(Exception exception)
 		{
 			var clientException = exception as StorageClientException;
@@ -93,12 +126,23 @@ namespace Lokad.Cloud.Azure
 			// those 'client' exceptions reflects server-side problem (delayed instantiation)
 			if (errorCode == StorageErrorCode.ResourceNotFound
 				|| errorCode == StorageErrorCode.ContainerNotFound
-				|| errorString == QueueErrorCodeStrings.QueueNotFound)
+				|| errorString == QueueErrorCodeStrings.QueueNotFound
+				|| errorString == StorageErrorCodeStrings.InternalError
+				|| errorString == StorageErrorCodeStrings.ServerBusy
+				|| errorString == TableErrorCodeStrings.TableServerOutOfMemory
+				|| errorString == TableErrorCodeStrings.TableBeingDeleted)
 			{
 				return true;
 			}
 
 			return false;
+		}
+
+		public static string GetErrorCode(DataServiceRequestException ex)
+		{
+			var r = new Regex(@"<code>(\w+)</code>", RegexOptions.IgnoreCase);
+			var match = r.Match(ex.InnerException.Message);
+			return match.Groups[1].Value;
 		}
 	}
 }

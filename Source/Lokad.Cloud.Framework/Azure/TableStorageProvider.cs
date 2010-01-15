@@ -9,9 +9,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.WindowsAzure.StorageClient;
 
-// TODO: #86 we need to better handle <code>OperationTimedOut</code> errors (may happen with heavy transaction).
-// TODO: #87 missing retry policy implementation in this provider.
-
 namespace Lokad.Cloud.Azure
 {
 	public class TableStorageProvider : ITableStorageProvider
@@ -24,21 +21,31 @@ namespace Lokad.Cloud.Azure
 
 		readonly CloudTableClient _tableStorage;
 		readonly IBinaryFormatter _formatter;
+		readonly ActionPolicy _storagePolicy;
 
 		public TableStorageProvider(CloudTableClient tableStorage, IBinaryFormatter formatter)
 		{
 			_tableStorage = tableStorage;
 			_formatter = formatter;
+			_storagePolicy = AzurePolicies.TransientTableErrorBackOff;
 		}
 
 		public bool CreateTable(string tableName)
 		{
-			return _tableStorage.CreateTableIfNotExist(tableName);
+			var flag = false;
+			AzurePolicies.SlowInstantiation.Do(() => 
+				flag =  _tableStorage.CreateTableIfNotExist(tableName));
+
+			return flag;
 		}
 
 		public bool DeleteTable(string tableName)
 		{
-			return _tableStorage.DeleteTableIfExist(tableName);
+			var flag = false;
+			AzurePolicies.SlowInstantiation.Do(() => 
+				flag = _tableStorage.DeleteTableIfExist(tableName));
+
+			return flag;
 		}
 
 		public IEnumerable<string> GetTables()
@@ -64,8 +71,16 @@ namespace Lokad.Cloud.Azure
 					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey);
 				}
 
-				var response = query.Execute() as QueryOperationResponse;
-				foreach (FatEntity fatEntity in response)
+				QueryOperationResponse response = null;
+				FatEntity[] fatEntities = null;
+
+				_storagePolicy.Do(() =>
+					{
+						response = query.Execute() as QueryOperationResponse;
+						fatEntities = ((IEnumerable<FatEntity>) response).ToArray();
+					});
+
+				foreach (FatEntity fatEntity in fatEntities)
 				{
 					yield return FatEntity.Convert<T>(fatEntity, _formatter);
 				}
@@ -103,8 +118,16 @@ namespace Lokad.Cloud.Azure
 					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey);
 				}
 
-				var response = query.Execute() as QueryOperationResponse;
-				foreach (FatEntity fatEntity in response)
+				QueryOperationResponse response = null;
+				FatEntity[] fatEntities = null;
+
+				_storagePolicy.Do(() =>
+				{
+					response = query.Execute() as QueryOperationResponse;
+					fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+				});
+
+				foreach (var fatEntity in fatEntities)
 				{
 					yield return FatEntity.Convert<T>(fatEntity, _formatter);
 				}
@@ -161,8 +184,16 @@ namespace Lokad.Cloud.Azure
 						query = query.AddQueryOption(NextRowKeyToken, continuationRowKey);
 					}
 
-					var response = query.Execute() as QueryOperationResponse;
-					foreach (FatEntity fatEntity in response)
+					QueryOperationResponse response = null;
+					FatEntity[] fatEntities = null;
+
+					_storagePolicy.Do(() =>
+					{
+						response = query.Execute() as QueryOperationResponse;
+						fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+					});
+
+					foreach (FatEntity fatEntity in fatEntities)
 					{
 						yield return FatEntity.Convert<T>(fatEntity, _formatter);
 					}
@@ -194,8 +225,28 @@ namespace Lokad.Cloud.Azure
 					context.AddObject(tableName, fatEntity);
 				}
 
-				// TODO: bug, should be replaced by 'SaveChangesWithRetries' once code is validated
-				context.SaveChanges(SaveChangesOptions.Batch);
+				_storagePolicy.Do(() =>
+					{
+						try
+						{
+							context.SaveChanges(SaveChangesOptions.Batch);
+						}
+						catch (DataServiceRequestException ex)
+						{
+							var errorCode = AzurePolicies.GetErrorCode(ex);
+
+							if (errorCode == StorageErrorCodeStrings.OperationTimedOut)
+							{
+								// if batch does not work, then split into elementary requests
+								// PERF: it would be better to split the request in two and retry
+								context.SaveChanges();
+							}
+							else
+							{
+								throw;
+							}
+						}
+					});
 			}
 		}
 
@@ -214,8 +265,28 @@ namespace Lokad.Cloud.Azure
 					context.UpdateObject(fatEntity);
 				}
 
-				// TODO: bug, should be replaced by 'SaveChangesWithRetries' once code is validated
-				context.SaveChanges(SaveChangesOptions.Batch);
+				_storagePolicy.Do(() =>
+				{
+					try
+					{
+						context.SaveChanges(SaveChangesOptions.Batch);
+					}
+					catch (DataServiceRequestException ex)
+					{
+						var errorCode = AzurePolicies.GetErrorCode(ex);
+						
+						if (errorCode == StorageErrorCodeStrings.OperationTimedOut)
+						{
+							// if batch does not work, then split into elementary requests
+							// PERF: it would be better to split the request in two and retry
+							context.SaveChanges();
+						}
+						else
+						{
+							throw;
+						}
+					}
+				});
 			}
 		}
 
@@ -267,9 +338,11 @@ namespace Lokad.Cloud.Azure
 					context.DeleteObject(mock);
 				}
 
-				// TODO: bug, should be replaced by 'SaveChangesWithRetries' once code is validated
-				context.SaveChanges(SaveChangesOptions.Batch);
-			}
+				_storagePolicy.Do(() => 
+					context.SaveChanges(SaveChangesOptions.Batch));
+			}	
 		}
+
+		
 	}
 }

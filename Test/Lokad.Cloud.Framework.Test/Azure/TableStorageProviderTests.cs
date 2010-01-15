@@ -4,8 +4,10 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Data.Services.Client;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Azure.Test
@@ -31,6 +33,20 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
+		public void CreateDeleteTables()
+		{
+			var name = "n" + Guid.NewGuid().ToString("N");
+			Assert.IsTrue(Provider.CreateTable(name));
+			Assert.IsTrue(Provider.DeleteTable(name));
+
+			// replicating the test a 2nd time, to check for slow table deletion
+			Assert.IsTrue(Provider.CreateTable(name));
+			Assert.IsTrue(Provider.DeleteTable(name));
+
+			Assert.IsFalse(Provider.DeleteTable(name));
+		}
+
+		[Test]
 		public void GetTables()
 		{
 			var tables = Provider.GetTables();
@@ -49,7 +65,7 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.AreEqual(entityCount, retrievedCount);
 		}
 
-		//[Test]
+		[Test]
 		public void CheckInsertHandlingOfHeavyTransaction()
 		{
 			var entityCount = 50;
@@ -60,6 +76,27 @@ namespace Lokad.Cloud.Azure.Test
 			var retrievedCount = Provider.Get<string>(TableName, partitionKey).Count();
 
 			Assert.AreEqual(entityCount, retrievedCount);
+		}
+
+		[Test]
+		public void ErrorCodeExtraction()
+		{
+			// HACK: just reproducing the code being tested, no direct linking
+			var r = new Regex(@"<code>(\w+)</code>", RegexOptions.IgnoreCase);
+
+			var errorMessage =
+@"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
+<error xmlns=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"">
+  <code>OperationTimedOut</code>
+  <message xml:lang=""en-US"">Operation could not be completed within the specified time.
+RequestId:f8e1e934-99ca-4a6f-bca7-e8e5fbd059ea
+Time:2010-01-15T12:37:25.1611631Z</message>
+</error>";
+
+			var ex = new DataServiceRequestException("", new Exception(errorMessage));
+
+			Assert.AreEqual("OperationTimedOut", AzurePolicies.GetErrorCode(ex));
+
 		}
 
 		IEnumerable<CloudEntity<String>> Entities(int count, string partitionKey, int entitySize)
