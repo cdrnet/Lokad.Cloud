@@ -49,7 +49,7 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.AreEqual(entityCount, retrievedCount);
 		}
 
-		[Test]
+		//[Test]
 		public void CheckInsertHandlingOfHeavyTransaction()
 		{
 			var entityCount = 50;
