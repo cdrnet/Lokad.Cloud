@@ -57,8 +57,8 @@ namespace Lokad.Cloud.Test
 			count.Reset(0);
 
 			var random = new Random();
-			const int threadsCount = 8;
-			var increments = Range.Array(threadsCount).Select(e => Range.Array(10).Select(i => random.Next(20) - 10).ToArray()).ToArray();
+			const int threadsCount = 4;
+			var increments = Range.Array(threadsCount).Convert(e => Range.Array(5).Convert(i => random.Next(20) - 10));
 			var localSums = increments.SelectInParallel(e =>
 				{
 					var counter = new BlobCounter(provider, ContainerName, "SomeBlobName");
@@ -67,7 +67,7 @@ namespace Lokad.Cloud.Test
 						counter.Increment(increment);
 					}
 					return e.Sum();
-				});
+				}, threadsCount);
 
 			Assert.AreEqual(localSums.Sum(), count.GetValue(), "values should be equal, BlobCounter supposed to be thread-safe");
 		}
