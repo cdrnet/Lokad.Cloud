@@ -89,7 +89,8 @@ namespace Lokad.Cloud.Azure
 			catch (StorageClientException ex)
 			{
 				// if the queue does not exist return an empty collection.
-				if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+				if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
+					|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
 				{
 					return new T[0];
 				}
@@ -170,8 +171,21 @@ namespace Lokad.Cloud.Azure
 						_inProcessMessages.Remove(mw);
 					}
 
-					_azureServerPolicy.Do(() => queue.DeleteMessage(rawMessage));
+					try
+					{
+						_azureServerPolicy.Do(() => queue.DeleteMessage(rawMessage));
+					}
+					catch (StorageClientException ex)
+					{
+						if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
+							|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+						{
+							continue;
+						}
 
+						throw;
+					}
+					
 					// skipping the message if it can't be unwrapped
 					continue;
 				}
@@ -234,7 +248,8 @@ namespace Lokad.Cloud.Azure
 					catch (StorageClientException ex)
 					{
 						// HACK: not storage status error code yet
-						if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+						if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
+							|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
 						{
 							// It usually takes time before the queue gets available
 							// (the queue might also have been freshly deleted).
@@ -294,7 +309,8 @@ namespace Lokad.Cloud.Azure
 			catch (StorageClientException ex)
 			{
 				// if the queue does not exist do nothing
-				if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+				if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
+					|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
 				{
 					return;
 				}
@@ -342,8 +358,19 @@ namespace Lokad.Cloud.Azure
 					}
 				}
 
-				_azureServerPolicy.Do(() => queue.DeleteMessage(rawMessage));
-				deletionCount++;
+				try
+				{
+					_azureServerPolicy.Do(() => queue.DeleteMessage(rawMessage));
+					deletionCount++;
+				}
+				catch (StorageClientException ex)
+				{
+					if (ex.ErrorCode != StorageErrorCode.ResourceNotFound
+						&& ex.ExtendedErrorInformation.ErrorCode != QueueErrorCodeStrings.QueueNotFound)
+					{
+						throw;
+					}
+				}
 
 				lock (_sync)
 				{
@@ -360,8 +387,15 @@ namespace Lokad.Cloud.Azure
 			return deletionCount;
 		}
 
-		/// <remarks>This implementation takes care of deleting overflowing blobs 
-		/// as well.</remarks>
+
+		/// <summary>
+		/// Deletes a queue.
+		/// </summary>
+		/// <returns><c>true</c> if the queue name has been actually deleted.</returns>
+		/// <remarks>
+		/// This implementation takes care of deleting overflowing blobs as
+		/// well.
+		/// </remarks>
 		public bool DeleteQueue(string queueName)
 		{
 			try
@@ -374,11 +408,19 @@ namespace Lokad.Cloud.Azure
 			}
 			catch (StorageClientException ex)
 			{
-				if (ex.ErrorCode == StorageErrorCode.ResourceNotFound) return false;
+				if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
+					|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+				{
+					return false;
+				}
+
 				throw;
 			}
 		}
 
+		/// <summary>
+		/// Gets the approximate number of items in this queue.
+		/// </summary>
 		public int GetApproximateCount(string queueName)
 		{
 			try
@@ -389,7 +431,8 @@ namespace Lokad.Cloud.Azure
 			catch (StorageClientException ex)
 			{
 				// if the queue does not exist, return 0 (no queue)
-				if (ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+				if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
+					|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
 				{
 					return 0;
 				}

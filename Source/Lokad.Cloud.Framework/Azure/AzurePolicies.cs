@@ -11,7 +11,7 @@ namespace Lokad.Cloud.Azure
 	/// <summary>
 	/// Azure retry policies for corner-situation and server errors.
 	/// </summary>
-	public static class AzurePolicies
+	internal static class AzurePolicies
 	{
 		/// <summary>
 		/// Retry policy to temporarily back off in case of transient Azure server
@@ -91,7 +91,8 @@ namespace Lokad.Cloud.Azure
 			var errorString = clientException.ExtendedErrorInformation.ErrorCode;
 
 			// those 'client' exceptions reflects server-side problem (delayed instantiation)
-			if (errorCode == StorageErrorCode.ContainerNotFound
+			if (errorCode == StorageErrorCode.ResourceNotFound
+				|| errorCode == StorageErrorCode.ContainerNotFound
 				|| errorString == QueueErrorCodeStrings.QueueNotFound)
 			{
 				return true;

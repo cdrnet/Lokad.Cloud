@@ -58,7 +58,7 @@ namespace Lokad.Cloud
 		int DeleteRange<T>(string queueName, IEnumerable<T> messages);
 
 		/// <summary>Deletes a queue.</summary>
-		/// <remarks><c>true</c> if the queue name has been actually deleted.</remarks>
+		/// <returns><c>true</c> if the queue name has been actually deleted.</returns>
 		bool DeleteQueue(string queueName);
 
 		/// <summary>Gets the approximate number of items in this queue.</summary>
