@@ -73,6 +73,7 @@
     <Compile Include="Azure\FatEntityTests.cs" />
     <Compile Include="Azure\GlobalSetup.cs" />
     <Compile Include="Azure\QueueStorageProviderTests.cs" />
+    <Compile Include="Azure\TableStorageProviderTests.cs" />
     <Compile Include="Azure\TypeMapperProviderTests.cs" />
     <Compile Include="BlobCounterTests.cs" />
     <Compile Include="BaseBlobNameTests.cs" />

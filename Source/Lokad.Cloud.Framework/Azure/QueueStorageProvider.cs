@@ -221,7 +221,7 @@ namespace Lokad.Cloud.Azure
 				{
 					_formatter.Serialize(stream, message);
 
-					// HACK: MaxMessageSize is not related to the number of bytes
+					// Caution: MaxMessageSize is not related to the number of bytes
 					// but the number of characters when Base64-encoded:
 
 					CloudQueueMessage queueMessage;

@@ -17,7 +17,13 @@ namespace Lokad.Cloud.Azure
 	/// to work-around the 64KB limitation for properties.</remarks>
 	public class FatEntity : TableServiceEntity
 	{
-		public const int MaxByteCapacity = 960*1024;
+		/// <summary>
+		/// Maximal entity size is 1MB. Out of that, we keep only
+		/// 960kb (1MB - 64kb as a safety margin). Then, it should be taken
+		/// into account that byte[] are Base64 encoded which represent
+		/// a penalty overhead of 4/3 - hence the reduced capacity.
+		/// </summary>
+		public const int MaxByteCapacity = (960*1024*3) / 4;
 
 		// ReSharper disable InconsistentNaming
 		// ReSharper disable MemberCanBePrivate.Global
@@ -111,6 +117,23 @@ namespace Lokad.Cloud.Azure
 					setters[i](null); // discarding potential leftover
 				}
 			}
+		}
+
+		/// <summary>Returns an upper bound approximation of the payload associated to
+		/// the entity once serialized as XML Atom (used for communication with the
+		/// Table Storage).</summary>
+		public int GetPayload()
+		{
+			// measurements indicates overhead is closer to 1300 chars, but we take a bit of margin
+			const int envelopOverhead = 1500;
+
+			// Caution: there is a loss when converting byte[] to Base64 representation
+			var binCharCount = (GetProperties().Sum(a => a.Length) * 4 + 3) / 3;
+			var partitionKeyCount = PartitionKey.Length;
+			var rowKeyCount = RowKey.Length;
+			// timestamp is already accounted for in the envelop overhead.
+
+			return binCharCount + partitionKeyCount + rowKeyCount + envelopOverhead;
 		}
 
 		/// <summary>Converts a <c>FatEntity</c> toward a <c>CloudEntity</c>.</summary>

@@ -9,6 +9,8 @@ namespace Lokad.Cloud
 {
 	/// <summary>Entity to be stored by the <see cref="ITableStorageProvider"/>.</summary>
 	/// <typeparam name="T">Type of the value carried by the entity.</typeparam>
+	/// <remarks>Once serialized the <c>CloudEntity.Value</c> should weight less
+	/// than 720KB to be compatible with Table Storage limitations on entities.</remarks>
 	public class CloudEntity<T>
 	{
 		/// <summary>Indexed system property.</summary>
