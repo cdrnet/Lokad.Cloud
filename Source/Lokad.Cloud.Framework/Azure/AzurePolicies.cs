@@ -113,32 +113,54 @@ namespace Lokad.Cloud.Azure
 
 		static bool SlowInstantiationExceptionFilter(Exception exception)
 		{
-			var clientException = exception as StorageClientException;
-			if(clientException == null)
+			var storageException = exception as StorageClientException;
+
+			// Blob Storage or Queue Storage exceptions
+			// Table Storage may throw exception of type 'StorageClientException'
+			if (null != storageException)
 			{
-				// we only handle client exceptions
-				return false;
+				var errorCode = storageException.ErrorCode;
+				var errorString = storageException.ExtendedErrorInformation.ErrorCode;
+
+				// those 'client' exceptions reflects server-side problem (delayed instantiation)
+				if (errorCode == StorageErrorCode.ResourceNotFound
+					|| errorCode == StorageErrorCode.ContainerNotFound
+						|| errorString == QueueErrorCodeStrings.QueueNotFound
+							|| errorString == StorageErrorCodeStrings.InternalError
+								|| errorString == StorageErrorCodeStrings.ServerBusy
+									|| errorString == TableErrorCodeStrings.TableServerOutOfMemory
+										|| errorString == TableErrorCodeStrings.TableBeingDeleted)
+				{
+					return true;
+				}
 			}
 
-			var errorCode = clientException.ErrorCode;
-			var errorString = clientException.ExtendedErrorInformation.ErrorCode;
+			var tableException = exception as DataServiceQueryException;
 
-			// those 'client' exceptions reflects server-side problem (delayed instantiation)
-			if (errorCode == StorageErrorCode.ResourceNotFound
-				|| errorCode == StorageErrorCode.ContainerNotFound
-				|| errorString == QueueErrorCodeStrings.QueueNotFound
-				|| errorString == StorageErrorCodeStrings.InternalError
-				|| errorString == StorageErrorCodeStrings.ServerBusy
-				|| errorString == TableErrorCodeStrings.TableServerOutOfMemory
-				|| errorString == TableErrorCodeStrings.TableBeingDeleted)
+			// Table Storage may also throw exception of type 'DataServiceQueryException'.
+			if (null != tableException)
 			{
-				return true;
+				var errorString = GetErrorCode(tableException);
+
+				if(errorString == TableErrorCodeStrings.TableBeingDeleted ||
+					errorString == TableErrorCodeStrings.TableServerOutOfMemory)
+				{
+					return true;
+				}
 			}
 
 			return false;
 		}
 
 		public static string GetErrorCode(DataServiceRequestException ex)
+		{
+			var r = new Regex(@"<code>(\w+)</code>", RegexOptions.IgnoreCase);
+			var match = r.Match(ex.InnerException.Message);
+			return match.Groups[1].Value;
+		}
+
+		// HACK: just dupplicating the other overload of 'GetErrorCode'
+		public static string GetErrorCode(DataServiceQueryException ex)
 		{
 			var r = new Regex(@"<code>(\w+)</code>", RegexOptions.IgnoreCase);
 			var match = r.Match(ex.InnerException.Message);

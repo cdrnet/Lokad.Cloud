@@ -80,7 +80,7 @@ namespace Lokad.Cloud.Azure
 						fatEntities = ((IEnumerable<FatEntity>) response).ToArray();
 					});
 
-				foreach (FatEntity fatEntity in fatEntities)
+				foreach (var fatEntity in fatEntities)
 				{
 					yield return FatEntity.Convert<T>(fatEntity, _formatter);
 				}
@@ -246,6 +246,23 @@ namespace Lokad.Cloud.Azure
 								throw;
 							}
 						}
+						catch (DataServiceQueryException ex)
+						{
+							// HACK: code dupplicated
+
+							var errorCode = AzurePolicies.GetErrorCode(ex);
+
+							if (errorCode == StorageErrorCodeStrings.OperationTimedOut)
+							{
+								// if batch does not work, then split into elementary requests
+								// PERF: it would be better to split the request in two and retry
+								context.SaveChanges();
+							}
+							else
+							{
+								throw;
+							}
+						}
 					});
 			}
 		}
@@ -275,6 +292,23 @@ namespace Lokad.Cloud.Azure
 					{
 						var errorCode = AzurePolicies.GetErrorCode(ex);
 						
+						if (errorCode == StorageErrorCodeStrings.OperationTimedOut)
+						{
+							// if batch does not work, then split into elementary requests
+							// PERF: it would be better to split the request in two and retry
+							context.SaveChanges();
+						}
+						else
+						{
+							throw;
+						}
+					}
+					catch (DataServiceQueryException ex)
+					{
+						// HACK: code dupplicated
+
+						var errorCode = AzurePolicies.GetErrorCode(ex);
+
 						if (errorCode == StorageErrorCodeStrings.OperationTimedOut)
 						{
 							// if batch does not work, then split into elementary requests
