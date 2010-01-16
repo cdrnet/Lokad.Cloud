@@ -18,7 +18,9 @@ namespace Lokad.Cloud.Azure
 		const int MaxEntityTransactionCount = 100;
 		const int MaxEntityTransactionPayload = 4*1024*1024; // 4 MB
 		const string ContinuationNextRowKeyToken = "x-ms-continuation-NextRowKey";
+		const string ContinuationNextPartitionKeyToken = "x-ms-continuation-NextPartitionKey";
 		const string NextRowKeyToken = "NextRowKey";
+		const string NextPartitionKeyToken = "NextPartitionKey";
 
 		readonly CloudTableClient _tableStorage;
 		readonly IBinaryFormatter _formatter;
@@ -62,6 +64,7 @@ namespace Lokad.Cloud.Azure
 			context.MergeOption = MergeOption.NoTracking;
 
 			string continuationRowKey = null;
+			string continuationPartitionKey = null;
 
 			do
 			{
@@ -69,7 +72,8 @@ namespace Lokad.Cloud.Azure
 
 				if (null != continuationRowKey)
 				{
-					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey);
+					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
+								 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
 				}
 
 				QueryOperationResponse response = null;
@@ -89,10 +93,12 @@ namespace Lokad.Cloud.Azure
 				if (response.Headers.ContainsKey(ContinuationNextRowKeyToken))
 				{
 					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
+					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
 				}
 				else
 				{
 					continuationRowKey = null;
+					continuationPartitionKey = null;
 				}
 
 			} while (null != continuationRowKey);
@@ -108,6 +114,7 @@ namespace Lokad.Cloud.Azure
 			context.MergeOption = MergeOption.NoTracking;
 
 			string continuationRowKey = null;
+			string continuationPartitionKey = null;
 
 			do
 			{
@@ -116,7 +123,8 @@ namespace Lokad.Cloud.Azure
 
 				if (null != continuationRowKey)
 				{
-					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey);
+					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
+								 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
 				}
 
 				QueryOperationResponse response = null;
@@ -136,10 +144,12 @@ namespace Lokad.Cloud.Azure
 				if (response.Headers.ContainsKey(ContinuationNextRowKeyToken))
 				{
 					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
+					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
 				}
 				else
 				{
 					continuationRowKey = null;
+					continuationPartitionKey = null;
 				}
 
 			} while (null != continuationRowKey);
@@ -174,6 +184,7 @@ namespace Lokad.Cloud.Azure
 				builder.Append(")");
 
 				string continuationRowKey = null;
+				string continuationPartitionKey = null;
 
 				do
 				{
@@ -182,7 +193,8 @@ namespace Lokad.Cloud.Azure
 
 					if(null != continuationRowKey)
 					{
-						query = query.AddQueryOption(NextRowKeyToken, continuationRowKey);
+						query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
+									 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
 					}
 
 					QueryOperationResponse response = null;
@@ -194,7 +206,7 @@ namespace Lokad.Cloud.Azure
 						fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
 					});
 
-					foreach (FatEntity fatEntity in fatEntities)
+					foreach (var fatEntity in fatEntities)
 					{
 						yield return FatEntity.Convert<T>(fatEntity, _formatter);
 					}
@@ -202,10 +214,12 @@ namespace Lokad.Cloud.Azure
 					if (response.Headers.ContainsKey(ContinuationNextRowKeyToken))
 					{
 						continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
+						continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
 					}
 					else
 					{
 						continuationRowKey = null;
+						continuationPartitionKey = null;
 					}
 
 				} while (null != continuationRowKey);
