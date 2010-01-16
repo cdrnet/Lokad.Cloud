@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
@@ -218,6 +219,8 @@ namespace Lokad.Cloud.Azure
 
 			var fatEntities = entities.Select(e => FatEntity.Convert(e, _formatter));
 
+			var noBatchMode = false;
+
 			foreach (var slice in SliceEntities(fatEntities))
 			{
 				foreach (var fatEntity in slice)
@@ -229,7 +232,7 @@ namespace Lokad.Cloud.Azure
 					{
 						try
 						{
-							context.SaveChanges(SaveChangesOptions.Batch);
+							context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
 						}
 						catch (DataServiceRequestException ex)
 						{
@@ -240,6 +243,7 @@ namespace Lokad.Cloud.Azure
 								// if batch does not work, then split into elementary requests
 								// PERF: it would be better to split the request in two and retry
 								context.SaveChanges();
+								noBatchMode = true;
 							}
 							else
 							{
@@ -257,6 +261,7 @@ namespace Lokad.Cloud.Azure
 								// if batch does not work, then split into elementary requests
 								// PERF: it would be better to split the request in two and retry
 								context.SaveChanges();
+								noBatchMode = true;
 							}
 							else
 							{
@@ -273,6 +278,8 @@ namespace Lokad.Cloud.Azure
 
 			var fatEntities = entities.Select(e => FatEntity.Convert(e, _formatter));
 
+			var noBatchMode = false;
+
 			foreach (var slice in SliceEntities(fatEntities))
 			{
 				foreach (var fatEntity in slice)
@@ -286,7 +293,7 @@ namespace Lokad.Cloud.Azure
 				{
 					try
 					{
-						context.SaveChanges(SaveChangesOptions.Batch);
+						context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
 					}
 					catch (DataServiceRequestException ex)
 					{
@@ -297,6 +304,7 @@ namespace Lokad.Cloud.Azure
 							// if batch does not work, then split into elementary requests
 							// PERF: it would be better to split the request in two and retry
 							context.SaveChanges();
+							noBatchMode = true;
 						}
 						else
 						{
@@ -314,6 +322,7 @@ namespace Lokad.Cloud.Azure
 							// if batch does not work, then split into elementary requests
 							// PERF: it would be better to split the request in two and retry
 							context.SaveChanges();
+							noBatchMode = true;
 						}
 						else
 						{
@@ -340,6 +349,7 @@ namespace Lokad.Cloud.Azure
 				{
 					yield return accumulator.ToArray();
 					accumulator.Clear();
+					payload = 0;
 				}
 
 				accumulator.Add(entity);
