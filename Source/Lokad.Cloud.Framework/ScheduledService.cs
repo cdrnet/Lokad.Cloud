@@ -12,11 +12,18 @@ namespace Lokad.Cloud
 	[Serializable, DataContract]
 	public class ScheduledServiceState
 	{
+		/// <summary>Indicates the frequency this service must be called.</summary>
 		[DataMember]
 		public TimeSpan TriggerInterval { get; set; }
 
+		/// <summary>Date of the last execution.</summary>
 		[DataMember]
 		public DateTimeOffset LastExecuted { get; set; }
+
+		/// <summary>Indicates whether this service is currently running
+		/// (apply only to globally scoped services, not per worker ones).</summary>
+		[DataMember(IsRequired = false, EmitDefaultValue = true)]
+		public bool IsBusy { get; set; }
 
 		[DataMember(IsRequired = false, EmitDefaultValue = true)]
 		public bool SchedulePerWorker { get; set; }
@@ -56,6 +63,29 @@ namespace Lokad.Cloud
 		protected sealed override bool StartImpl()
 		{
 			var stateName = new ScheduledServiceStateName(Name);
+			var defaultState = GetDefaultState();
+			ScheduledServiceState state = null;
+
+			// per-worker scheduling does not need any write request to be made toward the storage
+			// storage settings should not over the per-worker aspect of a worker (this setting must
+			// be hard-coded)
+			if(defaultState.HasValue && defaultState.Value.SchedulePerWorker)
+			{
+				var blobState = BlobStorage.GetBlob(stateName);
+				var now = DateTimeOffset.Now;
+
+				// if no state can be found in the storage, then use default state instead
+				state = blobState.HasValue ? blobState.Value : defaultState.Value;
+
+				if(now.Subtract(_lastExecutedOnThisWorker) < state.TriggerInterval)
+				{
+					_lastExecutedOnThisWorker = now;
+					StartOnSchedule();
+					return true;
+				}
+
+				return false;
+			}
 
 			// checking if the last update is not too recent, and eventually
 			// update this value if it's old enough. When the update fails,
@@ -78,19 +108,22 @@ namespace Lokad.Cloud
 
 							_lastExecutedOnThisWorker = now;
 							newState.Value.LastExecuted = now;
+							newState.Value.IsBusy = true;
 							return Result.CreateSuccess(newState.Value);
 						}
 
-						var state = currentState.Value;
+						// state is a local variable
+						state = currentState.Value;
 
-						if (state.SchedulePerWorker && now.Subtract(_lastExecutedOnThisWorker) < state.TriggerInterval
-							|| !state.SchedulePerWorker && now.Subtract(currentState.Value.LastExecuted) < state.TriggerInterval)
+						if (now.Subtract(currentState.Value.LastExecuted) < state.TriggerInterval
+								|| state.IsBusy)
 						{
 							return Result<ScheduledServiceState>.CreateError("No need to update.");
 						}
 
-						_lastExecutedOnThisWorker = now;
 						state.LastExecuted = now;
+						state.IsBusy = true;
+
 						return Result.CreateSuccess(state);
 					});
 
@@ -98,9 +131,17 @@ namespace Lokad.Cloud
 			{
 				return false;
 			}
-			
-			StartOnSchedule();
-			return true;
+
+			try
+			{
+				StartOnSchedule();
+				return true;
+			}
+			finally
+			{
+				state.IsBusy = false;
+				BlobStorage.PutBlob(stateName, state, true);
+			}
 		}
 
 		/// <summary>
