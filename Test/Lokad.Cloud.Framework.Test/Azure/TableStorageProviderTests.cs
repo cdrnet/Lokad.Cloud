@@ -66,6 +66,24 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
+		public void CheckRangeSelection()
+		{
+			var entityCount = 300; // above the max entity count limit
+			var partitionKey = Guid.NewGuid().ToString();
+			
+			// entities are sorted
+			var entities = Entities(entityCount, partitionKey, 1).OrderBy(e => e.RowRey).ToArray();
+
+			Provider.Insert(TableName, entities);
+
+			var retrievedCount = Provider.Get<string>(TableName, partitionKey, 
+				entities[150].RowRey, entities[200].RowRey).Count();
+
+			// only the range should have been retrieved
+			Assert.AreEqual(200 - 150, retrievedCount);
+		}
+
+		[Test]
 		public void CheckInsertHandlingOfHeavyTransaction()
 		{
 			var entityCount = 50;

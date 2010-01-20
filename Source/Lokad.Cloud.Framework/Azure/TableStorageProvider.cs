@@ -155,6 +155,72 @@ namespace Lokad.Cloud.Azure
 			} while (null != continuationRowKey);
 		}
 
+		public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey)
+		{
+			Enforce.That(() => tableName);
+			Enforce.That(() => partitionKey);
+			Enforce.That(!partitionKey.Contains("'"), "Incorrect char in partitionKey.");
+
+			var context = _tableStorage.GetDataServiceContext();
+			context.MergeOption = MergeOption.NoTracking;
+
+			string continuationRowKey = null;
+			string continuationPartitionKey = null;
+
+			do
+			{
+				var filter = string.Format("(PartitionKey eq '{0}')", partitionKey);
+				
+				// optional starting range constraint
+				if(!string.IsNullOrEmpty(startRowKey))
+				{
+					// ge = GreaterThanOrEqual (inclusive)
+					filter += string.Format(" and (RowKey ge '{0}')", startRowKey);
+				}
+
+				if(!string.IsNullOrEmpty(endRowKey))
+				{
+					// lt = LessThan (exclusive)
+					filter += string.Format(" and (RowKey lt '{0}')", endRowKey);
+				}
+
+				var query = context.CreateQuery<FatEntity>(tableName)
+					.AddQueryOption("$filter", filter);
+
+				if (null != continuationRowKey)
+				{
+					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
+								 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
+				}
+
+				QueryOperationResponse response = null;
+				FatEntity[] fatEntities = null;
+
+				_storagePolicy.Do(() =>
+				{
+					response = query.Execute() as QueryOperationResponse;
+					fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+				});
+
+				foreach (var fatEntity in fatEntities)
+				{
+					yield return FatEntity.Convert<T>(fatEntity, _formatter);
+				}
+
+				if (response.Headers.ContainsKey(ContinuationNextRowKeyToken))
+				{
+					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
+					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
+				}
+				else
+				{
+					continuationRowKey = null;
+					continuationPartitionKey = null;
+				}
+
+			} while (null != continuationRowKey);
+		}
+
 		public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys)
 		{
 			Enforce.That(() => tableName);
@@ -400,7 +466,5 @@ namespace Lokad.Cloud.Azure
 					context.SaveChanges(SaveChangesOptions.Batch));
 			}	
 		}
-
-		
 	}
 }

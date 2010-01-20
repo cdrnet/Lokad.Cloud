@@ -38,6 +38,17 @@ namespace Lokad.Cloud
 		/// all the entities with paged request.</remarks>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey);
 
+		/// <summary>Iterates through a range of entities of a given table and partition.</summary>
+		/// <param name="tableName">Name of the Table.</param>
+		/// <param name="partitionKey">Name of the partition.</param>
+		/// <param name="startRowKey">Inclusive start row key. If <c>null</c>, no start range
+		/// constraint is enforced.</param>
+		/// <param name="endRowKey">Exclusive end row key. If <c>null</c>, no ending range
+		/// constraint is enforced.</param>
+		/// <remarks>The enumeration is typically expected to be lazy, iterating through
+		/// all the entities with paged request.</remarks>
+		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey);
+
 		/// <summary>Iterates through all entities specified by their row keys.</summary>
 		/// <remarks>The enumeration is typically expected to be lazy, iterating through
 		/// all the entities with paged request.</remarks>
