@@ -106,17 +106,18 @@ namespace Lokad.Cloud
 								return Result<ScheduledServiceState>.CreateError("No settings available, service skipped.");
 							}
 
-							_lastExecutedOnThisWorker = now;
 							newState.Value.LastExecuted = now;
 							newState.Value.IsBusy = true;
+
+							state = newState.Value; // state is a local variable
+
 							return Result.CreateSuccess(newState.Value);
 						}
 
 						// state is a local variable
 						state = currentState.Value;
 
-						if (now.Subtract(currentState.Value.LastExecuted) < state.TriggerInterval
-								|| state.IsBusy)
+						if (now.Subtract(state.LastExecuted) < state.TriggerInterval || state.IsBusy)
 						{
 							return Result<ScheduledServiceState>.CreateError("No need to update.");
 						}
