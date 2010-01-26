@@ -29,9 +29,10 @@ namespace Lokad.Cloud.Web
 				.Select(info => new
 					{
 						Name = info.ServiceName,
-						LastExecuted = info.LastExecuted.UtcDateTime,
-						info.TriggerInterval,
-						Scope = info.WorkerScoped ? "Worker" : "Cloud"
+						LastStarted = info.LastExecuted.PrettyFormatRelativeToNow(),
+						Period = info.TriggerInterval,
+						Scope = info.WorkerScoped ? "Worker" : "Cloud",
+						Lease = PrettyFormatLease(info)
 					})
 				.ToList();
 		}
@@ -70,6 +71,35 @@ namespace Lokad.Cloud.Web
 			_cloudServiceScheduling.RemoveSchedule(serviceName);
 
 			ServiceList.DataBind();
+		}
+
+		string PrettyFormatLease(ServiceSchedulingInfo info)
+		{
+			if (!info.LeasedSince.HasValue || !info.LeasedUntil.HasValue)
+			{
+				return "available";
+			}
+
+			var now = DateTimeOffset.Now;
+
+			if (info.LeasedUntil.Value < now)
+			{
+				return "expired";
+			}
+
+			if (!info.LeasedBy.HasValue || String.IsNullOrEmpty(info.LeasedBy.Value))
+			{
+				return String.Format(
+					"{0} ago, expires in {1}",
+					now.Subtract(info.LeasedSince.Value).PrettyFormat(),
+					info.LeasedUntil.Value.Subtract(now).PrettyFormat());
+			}
+
+			return String.Format(
+				"by {0} {1} ago, expires in {2}",
+				info.LeasedBy.Value,
+				now.Subtract(info.LeasedSince.Value).PrettyFormat(),
+				info.LeasedUntil.Value.Subtract(now).PrettyFormat());
 		}
 	}
 }

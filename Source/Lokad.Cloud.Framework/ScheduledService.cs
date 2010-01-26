@@ -5,6 +5,7 @@
 
 using System;
 using System.Runtime.Serialization;
+using Lokad.Cloud.Azure;
 using Lokad.Cloud.ServiceFabric;
 
 namespace Lokad.Cloud
@@ -79,6 +80,7 @@ namespace Lokad.Cloud
 		readonly bool _scheduledPerWorker;
 		readonly TimeSpan _leaseTimeout;
 		readonly Maybe<TimeSpan> _defaultTriggerPeriod;
+		readonly string _workerKey;
 
 		/// <summary>
 		/// Constructor
@@ -97,6 +99,7 @@ namespace Lokad.Cloud
 
 			_scheduledPerWorker = settings.SchedulePerWorker;
 			_defaultTriggerPeriod = settings.TriggerInterval.Seconds();
+			_workerKey = CloudEnvironment.PartitionKey;
 		}
 
 		/// <seealso cref="CloudService.StartImpl"/>
@@ -221,7 +224,8 @@ namespace Lokad.Cloud
 			return new SynchronizationLeaseState
 				{
 					Acquired = now,
-					Timeout = now + _leaseTimeout
+					Timeout = now + _leaseTimeout,
+					Owner = _workerKey
 				};
 		}
 

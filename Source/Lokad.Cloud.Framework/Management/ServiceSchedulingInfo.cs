@@ -12,16 +12,25 @@ namespace Lokad.Cloud.Management
 	/// </summary>
 	public class ServiceSchedulingInfo
 	{
-		/// <summary>Name of the service</summary>
+		/// <summary>Name of the service.</summary>
 		public string ServiceName { get; set; }
 
-		/// <summary>Scheduled trigger interval</summary>
+		/// <summary>Scheduled trigger interval.</summary>
 		public TimeSpan TriggerInterval { get; set; }
 
-		/// <summary>Last execution time stamp</summary>
+		/// <summary>Last execution time stamp.</summary>
 		public DateTimeOffset LastExecuted { get; set; }
 
 		/// <summary>True if the services is worker scoped instead of cloud scoped.</summary>
 		public bool WorkerScoped { get; set; }
+
+		/// <summary>Owner of the lease.</summary>
+		public Maybe<string> LeasedBy { get; set; }
+
+		/// <summary>Point of time when the lease was acquired.</summary>
+		public Maybe<DateTimeOffset> LeasedSince { get; set; }
+
+		/// <summary>Point of time when the lease will timeout.</summary>
+		public Maybe<DateTimeOffset> LeasedUntil { get; set; }
 	}
 }

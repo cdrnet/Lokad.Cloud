@@ -42,13 +42,25 @@ namespace Lokad.Cloud.Management
 				}
 
 				var state = blob.Value;
-				yield return new ServiceSchedulingInfo
+				var info =  new ServiceSchedulingInfo
 					{
 						ServiceName = blobName.ServiceName,
 						TriggerInterval = state.TriggerInterval,
 						LastExecuted = state.LastExecuted,
-						WorkerScoped = state.SchedulePerWorker
+						WorkerScoped = state.SchedulePerWorker,
+						LeasedBy = Maybe.String,
+						LeasedSince = Maybe<DateTimeOffset>.Empty,
+						LeasedUntil = Maybe<DateTimeOffset>.Empty
 					};
+
+				if(state.Lease != null)
+				{
+					info.LeasedBy = state.Lease.Owner;
+					info.LeasedSince = state.Lease.Acquired;
+					info.LeasedUntil = state.Lease.Timeout;
+				}
+
+				yield return info;
 			}
 		}
 
