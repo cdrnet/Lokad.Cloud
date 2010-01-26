@@ -94,6 +94,7 @@
     <Compile Include="Azure\TableStorageProvider.cs" />
     <Compile Include="CloudEntity.cs" />
     <Compile Include="ITableStorageProvider.cs" />
+    <Compile Include="ServiceFabric\SynchronizationLeaseState.cs" />
     <Compile Include="ServiceFabric\Runtime\AssemblyLoader.cs" />
     <Compile Include="ServiceFabric\Runtime\NoRestartFloodPolicy.cs" />
     <Compile Include="Azure\QueueStorageProvider.cs" />
