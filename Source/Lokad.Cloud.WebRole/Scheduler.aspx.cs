@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -20,6 +20,7 @@ namespace Lokad.Cloud.Web
 				ScheduleView.DataBind();
 				ScheduleList.DataBind();
 				ServiceList.DataBind();
+				LeaseList.DataBind();
 			}
 		}
 
@@ -50,6 +51,15 @@ namespace Lokad.Cloud.Web
 				.ToList();
 		}
 
+
+		protected void LeaseList_DataBinding(object sender, EventArgs e)
+		{
+			LeaseList.DataSource = _cloudServiceScheduling.GetSchedules()
+				.Where(info => info.LeasedSince.HasValue)
+				.Select(info => info.ServiceName)
+				.ToList();
+		}
+
 		protected void UpdateIntervalButton_OnClick(object sender, EventArgs e)
 		{
 			_cloudServiceScheduling.SetTriggerInterval(
@@ -70,6 +80,22 @@ namespace Lokad.Cloud.Web
 			var serviceName = ServiceList.SelectedValue;
 			_cloudServiceScheduling.RemoveSchedule(serviceName);
 
+			LeaseList.DataBind();
+			ServiceList.DataBind();
+		}
+
+		protected void ReleaseButton_Click(object sender, EventArgs e)
+		{
+			Page.Validate("release");
+			if (!Page.IsValid)
+			{
+				return;
+			}
+
+			var serviceName = LeaseList.SelectedValue;
+			_cloudServiceScheduling.ReleaseLease(serviceName);
+
+			LeaseList.DataBind();
 			ServiceList.DataBind();
 		}
 

@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -111,6 +111,31 @@ namespace Lokad.Cloud.Management
 			var blobName = new ScheduledServiceStateName(serviceName);
 
 			_blobProvider.DeleteBlob(blobName);
+		}
+
+
+		/// <summary>
+		/// Forcibly remove the synchronization lease of a periodic cloud service
+		/// </summary>
+		public void ReleaseLease(string serviceName)
+		{
+			var blobName = new ScheduledServiceStateName(serviceName);
+
+			_blobProvider.UpdateIfNotModified(
+				blobName,
+				currentState =>
+				{
+					if (!currentState.HasValue)
+					{
+						return Result<ScheduledServiceState>.CreateError("No service state available.");
+					}
+
+					var state = currentState.Value;
+
+					// remove lease
+					state.Lease = null;
+					return Result.CreateSuccess(state);
+				});
 		}
 	}
 }
