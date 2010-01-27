@@ -76,61 +76,65 @@ namespace Lokad.Cloud
 	{
 		internal const string ScheduleStateContainer = "lokad-cloud-schedule-state";
 
-		DateTimeOffset _lastExecutedOnThisWorker;
 		readonly bool _scheduledPerWorker;
-		readonly TimeSpan _leaseTimeout;
-		readonly Maybe<TimeSpan> _defaultTriggerPeriod;
 		readonly string _workerKey;
+		readonly TimeSpan _leaseTimeout;
+		readonly TimeSpan _defaultTriggerPeriod;
+
+		DateTimeOffset _workerScopeLastExecuted;
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		protected ScheduledService()
 		{
-			_leaseTimeout = ExecutionTimeout + new TimeSpan(0, 5, 0);
-
-			var settings = GetType().GetAttribute<ScheduledServiceSettingsAttribute>(true);
-			if (settings == null)
-			{
-				_scheduledPerWorker = false;
-				_defaultTriggerPeriod = Maybe<TimeSpan>.Empty;
-				return;
-			}
-
-			_scheduledPerWorker = settings.SchedulePerWorker;
-			_defaultTriggerPeriod = settings.TriggerInterval.Seconds();
+			// runtime fixed settings
+			_leaseTimeout = ExecutionTimeout + 5.Minutes();
 			_workerKey = CloudEnvironment.PartitionKey;
+
+			// default setting
+			_scheduledPerWorker = false;
+			_defaultTriggerPeriod = 1.Hours();
+
+			// overwrite settings with config in the attribute - if available
+			var settings = GetType().GetAttribute<ScheduledServiceSettingsAttribute>(true);
+			if (settings != null)
+			{
+				_scheduledPerWorker = settings.SchedulePerWorker;
+
+				if (settings.TriggerInterval > 0)
+				{
+					_defaultTriggerPeriod = settings.TriggerInterval.Seconds();
+				}
+			}
 		}
 
 		/// <seealso cref="CloudService.StartImpl"/>
 		protected sealed override bool StartImpl()
 		{
 			var stateName = new ScheduledServiceStateName(Name);
-			ScheduledServiceState state = null;
+
+			// 1. SIMPLE WORKER-SCOPED SCHEDULING CASE
 
 			// per-worker scheduling does not need any write request to be made toward the storage
 			if (_scheduledPerWorker)
 			{
 				// if no state can be found in the storage, then use default state instead
 				var blobState = BlobStorage.GetBlob(stateName);
-				var stateIfAvailable = blobState.HasValue ? blobState.Value : GetDefaultState();
-
-				// skip execution if no trigger information is available.
-				if (!stateIfAvailable.HasValue)
-				{
-					return false;
-				}
+				var state = blobState.HasValue ? blobState.Value : GetDefaultState();
 
 				var now = DateTimeOffset.Now;
-				if (now.Subtract(_lastExecutedOnThisWorker) < stateIfAvailable.Value.TriggerInterval)
+				if (now.Subtract(_workerScopeLastExecuted) < state.TriggerInterval)
 				{
-					_lastExecutedOnThisWorker = now;
+					_workerScopeLastExecuted = now;
 					StartOnSchedule();
 					return true;
 				}
 
 				return false;
 			}
+
+			// 2. CHECK WHETHER WE SHOULD EXECUTE NOW, ACQUIRE LEASE IF SO
 
 			// checking if the last update is not too recent, and eventually
 			// update this value if it's old enough. When the update fails,
@@ -144,25 +148,16 @@ namespace Lokad.Cloud
 
 						if (!currentState.HasValue)
 						{
-							// Initialize State
+							// initialize default state
 							var newState = GetDefaultState();
-							if (!newState.HasValue)
-							{
-								return Result<ScheduledServiceState>.CreateError("No settings available, service skipped.");
-							}
-
-							// state is a local variable
-							state = newState.Value; 
 
 							// create lease and execute
-							state.LastExecuted = now;
-							state.Lease = CreateLease(now);
-							return Result.CreateSuccess(state);
+							newState.LastExecuted = now;
+							newState.Lease = CreateLease(now);
+							return Result.CreateSuccess(newState);
 						}
 
-						// state is a local variable
-						state = currentState.Value;
-
+						var state = currentState.Value;
 						if (now.Subtract(state.LastExecuted) < state.TriggerInterval)
 						{
 							return Result<ScheduledServiceState>.CreateError("No need to update.");
@@ -179,6 +174,8 @@ namespace Lokad.Cloud
 						return Result.CreateSuccess(state);
 					});
 
+			// 3. IF WE SHOULD NOT EXECUTE NOW, SKIP
+
 			if (!updated)
 			{
 				return false;
@@ -186,13 +183,42 @@ namespace Lokad.Cloud
 
 			try
 			{
+				// 4. ACTUAL EXECUTION
+
 				StartOnSchedule();
 				return true;
 			}
 			finally
 			{
-				state.Lease = null;
-				BlobStorage.PutBlob(stateName, state, true);
+				// 5. RELEASE THE LEASE
+
+				// we need a full update here (instead of just uploading the cached blob)
+				// to ensure we do not overwrite changes made in the console in the meantime
+				// (e.g. changed trigger interval), and to resolve the edge case when
+				// a lease has been forcefully removed from the console and another service
+				// has taken a lease in the meantime.
+
+				ScheduledServiceState result;
+				BlobStorage.AtomicUpdate(
+					stateName,
+					currentState =>
+						{
+							if (!currentState.HasValue)
+							{
+								return GetDefaultState();
+							}
+
+							var state = currentState.Value;
+							if (state.Lease == null || state.Lease.Owner != _workerKey)
+							{
+								return state;
+							}
+
+							// remove lease
+							state.Lease = null;
+							return state;
+						},
+					out result);
 			}
 		}
 
@@ -200,20 +226,14 @@ namespace Lokad.Cloud
 		/// Prepares this service's default state based on its settings attribute.
 		/// In case no attribute is found then Maybe.Empty is returned.
 		/// </summary>
-		private Maybe<ScheduledServiceState> GetDefaultState()
+		private ScheduledServiceState GetDefaultState()
 		{
-			// skip execution if no trigger information is available.
-			if(!_defaultTriggerPeriod.HasValue)
-			{
-				return Maybe<ScheduledServiceState>.Empty;
-			}
-
 			return new ScheduledServiceState
-				{
-					LastExecuted = DateTimeOffset.MinValue,
-					TriggerInterval = _defaultTriggerPeriod.Value,
-					SchedulePerWorker = _scheduledPerWorker
-				};
+			{
+				LastExecuted = DateTimeOffset.MinValue,
+				TriggerInterval = _defaultTriggerPeriod,
+				SchedulePerWorker = _scheduledPerWorker
+			};
 		}
 
 		/// <summary>
