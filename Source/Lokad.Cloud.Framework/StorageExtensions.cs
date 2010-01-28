@@ -73,7 +73,19 @@ namespace Lokad.Cloud
 			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
 		}
 
+		/// <remarks>This overload ensures correct types in case of typed blob names.</remarks>
+		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
+		{
+			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
+		}
+
 		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseBlobName fullName, Func<Maybe<T>, T> updater, out T result)
+		{
+			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
+		}
+
+		/// <remarks>This overload ensures correct types in case of typed blob names.</remarks>
+		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName, Func<Maybe<T>, T> updater, out T result)
 		{
 			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
 		}
@@ -132,7 +144,19 @@ namespace Lokad.Cloud
 			provider.PutBlob(fullName.ContainerName, fullName.ToString(), item);
 		}
 
+		/// <remarks>This overload ensures correct types in case of typed blob names.</remarks>
+		public static void PutBlob<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName, T item)
+		{
+			provider.PutBlob(fullName.ContainerName, fullName.ToString(), item);
+		}
+
 		public static bool PutBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName, T item, bool overwrite)
+		{
+			return provider.PutBlob(fullName.ContainerName, fullName.ToString(), item, overwrite);
+		}
+
+		/// <remarks>This overload ensures correct types in case of typed blob names.</remarks>
+		public static bool PutBlob<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName, T item, bool overwrite)
 		{
 			return provider.PutBlob(fullName.ContainerName, fullName.ToString(), item, overwrite);
 		}

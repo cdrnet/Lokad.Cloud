@@ -35,7 +35,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 				.Select(x => x.Value);
 		}
 
-		void Update<T>(BaseBlobName name, Func<Maybe<T>,T> updater)
+		void Update<T>(BaseTypedBlobName<T> name, Func<Maybe<T>, T> updater)
 		{
 			T result;
 			_provider.AtomicUpdate(
@@ -44,7 +44,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 				out result);
 		}
 
-		void Set<T>(BaseBlobName name, T value)
+		void Set<T>(BaseTypedBlobName<T> name, T value)
 		{
 			_provider.PutBlob(
 				name,
