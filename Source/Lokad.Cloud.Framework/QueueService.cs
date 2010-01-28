@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lokad.Cloud.ServiceFabric;
 
 namespace Lokad.Cloud
 {
@@ -53,18 +54,23 @@ namespace Lokad.Cloud
 
 		/// <summary>Do not try to override this method, use <see cref="StartRange"/>
 		/// instead.</summary>
-		protected sealed override bool StartImpl()
+		protected sealed override ServiceExecutionFeedback StartImpl()
 		{
 			var messages = QueueStorage.Get<T>(_queueName, _batchSize, _visibilityTimeout);
 
 			var count = messages.Count();
-			if (count > 0) StartRange(messages);
+			if (count > 0)
+			{
+				StartRange(messages);
+			}
 
 			// Messages might have already been deleted by the 'Start' method.
 			// It's OK, 'Delete' is idempotent.
 			DeleteRange(messages);
 
-			return count > 0;
+			return count > 0
+				? ServiceExecutionFeedback.WorkAvailable
+				: ServiceExecutionFeedback.Skipped;
 		}
 
 		/// <summary>Method called first by the <c>Lokad.Cloud</c> framework when messages are

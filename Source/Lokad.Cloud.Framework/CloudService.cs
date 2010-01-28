@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Lokad.Cloud.ServiceFabric;
 using Lokad.Quality;
 using Lokad.Threading;
 
@@ -125,12 +126,19 @@ namespace Lokad.Cloud
 			}
 		}
 
-		/// <summary>Wrapper method for the <see cref="StartImpl"/> method. Checks
-		/// that the service status before executing the inner start.</summary>
-		/// <returns>See <seealso cref="StartImpl"/> for the semantic of the return value.</returns>
-		/// <remarks>If the execution does not complete within <see cref="ExecutionTimeout"/>,
-		/// then a <see cref="TimeoutException"/> is thrown.</remarks>
-		public bool Start()
+		/// <summary>
+		/// Wrapper method for the <see cref="StartImpl"/> method. Checks that the
+		/// service status before executing the inner start.
+		/// </summary>
+		/// <returns>
+		/// See <seealso cref="StartImpl"/> for the semantic of the return value.
+		/// </returns>
+		/// <remarks>
+		/// If the execution does not complete within 
+		/// <see cref="ExecutionTimeout"/>, then a <see cref="TimeoutException"/> is
+		/// thrown.
+		/// </remarks>
+		public ServiceExecutionFeedback Start()
 		{
 			var now = DateTimeOffset.Now;
 
@@ -155,20 +163,27 @@ namespace Lokad.Cloud
 			// no execution if the service is stopped
 			if(CloudServiceState.Stopped == _state)
 			{
-				return false;
+				return ServiceExecutionFeedback.Skipped;
 			}
 
-			var waitFor = new WaitFor<bool>(ExecutionTimeout);
+			var waitFor = new WaitFor<ServiceExecutionFeedback>(ExecutionTimeout);
 			return waitFor.Run(StartImpl);
 		}
 
-		/// <summary>Called when the service is launched.</summary>
-		/// <returns><c>true</c> if the service did actually perform an operation, and
-		/// <c>false</c> otherwise. This value is used by the framework to adjust the
-		/// start frequency of the respective services.</returns>
-		/// <remarks>This method is expected to be implemented by the framework services
-		/// not by the app services.</remarks>
-		protected abstract bool StartImpl();
+		/// <summary>
+		/// Called when the service is launched.
+		/// </summary>
+		/// <returns>
+		/// Feedback with details whether the service did actually perform any
+		/// operation, and whether it knows or assumes to have more work available for
+		/// immediate execution. This value is used by the framework to adjust the
+		/// scheduling behavior for the respective services.
+		/// </returns>
+		/// <remarks>
+		/// This method is expected to be implemented by the framework services not by
+		/// the app services.
+		/// </remarks>
+		protected abstract ServiceExecutionFeedback StartImpl();
 
 		/// <summary>Called when the service is shut down.</summary>
 		public virtual void Stop()

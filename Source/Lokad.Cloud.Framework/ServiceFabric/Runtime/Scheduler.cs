@@ -11,45 +11,15 @@ using System.Threading;
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
 	/// <summary>
-	/// The execution result of a scheduled action, providing information that
-	/// might be considered for further scheduling.
-	/// </summary>
-	public enum ScheduleResult
-	{
-		/// <summary>
-		/// No information available or the service is not interested in providing
-		/// any details.
-		/// </summary>
-		DontCare = 0,
-
-		/// <summary>
-		/// The service knows or assumes that there is more work available.
-		/// </summary>
-		WorkAvailable,
-
-		/// <summary>
-		/// The service did some work, but knows or assumes that there is no more work
-		/// available.
-		/// </summary>
-		DoneForNow,
-
-		/// <summary>
-		/// The service skipped without doing any work (and expects the same for
-		/// successive calls).
-		/// </summary>
-		Skipped
-	}
-
-	/// <summary>
-	/// Round robin scheduler with modifications: tasks that claim to have more
-	/// work ready are given the chance to continue until they reach a fixed time
-	/// limit (greedy), and the scheduling is slowed down when all available
+	/// Round robin scheduler with adaptive modifications: tasks that claim to have
+	/// more work ready are given the chance to continue until they reach a fixed
+	/// time limit (greedy), and the scheduling is slowed down when all available
 	/// services skip execution consecutively.
 	/// </summary>
 	internal class Scheduler
 	{
 		readonly Func<IEnumerable<CloudService>> _serviceProvider;
-		readonly Func<CloudService, ScheduleResult> _schedule;
+		readonly Func<CloudService, ServiceExecutionFeedback> _schedule;
 		readonly object _sync = new object();
 
 		/// <summary>Duration to keep pinging the same cloud service if service is active.</summary>
@@ -66,7 +36,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// </summary>
 		/// <param name="serviceProvider">Provider of available cloud services</param>
 		/// <param name="schedule">Action to be invoked when a service is scheduled to run</param>
-		public Scheduler(Func<IEnumerable<CloudService>> serviceProvider, Func<CloudService, ScheduleResult> schedule)
+		public Scheduler(Func<IEnumerable<CloudService>> serviceProvider, Func<CloudService, ServiceExecutionFeedback> schedule)
 		{
 			_serviceProvider = serviceProvider;
 			_schedule = schedule;
@@ -90,17 +60,17 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				currentServiceIndex = (currentServiceIndex + 1) % services.Length;
 				_currentService = services[currentServiceIndex];
 
-				var result = ScheduleResult.DontCare;
+				var result = ServiceExecutionFeedback.DontCare;
 				var isRunOnce = false;
 
 				// 'more of the same pattern'
 				// as long the service is active, keep triggering the same service
 				// for at least 1min (in order to avoid a single service to monopolize CPU)
 				var start = DateTimeOffset.Now;
-				while (DateTimeOffset.Now.Subtract(start) < _moreOfTheSame && (result == ScheduleResult.WorkAvailable || result == ScheduleResult.DontCare))
+				while (DateTimeOffset.Now.Subtract(start) < _moreOfTheSame && DemandsImmediateStart(result))
 				{
 					yield return () => { result = _schedule(_currentService); };
-					isRunOnce |= result != ScheduleResult.Skipped;
+					isRunOnce |= WasSuccessfullyExecuted(result);
 				}
 
 				skippedConsecutively = isRunOnce ? 0 : skippedConsecutively + 1;
@@ -127,6 +97,25 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			{
 				Monitor.Pulse(_sync);
 			}
+		}
+
+		/// <summary>
+		/// The service was successfully executed and it might make sense to execute
+		/// it again immediately (greedy).
+		/// </summary>
+		bool DemandsImmediateStart(ServiceExecutionFeedback feedback)
+		{
+			return feedback == ServiceExecutionFeedback.WorkAvailable
+				|| feedback == ServiceExecutionFeedback.DontCare;
+		}
+
+		/// <summary>
+		/// The service was actually executed (not skipped) and did not fail.
+		/// </summary>
+		bool WasSuccessfullyExecuted(ServiceExecutionFeedback feedback)
+		{
+			return feedback != ServiceExecutionFeedback.Skipped
+				&& feedback != ServiceExecutionFeedback.Failed;
 		}
 	}
 }

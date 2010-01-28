@@ -110,7 +110,7 @@ namespace Lokad.Cloud
 		}
 
 		/// <seealso cref="CloudService.StartImpl"/>
-		protected sealed override bool StartImpl()
+		protected sealed override ServiceExecutionFeedback StartImpl()
 		{
 			var stateName = new ScheduledServiceStateName(Name);
 
@@ -128,10 +128,10 @@ namespace Lokad.Cloud
 				{
 					_workerScopeLastExecuted = now;
 					StartOnSchedule();
-					return true;
+					return ServiceExecutionFeedback.DoneForNow;
 				}
 
-				return false;
+				return ServiceExecutionFeedback.Skipped;
 			}
 
 			// 2. CHECK WHETHER WE SHOULD EXECUTE NOW, ACQUIRE LEASE IF SO
@@ -178,7 +178,7 @@ namespace Lokad.Cloud
 
 			if (!updated)
 			{
-				return false;
+				return ServiceExecutionFeedback.Skipped;
 			}
 
 			try
@@ -186,7 +186,7 @@ namespace Lokad.Cloud
 				// 4. ACTUAL EXECUTION
 
 				StartOnSchedule();
-				return true;
+				return ServiceExecutionFeedback.DoneForNow;
 			}
 			finally
 			{

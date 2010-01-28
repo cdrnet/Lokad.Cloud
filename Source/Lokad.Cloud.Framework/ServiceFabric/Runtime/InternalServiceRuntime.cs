@@ -125,20 +125,16 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <summary>
 		/// Run a scheduled service
 		/// </summary>
-		ScheduleResult RunService(CloudService service)
+		ServiceExecutionFeedback RunService(CloudService service)
 		{
-			bool result;
+			ServiceExecutionFeedback feedback;
 
 			using (_monitoring.Monitor(service))
 			{
-				result = service.Start();
+				feedback = service.Start();
 			}
 
-			// TODO: ScheduledService should return ScheduleResult.DoneForNow
-			// instead of WorkAvailable, since the second trial will always skip
-			// anyway (unless the trigger interval is extremely small).
-
-			return result ? ScheduleResult.WorkAvailable : ScheduleResult.Skipped;
+			return feedback;
 		}
 
 		/// <summary>
