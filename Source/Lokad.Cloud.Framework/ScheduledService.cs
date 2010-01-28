@@ -48,7 +48,7 @@ namespace Lokad.Cloud
 		public bool SchedulePerWorker { get; set; }
 	}
 
-	public class ScheduledServiceStateName : BaseTypedBlobName<ScheduledServiceState>
+	public class ScheduledServiceStateReference : BlobReference<ScheduledServiceState>
 	{
 		public override string ContainerName
 		{
@@ -57,14 +57,14 @@ namespace Lokad.Cloud
 
 		[Rank(0)] public readonly string ServiceName;
 
-		public ScheduledServiceStateName(string serviceName)
+		public ScheduledServiceStateReference(string serviceName)
 		{
 			ServiceName = serviceName;
 		}
 
-		public static BlobNamePrefix<ScheduledServiceStateName> GetPrefix()
+		public static BlobNamePrefix<ScheduledServiceStateReference> GetPrefix()
 		{
-			return new BlobNamePrefix<ScheduledServiceStateName>(ScheduledService.ScheduleStateContainer, "");
+			return new BlobNamePrefix<ScheduledServiceStateReference>(ScheduledService.ScheduleStateContainer, "");
 		}
 	}
 
@@ -112,7 +112,7 @@ namespace Lokad.Cloud
 		/// <seealso cref="CloudService.StartImpl"/>
 		protected sealed override ServiceExecutionFeedback StartImpl()
 		{
-			var stateName = new ScheduledServiceStateName(Name);
+			var stateReference = new ScheduledServiceStateReference(Name);
 
 			// 1. SIMPLE WORKER-SCOPED SCHEDULING CASE
 
@@ -120,7 +120,7 @@ namespace Lokad.Cloud
 			if (_scheduledPerWorker)
 			{
 				// if no state can be found in the storage, then use default state instead
-				var blobState = BlobStorage.GetBlob(stateName);
+				var blobState = BlobStorage.GetBlob(stateReference);
 				var state = blobState.HasValue ? blobState.Value : GetDefaultState();
 
 				var now = DateTimeOffset.Now;
@@ -141,7 +141,7 @@ namespace Lokad.Cloud
 			// it simply means that another worker is already on its ways
 			// to execute the service.
 			var updated = BlobStorage.UpdateIfNotModified(
-				stateName,
+				stateReference,
 				currentState =>
 					{
 						var now = DateTimeOffset.Now;
@@ -200,7 +200,7 @@ namespace Lokad.Cloud
 
 				ScheduledServiceState result;
 				BlobStorage.AtomicUpdate(
-					stateName,
+					stateReference,
 					currentState =>
 						{
 							if (!currentState.HasValue)

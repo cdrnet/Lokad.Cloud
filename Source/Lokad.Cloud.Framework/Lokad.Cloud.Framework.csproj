@@ -92,7 +92,13 @@
     <Compile Include="Azure\CloudLogger.cs" />
     <Compile Include="Azure\FatEntity.cs" />
     <Compile Include="Azure\TableStorageProvider.cs" />
+    <Compile Include="BlobName.cs" />
+    <Compile Include="BlobReference.cs" />
     <Compile Include="CloudEntity.cs" />
+    <Compile Include="Diagnostics\Persistence\ExceptionTrackingStatisticsReference.cs" />
+    <Compile Include="Diagnostics\Persistence\ExecutionProfilingStatisticsReference.cs" />
+    <Compile Include="Diagnostics\Persistence\PartitionStatisticsReference.cs" />
+    <Compile Include="Diagnostics\Persistence\ServiceStatisticsReference.cs" />
     <Compile Include="ITableStorageProvider.cs" />
     <Compile Include="ServiceFabric\ServiceExecutionFeedback.cs" />
     <Compile Include="ServiceFabric\SynchronizationLeaseState.cs" />
@@ -100,7 +106,6 @@
     <Compile Include="ServiceFabric\Runtime\NoRestartFloodPolicy.cs" />
     <Compile Include="Azure\QueueStorageProvider.cs" />
     <Compile Include="Azure\StorageModule.cs" />
-    <Compile Include="BaseTemporaryBlobName.cs" />
     <Compile Include="CloudInfrastructureProviders.cs" />
     <Compile Include="CloudFormatter.cs" />
     <Compile Include="DelayedQueue.cs" />
@@ -115,10 +120,6 @@
     <Compile Include="Diagnostics\PartitionStatistics.cs" />
     <Compile Include="Diagnostics\ICloudDiagnosticsRepository.cs" />
     <Compile Include="Diagnostics\Persistence\BlobDiagnosticsRepository.cs" />
-    <Compile Include="Diagnostics\Persistence\ExceptionTrackingStatisticsName.cs" />
-    <Compile Include="Diagnostics\Persistence\ExecutionProfilingStatisticsName.cs" />
-    <Compile Include="Diagnostics\Persistence\PartitionStatisticsName.cs" />
-    <Compile Include="Diagnostics\Persistence\ServiceStatisticsName.cs" />
     <Compile Include="Diagnostics\ServiceMonitor.cs" />
     <Compile Include="Diagnostics\IServiceMonitor.cs" />
     <Compile Include="Diagnostics\ServiceStatistics.cs" />
@@ -142,10 +143,9 @@
     <Compile Include="ServiceFabric\Runtime\InternalServiceRuntime.cs" />
     <Compile Include="ServiceFabric\Runtime\WorkerServiceRuntime.cs" />
     <Compile Include="Services\MonitoringService.cs" />
+    <Compile Include="TemporaryBlobReference.cs" />
     <Compile Include="TypeMapperProvider.cs" />
-    <Compile Include="BaseTypedBlobName.cs" />
     <Compile Include="BlobCounter.cs" />
-    <Compile Include="BaseBlobName.cs" />
     <Compile Include="BlobNamePrefix.cs" />
     <Compile Include="CloudService.cs" />
     <Compile Include="CloudServiceSettingsAttribute.cs" />

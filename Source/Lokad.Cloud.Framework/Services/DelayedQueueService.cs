@@ -22,9 +22,9 @@ namespace Lokad.Cloud.Services
 		{
 			// lazy enumeration over the delayed messages
 			const string nullPrefix = null;
-			foreach (var blobName in BlobStorage.List<DelayedMessageName>(nullPrefix))
+			foreach (var blobName in BlobStorage.List<DelayedMessageReference>(nullPrefix))
 			{
-				var parsedName = BaseBlobName.Parse<DelayedMessageName>(blobName);
+				var parsedName = BlobName.Parse<DelayedMessageReference>(blobName);
 				if (DateTimeOffset.Now <= parsedName.TriggerTime)
 				{
 					// delayed messages are iterated in date-increasing order
@@ -33,7 +33,7 @@ namespace Lokad.Cloud.Services
 					break;
 				}
 
-				var dm = BlobStorage.GetBlobOrDelete<DelayedMessage>(parsedName);
+				var dm = BlobStorage.GetBlobOrDelete(parsedName);
 				if (!dm.HasValue)
 				{
 					Log.WarnFormat("Deserialization failed for delayed message {0}, message was dropped.", parsedName.Identifier);

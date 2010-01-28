@@ -270,15 +270,15 @@ namespace Lokad.Cloud.Azure
 
 		byte[] PutOverflowingMessageAndWrap<T>(string queueName, T message)
 		{
-			var blobName = OverflowingMessageBlobName<T>.GetNew(queueName);
+			var blobRef = OverflowingMessageBlobReference<T>.GetNew(queueName);
 
 			// HACK: In this case serialization is performed another time (internally)
-			_blobStorage.PutBlob(blobName, message);
+			_blobStorage.PutBlob(blobRef, message);
 
 			var mw = new MessageWrapper
 			{
-				ContainerName = blobName.ContainerName,
-				BlobName = blobName.ToString()
+				ContainerName = blobRef.ContainerName,
+				BlobName = blobRef.ToString()
 			};
 
 			using (var stream = new MemoryStream())
@@ -454,7 +454,7 @@ namespace Lokad.Cloud.Azure
 		public bool IsOverflowing { get; set; }
 	}
 
-	public class OverflowingMessageBlobName<T> : BaseTypedBlobName<T>
+	public class OverflowingMessageBlobReference<T> : BlobReference<T>
 	{
 		public override string ContainerName
 		{
@@ -467,15 +467,15 @@ namespace Lokad.Cloud.Azure
 		[UsedImplicitly, Rank(1)]
 		public Guid MessageId;
 
-		OverflowingMessageBlobName(string queueName, Guid guid)
+		OverflowingMessageBlobReference(string queueName, Guid guid)
 		{
 			QueueName = queueName;
 			MessageId = guid;
 		}
 
-		public static OverflowingMessageBlobName<T> GetNew(string queueName)
+		public static OverflowingMessageBlobReference<T> GetNew(string queueName)
 		{
-			return new OverflowingMessageBlobName<T>(queueName, Guid.NewGuid());
+			return new OverflowingMessageBlobReference<T>(queueName, Guid.NewGuid());
 		}
 	}
 }

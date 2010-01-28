@@ -14,9 +14,11 @@ using Lokad.Quality;
 
 namespace Lokad.Cloud
 {
-	/// <summary>Base class for strong-typed hierarchical blob names.</summary>
+	/// <summary>
+	/// Base class for strong-typed hierarchical blob names.
+	/// </summary>
 	[Serializable, DataContract]
-	public abstract class BaseBlobName
+	public abstract class BlobName
 	{
 		class InheritanceComparer : IComparer<Type>
 		{
@@ -41,7 +43,7 @@ namespace Lokad.Cloud
 		/// return a constant string.</remarks>
 		public abstract string ContainerName { get; }
 
-		static BaseBlobName()
+		static BlobName()
 		{
 			// adding overrides
 
@@ -67,7 +69,7 @@ namespace Lokad.Cloud
 		public override string ToString()
 		{
 			// Invoke a Static Generic Method using Reflection
-			var method = typeof (BaseBlobName).GetMethod("Print", BindingFlags.Static | BindingFlags.Public);
+			var method = typeof (BlobName).GetMethod("Print", BindingFlags.Static | BindingFlags.Public);
 
 			// Binding the method info to generic arguments
 			method = method.MakeGenericMethod(new[] { GetType() });
@@ -162,30 +164,30 @@ namespace Lokad.Cloud
 		}
 
 		/// <summary>Do not use directly, call <see cref="ToString"/> instead.</summary>
-		public static string Print<T>(T instance) where T : BaseBlobName
+		public static string Print<T>(T instance) where T : BlobName
 		{
 			return ConverterTypeCache<T>.Print(instance);
 		}
 
-		public static string PartialPrint<T>(T instance, int fieldCount) where T : BaseBlobName
+		public static string PartialPrint<T>(T instance, int fieldCount) where T : BlobName
 		{
 			return ConverterTypeCache<T>.PartialPrint(instance, fieldCount);
 		}
 
-		public static BlobNamePrefix<T> GetPrefix<T>(T instance, int fieldCount) where T : BaseBlobName
+		public static BlobNamePrefix<T> GetPrefix<T>(T instance, int fieldCount) where T : BlobName
 		{
 			return new BlobNamePrefix<T>(GetContainerName<T>(), PartialPrint(instance, fieldCount));
 		}
 
 		/// <summary>Parse a hierarchical blob name.</summary>
-		public static T Parse<T>(string value) where T : BaseBlobName
+		public static T Parse<T>(string value) where T : BlobName
 		{
 			return ConverterTypeCache<T>.Parse(value);
 		}
 
 		/// <summary>Returns the <see cref="ContainerName"/> value without
 		/// having an instance at hand.</summary>
-		public static string GetContainerName<T>() where T : BaseBlobName
+		public static string GetContainerName<T>() where T : BlobName
 		{
 			// HACK: that's a heavy way of getting the thing done
 			return ((T) FormatterServices.GetUninitializedObject(typeof (T))).ContainerName;

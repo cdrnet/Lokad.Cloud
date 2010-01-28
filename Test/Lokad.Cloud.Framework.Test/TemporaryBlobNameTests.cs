@@ -4,9 +4,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Lokad.Quality;
 using NUnit.Framework;
 
@@ -22,7 +19,17 @@ namespace Lokad.Cloud.Test
 			var firstBlobName = TemporaryBlobName.GetNew(expiration);
 			var secondBlobName = TemporaryBlobName.GetNew(expiration);
 
-			Assert.AreNotEqual(firstBlobName.Suffix, secondBlobName.Suffix, "two different temporaryBlobNames should have different suffix");
+			Assert.AreNotEqual(firstBlobName.Suffix, secondBlobName.Suffix, "two different temporary blob names should have different prefix");
+		}
+
+		[Test]
+		public void TemporaryBlobReferencesAreUnique()
+		{
+			var expiration = new DateTime(2100, 12, 31);
+			var firstBlobRef = TemporaryBlobReference<int>.GetNew(expiration);
+			var secondBlobRef = TemporaryBlobReference<int>.GetNew(expiration);
+
+			Assert.AreNotEqual(firstBlobRef.Prefix, secondBlobRef.Prefix, "two different temporary blob references should have different prefix");
 		}
 
 		[Test]
@@ -32,19 +39,19 @@ namespace Lokad.Cloud.Test
 			// round to milliseconds, our time resolution in blob names
 			now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, now.Millisecond, now.Offset);
 
-			var testName = new TestTemporaryBlobName(now, "test", Guid.NewGuid());
-			var printed = BaseBlobName.Print(testName);
+			var testRef = new TestTemporaryBlobReference(now, "test", Guid.NewGuid());
+			var printed = BlobName.Print(testRef);
 
-			var parsed = BaseBlobName.Parse<TemporaryBlobName>(printed);
-			Assert.AreEqual(now, parsed.Expiration);
-			Assert.AreEqual("test", parsed.Suffix);
+			var parsedRef = BlobName.Parse<TemporaryBlobName>(printed);
+			Assert.AreEqual(now, parsedRef.Expiration);
+			Assert.AreEqual("test", parsedRef.Suffix);
 		}
 
-		private class TestTemporaryBlobName : BaseTemporaryBlobName<int>
+		private class TestTemporaryBlobReference : TemporaryBlobReference<int>
 		{
 			[UsedImplicitly, Rank(0)] public readonly Guid Id;
 
-			public TestTemporaryBlobName(DateTimeOffset expiration, string prefix, Guid id)
+			public TestTemporaryBlobReference(DateTimeOffset expiration, string prefix, Guid id)
 				: base(expiration, prefix)
 			{
 				Id = id;

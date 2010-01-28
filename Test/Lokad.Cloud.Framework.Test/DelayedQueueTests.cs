@@ -34,12 +34,12 @@ namespace Lokad.Cloud.Test
 
 			delayer.PutWithDelay(21, trigger, _testQueueName);
 
-			var msgName = new DelayedMessageName(trigger, Guid.Empty);
-			var prefix = BaseBlobName.GetPrefix(msgName, 1);
+			var msgRef = new DelayedMessageReference(trigger, Guid.Empty);
+			var prefix = BlobName.GetPrefix(msgRef, 1);
 
-			var blobNames = blobStorage.List(prefix);
+			var blobReferences = blobStorage.List(prefix);
 
-			Assert.AreEqual(1, blobNames.Count(), "Wrong blob count");
+			Assert.AreEqual(1, blobReferences.Count(), "Wrong blob count");
 		}
 	}
 

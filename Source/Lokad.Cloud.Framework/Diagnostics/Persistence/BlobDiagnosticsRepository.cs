@@ -24,30 +24,30 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 			_provider = provider;
 		}
 
-		IEnumerable<T> GetAll<T, TName>(BlobNamePrefix<TName> prefix)
-			where TName : BaseTypedBlobName<T>
+		IEnumerable<T> GetAll<T, TReference>(BlobNamePrefix<TReference> prefix)
+			where TReference : BlobReference<T>
 			where T : class
 		{
 			return _provider
 				.List(prefix)
-				.Select(name => _provider.GetBlobOrDelete(name))
+				.Select(reference => _provider.GetBlobOrDelete(reference))
 				.Where(x => x.HasValue)
 				.Select(x => x.Value);
 		}
 
-		void Update<T>(BaseTypedBlobName<T> name, Func<Maybe<T>, T> updater)
+		void Update<T>(BlobReference<T> reference, Func<Maybe<T>, T> updater)
 		{
 			T result;
 			_provider.AtomicUpdate(
-				name,
+				reference,
 				updater,
 				out result);
 		}
 
-		void Set<T>(BaseTypedBlobName<T> name, T value)
+		void Set<T>(BlobReference<T> reference, T value)
 		{
 			_provider.PutBlob(
-				name,
+				reference,
 				value,
 				true);
 		}
@@ -57,8 +57,8 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public IEnumerable<ExceptionTrackingStatistics> GetExceptionTrackingStatistics(string timeSegment)
 		{
-			return GetAll<ExceptionTrackingStatistics,ExceptionTrackingStatisticsName>(
-				ExceptionTrackingStatisticsName.GetPrefix(timeSegment));
+			return GetAll<ExceptionTrackingStatistics,ExceptionTrackingStatisticsReference>(
+				ExceptionTrackingStatisticsReference.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
@@ -66,8 +66,8 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public IEnumerable<ExecutionProfilingStatistics> GetExecutionProfilingStatistics(string timeSegment)
 		{
-			return GetAll<ExecutionProfilingStatistics, ExecutionProfilingStatisticsName>(
-				ExecutionProfilingStatisticsName.GetPrefix(timeSegment));
+			return GetAll<ExecutionProfilingStatistics, ExecutionProfilingStatisticsReference>(
+				ExecutionProfilingStatisticsReference.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
@@ -75,8 +75,8 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public IEnumerable<PartitionStatistics> GetAllPartitionStatistics(string timeSegment)
 		{
-			return GetAll<PartitionStatistics, PartitionStatisticsName>(
-				PartitionStatisticsName.GetPrefix(timeSegment));
+			return GetAll<PartitionStatistics, PartitionStatisticsReference>(
+				PartitionStatisticsReference.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
@@ -84,8 +84,8 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public IEnumerable<ServiceStatistics> GetAllServiceStatistics(string timeSegment)
 		{
-			return GetAll<ServiceStatistics, ServiceStatisticsName>(
-				ServiceStatisticsName.GetPrefix(timeSegment));
+			return GetAll<ServiceStatistics, ServiceStatisticsReference>(
+				ServiceStatisticsReference.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
@@ -93,7 +93,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public void UpdateExceptionTrackingStatistics(string timerSegment, string contextName, Func<Maybe<ExceptionTrackingStatistics>, ExceptionTrackingStatistics> updater)
 		{
-			Update(ExceptionTrackingStatisticsName.New(timerSegment, contextName), updater);
+			Update(ExceptionTrackingStatisticsReference.New(timerSegment, contextName), updater);
 		}
 
 		/// <summary>
@@ -101,7 +101,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public void UpdateExecutionProfilingStatistics(string timerSegment, string contextName, Func<Maybe<ExecutionProfilingStatistics>, ExecutionProfilingStatistics> updater)
 		{
-			Update(ExecutionProfilingStatisticsName.New(timerSegment, contextName), updater);
+			Update(ExecutionProfilingStatisticsReference.New(timerSegment, contextName), updater);
 		}
 
 		/// <summary>
@@ -109,7 +109,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public void UpdatePartitionStatistics(string timeSegment, string partitionName, Func<Maybe<PartitionStatistics>, PartitionStatistics> updater)
 		{
-			Update(PartitionStatisticsName.New(timeSegment, partitionName), updater);
+			Update(PartitionStatisticsReference.New(timeSegment, partitionName), updater);
 		}
 
 		/// <summary>
@@ -117,7 +117,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public void UpdateServiceStatistics(string timeSegment, string serviceName, Func<Maybe<ServiceStatistics>, ServiceStatistics> updater)
 		{
-			Update(ServiceStatisticsName.New(timeSegment, serviceName), updater);
+			Update(ServiceStatisticsReference.New(timeSegment, serviceName), updater);
 		}
 	}
 }

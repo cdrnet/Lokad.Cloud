@@ -33,9 +33,9 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public IEnumerable<ServiceSchedulingInfo> GetSchedules()
 		{
-			foreach (var blobName in _blobProvider.List(ScheduledServiceStateName.GetPrefix()))
+			foreach (var blobRef in _blobProvider.List(ScheduledServiceStateReference.GetPrefix()))
 			{
-				var blob = _blobProvider.GetBlobOrDelete(blobName);
+				var blob = _blobProvider.GetBlobOrDelete(blobRef);
 				if (!blob.HasValue)
 				{
 					continue;
@@ -44,7 +44,7 @@ namespace Lokad.Cloud.Management
 				var state = blob.Value;
 				var info =  new ServiceSchedulingInfo
 					{
-						ServiceName = blobName.ServiceName,
+						ServiceName = blobRef.ServiceName,
 						TriggerInterval = state.TriggerInterval,
 						LastExecuted = state.LastExecuted,
 						WorkerScoped = state.SchedulePerWorker,
@@ -69,8 +69,8 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public IEnumerable<string> GetScheduledServiceNames()
 		{
-			return _blobProvider.List(ScheduledServiceStateName.GetPrefix())
-				.Select(name => name.ServiceName);
+			return _blobProvider.List(ScheduledServiceStateReference.GetPrefix())
+				.Select(reference => reference.ServiceName);
 		}
 
 		/// <summary>
@@ -92,9 +92,8 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void SetTriggerInterval(string serviceName, TimeSpan triggerInterval)
 		{
-			var blobName = new ScheduledServiceStateName(serviceName);
-
-			_blobProvider.UpdateIfNotModified(blobName,
+			var blobRef = new ScheduledServiceStateReference(serviceName);
+			_blobProvider.UpdateIfNotModified(blobRef,
 				blob =>
 				{
 					var state = blob.Value;
@@ -108,9 +107,8 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void RemoveSchedule(string serviceName)
 		{
-			var blobName = new ScheduledServiceStateName(serviceName);
-
-			_blobProvider.DeleteBlob(blobName);
+			var blobRef = new ScheduledServiceStateReference(serviceName);
+			_blobProvider.DeleteBlob(blobRef);
 		}
 
 
@@ -119,10 +117,9 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void ReleaseLease(string serviceName)
 		{
-			var blobName = new ScheduledServiceStateName(serviceName);
-
+			var blobRef = new ScheduledServiceStateReference(serviceName);
 			_blobProvider.UpdateIfNotModified(
-				blobName,
+				blobRef,
 				currentState =>
 				{
 					if (!currentState.HasValue)

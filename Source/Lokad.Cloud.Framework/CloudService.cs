@@ -28,7 +28,7 @@ namespace Lokad.Cloud
 		Stopped = 1
 	}
 
-	public class CloudServiceStateName : BaseTypedBlobName<CloudServiceState>
+	public class CloudServiceStateReference : BlobReference<CloudServiceState>
 	{
 		public override string ContainerName
 		{
@@ -37,14 +37,14 @@ namespace Lokad.Cloud
 
 		[Rank(0)] public readonly string ServiceName;
 
-		public CloudServiceStateName(string serviceName)
+		public CloudServiceStateReference(string serviceName)
 		{
 			ServiceName = serviceName;
 		}
 
-		public static BlobNamePrefix<CloudServiceStateName> GetPrefix()
+		public static BlobNamePrefix<CloudServiceStateReference> GetPrefix()
 		{
-			return new BlobNamePrefix<CloudServiceStateName>(CloudService.ServiceStateContainer, "");
+			return new BlobNamePrefix<CloudServiceStateReference>(CloudService.ServiceStateContainer, "");
 		}
 
 	}
@@ -145,7 +145,7 @@ namespace Lokad.Cloud
 			// checking service state at regular interval
 			if(now.Subtract(_lastStateCheck) > StateCheckInterval)
 			{
-				var stateBlobName = new CloudServiceStateName(Name);
+				var stateBlobName = new CloudServiceStateReference(Name);
 
 				var state = BlobStorage.GetBlobOrDelete(stateBlobName);
 

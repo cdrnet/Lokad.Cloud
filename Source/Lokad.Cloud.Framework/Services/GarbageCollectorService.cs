@@ -26,12 +26,12 @@ namespace Lokad.Cloud.Services
 		protected override void StartOnSchedule()
 		{
 			var executionExpiration = DateTimeOffset.Now.Add(MaxExecutionTime);
-			var containerName = BaseBlobName.GetContainerName<TemporaryBlobName>();
+			var containerName = BlobName.GetContainerName<TemporaryBlobName>();
 
 			// lazy enumeration over the overflowing messages
 			foreach (var blobName in BlobStorage.List(containerName, null))
 			{
-				var parsedName = BaseBlobName.Parse<TemporaryBlobName>(blobName);
+				var parsedName = BlobName.Parse<TemporaryBlobName>(blobName);
 
 				if (DateTimeOffset.Now <= parsedName.Expiration)
 				{

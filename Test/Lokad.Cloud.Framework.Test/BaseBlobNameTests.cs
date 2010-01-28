@@ -12,7 +12,7 @@ namespace Lokad.Cloud.Test
 	{
 		// ReSharper disable InconsistentNaming
 
-		class PatternA : BaseBlobName
+		class PatternA : BlobName
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -31,7 +31,7 @@ namespace Lokad.Cloud.Test
 			}
 		}
 
-		class PatternB : BaseBlobName
+		class PatternB : BlobName
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -46,7 +46,7 @@ namespace Lokad.Cloud.Test
 			}
 		}
 
-		class PatternC : BaseBlobName
+		class PatternC : BlobName
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -72,7 +72,7 @@ namespace Lokad.Cloud.Test
 			}
 		}
 
-		class PatternE : BaseBlobName
+		class PatternE : BlobName
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -96,11 +96,11 @@ namespace Lokad.Cloud.Test
 			var date = new DateTime(2009, 1, 1, 3, 4, 5);
 			var original = new PatternA(date, 12000, Guid.NewGuid(), 120);
 
-			var name = BaseBlobName.Print(original);
+			var name = BlobName.Print(original);
 
 			Console.WriteLine(name);
 
-			var parsed = BaseBlobName.Parse<PatternA>(name);
+			var parsed = BlobName.Parse<PatternA>(name);
 			Assert.AreNotSame(original, parsed);
 			Assert.AreEqual(original.Timestamp, parsed.Timestamp);
 			Assert.AreEqual(original.AccountHRID, parsed.AccountHRID);
@@ -111,7 +111,7 @@ namespace Lokad.Cloud.Test
 		[Test]
 		public void Get_ContainerName()
 		{
-			var name = BaseBlobName.GetContainerName<PatternA>();
+			var name = BlobName.GetContainerName<PatternA>();
 			Assert.AreEqual("my-test-container", name);
 		}
 
@@ -153,8 +153,8 @@ namespace Lokad.Cloud.Test
 			try
 			{
 				var original = new PatternB(Guid.NewGuid(), 1000);
-				var name = BaseBlobName.Print(original);
-				BaseBlobName.Parse<PatternA>(name);
+				var name = BlobName.Print(original);
+				BlobName.Parse<PatternA>(name);
 
 				Assert.Fail("#A00");
 			}
@@ -167,9 +167,9 @@ namespace Lokad.Cloud.Test
 			var date = new DateTime(2009, 1, 1, 3, 4, 5);
 			var pattern = new PatternA(date, 12000, Guid.NewGuid(), 120);
 
-			Assert.IsTrue(pattern.ToString().StartsWith(BaseBlobName.PartialPrint(pattern, 1)));
-			Assert.IsTrue(pattern.ToString().StartsWith(BaseBlobName.PartialPrint(pattern, 2)));
-			Assert.IsTrue(pattern.ToString().StartsWith(BaseBlobName.PartialPrint(pattern, 3)));
+			Assert.IsTrue(pattern.ToString().StartsWith(BlobName.PartialPrint(pattern, 1)));
+			Assert.IsTrue(pattern.ToString().StartsWith(BlobName.PartialPrint(pattern, 2)));
+			Assert.IsTrue(pattern.ToString().StartsWith(BlobName.PartialPrint(pattern, 3)));
 		}
 
 		[Test]
@@ -186,8 +186,8 @@ namespace Lokad.Cloud.Test
 			var unsafeUtcNow = utcNow.UtcDateTime;
 			var unsafeLocalNow = localNow.DateTime;
 
-			var localString = BaseBlobName.Print(new PatternE(unsafeLocalNow, localNow));
-			var localName = BaseBlobName.Parse<PatternE>(localString);
+			var localString = BlobName.Print(new PatternE(unsafeLocalNow, localNow));
+			var localName = BlobName.Parse<PatternE>(localString);
 
 			Assert.AreEqual(now, localName.AbsoluteTime, "DateTimeOffset-local");
 			Assert.AreEqual(utcNow, localName.AbsoluteTime, "DateTimeOffset-local-utc");
@@ -198,8 +198,8 @@ namespace Lokad.Cloud.Test
 			Assert.AreEqual(unsafeLocalNow, localName.UserTime, "DateTime-local-local");
 
 			Assert.AreNotEqual(unsafeUtcNow, localName.UserTime, "DateTime-local");
-			var utcString = BaseBlobName.Print(new PatternE(unsafeUtcNow, utcNow));
-			var utcName = BaseBlobName.Parse<PatternE>(utcString);
+			var utcString = BlobName.Print(new PatternE(unsafeUtcNow, utcNow));
+			var utcName = BlobName.Parse<PatternE>(utcString);
 
 			Assert.AreEqual(now, utcName.AbsoluteTime, "DateTimeOffset-utc");
 			Assert.AreEqual(utcNow, utcName.AbsoluteTime, "DateTimeOffset-local-utc");

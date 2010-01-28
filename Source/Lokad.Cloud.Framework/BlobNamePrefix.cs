@@ -10,7 +10,7 @@ namespace Lokad.Cloud
 {
 	/// <summary>Helper to facilitate blob storage enumeration.</summary>
 	[Serializable, DataContract]
-	public class BlobNamePrefix<T> where T : BaseBlobName
+	public class BlobNamePrefix<T> where T : BlobName
 	{
 		[DataMember] public string Container { get; set; }
 		[DataMember] public string Prefix { get; set; }

@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -68,41 +68,24 @@ namespace Lokad.Cloud
 			return builder.ToString();
 		}
 
-		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseBlobName fullName, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
+		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BlobReference<T> reference, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
 		{
-			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
+			AtomicUpdate(provider, reference.ContainerName, reference.ToString(), updater, out result);
 		}
 
-		/// <remarks>This overload ensures correct types in case of typed blob names.</remarks>
-		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
+		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BlobReference<T> reference, Func<Maybe<T>, T> updater, out T result)
 		{
-			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
+			AtomicUpdate(provider, reference.ContainerName, reference.ToString(), updater, out result);
 		}
 
-		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseBlobName fullName, Func<Maybe<T>, T> updater, out T result)
-		{
-			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
-		}
-
-		/// <remarks>This overload ensures correct types in case of typed blob names.</remarks>
-		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName, Func<Maybe<T>, T> updater, out T result)
-		{
-			AtomicUpdate(provider, fullName.ContainerName, fullName.ToString(), updater, out result);
-		}
-
-		public static bool DeleteBlob(this IBlobStorageProvider provider, BaseBlobName fullName)
+		public static bool DeleteBlob(this IBlobStorageProvider provider, BlobName fullName)
 		{
 			return provider.DeleteBlob(fullName.ContainerName, fullName.ToString());
 		}
 
-		public static Maybe<T> GetBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName)
+		public static Maybe<T> GetBlob<T>(this IBlobStorageProvider provider, BlobReference<T> reference)
 		{
-			return provider.GetBlob<T>(fullName.ContainerName, fullName.ToString());
-		}
-
-		public static Maybe<T> GetBlob<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName)
-		{
-			return provider.GetBlob<T>(fullName.ContainerName, fullName.ToString());
+			return provider.GetBlob<T>(reference.ContainerName, reference.ToString());
 		}
 
 		/// <summary>Gets the corresponding object. If the deserialization fails
@@ -127,99 +110,56 @@ namespace Lokad.Cloud
 
 		/// <summary>Gets the corresponding object. If the deserialization fails
 		/// just delete the existing copy.</summary>
-		public static Maybe<T> GetBlobOrDelete<T>(this IBlobStorageProvider provider, BaseBlobName fullName)
+		public static Maybe<T> GetBlobOrDelete<T>(this IBlobStorageProvider provider, BlobReference<T> reference)
 		{
-			return provider.GetBlobOrDelete<T>(fullName.ContainerName, fullName.ToString());
+			return provider.GetBlobOrDelete<T>(reference.ContainerName, reference.ToString());
 		}
 
-		/// <summary>Gets the corresponding object. If the deserialization fails
-		/// just delete the existing copy.</summary>
-		public static Maybe<T> GetBlobOrDelete<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName)
+		public static void PutBlob<T>(this IBlobStorageProvider provider, BlobReference<T> reference, T item)
 		{
-			return provider.GetBlobOrDelete<T>(fullName.ContainerName, fullName.ToString());
+			provider.PutBlob(reference.ContainerName, reference.ToString(), item);
 		}
 
-		public static void PutBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName, T item)
+		public static bool PutBlob<T>(this IBlobStorageProvider provider, BlobReference<T> reference, T item, bool overwrite)
 		{
-			provider.PutBlob(fullName.ContainerName, fullName.ToString(), item);
-		}
-
-		/// <remarks>This overload ensures correct types in case of typed blob names.</remarks>
-		public static void PutBlob<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName, T item)
-		{
-			provider.PutBlob(fullName.ContainerName, fullName.ToString(), item);
-		}
-
-		public static bool PutBlob<T>(this IBlobStorageProvider provider, BaseBlobName fullName, T item, bool overwrite)
-		{
-			return provider.PutBlob(fullName.ContainerName, fullName.ToString(), item, overwrite);
-		}
-
-		/// <remarks>This overload ensures correct types in case of typed blob names.</remarks>
-		public static bool PutBlob<T>(this IBlobStorageProvider provider, BaseTypedBlobName<T> fullName, T item, bool overwrite)
-		{
-			return provider.PutBlob(fullName.ContainerName, fullName.ToString(), item, overwrite);
+			return provider.PutBlob(reference.ContainerName, reference.ToString(), item, overwrite);
 		}
 
 		public static IEnumerable<string> List<N>(this IBlobStorageProvider provider, string prefix) 
-			where N : BaseBlobName
+			where N : BlobName
 		{
-			return provider.List(BaseBlobName.GetContainerName<N>(), prefix);
+			return provider.List(BlobName.GetContainerName<N>(), prefix);
 		}
 
 		public static IEnumerable<T> List<T>(
-			this IBlobStorageProvider provider, BlobNamePrefix<T> prefix) where T : BaseBlobName
+			this IBlobStorageProvider provider, BlobNamePrefix<T> prefix) where T : BlobName
 		{
 			return provider.List(prefix.Container, prefix.Prefix)
-				.Select(rawName => BaseBlobName.Parse<T>(rawName));
+				.Select(rawName => BlobName.Parse<T>(rawName));
 		}
 
 		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
-			BaseBlobName fullName, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
+			BlobReference<T> reference, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
 		{
-			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater, out result);
+			return provider.UpdateIfNotModified(reference.ContainerName, reference.ToString(), updater, out result);
 		}
 
 		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
-			BaseTypedBlobName<T> fullName, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
+			BlobReference<T> reference, Func<Maybe<T>, T> updater, out T result)
 		{
-			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater, out result);
+			return provider.UpdateIfNotModified(reference.ContainerName, reference.ToString(), updater, out result);
 		}
 
 		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
-			BaseBlobName fullName, Func<Maybe<T>, T> updater, out T result)
+			BlobReference<T> reference, Func<Maybe<T>, Result<T>> updater)
 		{
-			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater, out result);
+			return provider.UpdateIfNotModified(reference.ContainerName, reference.ToString(), updater);
 		}
 
 		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
-			BaseTypedBlobName<T> fullName, Func<Maybe<T>, T> updater, out T result)
+			BlobReference<T> reference, Func<Maybe<T>, T> updater)
 		{
-			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater, out result);
-		}
-
-		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
-			BaseBlobName fullName, Func<Maybe<T>, Result<T>> updater)
-		{
-			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
-		}
-
-		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
-			BaseTypedBlobName<T> fullName, Func<Maybe<T>, Result<T>> updater)
-		{
-			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
-		}
-
-		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
-			BaseBlobName fullName, Func<Maybe<T>, T> updater)
-		{
-			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
-		}
-
-		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
-			BaseTypedBlobName<T> fullName, Func<Maybe<T>, T> updater)
-		{
-			return provider.UpdateIfNotModified(fullName.ContainerName, fullName.ToString(), updater);
+			return provider.UpdateIfNotModified(reference.ContainerName, reference.ToString(), updater);
 		}
 
 		/// <summary>Gets messages from a queue with a visibility timeout of 2 hours.</summary>
