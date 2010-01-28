@@ -270,7 +270,7 @@ namespace Lokad.Cloud.Azure
 
 		byte[] PutOverflowingMessageAndWrap<T>(string queueName, T message)
 		{
-			var blobName = OverflowingMessageBlobName.GetNew(queueName);
+			var blobName = OverflowingMessageBlobName<T>.GetNew(queueName);
 
 			// HACK: In this case serialization is performed another time (internally)
 			_blobStorage.PutBlob(blobName, message);
@@ -454,7 +454,7 @@ namespace Lokad.Cloud.Azure
 		public bool IsOverflowing { get; set; }
 	}
 
-	public class OverflowingMessageBlobName : BaseBlobName
+	public class OverflowingMessageBlobName<T> : BaseTypedBlobName<T>
 	{
 		public override string ContainerName
 		{
@@ -473,9 +473,9 @@ namespace Lokad.Cloud.Azure
 			MessageId = guid;
 		}
 
-		public static OverflowingMessageBlobName GetNew(string queueName)
+		public static OverflowingMessageBlobName<T> GetNew(string queueName)
 		{
-			return new OverflowingMessageBlobName(queueName, Guid.NewGuid());
+			return new OverflowingMessageBlobName<T>(queueName, Guid.NewGuid());
 		}
 	}
 }

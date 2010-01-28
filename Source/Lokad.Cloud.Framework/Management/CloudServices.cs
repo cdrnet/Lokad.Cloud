@@ -34,7 +34,7 @@ namespace Lokad.Cloud.Management
 		{
 			foreach (var blobName in _blobProvider.List(CloudServiceStateName.GetPrefix()))
 			{
-				var blob = _blobProvider.GetBlobOrDelete<CloudServiceState?>(blobName);
+				var blob = _blobProvider.GetBlobOrDelete(blobName);
 				if (!blob.HasValue)
 				{
 					continue;
@@ -44,7 +44,7 @@ namespace Lokad.Cloud.Management
 				yield return new ServiceInfo
 					{
 						ServiceName = blobName.ServiceName,
-						State = state.Value
+						State = state
 					};
 			}
 		}
@@ -73,13 +73,21 @@ namespace Lokad.Cloud.Management
 		}
 
 		/// <summary>
-		/// Set or update the state of a cloud service
+		/// Enable a cloud service
 		/// </summary>
-		public void SetServiceState(string serviceName, CloudServiceState state)
+		public void EnableService(string serviceName)
 		{
 			var blobName = new CloudServiceStateName(serviceName);
+			_blobProvider.PutBlob(blobName, CloudServiceState.Started);
+		}
 
-			_blobProvider.PutBlob<CloudServiceState?>(blobName, state);
+		/// <summary>
+		/// Disable a cloud service
+		/// </summary>
+		public void DisableService(string serviceName)
+		{
+			var blobName = new CloudServiceStateName(serviceName);
+			_blobProvider.PutBlob(blobName, CloudServiceState.Stopped);
 		}
 
 		/// <summary>
@@ -88,8 +96,7 @@ namespace Lokad.Cloud.Management
 		public void ToggleServiceState(string serviceName)
 		{
 			var blobName = new CloudServiceStateName(serviceName);
-
-			_blobProvider.UpdateIfNotModified<CloudServiceState?>(
+			_blobProvider.UpdateIfNotModified(
 				blobName,
 				s => s.HasValue
 					? (s.Value == CloudServiceState.Started ? CloudServiceState.Stopped : CloudServiceState.Started)
