@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System.Linq;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
@@ -45,7 +46,14 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 		void OnRoleEnvironmentChanging(object sender, RoleEnvironmentChangingEventArgs e)
 		{
-			RoleEnvironment.RequestRecycle();
+			// we restart all workers if the configuration changed (e.g. the storage account)
+			// for now. This might be tweaked in the future. We do not request a recycle
+			// though if only the topology changed, e.g. if some instances have been removed or added.
+			var configChanges = e.Changes.OfType<RoleEnvironmentConfigurationSettingChange>();
+			if(configChanges.Any())
+			{
+				RoleEnvironment.RequestRecycle();
+			}
 		}
 
 		//void OnRoleEnvironmentStopping(object sender, RoleEnvironmentStoppingEventArgs e)
