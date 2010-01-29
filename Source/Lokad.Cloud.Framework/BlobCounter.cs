@@ -18,7 +18,7 @@ namespace Lokad.Cloud
 		/// over a queue.</summary>
 		/// <remarks>The constant value is <c>2^48</c>, expected to be sufficiently
 		/// large to avoid any arithmetic overflow with <c>long</c> values.</remarks>
-		public const long Aleph = 2L << 48;
+		public const long Aleph = 1L << 48;
 
 		/// <summary>Container that is storing the counter.</summary>
 		public string ContainerName { get { return _containerName; } }
