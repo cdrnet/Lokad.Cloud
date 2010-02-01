@@ -1,22 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ServiceDefinition name="Lokad.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition">
-	<!-- Full trust is needed for binary serialization -->
-	<WebRole name="Lokad.Cloud.WebRole" enableNativeCodeExecution="true">
-		<InputEndpoints>
-			<!-- Must use port 80 for http and port 443 for https when running in the cloud -->
-			<InputEndpoint name="HttpIn" protocol="http" port="80" />
-		</InputEndpoints>
-		<ConfigurationSettings>
-			<Setting name="DataConnectionString"/>
-			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
-			<Setting name="Admins" />
-		</ConfigurationSettings>
-	</WebRole>
-	<!-- Full trust is needed for binary serialization -->
-	<WorkerRole name="Lokad.Cloud.WorkerRole" enableNativeCodeExecution="true">
-		<LocalStorage name="LokadCloudStorage" sizeInMB="2"/>
-		<ConfigurationSettings>
-			<Setting name="DataConnectionString"/>
-		</ConfigurationSettings>
-	</WorkerRole>
+  <!-- Full trust is needed for binary serialization -->
+  <WebRole name="Lokad.Cloud.WebRole" enableNativeCodeExecution="true">
+    <InputEndpoints>
+      <!-- Must use port 80 for http and port 443 for https when running in the cloud -->
+      <InputEndpoint name="HttpIn" protocol="http" port="80" />
+    </InputEndpoints>
+    <ConfigurationSettings>
+      <Setting name="DataConnectionString" />
+      <!--Space separated OpenId identifiers (don't forget the trailing slash) -->
+      <Setting name="Admins" />
+    </ConfigurationSettings>
+    <Certificates>
+      <Certificate name="AzureSelfManagement" storeLocation="LocalMachine" storeName="My" />
+    </Certificates>
+  </WebRole>
+  <!-- Full trust is needed for binary serialization -->
+  <WorkerRole name="Lokad.Cloud.WorkerRole" enableNativeCodeExecution="true">
+    <LocalStorage name="LokadCloudStorage" sizeInMB="2" />
+    <ConfigurationSettings>
+      <Setting name="DataConnectionString" />
+    </ConfigurationSettings>
+    <Certificates>
+      <Certificate name="AzureSelfManagement" storeLocation="LocalMachine" storeName="My" />
+    </Certificates>
+  </WorkerRole>
 </ServiceDefinition>
