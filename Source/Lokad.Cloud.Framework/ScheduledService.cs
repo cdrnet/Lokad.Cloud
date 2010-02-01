@@ -116,12 +116,19 @@ namespace Lokad.Cloud
 
 			// 1. SIMPLE WORKER-SCOPED SCHEDULING CASE
 
-			// per-worker scheduling does not need any write request to be made toward the storage
 			if (_scheduledPerWorker)
 			{
-				// if no state can be found in the storage, then use default state instead
-				var blobState = BlobStorage.GetBlob(stateReference);
-				var state = blobState.HasValue ? blobState.Value : GetDefaultState();
+				var blobState = BlobStorage.GetBlobOrDelete(stateReference);
+				if (!blobState.HasValue)
+				{
+					// even though we will never change it from here, a state blob 
+					// still needs to exist so it can be configured by the console
+					var newState = GetDefaultState();
+					BlobStorage.PutBlob(stateReference, newState);
+					blobState = newState;
+				}
+
+				var state = blobState.Value;
 
 				var now = DateTimeOffset.Now;
 				if (now.Subtract(state.TriggerInterval) >= _workerScopeLastExecuted)
