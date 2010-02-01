@@ -124,7 +124,7 @@ namespace Lokad.Cloud
 				var state = blobState.HasValue ? blobState.Value : GetDefaultState();
 
 				var now = DateTimeOffset.Now;
-				if (now.Subtract(_workerScopeLastExecuted) < state.TriggerInterval)
+				if (now.Subtract(state.TriggerInterval) >= _workerScopeLastExecuted)
 				{
 					_workerScopeLastExecuted = now;
 					StartOnSchedule();
@@ -158,7 +158,7 @@ namespace Lokad.Cloud
 						}
 
 						var state = currentState.Value;
-						if (now.Subtract(state.LastExecuted) < state.TriggerInterval)
+						if (now.Subtract(state.TriggerInterval) >= state.LastExecuted)
 						{
 							return Result<ScheduledServiceState>.CreateError("No need to update.");
 						}
