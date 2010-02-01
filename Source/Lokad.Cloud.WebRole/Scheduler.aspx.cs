@@ -30,7 +30,7 @@ namespace Lokad.Cloud.Web
 				.Select(info => new
 					{
 						Name = info.ServiceName,
-						LastStarted = info.LastExecuted.PrettyFormatRelativeToNow(),
+						LastStarted = PrettyFormatLastExecuted(info),
 						Period = info.TriggerInterval,
 						Scope = info.WorkerScoped ? "Worker" : "Cloud",
 						Lease = PrettyFormatLease(info)
@@ -67,6 +67,8 @@ namespace Lokad.Cloud.Web
 				int.Parse(NewIntervalBox.Text).Seconds());
 
 			ScheduleView.DataBind();
+			ServiceList.DataBind();
+			LeaseList.DataBind();
 		}
 
 		protected void DeleteButton_Click(object sender, EventArgs e)
@@ -80,8 +82,9 @@ namespace Lokad.Cloud.Web
 			var serviceName = ServiceList.SelectedValue;
 			_cloudServiceScheduling.RemoveSchedule(serviceName);
 
-			LeaseList.DataBind();
 			ServiceList.DataBind();
+			ScheduleView.DataBind();
+			LeaseList.DataBind();
 		}
 
 		protected void ReleaseButton_Click(object sender, EventArgs e)
@@ -96,7 +99,18 @@ namespace Lokad.Cloud.Web
 			_cloudServiceScheduling.ReleaseLease(serviceName);
 
 			LeaseList.DataBind();
+			ScheduleView.DataBind();
 			ServiceList.DataBind();
+		}
+
+		string PrettyFormatLastExecuted(ServiceSchedulingInfo info)
+		{
+			if(info.WorkerScoped)
+			{
+				return "untracked";
+			}
+
+			return info.LastExecuted.PrettyFormatRelativeToNow();
 		}
 
 		string PrettyFormatLease(ServiceSchedulingInfo info)
