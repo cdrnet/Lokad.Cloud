@@ -6,6 +6,7 @@
 using System;
 using System.Data.Services.Client;
 using System.Text.RegularExpressions;
+using Lokad.Diagnostics;
 using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Azure
@@ -33,16 +34,30 @@ namespace Lokad.Cloud.Azure
 		/// </summary>
 		public static ActionPolicy SlowInstantiation { get; private set; }
 
+		// Instrumentation
+		static readonly ExecutionCounter _countOnTransientServerError;
+		static readonly ExecutionCounter _countOnTransientTableError;
+		static readonly ExecutionCounter _countOnSlowInstantiation;
+
 		/// <summary>
 		/// Static Constructor
 		/// </summary>
 		static AzurePolicies()
 		{
+			// Instrumentation
+			ExecutionCounters.Default.RegisterRange(new[]
+				{
+					_countOnTransientServerError = new ExecutionCounter("Policies.ServerErrorRetryWait", 0, 0),
+					_countOnTransientTableError = new ExecutionCounter("Policies.TableErrorRetryWait", 0, 0),
+					_countOnSlowInstantiation = new ExecutionCounter("Policies.SlowInstantiationRetryWait", 0, 0)
+				});
+
+			// Initialize Policies
 			TransientServerErrorBackOff = ActionPolicy.With(TransientServerErrorExceptionFilter)
 				.Retry(30, OnTransientServerErrorRetry);
 
 			TransientTableErrorBackOff = ActionPolicy.With(TransientTableErrorExceptionFilter)
-				.Retry(30, OnTransientServerErrorRetry);
+				.Retry(30, OnTransientTableErrorRetry);
 
 			SlowInstantiation = ActionPolicy.With(SlowInstantiationExceptionFilter)
 				.Retry(30, OnSlowInstantiationRetry);
@@ -52,15 +67,36 @@ namespace Lokad.Cloud.Azure
 		{
 			// NOTE: we can't log here, since logging would fail as well
 
+			var timestamp = _countOnTransientServerError.Open();
+
 			// quadratic backoff, capped at 5 minutes
 			var c = count + 1;
 			SystemUtil.Sleep(Math.Min(300, c * c).Seconds());
+
+			_countOnTransientServerError.Close(timestamp);
+		}
+
+		static void OnTransientTableErrorRetry(Exception exception, int count)
+		{
+			// NOTE: we can't log here, since logging would fail as well
+
+			var timestamp = _countOnTransientTableError.Open();
+
+			// quadratic backoff, capped at 5 minutes
+			var c = count + 1;
+			SystemUtil.Sleep(Math.Min(300, c * c).Seconds());
+
+			_countOnTransientTableError.Close(timestamp);
 		}
 
 		static void OnSlowInstantiationRetry(Exception exception, int count)
 		{
+			var timestamp = _countOnSlowInstantiation.Open();
+
 			// linear backoff
 			SystemUtil.Sleep((100 * count).Milliseconds());
+
+			_countOnSlowInstantiation.Close(timestamp);
 		}
 
 		static bool TransientServerErrorExceptionFilter(Exception exception)

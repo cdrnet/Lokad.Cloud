@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Lokad.Diagnostics;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
@@ -31,6 +32,10 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		CloudService _currentService;
 		bool _isRunning;
 
+		// Instrumentation
+		readonly ExecutionCounter _countIdleSleep;
+		readonly ExecutionCounter _countBusyExecute;
+
 		/// <summary>
 		/// Creates a new instance of the Scheduler class.
 		/// </summary>
@@ -40,6 +45,13 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		{
 			_serviceProvider = serviceProvider;
 			_schedule = schedule;
+
+			// Instrumentation
+			ExecutionCounters.Default.RegisterRange(new[]
+				{
+					_countIdleSleep = new ExecutionCounter("ServiceFabricRuntime.IdleSleep", 0, 0),
+					_countBusyExecute = new ExecutionCounter("ServiceFabricRuntime.BusyExecute", 0, 0)
+				});
 		}
 
 		public CloudService CurrentlyScheduledService
@@ -67,21 +79,31 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				// as long the service is active, keep triggering the same service
 				// for at least 1min (in order to avoid a single service to monopolize CPU)
 				var start = DateTimeOffset.Now;
+				
 				while (DateTimeOffset.Now.Subtract(start) < _moreOfTheSame && DemandsImmediateStart(result))
 				{
-					yield return () => { result = _schedule(_currentService); };
+					yield return () =>
+						{
+							var busyExecuteTimestamp = _countBusyExecute.Open();
+							result = _schedule(_currentService);
+							_countBusyExecute.Close(busyExecuteTimestamp);
+						};
 					isRunOnce |= WasSuccessfullyExecuted(result);
 				}
+				
 
 				skippedConsecutively = isRunOnce ? 0 : skippedConsecutively + 1;
 				if (skippedConsecutively >= services.Length)
 				{
 					// We are not using 'Thread.Sleep' because we want the worker
 					// to terminate fast if 'Stop' is requested.
+
+					var idleSleepTimestamp = _countIdleSleep.Open();
 					lock (_sync)
 					{
 						Monitor.Wait(_sync, _idleSleep);
 					}
+					_countIdleSleep.Close(idleSleepTimestamp);
 
 					skippedConsecutively = 0;
 				}

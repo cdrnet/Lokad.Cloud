@@ -22,6 +22,7 @@ namespace Lokad.Cloud.Azure
 		readonly IBinaryFormatter _formatter;
 		readonly ActionPolicy _azureServerPolicy;
 
+		// Instrumentation
 		readonly ExecutionCounter _countPutBlob;
 		readonly ExecutionCounter _countGetBlob;
 		readonly ExecutionCounter _countGetBlobIfModified;
@@ -34,6 +35,7 @@ namespace Lokad.Cloud.Azure
 			_formatter = formatter;
 			_azureServerPolicy = AzurePolicies.TransientServerErrorBackOff;
 
+			// Instrumentation
 			ExecutionCounters.Default.RegisterRange(new[]
 				{
 					_countPutBlob = new ExecutionCounter("BlobStorageProvider.PutBlob", 0, 0),
