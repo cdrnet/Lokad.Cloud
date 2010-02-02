@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -100,6 +100,7 @@
     <Compile Include="Diagnostics\Persistence\PartitionStatisticsReference.cs" />
     <Compile Include="Diagnostics\Persistence\ServiceStatisticsReference.cs" />
     <Compile Include="ITableStorageProvider.cs" />
+    <Compile Include="Mock\MemoryTableStorageProvider.cs" />
     <Compile Include="ServiceFabric\ServiceExecutionFeedback.cs" />
     <Compile Include="ServiceFabric\SynchronizationLeaseState.cs" />
     <Compile Include="ServiceFabric\Runtime\AssemblyLoader.cs" />
