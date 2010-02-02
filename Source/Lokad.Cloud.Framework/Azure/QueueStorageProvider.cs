@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using Lokad.Diagnostics;
 using Lokad.Quality;
 using Microsoft.WindowsAzure.StorageClient;
 
@@ -35,6 +36,13 @@ namespace Lokad.Cloud.Azure
 		readonly IBinaryFormatter _formatter;
 		readonly ActionPolicy _azureServerPolicy;
 
+		// Instrumentation
+		readonly ExecutionCounter _countGetMessage;
+		readonly ExecutionCounter _countPutMessage;
+		readonly ExecutionCounter _countDeleteMessage;
+		readonly ExecutionCounter _countWrapMessage;
+		readonly ExecutionCounter _countUnwrapMessage;
+
 		// messages currently being processed (boolean property indicates if the message is overflowing)
 		private readonly Dictionary<object, InProcessMessage> _inProcessMessages;
 
@@ -48,6 +56,16 @@ namespace Lokad.Cloud.Azure
 			_azureServerPolicy = AzurePolicies.TransientServerErrorBackOff;
 
 			_inProcessMessages = new Dictionary<object, InProcessMessage>(20);
+
+			// Instrumentation
+			ExecutionCounters.Default.RegisterRange(new[]
+				{
+					_countGetMessage = new ExecutionCounter("QueueStorageProvider.Get", 0, 0),
+					_countPutMessage = new ExecutionCounter("QueueStorageProvider.PutSingle", 0, 0),
+					_countDeleteMessage = new ExecutionCounter("QueueStorageProvider.DeleteSingle", 0, 0),
+					_countWrapMessage = new ExecutionCounter("QueueStorageProvider.WrapSingle", 0, 0),
+					_countUnwrapMessage = new ExecutionCounter("QueueStorageProvider.UnwrapSingle", 0, 0),
+				});
 		}
 
 		public IEnumerable<string> List(string prefix)
@@ -78,6 +96,8 @@ namespace Lokad.Cloud.Azure
 
 		public IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout)
 		{
+			var timestamp = _countGetMessage.Open();
+
 			var queue = _queueStorage.GetQueueReference(queueName);
 
 			IEnumerable<CloudQueueMessage> rawMessages;
@@ -101,6 +121,7 @@ namespace Lokad.Cloud.Azure
 			// skip empty queue
 			if (null == rawMessages)
 			{
+				_countGetMessage.Close(timestamp);
 				return new T[0];
 			}
 
@@ -157,6 +178,8 @@ namespace Lokad.Cloud.Azure
 			// unwrapping messages
 			foreach (var mw in wrappedMessages)
 			{
+				var unwrapTimestamp = _countUnwrapMessage.Open();
+
 				string ignored;
 				var blobContent = _blobStorage.GetBlob(mw.ContainerName, mw.BlobName, typeof(T), out ignored);
 
@@ -201,8 +224,10 @@ namespace Lokad.Cloud.Azure
 				}
 
 				messages.Add(innerMessage);
+				_countUnwrapMessage.Close(unwrapTimestamp);
 			}
 
+			_countGetMessage.Close(timestamp);
 			return messages;
 		}
 
@@ -217,6 +242,7 @@ namespace Lokad.Cloud.Azure
 
 			foreach (var message in messages)
 			{
+				var timestamp = _countPutMessage.Open();
 				using (var stream = new MemoryStream())
 				{
 					_formatter.Serialize(stream, message);
@@ -265,11 +291,14 @@ namespace Lokad.Cloud.Azure
 						}
 					}
 				}
+				_countPutMessage.Close(timestamp);
 			}
 		}
 
 		byte[] PutOverflowingMessageAndWrap<T>(string queueName, T message)
 		{
+			var timestamp = _countWrapMessage.Open();
+
 			var blobRef = OverflowingMessageBlobReference<T>.GetNew(queueName);
 
 			// HACK: In this case serialization is performed another time (internally)
@@ -284,7 +313,11 @@ namespace Lokad.Cloud.Azure
 			using (var stream = new MemoryStream())
 			{
 				_formatter.Serialize(stream, mw);
-				return stream.ToArray();
+				var serializerWrapper = stream.ToArray();
+
+				_countWrapMessage.Close(timestamp);
+
+				return serializerWrapper;
 			}
 		}
 
@@ -331,6 +364,8 @@ namespace Lokad.Cloud.Azure
 
 			foreach (var message in messages)
 			{
+				var timestamp = _countDeleteMessage.Open();
+
 				CloudQueueMessage rawMessage;
 				bool isOverflowing;
 
@@ -382,6 +417,8 @@ namespace Lokad.Cloud.Azure
 						_inProcessMessages.Remove(message);
 					}
 				}
+
+				_countDeleteMessage.Close(timestamp);
 			}
 
 			return deletionCount;
