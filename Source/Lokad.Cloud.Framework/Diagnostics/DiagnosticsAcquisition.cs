@@ -16,6 +16,7 @@ namespace Lokad.Cloud.Diagnostics
 		readonly ExecutionProfilingMonitor _executionProfiling;
 		readonly ExceptionTrackingMonitor _exceptionTracking;
 		readonly PartitionMonitor _partitionMonitor;
+		readonly ServiceMonitor _serviceMonitor;
 
 		/// <remarks>IoC Injected, but optional</remarks>
 		public ICloudDiagnosticsSource DiagnosticsSource { get; set; }
@@ -25,6 +26,7 @@ namespace Lokad.Cloud.Diagnostics
 			_executionProfiling = new ExecutionProfilingMonitor(repository);
 			_exceptionTracking = new ExceptionTrackingMonitor(repository);
 			_partitionMonitor = new PartitionMonitor(repository);
+			_serviceMonitor = new ServiceMonitor(repository);
 		}
 		
 		/// <summary>
@@ -33,9 +35,11 @@ namespace Lokad.Cloud.Diagnostics
 		/// </summary>
 		public void CollectStatistics()
 		{
-			_executionProfiling.UpdateStatistics();
-			_exceptionTracking.UpdateStatistics();
+			_executionProfiling.UpdateDefaultStatistics();
+			_exceptionTracking.UpdateDefaultStatistics();
+
 			_partitionMonitor.UpdateStatistics();
+			_serviceMonitor.UpdateStatistics();
 
 			if (DiagnosticsSource != null)
 			{

@@ -36,7 +36,7 @@ namespace Lokad.Cloud.Web
 						Runtime = s.Runtime,
 						Cores = s.ProcessorCount,
 						Threads = s.ThreadCount,
-						Processing = s.TotalProcessorTime.PrettyFormat(),
+						CPU = s.TotalProcessorTime.PrettyFormat(),
 						//Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat(),
 						Active = PrettyFormatActiveTime(s.ActiveTime, s.StartCount),
 						Usage = PrettyFormatUsage(s.TotalProcessorTime, s.ActiveTime),
@@ -52,8 +52,12 @@ namespace Lokad.Cloud.Web
 				.Select<ServiceStatistics, object>(s => new
 					{
 						Service = s.Name,
-						Processing = s.TotalProcessorTime.PrettyFormat(),
-						Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat()
+						Count = s.Count,
+						CPU = s.TotalProcessorTime.PrettyFormat(),
+						//Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat()
+						Total = s.AbsoluteTime.PrettyFormat(),
+						Average = s.Count == 0 ? "N/A" : TimeSpan.FromTicks(s.AbsoluteTime.Ticks / s.Count).PrettyFormat(),
+						Max = s.MaxAbsoluteTime.PrettyFormat(),
 					})
 				.Take(50)
 				.ToList();

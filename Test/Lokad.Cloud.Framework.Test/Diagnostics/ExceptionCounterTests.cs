@@ -28,7 +28,7 @@ namespace Lokad.Cloud.Test.Diagnostics
 				.Sum(e => e.Count);
 
 			ExceptionCounters.Default.Add(new Exception("Test Exception"));
-			monitor.UpdateStatistics();
+			monitor.UpdateDefaultStatistics();
 
 			Assert.AreEqual(
 				countBefore + 1,

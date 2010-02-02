@@ -49,8 +49,8 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			// Instrumentation
 			ExecutionCounters.Default.RegisterRange(new[]
 				{
-					_countIdleSleep = new ExecutionCounter("ServiceFabricRuntime.IdleSleep", 0, 0),
-					_countBusyExecute = new ExecutionCounter("ServiceFabricRuntime.BusyExecute", 0, 0)
+					_countIdleSleep = new ExecutionCounter("Runtime.IdleSleep", 0, 0),
+					_countBusyExecute = new ExecutionCounter("Runtime.BusyExecute", 0, 0)
 				});
 		}
 

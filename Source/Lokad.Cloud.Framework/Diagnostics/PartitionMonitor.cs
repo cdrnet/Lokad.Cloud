@@ -7,7 +7,7 @@ using System;
 using System.Diagnostics;
 using Lokad.Cloud.Azure;
 
-// TODO: Discard old data (based on .LastUpdate)
+// TODO: Discard old data
 
 namespace Lokad.Cloud.Diagnostics
 {
@@ -35,11 +35,11 @@ namespace Lokad.Cloud.Diagnostics
 			var process = Process.GetCurrentProcess();
 			var timestamp = DateTimeOffset.Now;
 
-			UpdateStatistics(TimeSegments.Day(timestamp), process);
-			UpdateStatistics(TimeSegments.Month(timestamp), process);
+			Update(TimeSegments.Day(timestamp), process);
+			Update(TimeSegments.Month(timestamp), process);
 		}
 
-		void UpdateStatistics(string timeSegment, Process process)
+		void Update(string timeSegment, Process process)
 		{
 			_repository.UpdatePartitionStatistics(
 				timeSegment,

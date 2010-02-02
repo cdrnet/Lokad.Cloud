@@ -27,5 +27,12 @@ namespace Lokad.Cloud.Diagnostics
 		public TimeSpan TotalProcessorTime { get; set; }
 		[DataMember]
 		public TimeSpan UserProcessorTime { get; set; }
+
+		[DataMember(IsRequired = false, EmitDefaultValue = true)]
+		public TimeSpan AbsoluteTime { get; set; }
+		[DataMember(IsRequired = false, EmitDefaultValue = true)]
+		public TimeSpan MaxAbsoluteTime { get; set; }
+		[DataMember(IsRequired = false, EmitDefaultValue = true)]
+		public long Count { get; set; }
 	}
 }

@@ -31,7 +31,7 @@ namespace Lokad.Cloud.Test.Diagnostics
 			counter.Close(timestamp);
 
 			ExecutionCounters.Default.RegisterRange(new[] {counter});
-			monitor.UpdateStatistics();
+			monitor.UpdateDefaultStatistics();
 
 			Assert.AreEqual(
 				count + 1,

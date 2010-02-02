@@ -33,7 +33,7 @@ namespace Lokad.Cloud.Diagnostics
 		/// <remarks>
 		/// Base implementation collects default counters of this worker
 		/// </remarks>
-		public virtual void UpdateStatistics()
+		public void UpdateDefaultStatistics()
 		{
 			var counters = ExecutionCounters.Default;
 			var data = counters.ToList().ToArray().ToPersistence();
