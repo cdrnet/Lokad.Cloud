@@ -165,7 +165,7 @@ namespace Lokad.Cloud
 						}
 
 						var state = currentState.Value;
-						if (now.Subtract(state.TriggerInterval) >= state.LastExecuted)
+						if (now.Subtract(state.TriggerInterval) < state.LastExecuted)
 						{
 							return Result<ScheduledServiceState>.CreateError("No need to update.");
 						}
