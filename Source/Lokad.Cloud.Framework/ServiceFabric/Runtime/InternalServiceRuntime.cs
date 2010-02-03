@@ -12,6 +12,7 @@ using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
+using Lokad.Diagnostics;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
@@ -28,6 +29,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <summary>Container used to populate cloud service properties.</summary>
 		public IContainer RuntimeContainer { get; set; }
 
+		// Instrumentation
+		readonly ExceptionCounters _exceptions;
+
 		/// <summary>IoC constructor.</summary>
 		public InternalServiceRuntime(
 			CloudInfrastructureProviders providers,
@@ -36,6 +40,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			_providers = providers;
 			_monitoring = new ServiceMonitor(diagnosticsRepository);
 			_diagnostics = new DiagnosticsAcquisition(diagnosticsRepository);
+
+			// Instrumentation
+			_exceptions = ExceptionCounters.Default;
 		}
 
 		/// <summary>The name of the service that is being executed, if any, <c>null</c> otherwise.</summary>
@@ -82,8 +89,13 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 					// throws a 'TriggerRestartException' if a new package is detected.
 					loader.CheckUpdate(true);
 				}
-				catch
+				catch(Exception ex)
 				{
+					if(!(ex is TriggerRestartException))
+					{
+						_exceptions.Add(ex);
+					}
+
 					TryDumpDiagnostics();
 					throw;
 				}

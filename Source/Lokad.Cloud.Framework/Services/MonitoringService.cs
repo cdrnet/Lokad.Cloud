@@ -12,7 +12,7 @@ namespace Lokad.Cloud.Services
 	/// </summary>
 	[ScheduledServiceSettings(
 		   AutoStart = true,
-		   TriggerInterval = 5 * 60, // 1 execution every 5min
+		   TriggerInterval = 2 * 60, // 1 execution every 2min
 		   SchedulePerWorker = true,
 		   Description = "Collects and persists monitoring statistics.")] 
 	public class MonitoringService : ScheduledService
