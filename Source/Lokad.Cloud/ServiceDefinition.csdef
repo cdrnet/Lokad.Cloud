@@ -24,5 +24,8 @@
     <Certificates>
       <Certificate name="AzureSelfManagement" storeLocation="LocalMachine" storeName="My" />
     </Certificates>
+    <Endpoints>
+      <InternalEndpoint name="Lokad.Cloud.ServiceFabric.InternalEndpoint" protocol="tcp" />
+    </Endpoints>
   </WorkerRole>
 </ServiceDefinition>

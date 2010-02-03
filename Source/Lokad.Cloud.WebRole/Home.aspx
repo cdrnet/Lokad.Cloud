@@ -41,8 +41,14 @@
 					</li>
 				</ul>
 			</li>
+			<li>Azure Deployment: <b>
+				<asp:Label ID="AzureDeploymentLabel" runat="server" /></b>
+			</li>
 			<li>Storage Account Name: <b>
 				<asp:Label ID="StorageAccountNameLabel" runat="server" /></b>
+			</li>
+			<li>Worker Instances: <b>
+				<asp:Label ID="AzureWorkerInstancesLabel" runat="server" /></b>
 			</li>
 		</ul>
 	</div>

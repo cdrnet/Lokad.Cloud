@@ -27,7 +27,7 @@ namespace Lokad.Cloud.Diagnostics
 		{
 			_repository = repository;
 			_partitionKey = CloudEnvironment.PartitionKey;
-			_instanceId = CloudEnvironment.PartitionInstanceId.GetValue("N/A");
+			_instanceId = CloudEnvironment.AzureCurrentInstanceId.GetValue("N/A");
 		}
 
 		public void UpdateStatistics()

@@ -51,9 +51,33 @@ namespace Lokad.Cloud.Azure
 		/// <summary>
 		/// ID of the Cloud Worker Instances
 		/// </summary>
-		public static Maybe<string> PartitionInstanceId
+		public static Maybe<string> AzureCurrentInstanceId
 		{
-			get { return IsAvailable ? RoleEnvironment.CurrentRoleInstance.Id : Maybe.String; }
+			get { return _runtimeAvailable ? RoleEnvironment.CurrentRoleInstance.Id : Maybe.String; }
+		}
+
+		public static Maybe<string> AzureDeploymentId
+		{
+			get { return _runtimeAvailable ? RoleEnvironment.DeploymentId : Maybe.String; }
+		}
+
+		public static Maybe<int> AzureWorkerInstanceCount
+		{
+			get
+			{
+				if(!_runtimeAvailable)
+				{
+					return Maybe<int>.Empty;
+				}
+
+				Role workerRole;
+				if(!RoleEnvironment.Roles.TryGetValue("Lokad.Cloud.WorkerRole", out workerRole))
+				{
+					return Maybe<int>.Empty;
+				}
+
+				return workerRole.Instances.Count;
+			}
 		}
 
 		/// <summary>

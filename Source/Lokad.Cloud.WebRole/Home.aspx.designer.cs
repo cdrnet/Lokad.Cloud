@@ -50,6 +50,15 @@ namespace Lokad.Cloud.Web {
         protected global::System.Web.UI.WebControls.HyperLink DownloadLokadCloudLink;
         
         /// <summary>
+        /// AzureDeploymentLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label AzureDeploymentLabel;
+        
+        /// <summary>
         /// StorageAccountNameLabel control.
         /// </summary>
         /// <remarks>
@@ -57,5 +66,14 @@ namespace Lokad.Cloud.Web {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label StorageAccountNameLabel;
+        
+        /// <summary>
+        /// AzureWorkerInstancesLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label AzureWorkerInstancesLabel;
     }
 }

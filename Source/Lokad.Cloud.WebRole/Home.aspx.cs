@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Lokad.Cloud.Azure;
 
 namespace Lokad.Cloud.Web
 {
@@ -20,6 +21,8 @@ namespace Lokad.Cloud.Web
 
 			StorageAccountNameLabel.Text = GlobalSetup.StorageAccountName;
 			LokadCloudVersionLabel.Text = _version.RunningVersion.ToString();
+			AzureDeploymentLabel.Text = CloudEnvironment.AzureDeploymentId.GetValue("none");
+			AzureWorkerInstancesLabel.Text = CloudEnvironment.AzureWorkerInstanceCount.GetValue(0).ToString();
 
 			switch (_version.VersionState)
 			{
