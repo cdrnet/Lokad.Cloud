@@ -56,8 +56,9 @@ namespace Lokad.Cloud.Web
 						CPU = s.TotalProcessorTime.PrettyFormat(),
 						//Kernel = (s.TotalProcessorTime - s.UserProcessorTime).PrettyFormat()
 						Total = s.AbsoluteTime.PrettyFormat(),
-						Average = s.Count == 0 ? "N/A" : TimeSpan.FromTicks(s.AbsoluteTime.Ticks / s.Count).PrettyFormat(),
+						//Average = s.Count == 0 ? "N/A" : TimeSpan.FromTicks(s.AbsoluteTime.Ticks / s.Count).PrettyFormat(),
 						Max = s.MaxAbsoluteTime.PrettyFormat(),
+						Usage = PrettyFormatUsage(s.TotalProcessorTime, s.AbsoluteTime),
 					})
 				.Take(50)
 				.ToList();
