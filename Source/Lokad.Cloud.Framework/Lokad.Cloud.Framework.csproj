@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -143,6 +143,7 @@
     <Compile Include="ServiceFabric\Runtime\Scheduler.cs" />
     <Compile Include="ServiceFabric\Runtime\InternalServiceRuntime.cs" />
     <Compile Include="ServiceFabric\Runtime\WorkerServiceRuntime.cs" />
+    <Compile Include="Services\MonitoringDataRetentionService.cs" />
     <Compile Include="Services\MonitoringService.cs" />
     <Compile Include="TemporaryBlobReference.cs" />
     <Compile Include="TypeMapperProvider.cs" />

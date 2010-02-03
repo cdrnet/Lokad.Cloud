@@ -12,6 +12,10 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 	/// <summary>
 	/// Diagnostics Cloud Data Repository to Blob Storage
 	/// </summary>
+	/// <remarks>
+	/// In order for retention to work correctly, time segments need to be strictly
+	/// ordered ascending by time and date when compared as string.
+	/// </remarks>
 	public class BlobDiagnosticsRepository : ICloudDiagnosticsRepository
 	{
 		readonly IBlobStorageProvider _provider;
@@ -50,6 +54,20 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 				reference,
 				value,
 				true);
+		}
+
+		void RemoveWhile<TReference>(BlobNamePrefix<TReference> prefix, Func<TReference, string> segmentProvider, string timeSegmentBefore)
+			where TReference : BlobName
+		{
+			// since the blobs are strictly ordered we can stop once we reach the condition.
+			var matchingBlobs = _provider
+				.List(prefix)
+				.TakeWhile(blobRef => String.Compare(segmentProvider(blobRef), timeSegmentBefore, StringComparison.Ordinal) < 0);
+
+			foreach (var blob in matchingBlobs)
+			{
+				_provider.DeleteBlob(blob);
+			}
 		}
 
 		/// <summary>
@@ -91,17 +109,17 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// <summary>
 		/// Update the statistics of a tracked exception.
 		/// </summary>
-		public void UpdateExceptionTrackingStatistics(string timerSegment, string contextName, Func<Maybe<ExceptionTrackingStatistics>, ExceptionTrackingStatistics> updater)
+		public void UpdateExceptionTrackingStatistics(string timeSegment, string contextName, Func<Maybe<ExceptionTrackingStatistics>, ExceptionTrackingStatistics> updater)
 		{
-			Update(ExceptionTrackingStatisticsReference.New(timerSegment, contextName), updater);
+			Update(ExceptionTrackingStatisticsReference.New(timeSegment, contextName), updater);
 		}
 
 		/// <summary>
 		/// Update the statistics of an execution profile.
 		/// </summary>
-		public void UpdateExecutionProfilingStatistics(string timerSegment, string contextName, Func<Maybe<ExecutionProfilingStatistics>, ExecutionProfilingStatistics> updater)
+		public void UpdateExecutionProfilingStatistics(string timeSegment, string contextName, Func<Maybe<ExecutionProfilingStatistics>, ExecutionProfilingStatistics> updater)
 		{
-			Update(ExecutionProfilingStatisticsReference.New(timerSegment, contextName), updater);
+			Update(ExecutionProfilingStatisticsReference.New(timeSegment, contextName), updater);
 		}
 
 		/// <summary>
@@ -118,6 +136,50 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		public void UpdateServiceStatistics(string timeSegment, string serviceName, Func<Maybe<ServiceStatistics>, ServiceStatistics> updater)
 		{
 			Update(ServiceStatisticsReference.New(timeSegment, serviceName), updater);
+		}
+
+		/// <summary>
+		/// Remove old statistics of tracked exceptions.
+		/// </summary>
+		public void RemoveExceptionTrackingStatistics(string timeSegmentPrefix, string timeSegmentBefore)
+		{
+			RemoveWhile(
+				ExceptionTrackingStatisticsReference.GetPrefix(timeSegmentPrefix),
+				blobRef => blobRef.TimeSegment,
+				timeSegmentBefore);
+		}
+
+		/// <summary>
+		/// Remove old statistics of execution profiles.
+		/// </summary>
+		public void RemoveExecutionProfilingStatistics(string timeSegmentPrefix, string timeSegmentBefore)
+		{
+			RemoveWhile(
+				ExecutionProfilingStatisticsReference.GetPrefix(timeSegmentPrefix),
+				blobRef => blobRef.TimeSegment,
+				timeSegmentBefore);
+		}
+
+		/// <summary>
+		/// Remove old statistics of cloud partitions.
+		/// </summary>
+		public void RemovePartitionStatistics(string timeSegmentPrefix, string timeSegmentBefore)
+		{
+			RemoveWhile(
+				PartitionStatisticsReference.GetPrefix(timeSegmentPrefix),
+				blobRef => blobRef.TimeSegment,
+				timeSegmentBefore);
+		}
+
+		/// <summary>
+		/// Remove old statistics of cloud services.
+		/// </summary>
+		public void RemoveServiceStatistics(string timeSegmentPrefix, string timeSegmentBefore)
+		{
+			RemoveWhile(
+				ServiceStatisticsReference.GetPrefix(timeSegmentPrefix),
+				blobRef => blobRef.TimeSegment,
+				timeSegmentBefore);
 		}
 	}
 }

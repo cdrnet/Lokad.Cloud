@@ -15,8 +15,8 @@ namespace Lokad.Cloud.Diagnostics
 	/// Generic Execution Profile Monitoring Data Provider
 	/// </summary>
 	/// <remarks>
-	/// Inherit from this class and override UpdateStatistics()
-	/// to load data from non-default counter sources.
+	/// Implement <see cref="ICloudDiagnosticsSource"/> 
+	/// to provide data from non-default counter sources.
 	/// </remarks>
 	internal class ExecutionProfilingMonitor
 	{
@@ -56,6 +56,31 @@ namespace Lokad.Cloud.Diagnostics
 			var timestamp = DateTimeOffset.Now;
 			Update(TimeSegments.Day(timestamp), contextName, dataList);
 			Update(TimeSegments.Month(timestamp), contextName, dataList);
+		}
+
+		/// <summary>
+		/// Remove statistics older than the provided time stamp.
+		/// </summary>
+		public void RemoveStatisticsBefore(DateTimeOffset before)
+		{
+			_repository.RemoveExecutionProfilingStatistics(TimeSegments.DayPrefix, TimeSegments.Day(before));
+			_repository.RemoveExecutionProfilingStatistics(TimeSegments.MonthPrefix, TimeSegments.Month(before));
+		}
+
+		/// <summary>
+		/// Remove statistics older than the provided number of periods (0 removes all but the current period).
+		/// </summary>
+		public void RemoveStatisticsBefore(int numberOfPeriods)
+		{
+			var now = DateTimeOffset.Now;
+
+			_repository.RemoveExecutionProfilingStatistics(
+				TimeSegments.DayPrefix,
+				TimeSegments.Day(now.AddDays(-numberOfPeriods)));
+
+			_repository.RemoveExecutionProfilingStatistics(
+				TimeSegments.MonthPrefix,
+				TimeSegments.Month(now.AddMonths(-numberOfPeriods)));
 		}
 
 		/// <summary>

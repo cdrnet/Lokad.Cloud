@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Lokad.Diagnostics.Persist;
 
@@ -47,6 +48,30 @@ namespace Lokad.Cloud.Diagnostics
 					_executionProfiling.Update,
 					_exceptionTracking.Update);
 			}
+		}
+
+		/// <summary>
+		/// Remove all statistics older than the provided time stamp from the
+		/// persistent diagnostics repository.
+		/// </summary>
+		public void RemoveStatisticsBefore(DateTimeOffset before)
+		{
+			_executionProfiling.RemoveStatisticsBefore(before);
+			_exceptionTracking.RemoveStatisticsBefore(before);
+			_partitionMonitor.RemoveStatisticsBefore(before);
+			_serviceMonitor.RemoveStatisticsBefore(before);
+		}
+
+		/// <summary>
+		/// Remove all statistics older than the provided number of periods from the
+		/// persistent diagnostics repository (0 removes all but the current period).
+		/// </summary>
+		public void RemoveStatisticsBefore(int numberOfPeriods)
+		{
+			_executionProfiling.RemoveStatisticsBefore(numberOfPeriods);
+			_exceptionTracking.RemoveStatisticsBefore(numberOfPeriods);
+			_partitionMonitor.RemoveStatisticsBefore(numberOfPeriods);
+			_serviceMonitor.RemoveStatisticsBefore(numberOfPeriods);
 		}
 
 		/// <summary>

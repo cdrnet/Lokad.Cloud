@@ -13,6 +13,10 @@ namespace Lokad.Cloud.Diagnostics
 		Month
 	}
 
+	/// <remarks>
+	/// Generated time segments are strictly ordered ascending by time and date
+	/// when compared as string.
+	/// </remarks>
 	static class TimeSegments
 	{
 		public const string DayPrefix = "day";

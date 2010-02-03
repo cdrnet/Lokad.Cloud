@@ -59,6 +59,31 @@ namespace Lokad.Cloud.Diagnostics
 			}
 		}
 
+		/// <summary>
+		/// Remove statistics older than the provided time stamp.
+		/// </summary>
+		public void RemoveStatisticsBefore(DateTimeOffset before)
+		{
+			_repository.RemoveServiceStatistics(TimeSegments.DayPrefix, TimeSegments.Day(before));
+			_repository.RemoveServiceStatistics(TimeSegments.MonthPrefix, TimeSegments.Month(before));
+		}
+
+		/// <summary>
+		/// Remove statistics older than the provided number of periods (0 removes all but the current period).
+		/// </summary>
+		public void RemoveStatisticsBefore(int numberOfPeriods)
+		{
+			var now = DateTimeOffset.Now;
+
+			_repository.RemoveServiceStatistics(
+				TimeSegments.DayPrefix,
+				TimeSegments.Day(now.AddDays(-numberOfPeriods)));
+
+			_repository.RemoveServiceStatistics(
+				TimeSegments.MonthPrefix,
+				TimeSegments.Month(now.AddMonths(-numberOfPeriods)));
+		}
+
 		public IDisposable Monitor(CloudService service)
 		{
 			var handle = OnStart(service);

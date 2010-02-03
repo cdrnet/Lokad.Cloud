@@ -39,6 +39,31 @@ namespace Lokad.Cloud.Diagnostics
 			Update(TimeSegments.Month(timestamp), process);
 		}
 
+		/// <summary>
+		/// Remove statistics older than the provided time stamp.
+		/// </summary>
+		public void RemoveStatisticsBefore(DateTimeOffset before)
+		{
+			_repository.RemovePartitionStatistics(TimeSegments.DayPrefix, TimeSegments.Day(before));
+			_repository.RemovePartitionStatistics(TimeSegments.MonthPrefix, TimeSegments.Month(before));
+		}
+		
+		/// <summary>
+		/// Remove statistics older than the provided number of periods (0 removes all but the current period).
+		/// </summary>
+		public void RemoveStatisticsBefore(int numberOfPeriods)
+		{
+			var now = DateTimeOffset.Now;
+
+			_repository.RemovePartitionStatistics(
+				TimeSegments.DayPrefix,
+				TimeSegments.Day(now.AddDays(-numberOfPeriods)));
+
+			_repository.RemovePartitionStatistics(
+				TimeSegments.MonthPrefix,
+				TimeSegments.Month(now.AddMonths(-numberOfPeriods)));
+		}
+
 		void Update(string timeSegment, Process process)
 		{
 			_repository.UpdatePartitionStatistics(
