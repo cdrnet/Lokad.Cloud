@@ -36,15 +36,21 @@ namespace Lokad.Cloud.Azure.Test
 		public void CreateDeleteTables()
 		{
 			var name = "n" + Guid.NewGuid().ToString("N");
-			Assert.IsTrue(Provider.CreateTable(name));
-			Assert.IsTrue(Provider.DeleteTable(name));
+			Assert.IsTrue(Provider.CreateTable(name),"#A01");
+            Assert.IsTrue(Provider.DeleteTable(name), "#A02");
 
 			// replicating the test a 2nd time, to check for slow table deletion
-			Assert.IsTrue(Provider.CreateTable(name));
-			Assert.IsTrue(Provider.DeleteTable(name));
+            Assert.IsTrue(Provider.CreateTable(name), "#A03");
+            Assert.IsTrue(Provider.DeleteTable(name), "#A04");
 
-			Assert.IsFalse(Provider.DeleteTable(name));
+            Assert.IsFalse(Provider.DeleteTable(name), "#A05");
 		}
+        [Test]
+        public void DeleteUnexistingTable()
+        {
+            var name = "IamNotATable";
+            Assert.IsFalse(Provider.DeleteTable(name), "#A06");
+        }
 
 		[Test]
 		public void GetTables()
