@@ -4,6 +4,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Data.Services.Client;
 
 // TODO: #89 missing 'UpdateOrInsert' method
 
@@ -18,11 +19,15 @@ namespace Lokad.Cloud
 	public interface ITableStorageProvider
 	{
 		/// <summary>Creates a new table if it does not exist already.</summary>
-		/// <returns><c>true</c> if a new table has been created.</returns>
+		/// <returns><c>true</c> if a new table has been created.
+        /// <c>false</c> if the table already exists.
+		/// </returns>
 		bool CreateTable(string tableName);
 
 		/// <summary>Deletes a table if it exists.</summary>
-		/// <returns><c>true</c> if the table has been deleted.</returns>
+		/// <returns><c>true</c> if the table has been deleted.
+		/// <c>false</c> if the table does not exist.
+		/// </returns>
 		bool DeleteTable(string tableName);
 
 		/// <summary>Returns the list of all the tables that exist in the storage.</summary>
@@ -31,11 +36,15 @@ namespace Lokad.Cloud
 		/// <summary>Iterates through all entities of a given table.</summary>
 		/// <remarks>The enumeration is typically expected to be lazy, iterating through
 		/// all the entities with paged request.</remarks>
+        ///<exception cref="DataServiceQueryException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName);
 
 		/// <summary>Iterates through all entities of a given table and partition.</summary>
-		/// <remarks>The enumeration is typically expected to be lazy, iterating through
-		/// all the entities with paged request.</remarks>
+        /// <remarks><para>The enumeration is typically expected to be lazy, iterating through
+        /// all the entities with paged request.</para>
+        /// <para>If the partition key does not exists the collection is empty.</para>
+        /// </remarks>
+        ///<exception cref="DataServiceQueryException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey);
 
 		/// <summary>Iterates through a range of entities of a given table and partition.</summary>
@@ -45,13 +54,19 @@ namespace Lokad.Cloud
 		/// constraint is enforced.</param>
 		/// <param name="endRowKey">Exclusive end row key. If <c>null</c>, no ending range
 		/// constraint is enforced.</param>
-		/// <remarks>The enumeration is typically expected to be lazy, iterating through
-		/// all the entities with paged request.</remarks>
+		/// <remarks><para>The enumeration is typically expected to be lazy, iterating through
+        /// all the entities with paged request.</para>
+        /// <para>If the partition key does not exists the collection is empty.</para>
+        /// </remarks>
+        ///<exception cref="DataServiceQueryException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey);
 
 		/// <summary>Iterates through all entities specified by their row keys.</summary>
-		/// <remarks>The enumeration is typically expected to be lazy, iterating through
-		/// all the entities with paged request.</remarks>
+        /// <remarks><para>The enumeration is typically expected to be lazy, iterating through
+        /// all the entities with paged request.</para>
+        /// <para>If the partition key does not exists the collection is empty.</para>
+        /// </remarks>
+        ///<exception cref="DataServiceQueryException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys);
 
 		/// <summary>Inserts a collection of new entities into the table storage.</summary>

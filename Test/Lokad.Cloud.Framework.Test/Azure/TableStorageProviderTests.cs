@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
@@ -37,27 +38,112 @@ namespace Lokad.Cloud.Azure.Test
 		{
 			var name = "n" + Guid.NewGuid().ToString("N");
 			Assert.IsTrue(Provider.CreateTable(name),"#A01");
-            Assert.IsTrue(Provider.DeleteTable(name), "#A02");
+            Assert.IsFalse(Provider.CreateTable(name),"#A02");
+            Assert.IsTrue(Provider.DeleteTable(name), "#A03");
 
 			// replicating the test a 2nd time, to check for slow table deletion
-            Assert.IsTrue(Provider.CreateTable(name), "#A03");
-            Assert.IsTrue(Provider.DeleteTable(name), "#A04");
+            Assert.IsTrue(Provider.CreateTable(name), "#A04");
+            Assert.IsTrue(Provider.DeleteTable(name), "#A05");
 
-            Assert.IsFalse(Provider.DeleteTable(name), "#A05");
-		}
-        [Test]
-        public void DeleteUnexistingTable()
-        {
-            var name = "IamNotATable";
             Assert.IsFalse(Provider.DeleteTable(name), "#A06");
+		
+            var name2 = "IamNotATable";
+            Assert.IsFalse(Provider.DeleteTable(name2), "#A07");
         }
 
 		[Test]
 		public void GetTables()
 		{
 			var tables = Provider.GetTables();
-			Assert.IsTrue(tables.Contains(TableName));
+			Assert.IsTrue(tables.Contains(TableName),"#B07");
 		}
+
+        [Test]
+        public void GetUnexistingTableName()
+        {
+            var notATableName = "IamNotATable";
+            
+            bool iSTestSuccess1 = false;
+            try
+            {
+                var enumerable = Provider.Get<string>(notATableName);
+                //Remove / Add the comment on the following line an the test will pass/fail.                
+                int count = enumerable.Count();
+            }
+            catch (Exception exception)
+            {
+                if (exception.GetType() == typeof(DataServiceQueryException))
+                {
+                    iSTestSuccess1 = true;
+                }
+            }
+            Assert.IsTrue(iSTestSuccess1, "#C01");
+
+
+            bool iSTestSuccess2 = false;
+            try
+            {
+                var enumerable = Provider.Get<string>(notATableName,"dummyPKey");
+                //Remove / Add the comment on the following line an the test will pass/fail.                
+                int count = enumerable.Count();
+            }
+            catch (Exception exception)
+            {
+                if (exception.GetType() == typeof(DataServiceQueryException))
+                {
+                    iSTestSuccess2 = true;
+                }
+            }
+            Assert.IsTrue(iSTestSuccess2, "#C02");
+
+
+            bool iSTestSuccess3 = false;
+            try
+            {
+                var enumerable = Provider.Get<string>(notATableName, "dummyPKey", new []{"dummyRowKeyA","dummyRowKeyB"});
+                //Remove / Add the comment on the following line an the test will pass/fail.                  
+                int count = enumerable.Count();
+            }
+            catch (Exception exception)
+            {
+                if (exception.GetType() == typeof(DataServiceQueryException))
+                {
+                    iSTestSuccess3 = true;
+                }
+            }
+            Assert.IsTrue(iSTestSuccess3, "#C03");
+
+            bool iSTestSuccess4 = false;
+            try
+            {
+                var enumerable = Provider.Get<string>(notATableName, "dummyPKey",  "dummyRowKeyA", "dummyRowKeyB" );
+                //Remove / Add the comment on the following line an the test will pass/fail.                 
+                int count = enumerable.Count();
+            }
+            catch (Exception exception)
+            {
+                if (exception.GetType() == typeof(DataServiceQueryException))
+                {
+                    iSTestSuccess4 = true;
+                }
+            }
+            Assert.IsTrue(iSTestSuccess4, "#C04");
+        }
+
+        [Test]
+        public void GetUnexistingPartionName()
+        {
+            var notAPartitionKey = "IAmNotAPartitionKey";
+            
+            var enumerable = Provider.Get<string>(TableName, notAPartitionKey);
+            Assert.That(enumerable.Count() == 0,"#D01");
+            
+            var enumerable2 = Provider.Get<string>(TableName, notAPartitionKey, "dummyRowKeyA", "dummyRowKeyB");
+            Assert.That(enumerable2.Count() == 0, "#D02");
+
+            var enumerable3 = Provider.Get<string>(TableName, notAPartitionKey, new[]{"dummyRowKeyA", "dummyRowKeyB"});
+            Assert.That(enumerable3.Count() == 0, "#D02");
+        }
 
 		[Test]
 		public void CheckInsertHandlingOfEntityMaxCount() 
