@@ -79,6 +79,7 @@ namespace Lokad.Cloud
 		/// the enumeration. The implementations are expected to lazily iterates
 		/// and to create batch requests as the move forward.
 		/// </para>
+		/// <warning>Idempotence is not enforced.</warning>
 		/// </remarks>
         ///<exception cref="InvalidOperationException"> thrown if the table does not exist
         /// or an already existing entity has been encountered.</exception>
@@ -93,6 +94,7 @@ namespace Lokad.Cloud
 		/// the enumeration. The implementations are expected to lazily iterates
 		/// and to create batch requests as the move forward.
 		/// </para>
+		/// <para>Idempotence of the method is required.</para>
 		/// </remarks>
         /// <exception cref="InvalidOperationException"> thrown if the table does not exist
         /// or an non-existing entity has been encountered.</exception>
@@ -102,8 +104,12 @@ namespace Lokad.Cloud
 		// http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/4b902237-7cfb-4d48-941b-4802864fc274
 
 		/// <summary>Deletes all specified entities.</summary>
-		/// <remarks>The implementation is expected to lazily iterate through all row keys
-		/// and send batch deletion request to the underlying storage.</remarks>
+		/// <remarks>
+		/// <para>
+        /// The implementation is expected to lazily iterate through all row keys
+        /// and send batch deletion request to the underlying storage.</para>
+        /// <para>Idempotence of the method is required.</para>
+		/// </remarks>
         ///<exception cref="InvalidOperationException"> thrown if the table does not exist </exception>
 		void Delete<T>(string tableName, string partitionKeys, IEnumerable<string> rowKeys);
 	}

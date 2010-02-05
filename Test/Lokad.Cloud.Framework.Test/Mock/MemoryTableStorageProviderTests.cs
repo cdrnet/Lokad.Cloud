@@ -150,6 +150,28 @@ namespace Lokad.Cloud.Test.Mock
         }
 
         [Test]
+        public void DeleteIdempotence()
+        {
+            var provider = new MemoryTableStorageProvider();
+            provider.CreateTable("myTable");
+            provider.Insert("myTable", new[]
+                {
+                    new CloudEntity<object>
+                        {
+                            PartitionKey = "PKey",
+                            RowRey = "RowKey",
+                            Timestamp = DateTime.Now,
+                            Value = new object()
+                        }
+                }
+                );
+
+            //Check idempotence
+            provider.Delete<object>("myTable", "PKey", new[] { "RowKey" });
+            provider.Delete<object>("myTable", "PKey", new[] { "RowKey" });
+        }
+
+        [Test]
         public void CreateAndGetTablesMultiThread()
             {
                 //Multi thread.

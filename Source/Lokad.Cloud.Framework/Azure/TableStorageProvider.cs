@@ -443,6 +443,7 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
+        //TODO: #101
 		public void Delete<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys)
 		{
 			var context = _tableStorage.GetDataServiceContext();
