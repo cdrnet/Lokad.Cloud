@@ -80,6 +80,8 @@ namespace Lokad.Cloud
 		/// and to create batch requests as the move forward.
 		/// </para>
 		/// </remarks>
+        ///<exception cref="InvalidOperationException"> thrown if the table does not exist
+        /// or an already existing entity has been encountered.</exception>
 		void Insert<T>(string tableName, IEnumerable<CloudEntity<T>> entities);
 
 		/// <summary>Updates a collection of existing entities into the table storage.</summary>
@@ -92,6 +94,8 @@ namespace Lokad.Cloud
 		/// and to create batch requests as the move forward.
 		/// </para>
 		/// </remarks>
+        /// <exception cref="InvalidOperationException"> thrown if the table does not exist
+        /// or an non-existing entity has been encountered.</exception>
 		void Update<T>(string tableName, IEnumerable<CloudEntity<T>> entities);
 
 		// HACK: no 'upsert' (update or insert) available at the time
@@ -100,6 +104,7 @@ namespace Lokad.Cloud
 		/// <summary>Deletes all specified entities.</summary>
 		/// <remarks>The implementation is expected to lazily iterate through all row keys
 		/// and send batch deletion request to the underlying storage.</remarks>
+        ///<exception cref="InvalidOperationException"> thrown if the table does not exist </exception>
 		void Delete<T>(string tableName, string partitionKeys, IEnumerable<string> rowKeys);
 	}
 }

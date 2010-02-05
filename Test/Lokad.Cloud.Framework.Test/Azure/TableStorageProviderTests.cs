@@ -59,9 +59,11 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
         [Test]
-        public void GetUnexistingTableName()
+        //ISSUE #99.
+        //Test the behavior of Get method (and overloads) with a non-existing table name.
+        public void GetUnexistingTable()
         {
-            var notATableName = "IamNotATable";
+            const string notATableName = "IamNotATable";
             
             bool iSTestSuccess1 = false;
             try
@@ -72,12 +74,12 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                var nullType = exception as InvalidOperationException;
-                iSTestSuccess1 = nullType != null ? true : false;
+                iSTestSuccess1 = (exception as InvalidOperationException) != null ? true : false;
             }
             Assert.IsTrue(iSTestSuccess1, "#C01");
 
-
+            //Tests overloads
+            #region
             bool iSTestSuccess2 = false;
             try
             {
@@ -87,8 +89,7 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                var nullType = exception as InvalidOperationException;
-                iSTestSuccess2 = nullType != null ? true : false;
+                iSTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
             }
             Assert.IsTrue(iSTestSuccess2, "#C02");
 
@@ -102,8 +103,7 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                var nullType = exception as InvalidOperationException;
-                iSTestSuccess3 = nullType != null ? true : false;
+                iSTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
             }
             Assert.IsTrue(iSTestSuccess3, "#C03");
 
@@ -116,16 +116,19 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                var nullType = exception as InvalidOperationException;
-                iSTestSuccess4 = nullType != null ? true : false;
+                iSTestSuccess4 = (exception as InvalidOperationException) != null ? true : false;
             }
             Assert.IsTrue(iSTestSuccess4, "#C04");
+#endregion
         }
 
         [Test]
+        //Test the behavior of Update, Insert and Delete methods with a non-existing table name.
         public void UpDateAndInsertUnexistingTable()
         {
-            var notATableName = "IamNotATable";
+            const string notATableName = "IamNotATable";
+            
+            //Insert.
             bool iSTestSuccess = false;
             try
             {
@@ -133,11 +136,11 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                var nullType = exception as InvalidOperationException;
-                iSTestSuccess = nullType != null ? true : false;
+                iSTestSuccess = (exception as InvalidOperationException) != null ? true : false;
             }
             Assert.IsTrue(iSTestSuccess, "#C05");
 
+            //Update.
             bool iSTestSuccess2 = false;
             try
             {
@@ -145,17 +148,27 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                var nullType = exception as InvalidOperationException;
-                iSTestSuccess2 = nullType != null ? true : false;
+                iSTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
             }
-            Assert.IsTrue(iSTestSuccess2, "#C05");
+            Assert.IsTrue(iSTestSuccess2, "#C06");
 
+            //Delete.
+            bool iSTestSuccess3 = false;
+            try
+            {
+                Provider.Delete<string>(notATableName,"dummyPKey", new[]{"dummyRowKey"});
+            }
+            catch (Exception exception)
+            {
+                iSTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
+            }
+            Assert.IsTrue(iSTestSuccess3, "#C07");
         }
 
         [Test]
         public void GetUnexistingPartionName()
         {
-            var notAPartitionKey = "IAmNotAPartitionKey";
+            const string notAPartitionKey = "IAmNotAPartitionKey";
             
             var enumerable = Provider.Get<string>(TableName, notAPartitionKey);
             Assert.That(enumerable.Count() == 0,"#D01");
@@ -168,9 +181,43 @@ namespace Lokad.Cloud.Azure.Test
         }
 
         [Test]
-        public void GetAndInsertFailures()
+        public void InsertAndUpdateFailures()
         {
+            var Pkey = Guid.NewGuid().ToString();
+            var RowKey = Guid.NewGuid().ToString();
 
+            var entity = new CloudEntity<string>
+                {PartitionKey = Pkey, RowRey = RowKey, Timestamp = DateTime.Now, Value = "value1"};
+            
+            //Insert entity.
+            Provider.Insert(TableName, new[]{entity});
+
+            bool iSTestSuccess1 = false;
+            try
+            {
+                //retry should fail.
+                Provider.Insert(TableName, new[] {entity});
+            }
+            catch (Exception exception)
+            {
+                iSTestSuccess1 = (exception as InvalidOperationException) != null ? true : false;
+            }
+            Assert.That(iSTestSuccess1, "#E01");
+
+            bool isTestSuccess2 = false;
+            //delete the entity.
+            Provider.Delete<string>(TableName, Pkey, new[] {RowKey});
+            try
+            {
+                entity.Value = "value2";
+                Provider.Update(TableName, new[]{entity});
+            }
+            catch (Exception exception)
+            {
+                //Delete should fail.
+                isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
+            }
+            Assert.That(isTestSuccess2, "#E02");
         }
 
 	    [Test]
@@ -184,8 +231,6 @@ namespace Lokad.Cloud.Azure.Test
 
 			Assert.AreEqual(entityCount, retrievedCount);
 		}
-
-     
 
 		[Test]
 		public void CheckRangeSelection()

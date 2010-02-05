@@ -46,6 +46,7 @@ namespace Lokad.Cloud.Test.Mock
 
             const int partitionCount = 10;
 
+            //Creating entities: a hundred. Pkey created with the last digit of a number between 0 and 99.
             var entities =
                 Enumerable.Range(0, 100).Select(
                     i =>
@@ -58,11 +59,14 @@ namespace Lokad.Cloud.Test.Mock
                     );
             
 
+            //Insert entities.
             tableStorage.Insert("myTable", entities);
 
+            //retrieve all of them.
             var retrievedEntities1 = tableStorage.Get<object>("myTable");
             Assert.AreEqual(100, retrievedEntities1.Count());
 
+            //Test overloads...
             var retrievedEntites2 = tableStorage.Get<object>("myTable", "Pkey-9");
             Assert.AreEqual(10, retrievedEntites2.Count());
 
@@ -84,9 +88,17 @@ namespace Lokad.Cloud.Test.Mock
             var retrieved7 = tableStorage.Get<object>("myTable", "Pkey-1", null, "RowKey-21");
             Assert.AreEqual(2, retrieved7.Count());
 
-            //The next tests should handle non existing table names and/or partitionKey.
-            var retrieved8 = tableStorage.Get<object>("IAmNotATable", "IaMNotAPartiTion");
-            Assert.AreEqual(0, retrieved8.Count());
+            //The next test should handle non existing table names.
+            var isSuccess = false;
+            try
+            {
+                 tableStorage.Get<object>("IAmNotATable", "IaMNotAPartiTion");
+            }
+            catch (Exception exception)
+            {
+                isSuccess = (exception as InvalidOperationException) == null ? false : true;
+            }
+            Assert.That(isSuccess);
   
         }
 
@@ -110,15 +122,18 @@ namespace Lokad.Cloud.Test.Mock
                     );
             tableStorage.Insert("myTable", entities);
 
+            var isSucces = false;
             try
             {
                 tableStorage.Insert("myTable", new[]{new CloudEntity<object>(){PartitionKey = "Pkey-6",RowRey = "RowKey-56"}});
             }
             catch (Exception exception)
             {
-                Assert.IsTrue(exception.GetType() == typeof(MemoryTableStorageProvider.MockTableStorageException));
+                isSucces = (exception as InvalidOperationException) == null ? false : true;
             }
+            Assert.IsTrue(isSucces);
 
+            tableStorage.CreateTable("myNewTable");
             tableStorage.Insert("myNewTable",
                 new[] {new CloudEntity<object>() {PartitionKey = "Pkey-6", RowRey = "RowKey-56", Value = new object()}});
 

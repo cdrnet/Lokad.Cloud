@@ -12,7 +12,8 @@ using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Azure
 {
-	public class TableStorageProvider : ITableStorageProvider
+	//TODO: #99.
+    public class TableStorageProvider : ITableStorageProvider
 	{
 		// HACK: those tokens will probably be provided as constants in the StorageClient library
 		const int MaxEntityTransactionCount = 100;
