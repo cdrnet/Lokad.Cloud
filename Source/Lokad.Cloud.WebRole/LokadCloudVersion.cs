@@ -21,9 +21,14 @@ namespace Lokad.Cloud.Web
 	public class LokadCloudVersion
 	{
 		const string _downloadUrl = "http://build.lokad.com/distrib/Lokad.Cloud/";
-		readonly object _syncRoot = new object();
-		readonly Regex _versionRegex = new Regex(@"\<h2\>Download Version ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\<\/h2\>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		const string _regexPattern = @"\<h2\>Download Version ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\<\/h2\>";
+
+		readonly object _sync = new object();
+		readonly Regex _regex = new Regex(_regexPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+		readonly TimeSpan _checkPeriod = 1.Days();
+
 		Maybe<Version> _newestVersion;
+		DateTimeOffset _lastChecked;
 
 		public Version RunningVersion { get; private set; }
 
@@ -42,18 +47,26 @@ namespace Lokad.Cloud.Web
 		{
 			get
 			{
-				if(!_newestVersion.HasValue)
+				var now = DateTimeOffset.Now;
+
+				// request new info if last update was a long time ago
+				if (now.Subtract(_checkPeriod) > _lastChecked)
 				{
-					lock(_syncRoot)
+					lock (_sync)
 					{
-						if (!_newestVersion.HasValue)
+						if (now.Subtract(_checkPeriod) > _lastChecked)
 						{
-							_newestVersion = RequestNewestVersionInfo().ToMaybe(v => v);
+							_lastChecked = now;
+							var newestVersion = RequestNewestVersionInfo().ToMaybe(v => v);
+							if(newestVersion.HasValue)
+							{
+								_newestVersion = newestVersion;
+							}
 						}
 					}
 				}
 
-				// NOTE: might still have no value
+				// might still be empty if no request succeeded up to now
 				return _newestVersion;
 			}
 		}
@@ -104,7 +117,7 @@ namespace Lokad.Cloud.Web
 					responseContent = reader.ReadToEnd();
 				}
 
-				var match = _versionRegex.Match(responseContent);
+				var match = _regex.Match(responseContent);
 				if (!match.Success)
 				{
 					return Result<Version>.CreateError("UnexpectedResponseFormat");
