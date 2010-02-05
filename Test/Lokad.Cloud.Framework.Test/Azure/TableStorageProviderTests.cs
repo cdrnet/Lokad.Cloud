@@ -72,10 +72,8 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                if (exception.GetType() == typeof(DataServiceQueryException))
-                {
-                    iSTestSuccess1 = true;
-                }
+                var nullType = exception as InvalidOperationException;
+                iSTestSuccess1 = nullType != null ? true : false;
             }
             Assert.IsTrue(iSTestSuccess1, "#C01");
 
@@ -89,10 +87,8 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                if (exception.GetType() == typeof(DataServiceQueryException))
-                {
-                    iSTestSuccess2 = true;
-                }
+                var nullType = exception as InvalidOperationException;
+                iSTestSuccess2 = nullType != null ? true : false;
             }
             Assert.IsTrue(iSTestSuccess2, "#C02");
 
@@ -106,10 +102,8 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                if (exception.GetType() == typeof(DataServiceQueryException))
-                {
-                    iSTestSuccess3 = true;
-                }
+                var nullType = exception as InvalidOperationException;
+                iSTestSuccess3 = nullType != null ? true : false;
             }
             Assert.IsTrue(iSTestSuccess3, "#C03");
 
@@ -122,12 +116,40 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                if (exception.GetType() == typeof(DataServiceQueryException))
-                {
-                    iSTestSuccess4 = true;
-                }
+                var nullType = exception as InvalidOperationException;
+                iSTestSuccess4 = nullType != null ? true : false;
             }
             Assert.IsTrue(iSTestSuccess4, "#C04");
+        }
+
+        [Test]
+        public void UpDateAndInsertUnexistingTable()
+        {
+            var notATableName = "IamNotATable";
+            bool iSTestSuccess = false;
+            try
+            {
+                Provider.Insert(notATableName,Entities(1,"dummyPKey", 10));
+            }
+            catch (Exception exception)
+            {
+                var nullType = exception as InvalidOperationException;
+                iSTestSuccess = nullType != null ? true : false;
+            }
+            Assert.IsTrue(iSTestSuccess, "#C05");
+
+            bool iSTestSuccess2 = false;
+            try
+            {
+                Provider.Update(notATableName, Entities(1, "dummyPKey", 10));
+            }
+            catch (Exception exception)
+            {
+                var nullType = exception as InvalidOperationException;
+                iSTestSuccess2 = nullType != null ? true : false;
+            }
+            Assert.IsTrue(iSTestSuccess2, "#C05");
+
         }
 
         [Test]
@@ -145,7 +167,13 @@ namespace Lokad.Cloud.Azure.Test
             Assert.That(enumerable3.Count() == 0, "#D02");
         }
 
-		[Test]
+        [Test]
+        public void GetAndInsertFailures()
+        {
+
+        }
+
+	    [Test]
 		public void CheckInsertHandlingOfEntityMaxCount() 
 		{
 			var entityCount = 300; // above the max entity count limit
@@ -156,6 +184,8 @@ namespace Lokad.Cloud.Azure.Test
 
 			Assert.AreEqual(entityCount, retrievedCount);
 		}
+
+     
 
 		[Test]
 		public void CheckRangeSelection()

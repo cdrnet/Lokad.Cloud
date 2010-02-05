@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 
@@ -36,7 +37,7 @@ namespace Lokad.Cloud
 		/// <summary>Iterates through all entities of a given table.</summary>
 		/// <remarks>The enumeration is typically expected to be lazy, iterating through
 		/// all the entities with paged request.</remarks>
-        ///<exception cref="DataServiceQueryException"> thrown if the table does not exist.</exception>
+        ///<exception cref="InvalidOperationException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName);
 
 		/// <summary>Iterates through all entities of a given table and partition.</summary>
@@ -44,7 +45,7 @@ namespace Lokad.Cloud
         /// all the entities with paged request.</para>
         /// <para>If the partition key does not exists the collection is empty.</para>
         /// </remarks>
-        ///<exception cref="DataServiceQueryException"> thrown if the table does not exist.</exception>
+        ///<exception cref="InvalidOperationException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey);
 
 		/// <summary>Iterates through a range of entities of a given table and partition.</summary>
@@ -58,7 +59,7 @@ namespace Lokad.Cloud
         /// all the entities with paged request.</para>
         /// <para>If the partition key does not exists the collection is empty.</para>
         /// </remarks>
-        ///<exception cref="DataServiceQueryException"> thrown if the table does not exist.</exception>
+        ///<exception cref="InvalidOperationException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey);
 
 		/// <summary>Iterates through all entities specified by their row keys.</summary>
@@ -66,7 +67,7 @@ namespace Lokad.Cloud
         /// all the entities with paged request.</para>
         /// <para>If the partition key does not exists the collection is empty.</para>
         /// </remarks>
-        ///<exception cref="DataServiceQueryException"> thrown if the table does not exist.</exception>
+        ///<exception cref="InvalidOperationException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys);
 
 		/// <summary>Inserts a collection of new entities into the table storage.</summary>
