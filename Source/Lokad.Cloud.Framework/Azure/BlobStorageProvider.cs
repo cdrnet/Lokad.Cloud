@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Lokad.Diagnostics;
 using Lokad.Threading;
 using Microsoft.WindowsAzure.StorageClient;
@@ -529,7 +530,13 @@ namespace Lokad.Cloud.Azure
 					UseFlatBlobListing = true
 				};
 
-			var enumerator = container.ListBlobs(options).GetEnumerator();
+			var directory = container.GetDirectoryReference(prefix);
+
+			// HACK: [vermorel] very ugly override, but otherwise an "/" separator gets forcibly added
+			typeof(CloudBlobDirectory).GetField("prefix", BindingFlags.Instance | BindingFlags.NonPublic)
+				.SetValue(directory, prefix);
+
+			var enumerator = directory.ListBlobs(options).GetEnumerator();
 
 			while(true)
 			{
@@ -550,23 +557,8 @@ namespace Lokad.Cloud.Azure
 					throw;
 				}
 
-				var stringUri = enumerator.Current.Uri.ToString();
-
-				// URI is like this
-				// http://azure.whatever.com/container/the-name -- or
-				// http://azure.whatever.com/container/a-prefix/the-name -- or
-				// http://azure.whatever.com/container/a-prefix/another-prefix/the-name -- etc
-
-				// Full name is extracted like this:
-				// Find the first two slashes and take everything after them
-				// Find the first slash and take everything after it
-				// Find the first slash and take everything after it (again)
-
-				stringUri = stringUri.Substring(stringUri.IndexOf("//") + 2);
-				var name = stringUri.Substring(stringUri.IndexOf("/") + 1);
-				name = name.Substring(name.IndexOf("/") + 1);
-
-				if(name.StartsWith(prefix)) yield return name;
+				// removing /container/ from the blob name
+				yield return enumerator.Current.Uri.AbsolutePath.Substring(containerName.Length + 2);
 			}
 		}
 	}
