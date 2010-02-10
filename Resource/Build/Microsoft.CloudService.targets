@@ -36,7 +36,8 @@
   <UsingTask TaskName="IsolatedCSPack"                      AssemblyFile="$(CloudExtensionsTaskPath)" />
   <UsingTask TaskName="FindTargetPath"                      AssemblyFile="$(CloudExtensionsTaskPath)" />
   <UsingTask TaskName="AssociatePlatformWithRoleReferences" AssemblyFile="$(CloudExtensionsTaskPath)" />
-  
+  <UsingTask TaskName="DeleteCurrentDeployment"             AssemblyFile="$(CloudExtensionsTaskPath)" />
+
   <!-- =========================================================== 
        Import the Common targets file and override the standard 
        tasks that VS expects to perform a build 
@@ -52,7 +53,7 @@
   <PropertyGroup>
 
     <!-- The level of ToolsVersionSupportLevel this msi will support-->
-    <ServiceHostingVSSupport>5</ServiceHostingVSSupport>
+    <ServiceHostingVSSupport>6</ServiceHostingVSSupport>
     <!-- Example, bin\Debug\Compute.csx\  -->
     <ServiceOutputDirectory Condition=" '$(ServiceOutputDirectory)' == '' ">$(OutDir)$(ProjectName).csx\</ServiceOutputDirectory>
 
@@ -72,6 +73,31 @@
     <WorkerRoleConfigPlatform Condition=" '$(WorkerRoleConfigPlatform)' == '' "></WorkerRoleConfigPlatform>
 
   </PropertyGroup>
+
+  <!-- =========================================================== 
+       Override the PrepareForBuildDependsOn property from Microsoft.Common.targets
+       to the targets that are needed for the CloudExtensions target
+       =========================================================== -->
+
+  <PropertyGroup>
+    <PrepareForBuildDependsOn>
+      $(PrepareForBuildDependsOn);
+      CloudServicePrepareForBuild
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+
+  <!-- =============== BuiltProjectOutputGroupKeyOutput removal ============ 
+       Removing the BuiltProjectOutputGroupKeyOutput since the Cloud Service
+       Project does not support any Key outputs or OutputGroups
+       =========================================================== -->
+
+  <Target Name="CloudServicePrepareForBuild">
+
+    <ItemGroup>
+      <BuiltProjectOutputGroupKeyOutput Remove="@(BuiltProjectOutputGroupKeyOutput)" />
+    </ItemGroup>
+    
+  </Target>
   
   <!-- =========================================================== 
        Override the CoreBuildDependsOn property from Microsoft.Common.targets
@@ -123,6 +149,7 @@
       FindServiceConfiguration;
       ResetTargetNames;
       ValidateComputeProject;
+      DeleteCurrentDeployment;
       ResolveRoleReferences;
     </CorePackageComputeServiceDependsOn>
   </PropertyGroup>
@@ -184,9 +211,9 @@
     <Error Condition=" !Exists('$(ServiceHostingSDKInstallDir)') or 
                        !Exists('$(ServiceHostingSDKBinDir)') or 
                        !Exists('$(ServiceHostingSDKTaskPath)') "
-          Text="Failed to locate the Windows Azure SDK. Please make sure the Windows Azure SDK v1.0 is installed." />
+          Text="Failed to locate the Windows Azure SDK. Please make sure the Windows Azure SDK v1.1 is installed." />
 
-    <Error Condition="'$(ServiceHostingSDKSupport)' != '$(ServiceHostingVSSupport)'" Code="CCT050" HelpKeyword="SDKVersionNotSupported"
+    <Error Condition="'$(ServiceHostingSDKSupport)' != '$(ServiceHostingVSSupport)'" Code="WAT050" HelpKeyword="SDKVersionNotSupported"
           Text="The version of the Windows Azure SDK currently installed is not compatible with this version of Windows Azure Tools for Microsoft Visual Studio.  Please download and install the latest version of both the Windows Azure SDK and the Windows Azure Tools for Microsoft Visual Studio"/>
     
   </Target>
@@ -202,13 +229,13 @@
 
     <Error Condition=" '@(ServiceDefinition)' == '' "
            Text="No service definition file has been specified"
-           Code="CCT010"
+           Code="WAT010"
            HelpKeyword="MissingModelFile"/>
 
     <!-- Only one active service definition can be active, check for that and throw an error -->
     <Error Condition=" '@(ServiceDefinition)' == '' or '@(ServiceDefinition->'%(dummy)')' != '' "
            Text="Only one service definition can be active."
-           Code="CCT020"
+           Code="WAT020"
            HelpKeyword="OneActiveModelFile" />
 
   </Target>
@@ -224,13 +251,13 @@
     <!-- Compute project must contain at least one service configuration file -->
     <Error Condition=" '@(ServiceConfiguration)' == '' "
            Text="No service configuration file has been specified"
-           Code="CCT030"
+           Code="WAT030"
            HelpKeyword="MissingServiceConfiguration"/>
 
     <!-- Only one service configuration per compute project, check for that and throw an error -->
     <Error Condition=" '@(ServiceConfiguration)' == '' or '@(ServiceConfiguration->'%(dummy)')' != '' "
            Text="Only one Service Configuration file per Compute project."
-           Code="CCT040"
+           Code="WAT040"
            HelpKeyword="OneServiceConfigurationFile" />
 
   </Target>
@@ -262,6 +289,19 @@
 
   </Target>
 
+  <!-- =============== DeleteCurrentDeployment ================================== 
+       Delete the current running deployment that is attached with the project.
+
+       ========================================================================== -->
+
+  <Target
+      Name="DeleteCurrentDeployment">
+
+    <!-- This task runs only under Visual Studio -->
+    <DeleteCurrentDeployment Condition="'$(BuildingInsideVisualStudio)' == 'true' " />
+
+  </Target>
+
   <!-- =============== ResolveRoleReferences ======================== 
        Finds the role projects defined in the project file.      
 
@@ -281,6 +321,7 @@
       ========================================================================== -->
   <PropertyGroup>
     <ResolveRoleReferencesDependsOn>
+      VerifyRoleReferences;
       ResolveWebRoleReferences;
       ResolveWorkerRoleReferences;
     </ResolveRoleReferencesDependsOn>
@@ -297,6 +338,20 @@
     <Message Text="Role = @(RoleReferences), role=%(RoleType), projname=%(ProjectName), output=%(OutputDir)" />
 
   </Target>
+
+  <!-- =============== VerifyRoleReferences ======================== 
+       Verifies that the key output exists for all role references 
+
+      ========================================================================== -->
+  <Target
+      Name="VerifyRoleReferences">
+
+    <Error
+      Condition=" !Exists('%(_ResolvedProjectReferencePaths.Identity)')"
+      Text="The referenced assembly %(_ResolvedProjectReferencePaths.Identity) was not found. Please make sure to build the role project that produces this assembly before building this Cloud Service Project."
+      ContinueOnError="false"/>
+  </Target>
+
 
   <!-- =============== ResolveWebRoleReferences ======================== 
        Resolves the web role references
@@ -387,6 +442,15 @@
       <WebRoleReferences Include="@(WebRoleReferencesWithTargetPath)" />
     </ItemGroup>
 
+    <!-- Before we trigger the web project publish, make sure we clean the _PublishedWebsites folder.
+         Delete files first then delete the container folder. -->
+    <ItemGroup Condition=" '@(WebRoleReferences)' != '' ">
+      <PublishedWebsiteFilesToDelete Include="%(WebRoleReferences.TargetDir)_PublishedWebsites\**\*.*" />
+    </ItemGroup>
+    <Delete Files="@(PublishedWebsiteFilesToDelete)" ContinueOnError="true" TreatErrorsAsWarnings="true" />
+    <RemoveDir Condition=" '@(WebRoleReferences)' != '' And Exists('%(TargetDir)_PublishedWebsites')  "
+               Directories="%(TargetDir)_PublishedWebsites" ContinueOnError="true" />
+
     <!-- Call the prepare for run target with build at the same location of the web project.
          This will make sure the build is bypassed because files are up to date, and this 
          will only generate the _PublishedWebsites folder. 
@@ -404,7 +468,7 @@
       >
     </MSBuild>
 
-    <Error Condition=" '@(WebRoleReferences)' != '' And !Exists('%(TargetDir)_PublishedWebsites') " Text="Web Role project %(FullPath) does not import Microsoft.WebApplication.targets.  The Web Role must be a Web Application that imports Microsoft.WebApplication.targets." Code="CCT060" HelpKeyword="MissingWebApplicationTargets"/>
+    <Error Condition=" '@(WebRoleReferences)' != '' And !Exists('%(TargetDir)_PublishedWebsites') " Text="Web Role project %(FullPath) does not import Microsoft.WebApplication.targets.  The Web Role must be a Web Application that imports Microsoft.WebApplication.targets." Code="WAT060" HelpKeyword="MissingWebApplicationTargets"/>
 
     <!-- Set the projected output directory on the web role -->
     <ItemGroup Condition=" '@(WebRoleReferences)' != '' " >
@@ -426,8 +490,8 @@
     </ItemGroup>
     <Copy SourceFiles="@(PublishedWebsitesFiles)"
           DestinationFiles="$(IntermediateOutputFullPath)%(RecursiveDir)%(Filename)%(Extension)" />
-    <RemoveDir Condition=" '@(WebRoleReferences)' != '' "
-               Directories="%(WebRoleReferences.TargetDir)_PublishedWebsites" />
+    <RemoveDir Condition=" '@(WebRoleReferences)' != '' And Exists('%(TargetDir)_PublishedWebsites') "
+               Directories="%(TargetDir)_PublishedWebsites" ContinueOnError="true" />
 
     <!-- Register intermediate published websites for Clean -->
     <ItemGroup Condition=" '@(WebRoleReferences)' != '' ">
@@ -733,7 +797,7 @@
     <Message Text="Worker Project     is @(WorkerRoles)" />
 
     <!-- Error out if unknown architecture or we don't have enough role projects for the architecture type -->
-    <Error Condition=" '@(WebRoles)'=='' And '@(WorkerRoles)'=='' " Text="A Web or Worker project is required but could not be found" Code="CCT001" HelpKeyword="MissingWebOrWorkerRole"/>
+    <Error Condition=" '@(WebRoles)'=='' And '@(WorkerRoles)'=='' " Text="A Web or Worker project is required but could not be found" Code="WAT001" HelpKeyword="MissingWebOrWorkerRole"/>
 
   </Target>
 
@@ -801,5 +865,30 @@
     <Message Text="Publishing process has completed."/>
 
   </Target>
+
+  <!-- ===================== OutputGroup removal ================= 
+       Removing all OutputGroups since the Cloud Service
+       Project does not support any Key outputs or OutputGroups
+       =========================================================== -->
+
+  <Target Name="BuiltProjectOutputGroup" DependsOnTargets="$(BuiltProjectOutputGroupDependsOn)" />
+  <Target Name="ContentFilesProjectOutputGroup" DependsOnTargets="$(ContentFilesProjectOutputGroupDependsOn)" />
+  <Target Name="SatelliteDllsProjectOutputGroup" DependsOnTargets="$(SatelliteDllsProjectOutputGroupDependsOn)" />
+  <Target Name="DocumentationProjectOutputGroup" DependsOnTargets="$(DocumentationProjectOutputGroupDependsOn)" />
+  <Target Name="DebugSymbolsProjectOutputGroup" DependsOnTargets="$(DebugSymbolsProjectOutputGroupDependsOn)" />
+  <Target Name="SourceFilesProjectOutputGroup" DependsOnTargets="$(SourceFilesProjectOutputGroupDependsOn)" />
+  <Target Name="SGenFilesOutputGroup" DependsOnTargets="$(SGenFilesOutputGroupDependsOn)" />
+  
+  <!-- =========================================================== 
+       Override CoreCleanDependsOn property from Microsoft.Common.targets
+       to allow us to Delete the current deployment
+       =========================================================== -->
+
+  <PropertyGroup>
+    <CoreCleanDependsOn>
+      DeleteCurrentDeployment;
+      $(CoreCleanDependsOn)
+    </CoreCleanDependsOn>
+  </PropertyGroup>
 
 </Project>
