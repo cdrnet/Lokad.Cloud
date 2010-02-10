@@ -29,7 +29,7 @@ namespace Lokad.Cloud.Azure.Test
             Provider.CreateTable(TableName);
         }
 
-        //[TestFixtureTearDown]
+        [TestFixtureTearDown]
         public void TearDown()
         {
             Provider.DeleteTable(TableName);
@@ -67,7 +67,7 @@ namespace Lokad.Cloud.Azure.Test
         {
             const string notATableName = "IamNotATable";
 
-            bool iSTestSuccess1 = false;
+            bool isTestSuccess1 = false;
             try
             {
                 var enumerable = Provider.Get<string>(notATableName);
@@ -76,13 +76,13 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                iSTestSuccess1 = (exception as InvalidOperationException) != null ? true : false;
+                isTestSuccess1 = (exception as InvalidOperationException) != null ? true : false;
             }
-            Assert.IsTrue(iSTestSuccess1, "#C01");
+            Assert.IsTrue(isTestSuccess1, "#C01");
 
             //Tests overloads
             #region
-            bool iSTestSuccess2 = false;
+            bool isTestSuccess2 = false;
             try
             {
                 var enumerable = Provider.Get<string>(notATableName, "dummyPKey");
@@ -91,12 +91,12 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                iSTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
+                isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
             }
-            Assert.IsTrue(iSTestSuccess2, "#C02");
+            Assert.IsTrue(isTestSuccess2, "#C02");
 
 
-            bool iSTestSuccess3 = false;
+            bool isTestSuccess3 = false;
             try
             {
                 var enumerable = Provider.Get<string>(notATableName, "dummyPKey", new[] { "dummyRowKeyA", "dummyRowKeyB" });
@@ -105,11 +105,11 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                iSTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
+                isTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
             }
-            Assert.IsTrue(iSTestSuccess3, "#C03");
+            Assert.IsTrue(isTestSuccess3, "#C03");
 
-            bool iSTestSuccess4 = false;
+            bool isTestSuccess4 = false;
             try
             {
                 var enumerable = Provider.Get<string>(notATableName, "dummyPKey", "dummyRowKeyA", "dummyRowKeyB");
@@ -118,9 +118,9 @@ namespace Lokad.Cloud.Azure.Test
             }
             catch (Exception exception)
             {
-                iSTestSuccess4 = (exception as InvalidOperationException) != null ? true : false;
+                isTestSuccess4 = (exception as InvalidOperationException) != null ? true : false;
             }
-            Assert.IsTrue(iSTestSuccess4, "#C04");
+            Assert.IsTrue(isTestSuccess4, "#C04");
             #endregion
         }
 
@@ -131,44 +131,44 @@ namespace Lokad.Cloud.Azure.Test
             const string notATableName = "IamNotATable";
 
             //Insert.
-            bool iSTestSuccess = false;
+            bool isTestSuccess = false;
             try
             {
                 Provider.Insert(notATableName, Entities(1, "dummyPKey", 10));
             }
             catch (Exception exception)
             {
-                iSTestSuccess = (exception as InvalidOperationException) != null ? true : false;
+                isTestSuccess = (exception as InvalidOperationException) != null ? true : false;
             }
-            Assert.IsTrue(iSTestSuccess, "#C05");
+            Assert.IsTrue(isTestSuccess, "#C05");
 
             //Update.
-            bool iSTestSuccess2 = false;
+            bool isTestSuccess2 = false;
             try
             {
                 Provider.Update(notATableName, Entities(1, "dummyPKey", 10));
             }
             catch (Exception exception)
             {
-                iSTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
+                isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
             }
-            Assert.IsTrue(iSTestSuccess2, "#C06");
+            Assert.IsTrue(isTestSuccess2, "#C06");
 
             //Delete.
-            bool iSTestSuccess3 = false;
+            bool isTestSuccess3 = false;
             try
             {
                 Provider.Delete<string>(notATableName, "dummyPKey", new[] { "dummyRowKey" });
             }
             catch (Exception exception)
             {
-                iSTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
+                isTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
             }
-            Assert.IsTrue(iSTestSuccess3, "#C07");
+            Assert.IsTrue(isTestSuccess3, "#C07");
         }
 
         [Test]
-        public void GetUnexistingPartionName()
+        public void GetMissionPartitionName()
         {
             const string notAPartitionKey = "IAmNotAPartitionKey";
 
