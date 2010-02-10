@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -530,13 +531,23 @@ namespace Lokad.Cloud.Azure
 					UseFlatBlobListing = true
 				};
 
-			var directory = container.GetDirectoryReference(prefix);
+			// if no prefix is provided, then enumerate the whole container
+			IEnumerator<IListBlobItem> enumerator;
+			if (string.IsNullOrEmpty(prefix))
+			{
+				enumerator = container.ListBlobs(options).GetEnumerator();
+			}
+			else
+			{
+				// 'CloudBlobDirectory' must be used for prefixed enumeration
+				var directory = container.GetDirectoryReference(prefix);
 
-			// HACK: [vermorel] very ugly override, but otherwise an "/" separator gets forcibly added
-			typeof(CloudBlobDirectory).GetField("prefix", BindingFlags.Instance | BindingFlags.NonPublic)
-				.SetValue(directory, prefix);
+				// HACK: [vermorel] very ugly override, but otherwise an "/" separator gets forcibly added
+				typeof (CloudBlobDirectory).GetField("prefix", BindingFlags.Instance | BindingFlags.NonPublic)
+					.SetValue(directory, prefix);
 
-			var enumerator = directory.ListBlobs(options).GetEnumerator();
+				enumerator = directory.ListBlobs(options).GetEnumerator();
+			}
 
 			while(true)
 			{
