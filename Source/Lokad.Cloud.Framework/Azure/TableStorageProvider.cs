@@ -443,13 +443,16 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
-        //TODO: #101
 		public void Delete<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys)
 		{
 			var context = _tableStorage.GetDataServiceContext();
 
-			foreach (var slice in rowKeys.Slice(MaxEntityTransactionCount))
+			foreach (var s in rowKeys.Slice(MaxEntityTransactionCount))
 			{
+				var slice = s;
+
+				DeletionStart: // 'slice' might have been refreshed if some entities were already deleted
+
 				foreach (var rowKey in slice)
 				{
 					// Deleting entities in 1 roundtrip
@@ -464,8 +467,33 @@ namespace Lokad.Cloud.Azure
 					context.DeleteObject(mock);
 				}
 
-				_storagePolicy.Do(() => 
-					context.SaveChanges(SaveChangesOptions.Batch));
+				try
+				{
+					// HACK: [vermorel] if a single entity is missing, then the whole batch operation is aborded
+					_storagePolicy.Do(() =>
+						context.SaveChanges(SaveChangesOptions.Batch));
+				}
+				// if some entities exist
+				catch (DataServiceRequestException ex)
+				{
+					var errorCode = AzurePolicies.GetErrorCode(ex);
+
+					// HACK: Table Storage both implement a bizarre non-idempotent semantic
+					// but in addition, it throws a non-documented exception as well. 
+					if (errorCode != "ResourceNotFound")
+					{
+						throw;
+					}
+
+					slice = Get<T>(tableName, partitionKey, slice).Select(e => e.RowRey).ToArray();
+
+					// entities with same name will be added again
+					context = _tableStorage.GetDataServiceContext();
+
+					// HACK: [vermorel] yes, gotos are horrid, but other solutions are worst here.
+					goto DeletionStart;
+				}
+				
 			}	
 		}
 	}

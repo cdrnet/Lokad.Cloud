@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
@@ -17,7 +16,10 @@ namespace Lokad.Cloud.Azure.Test
     public class TableStorageProviderTests
     {
         readonly static Random Rand = new Random();
+
+// ReSharper disable InconsistentNaming
         readonly ITableStorageProvider Provider = GlobalSetup.Container.Resolve<ITableStorageProvider>();
+// ReSharper restore InconsistentNaming
 
         const string TableName = "teststablestorageprovidermytable";
 
@@ -27,7 +29,7 @@ namespace Lokad.Cloud.Azure.Test
             Provider.CreateTable(TableName);
         }
 
-        [TestFixtureTearDown]
+        //[TestFixtureTearDown]
         public void TearDown()
         {
             Provider.DeleteTable(TableName);
@@ -61,7 +63,7 @@ namespace Lokad.Cloud.Azure.Test
         [Test]
         //TODO: #99.
         //Test the behavior of Get method (and overloads) with a non-existing table name.
-        public void GetUnexistingTable()
+        public void GetMissingTable()
         {
             const string notATableName = "IamNotATable";
 
@@ -124,7 +126,7 @@ namespace Lokad.Cloud.Azure.Test
 
         [Test]
         //Test the behavior of Update, Insert and Delete methods with a non-existing table name.
-        public void UpDateAndInsertUnexistingTable()
+        public void UpdateAndInsertMissingTable()
         {
             const string notATableName = "IamNotATable";
 
@@ -221,27 +223,30 @@ namespace Lokad.Cloud.Azure.Test
         }
 
         [Test]
-        //TODO: #101
         public void IdempotenceOfDeleteMethod()
         {
-            var Pkey = Guid.NewGuid().ToString();
-            var RowKey = Guid.NewGuid().ToString();
-            var entity = new CloudEntity<string> { PartitionKey = Pkey, RowRey = RowKey, Timestamp = DateTime.Now, Value = "value1" };
+            var pkey = Guid.NewGuid().ToString("N");
 
-            //Insert entity.
-            Provider.Insert(TableName, new[] { entity });
-            Provider.Delete<string>(TableName, Pkey, new[] { RowKey });
+        	var entities = Range.Array(10).Convert(i =>
+        		new CloudEntity<string>
+        			{
+        				PartitionKey = pkey,
+						RowRey = Guid.NewGuid().ToString("N"),
+						Value = "nothing"
+        			});
 
-            try
-            {
-                //Retry to delete.(same as deleting non existing entities).
-                Provider.Delete<string>(TableName, Pkey, new[] { RowKey });
-            }
-            catch (Exception)
-            {
-                //Add/Remove comment will make the test pass/fail.
-                //Assert.True(false,"#F01");
-            }
+            // Insert/delete entity.
+            Provider.Insert(TableName, entities);
+
+			// partial deletion
+            Provider.Delete<string>(TableName, pkey, entities.Take(5).ToArray(e => e.RowRey));
+
+			// complete deletion, but with overlap
+			Provider.Delete<string>(TableName, pkey, entities.Convert(e => e.RowRey));
+
+			// checking that all entities have been deleted
+        	var list = Provider.Get<string>(TableName, pkey, entities.Convert(e => e.RowRey));
+			Assert.That(list.Count() == 0, "#A00");
         }
 
         [Test]
