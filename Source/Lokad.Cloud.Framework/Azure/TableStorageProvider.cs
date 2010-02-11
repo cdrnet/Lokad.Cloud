@@ -156,6 +156,7 @@ namespace Lokad.Cloud.Azure
 			} while (null != continuationRowKey);
 		}
 
+        ///TODO: http://code.google.com/p/lokad-cloud/issues/detail?id=109
 		public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey)
 		{
 			Enforce.That(() => tableName);

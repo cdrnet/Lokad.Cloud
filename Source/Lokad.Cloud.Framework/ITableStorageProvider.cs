@@ -60,6 +60,7 @@ namespace Lokad.Cloud
         /// <para>If the partition key does not exists the collection is empty.</para>
         /// </remarks>
         ///<exception cref="InvalidOperationException"> thrown if the table does not exist.</exception>
+        ///TODO: http://code.google.com/p/lokad-cloud/issues/detail?id=109
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey);
 
 		/// <summary>Iterates through all entities specified by their row keys.</summary>

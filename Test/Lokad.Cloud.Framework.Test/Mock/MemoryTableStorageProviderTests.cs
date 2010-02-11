@@ -6,8 +6,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
+using Lokad.Cloud.Azure;
+using Lokad.Cloud.Azure.Test;
 using Lokad.Cloud.Mock;
 using NUnit.Framework;
 
@@ -16,7 +19,7 @@ namespace Lokad.Cloud.Test.Mock
     [TestFixture]
     public class MemoryTableStorageProviderTests
     {
-       
+
         [Test]
         public void CreateAndGetTable()
         {
@@ -52,12 +55,12 @@ namespace Lokad.Cloud.Test.Mock
                     i =>
                         new CloudEntity<object>()
                             {
-                                PartitionKey = "Pkey-" + (i%partitionCount).ToString("0"),
+                                PartitionKey = "Pkey-" + (i % partitionCount).ToString("0"),
                                 RowRey = "RowKey-" + i.ToString("00"),
                                 Value = new object()
                             }
                     );
-            
+
 
             //Insert entities.
             tableStorage.Insert("myTable", entities);
@@ -71,8 +74,8 @@ namespace Lokad.Cloud.Test.Mock
             Assert.AreEqual(10, retrievedEntites2.Count());
 
             var retrievedEntities3 = tableStorage.Get<object>("myTable", "Pkey-7",
-                new[] {"RowKey-27", "RowKey-37", "IAmNotAKey"});
- 
+                new[] { "RowKey-27", "RowKey-37", "IAmNotAKey" });
+
             Assert.AreEqual(2, retrievedEntities3.Count());
 
             //The following tests handle the exclusive and inclusive bounds of key search.
@@ -92,15 +95,53 @@ namespace Lokad.Cloud.Test.Mock
             var isSuccess = false;
             try
             {
-                 tableStorage.Get<object>("IAmNotATable", "IaMNotAPartiTion");
+                tableStorage.Get<object>("IAmNotATable", "IaMNotAPartiTion");
             }
             catch (Exception exception)
             {
                 isSuccess = (exception as InvalidOperationException) == null ? false : true;
             }
             Assert.That(isSuccess);
-  
         }
+
+        ///TODO: http://code.google.com/p/lokad-cloud/issues/detail?id=109
+        //[Test]
+        //public void GetMethodStartEnd()
+        //{
+        //    const int N = 250;
+        //    const string MockDataTable = "MockTable";
+        //    var tableStorage = new MemoryTableStorageProvider();
+
+        //    tableStorage.CreateTable(MockDataTable);
+        //    var entites = Enumerable.Range(0,N).Select(i=> new CloudEntity<MockObject>
+        //                {
+        //                    PartitionKey = "PKey",
+        //                    RowRey = "RowKey" + i,
+        //                    Value = new MockObject() {Name = i.ToString(), Values = new[] {new DateTime(2008, 12, 14)}}
+        //                });
+
+        //    tableStorage.Insert(MockDataTable, entites);
+
+        //    var retrieved = tableStorage.Get<MockObject>(MockDataTable, "PKey", null, null);
+        //    //var retrievedSorted = retrieved.OrderBy(e => e.RowRey).ToArray();
+        //    int count = 0;
+        //    string cRowKey = string.Empty;
+        //    foreach(var e in retrieved)
+        //    {
+        //        if(count >= 100)
+        //        {
+        //            cRowKey = e.RowRey;
+        //            break;
+        //        }
+        //        count++;
+                
+        //    }
+        //    Console.WriteLine(cRowKey);
+        //    //int countUnuseful = retrievedSorted.Count();
+        //    var retrieved2 = tableStorage.Get<MockObject>(MockDataTable, "PKey", cRowKey, null);
+        //    Console.WriteLine(retrieved2.Count());
+                    
+        //}
 
         [Test]
         public void InsertUpdateAndDeleteMonoThread()
@@ -125,7 +166,7 @@ namespace Lokad.Cloud.Test.Mock
             var isSucces = false;
             try
             {
-                tableStorage.Insert("myTable", new[]{new CloudEntity<object>(){PartitionKey = "Pkey-6",RowRey = "RowKey-56"}});
+                tableStorage.Insert("myTable", new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowRey = "RowKey-56" } });
             }
             catch (Exception exception)
             {
@@ -135,18 +176,18 @@ namespace Lokad.Cloud.Test.Mock
 
             tableStorage.CreateTable("myNewTable");
             tableStorage.Insert("myNewTable",
-                new[] {new CloudEntity<object>() {PartitionKey = "Pkey-6", RowRey = "RowKey-56", Value = new object()}});
+                new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowRey = "RowKey-56", Value = new object() } });
 
             Assert.AreEqual(2, tableStorage.GetTables().Count());
 
-            tableStorage.Update("myNewTable", new[]{new CloudEntity<object>(){PartitionKey = "Pkey-6",RowRey = "RowKey-56",Value = 2000}});
-            Assert.AreEqual(2000, (int) tableStorage.Get<object>("myNewTable", "Pkey-6", new[] { "RowKey-56" }).First().Value);
+            tableStorage.Update("myNewTable", new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowRey = "RowKey-56", Value = 2000 } });
+            Assert.AreEqual(2000, (int)tableStorage.Get<object>("myNewTable", "Pkey-6", new[] { "RowKey-56" }).First().Value);
 
-            tableStorage.Delete<object>("myNewTable", "Pkey-6", new[]{"RowKey-56"});
+            tableStorage.Delete<object>("myNewTable", "Pkey-6", new[] { "RowKey-56" });
 
             var retrieved = tableStorage.Get<object>("myNewTable");
             Assert.AreEqual(0, retrieved.Count());
-           
+
         }
 
         [Test]
@@ -173,30 +214,30 @@ namespace Lokad.Cloud.Test.Mock
 
         [Test]
         public void CreateAndGetTablesMultiThread()
+        {
+            //Multi thread.
+            const int M = 32;
+            var tableStorage = new MemoryTableStorageProvider();
+
+            var threads = Enumerable.Range(0, M).Select(i => new Thread(CreateTables)).ToArray();
+            var threadsParameters =
+                Enumerable.Range(0, M).Select(
+                    i => new ThreadParameter() { TableStorage = tableStorage, ThreadId = "treadId" + i.ToString() }).
+                    ToArray();
+
+            for (int i = 0; i < M; i++)
             {
-                //Multi thread.
-                const int M = 32;
-                var tableStorage = new MemoryTableStorageProvider();
-
-                var threads = Enumerable.Range(0, M).Select(i => new Thread(CreateTables)).ToArray();
-                var threadsParameters =
-                    Enumerable.Range(0, M).Select(
-                        i => new ThreadParameter() {TableStorage = tableStorage, ThreadId = "treadId" + i.ToString()}).
-                        ToArray();
-
-                for (int i = 0; i < M; i++)
-                {
-                    threads[i].Start(threadsParameters[i]);
-                }
-                Thread.Sleep(2000);
-
-                Assert.AreEqual(10, tableStorage.GetTables().Distinct().Count());
-
+                threads[i].Start(threadsParameters[i]);
             }
+            Thread.Sleep(2000);
+
+            Assert.AreEqual(10, tableStorage.GetTables().Distinct().Count());
+
+        }
 
         static void CreateTables(object parameter)
         {
-            if(parameter is ThreadParameter)
+            if (parameter is ThreadParameter)
             {
                 var castedParameters = (ThreadParameter)parameter;
                 for (int i = 0; i < 10; i++)
@@ -212,5 +253,13 @@ namespace Lokad.Cloud.Test.Mock
             public string ThreadId { get; set; }
         }
 
+        [DataContract]
+        class MockObject
+        {
+            public string Name { get; set; }
+
+            [DataMember]
+            public DateTime[] Values { get; set; } //An array of DateTime has no importance here.
+        }
     }
 }
