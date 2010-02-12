@@ -323,6 +323,16 @@
             	new instance of the currency amount
             </returns>
     </member>
+    <member name="M:Lokad.ExtendDecimal.RoundTo(System.Decimal,System.Int32)">
+      <summary>
+            Rounds the specified decimal with the provided number 
+            of fractional digits.
+            </summary>
+      <param name="value">The value to round.</param>
+      <param name="digits">The digits.</param>
+      <returns>rounded value</returns>
+      <remarks>We can't use "Round" since it will collide with <see cref="M:System.Decimal.Round(System.Decimal,System.Int32)" /></remarks>
+    </member>
     <member name="T:Lokad.Diagnostics.Persist.ConversionExtensions">
       <summary>
             Helper extensions for converting to/from data classes in the Diagnostics namespace
@@ -5804,12 +5814,28 @@
     </member>
     <member name="M:System.Linq.ExtendIEnumerable.ToIndexed``1(System.Collections.Generic.IEnumerable{``0})">
       <summary>
-            Applies the integral indexer to the sequence
+            Applies the integral indexer to the sequence in a lazy manner
             </summary>
       <typeparam name="TSource">The type of the source.</typeparam>
       <param name="source">The sequence.</param>
       <returns>indexed sequence</returns>
       <exception cref="T:System.ArgumentNullException"> if <paramref name="source" /> is null</exception>
+    </member>
+    <member name="M:System.Linq.ExtendIEnumerable.ToIndexDictionary``1(System.Collections.Generic.IEnumerable{``0})">
+      <summary>
+            Enumerates and returns a mapping that associated the items with their respective
+            indices (positions) within the enumeration.
+            </summary>
+      <typeparam name="TSource">The type of the source.</typeparam>
+      <param name="source">The source.</param>
+      <returns>a dictionary</returns>
+      <remarks>
+        <para>Typical usage is <c>coll.ToIndex()["foo"]</c> that returns
+            the position of the item <c>"foo"</c> in the initial collection.</para>
+        <para>if multiple similar entries are present in the original collection,
+            index of the first entry is recorded.
+            </para>
+      </remarks>
     </member>
     <member name="M:System.Linq.ExtendIEnumerable.SelectValues``1(System.Collections.Generic.IEnumerable{Lokad.Maybe{``0}})">
       <summary>
