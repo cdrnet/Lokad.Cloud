@@ -30,14 +30,14 @@ namespace Lokad.Cloud.Test.Mock
                 tableStorage.CreateTable(i.ToString());
             }
             var retrievedTables = tableStorage.GetTables();
-            Assert.AreEqual(6, retrievedTables.Count());
+            Assert.AreEqual(6, retrievedTables.Count(),"#A01");
 
             //Remove tables.
-            Assert.False(tableStorage.DeleteTable("Table_that_does_not_exist"));
+            Assert.False(tableStorage.DeleteTable("Table_that_does_not_exist"), "#A02");
             var isSuccess = tableStorage.DeleteTable(4.ToString());
             retrievedTables = tableStorage.GetTables();
-            Assert.IsTrue(isSuccess);
-            Assert.AreEqual(5, retrievedTables.Count());
+            Assert.IsTrue(isSuccess, "#A03");
+            Assert.AreEqual(5, retrievedTables.Count(), "#A04");
 
         }
 
@@ -67,29 +67,29 @@ namespace Lokad.Cloud.Test.Mock
 
             //retrieve all of them.
             var retrievedEntities1 = tableStorage.Get<object>("myTable");
-            Assert.AreEqual(100, retrievedEntities1.Count());
+            Assert.AreEqual(100, retrievedEntities1.Count(),"#B01");
 
             //Test overloads...
             var retrievedEntites2 = tableStorage.Get<object>("myTable", "Pkey-9");
-            Assert.AreEqual(10, retrievedEntites2.Count());
+            Assert.AreEqual(10, retrievedEntites2.Count(), "#B02");
 
             var retrievedEntities3 = tableStorage.Get<object>("myTable", "Pkey-7",
                 new[] { "RowKey-27", "RowKey-37", "IAmNotAKey" });
 
-            Assert.AreEqual(2, retrievedEntities3.Count());
+            Assert.AreEqual(2, retrievedEntities3.Count(), "#B03");
 
             //The following tests handle the exclusive and inclusive bounds of key search.
             var retrieved4 = tableStorage.Get<object>("myTable", "Pkey-1", "RowKey-01", "RowKey-91");
-            Assert.AreEqual(9, retrieved4.Count());
+            Assert.AreEqual(9, retrieved4.Count(), "#B04");
 
             var retrieved5 = tableStorage.Get<object>("myTable", "Pkey-1", "RowKey-01", null);
-            Assert.AreEqual(10, retrieved5.Count());
+            Assert.AreEqual(10, retrieved5.Count(), "#B05");
 
             var retrieved6 = tableStorage.Get<object>("myTable", "Pkey-1", null, null);
-            Assert.AreEqual(10, retrieved6.Count());
+            Assert.AreEqual(10, retrieved6.Count(), "#B06");
 
             var retrieved7 = tableStorage.Get<object>("myTable", "Pkey-1", null, "RowKey-21");
-            Assert.AreEqual(2, retrieved7.Count());
+            Assert.AreEqual(2, retrieved7.Count(), "#B07");
 
             //The next test should handle non existing table names.
             var isSuccess = false;
@@ -101,47 +101,56 @@ namespace Lokad.Cloud.Test.Mock
             {
                 isSuccess = (exception as InvalidOperationException) == null ? false : true;
             }
-            Assert.That(isSuccess);
+            Assert.That(isSuccess, "#B08");
         }
 
-        ///TODO: http://code.google.com/p/lokad-cloud/issues/detail?id=109
-        //[Test]
-        //public void GetMethodStartEnd()
-        //{
-        //    const int N = 250;
-        //    const string MockDataTable = "MockTable";
-        //    var tableStorage = new MemoryTableStorageProvider();
+        [Test]
+        public void GetMethodStartEnd()
+        {
+            //This is a test on the ordered enumeration return by the GetMethod with StartRowKEy-EndRowKey.
+            const int N = 250;
+            const string MockDataTable = "MockTable";
+            var tableStorage = new MemoryTableStorageProvider();
 
-        //    tableStorage.CreateTable(MockDataTable);
-        //    var entites = Enumerable.Range(0,N).Select(i=> new CloudEntity<MockObject>
-        //                {
-        //                    PartitionKey = "PKey",
-        //                    RowRey = "RowKey" + i,
-        //                    Value = new MockObject() {Name = i.ToString(), Values = new[] {new DateTime(2008, 12, 14)}}
-        //                });
+            tableStorage.CreateTable(MockDataTable);
+            var entites = Enumerable.Range(0,N).Select(i=> new CloudEntity<MockObject>
+                        {
+                            PartitionKey = "PKey",
+                            RowRey = "RowKey" + i,
+                            Value = new MockObject() {Name = i.ToString(), Values = new[] {new DateTime(2008, 12, 14)}}
+                        });
 
-        //    tableStorage.Insert(MockDataTable, entites);
+            tableStorage.Insert(MockDataTable, entites);
 
-        //    var retrieved = tableStorage.Get<MockObject>(MockDataTable, "PKey", null, null);
-        //    //var retrievedSorted = retrieved.OrderBy(e => e.RowRey).ToArray();
-        //    int count = 0;
-        //    string cRowKey = string.Empty;
-        //    foreach(var e in retrieved)
-        //    {
-        //        if(count >= 100)
-        //        {
-        //            cRowKey = e.RowRey;
-        //            break;
-        //        }
-        //        count++;
-                
-        //    }
-        //    Console.WriteLine(cRowKey);
-        //    //int countUnuseful = retrievedSorted.Count();
-        //    var retrieved2 = tableStorage.Get<MockObject>(MockDataTable, "PKey", cRowKey, null);
-        //    Console.WriteLine(retrieved2.Count());
+            var retrieved = tableStorage.Get<MockObject>(MockDataTable, "PKey", null, null).ToArray();
+            var retrievedSorted = retrieved.OrderBy(e => e.RowRey).ToArray();
+
+            bool isOrdered = true;
+            for (int i = 0; i < retrieved.Length; i++)
+            {
+                if(retrieved[i] != retrievedSorted[i])
+                {
+                    isOrdered = false;
+                    break;
+                }
+            }
+            Assert.That(isOrdered,"#C01");
+
+            var retrieved2 = tableStorage.Get<MockObject>(MockDataTable, "PKey", "RowKey25", null).ToArray();
+            var retrievedSorted2 = retrieved2.OrderBy(e => e.RowRey).ToArray();
+
+            bool isOrdered2 = true;
+            for (int i = 0; i < retrieved2.Length; i++)
+            {
+                if (retrieved2[i] != retrievedSorted2[i])
+                {
+                    isOrdered2 = false;
+                    break;
+                }
+            }
+            Assert.That(isOrdered2, "#C02");
                     
-        //}
+        }
 
         [Test]
         public void InsertUpdateAndDeleteMonoThread()
@@ -259,7 +268,7 @@ namespace Lokad.Cloud.Test.Mock
             public string Name { get; set; }
 
             [DataMember]
-            public DateTime[] Values { get; set; } //An array of DateTime has no importance here.
+            public DateTime[] Values { get; set; } //some type here.
         }
     }
 }

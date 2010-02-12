@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
@@ -165,6 +166,67 @@ namespace Lokad.Cloud.Azure.Test
                 isTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
             }
             Assert.IsTrue(isTestSuccess3, "#C07");
+        }
+
+
+        [Test]
+        public void GetMethodStartEnd()
+        {
+            //This is a test on the ordered enumeration return by the GetMethod with StartRowKEy-EndRowKey.
+            const int N = 250;
+            string pKey = Guid.NewGuid().ToString();
+
+            Provider.CreateTable(TableName);
+            var entities = Enumerable.Range(0,N).Select(i=> new CloudEntity<string>
+        			{
+        				PartitionKey = pKey,
+						RowRey = "RowKey" +i,
+						Value = Guid.NewGuid().ToString()
+        			});
+
+            Provider.Insert(TableName, entities);
+
+            var retrieved = Provider.Get<string>(TableName, pKey, null, null).ToArray();
+            var retrievedSorted = retrieved.OrderBy(e => e.RowRey).ToArray();
+
+            bool isOrdered = true;
+            for (int i = 0; i < retrieved.Length; i++)
+            {
+                if (retrieved[i] != retrievedSorted[i])
+                {
+                    isOrdered = false;
+                    break;
+                }
+            }
+            Assert.That(isOrdered, "#C01");
+
+            var retrieved2 = Provider.Get<string>(TableName, pKey, "RowKey25", null).ToArray();
+            var retrievedSorted2 = retrieved2.OrderBy(e => e.RowRey).ToArray();
+
+            bool isOrdered2 = true;
+            for (int i = 0; i < retrieved2.Length; i++)
+            {
+                if (retrieved2[i] != retrievedSorted2[i])
+                {
+                    isOrdered2 = false;
+                    break;
+                }
+            }
+            Assert.That(isOrdered2, "#C02");
+
+            var retrieved3 = Provider.Get<string>(TableName, pKey, null, "RowKey25").ToArray();
+            var retrievedSorted3 = retrieved3.OrderBy(e => e.RowRey).ToArray();
+
+            bool isOrdered3 = true;
+            for (int i = 0; i < retrieved3.Length; i++)
+            {
+                if (retrieved3[i] != retrievedSorted3[i])
+                {
+                    isOrdered3 = false;
+                    break;
+                }
+            }
+            Assert.That(isOrdered3, "#C03");
         }
 
         [Test]

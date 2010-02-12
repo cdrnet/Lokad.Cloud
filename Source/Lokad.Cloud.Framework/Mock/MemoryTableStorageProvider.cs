@@ -117,7 +117,6 @@ namespace Lokad.Cloud.Mock
         }
 
         /// <see cref="ITableStorageProvider.Get{T}(string,string,string,string)<>"/>
-        ///TODO: http://code.google.com/p/lokad-cloud/issues/detail?id=109
         public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey)
         {
             lock (_syncRoot)
@@ -131,6 +130,7 @@ namespace Lokad.Cloud.Mock
                         pair => 
                             (string.Compare(startRowKey, pair.Key) <= 0 )
                             && (string.IsNullOrEmpty(endRowKey) ? true : string.Compare(pair.Key, endRowKey) < 0))
+                        .OrderBy(pair => pair.Key)
                         .Select(pair => FatEntity.Convert<T>(pair.Value, _formatter));
                 }
                 return new List<CloudEntity<T>>();
