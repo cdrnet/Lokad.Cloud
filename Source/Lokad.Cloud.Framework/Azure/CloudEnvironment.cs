@@ -5,6 +5,7 @@
 
 using System;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.Azure
@@ -93,6 +94,26 @@ namespace Lokad.Cloud.Azure
 			var dir = Path.Combine(Path.GetTempPath(), resourceName);
 			Directory.CreateDirectory(dir);
 			return dir;
+		}
+
+		public static Maybe<X509Certificate2> GetCertificate(string thumbprint)
+		{
+			var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+			try
+			{
+				store.Open(OpenFlags.ReadOnly);
+				var certs = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
+				if(certs.Count != 1)
+				{
+					return Maybe<X509Certificate2>.Empty;
+				}
+
+				return certs[0];
+			}
+			finally
+			{
+				store.Close();
+			}
 		}
 	}
 }

@@ -25,8 +25,8 @@
 	<h2 class="separator">WebRole cache</h2>
 	<div class="warning">
 		Purge the cache of the current webrole (other instances unaffected): 
-		<asp:Button runat="server" OnClick="ClearCache_Click" Text="Clear" /></div>
-	<br />
+		<asp:Button runat="server" OnClick="ClearCache_Click" Text="Clear" />
+	</div>
 	
 	<h2 class="separator">System status</h2>
 	<div class="box">
@@ -41,15 +41,70 @@
 					</li>
 				</ul>
 			</li>
-			<li>Azure Deployment: <b>
-				<asp:Label ID="AzureDeploymentLabel" runat="server" /></b>
-			</li>
-			<li>Storage Account Name: <b>
-				<asp:Label ID="StorageAccountNameLabel" runat="server" /></b>
-			</li>
-			<li>Worker Instances: <b>
-				<asp:Label ID="AzureWorkerInstancesLabel" runat="server" /></b>
+			<li>Current Worker Instances: <b>
+				<asp:Label ID="AzureWorkerInstancesLabel" runat="server" /></b><br />
 			</li>
 		</ul>
 	</div>
+	
+	<asp:Panel ID="DeploymentStatusPanel" Visible="false" runat="server" CssClass="warning">
+        <b>Azure Deployment update is in progress</b>
+	</asp:Panel>
+	
+	<asp:Panel ID="WorkerInstancesPanel" Visible="false" runat="server" CssClass="warning">
+        Update to
+        <asp:TextBox ID="WorkerInstancesBox" runat="server" Width="25px" Text="4" />
+        <asp:RequiredFieldValidator ID="WorkerInstancesValidator1" runat="server" Display="Dynamic" ErrorMessage="*" CssClass="resulterror"
+            ControlToValidate="WorkerInstancesBox" ValidationGroup="set" />
+        <asp:RangeValidator ID="WorkerInstancesValidator2" runat="server" Display="Dynamic" ErrorMessage="*" CssClass="resulterror"
+            ControlToValidate="WorkerInstancesBox" Type="Integer" MinimumValue="1" MaximumValue="200" ValidationGroup="set" />
+        Worker Instances:
+        <asp:Button ID="SetWorkerInstancesButton" runat="server" Text="Request" ValidationGroup="set"
+            OnClick="SetWorkerInstancesButton_Click" />
+	</asp:Panel>
+	
+	<asp:Panel ID="_managementWarningPanel" Visible="false" runat="server" CssClass="warning">
+	    <b>Azure Service Management is disabled</b><br />
+	    Communicating with the Azure Management API failed:
+		<asp:Label ID="_managementConfigurationMissing" Visible="false" runat="server"
+			Text="The subscription id or certificate thumbprint configuration is missing, please verify the deployment configuration." />
+		<asp:Label ID="_managementCertificateMissing" Visible="false" runat="server"
+			Text="Failed to load the certificate, please verify the deployment configuration and the certificate in the Azure portal." />
+		<asp:Label ID="_managementAuthenticationFailed" Visible="false" runat="server"
+			Text="Authentication failed. The subscription id or certificate thumbprint configuration might be wrong, please verify the deployment configuration and the certificate in the Azure portal." />
+		<asp:Label ID="_managementDeploymentNotFound" Visible="false" runat="server"
+			Text="This running deployment does not match the configured deployment, please verify the deployment configuration and the certificate in the Azure portal. This is the expected behavior when running in the local development fabric." />
+		<br />
+	</asp:Panel>
+	
+	<h2 class="separator">Azure Deployment</h2>
+	<div class="box">
+		<ul>
+		    <li>Subscription: <b>
+				<asp:Label ID="SubscriptionLabel" runat="server" /></b>
+			</li>
+			<li>Deployment: <b>
+				<asp:Label ID="DeploymentLabel" runat="server" /></b>
+			</li>
+			<li>Hosted Service: <b>
+				<asp:Label ID="HostedServiceLabel" runat="server" /></b>
+			</li>
+			<li>Storage Account: <b>
+				<asp:Label ID="StorageAccountLabel" runat="server" /></b>
+			</li>
+		</ul>
+	</div>
+	
+	<h2 class="separator">Azure Management</h2>
+	<div class="box">
+		<ul>
+		    <li>Certificate: <b>
+				<asp:Label ID="CertificatesLabel" runat="server" /></b>
+				<ul>
+				    <li>Thumbprint: <asp:Label ID="CertificateThumbprintLabel" runat="server" /></b></li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	
 </asp:Content>

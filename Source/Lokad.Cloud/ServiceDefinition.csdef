@@ -10,9 +10,11 @@
       <Setting name="DataConnectionString" />
       <!--Space separated OpenId identifiers (don't forget the trailing slash) -->
       <Setting name="Admins" />
+      <Setting name="SelfManagementCertificateThumbprint" />
+      <Setting name="SelfManagementSubscriptionId" />
     </ConfigurationSettings>
     <Certificates>
-      <Certificate name="AzureSelfManagement" storeLocation="LocalMachine" storeName="My" />
+      <Certificate name="SelfManagement" storeLocation="CurrentUser" storeName="My" />
     </Certificates>
   </WebRole>
   <!-- Full trust is needed for binary serialization -->
@@ -20,9 +22,11 @@
     <LocalStorage name="LokadCloudStorage" sizeInMB="2" />
     <ConfigurationSettings>
       <Setting name="DataConnectionString" />
+      <Setting name="SelfManagementCertificateThumbprint" />
+      <Setting name="SelfManagementSubscriptionId" />
     </ConfigurationSettings>
     <Certificates>
-      <Certificate name="AzureSelfManagement" storeLocation="LocalMachine" storeName="My" />
+      <Certificate name="SelfManagement" storeLocation="CurrentUser" storeName="My" />
     </Certificates>
   </WorkerRole>
 </ServiceDefinition>

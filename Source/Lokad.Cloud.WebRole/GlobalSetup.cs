@@ -26,6 +26,7 @@ namespace Lokad.Cloud.Web
 			if (RoleEnvironment.IsAvailable)
 			{
 				builder.RegisterModule(new StorageModule());
+				builder.RegisterModule(new AzureManagementModule());
 			}
 			else // or from the web.config directly (when azure config is not available)
 			{

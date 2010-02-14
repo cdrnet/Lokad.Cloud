@@ -28,6 +28,9 @@ namespace Lokad.Cloud.Azure.Test
 			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
 
+			// Self Management
+			builder.RegisterModule(new AzureManagementModule());
+
 			return builder.Build();
 		}
 

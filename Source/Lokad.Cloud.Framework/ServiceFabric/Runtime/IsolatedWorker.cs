@@ -4,7 +4,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Security;
@@ -26,7 +25,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			// This is necessary to load config values in the main AppDomain because
 			// RoleManager is not properly working when invoked from another AppDomain
 			// These override values are passed to StorageModule living in another AppDomain
-			var overrides = StorageModule.GetPropertiesValuesFromRuntime();
+			var roleConfiguration = RoleConfigurationSettings.LoadFromRoleEnvironment();
 
 			// The trick is to load this same assembly in another domain, then
 			// instantiate this same class and invoke DoWorkInternal
@@ -38,7 +37,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 			// This never throws, unless something went wrong with IoC setup and that's fine
 			// because it is not possible to execute the worker
-			var returnValue = isolatedInstance.DoWorkInternal(overrides);
+			var returnValue = isolatedInstance.DoWorkInternal(roleConfiguration);
 
 			// If this throws, it's because something went wrong when unloading the AppDomain
 			// The exception correctly pulls down the entire worker process so that no AppDomains are
@@ -48,17 +47,24 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			return returnValue;
 		}
 
-		bool DoWorkInternal(Dictionary<string, string> overrides)
+		bool DoWorkInternal(Maybe<RoleConfigurationSettings> externalRoleConfiguration)
 		{
 			var builder = new ContainerBuilder();
 
 			// Cloud Infrastructure
-			var storageModule = new StorageModule { OverriddenProperties = overrides };
+			var storageModule = new StorageModule();
+			if(externalRoleConfiguration.HasValue)
+			{
+				storageModule.ExternalRoleConfiguration = externalRoleConfiguration.Value;
+			}
 			builder.RegisterModule(storageModule);
 			builder.Register(typeof(CloudInfrastructureProviders));
 
 			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
+
+			// Self Management
+			builder.RegisterModule(new AzureManagementModule(externalRoleConfiguration));
 
 			// Services
 			builder.Register(typeof(InternalServiceRuntime));

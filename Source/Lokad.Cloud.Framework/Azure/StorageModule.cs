@@ -1,18 +1,11 @@
-﻿#region (c)2009 Lokad - New BSD license
-
-// Copyright (c) Lokad 2009 
-// Company: http://www.lokad.com
-// This code is released under the terms of the new BSD licence
-
+﻿#region Copyright (c) Lokad 2009-2010
+// This code is released under the terms of the new BSD licence.
+// URL: http://www.lokad.com/
 #endregion
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Autofac.Builder;
 using Lokad.Quality;
 using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.StorageClient;
 using Module=Autofac.Builder.Module;
 
@@ -24,94 +17,107 @@ namespace Lokad.Cloud.Azure
 	[NoCodeCoverage]
 	public sealed class StorageModule : Module
 	{
-		/// <summary>The data connection string.</summary>
+		/// <summary>
+		/// The data connection string.
+		/// </summary>
 		[UsedImplicitly]
 		public string DataConnectionString { get; set; }
 
-		/// <summary>Provides configuration properties when they are not available from RoleManager.</summary>
-		public Dictionary<string, string> OverriddenProperties { get; set; }
+		/// <summary>
+		/// Provides configuration properties when they are not available from
+		/// RoleManager (optional, can be null).
+		/// </summary>
+		internal RoleConfigurationSettings ExternalRoleConfiguration { get; set; }
 
 		protected override void Load(ContainerBuilder builder)
 		{
-			if (CloudEnvironment.IsAvailable)
+			if (ExternalRoleConfiguration != null)
 			{
-				ApplyOverridesFromRuntime();
+				DataConnectionString = ExternalRoleConfiguration.DataConnectionString;
 			}
 			else
 			{
-				ApplyOverridesFromInternal();
-			}
-
-			if (!string.IsNullOrEmpty(DataConnectionString))
-			{
-				CloudStorageAccount account = null;
-				if(CloudStorageAccount.TryParse(DataConnectionString, out account))
+				var config = RoleConfigurationSettings.LoadFromRoleEnvironment();
+				if (config.HasValue)
 				{
-					// Only register storage components if the storage credentials are OK
-					// This will cause exceptions to be thrown quite soon, but this way
-					// the roles' OnStart() method returns correctly, allowing the web role
-					// to display a warning to the user (the worker is recycled indefinitely
-					// as Run() throws almost immediately)
-
-					builder.Register(c =>
-					{
-						var queueService = account.CreateCloudQueueClient();
-						queueService.RetryPolicy = BuildDefaultRetry();
-						return queueService;
-					});
-
-					builder.Register(c =>
-					{
-						var storage = account.CreateCloudBlobClient();
-						storage.RetryPolicy = BuildDefaultRetry();
-						return storage;
-					});
-
-					builder.Register(c =>
-					{
-						var storage = account.CreateCloudTableClient();
-						storage.RetryPolicy = BuildDefaultRetry();
-						return storage;
-					});
-
-					// registering the Lokad.Cloud providers
-					builder.Register(c =>
-						{
-							IBinaryFormatter formatter;
-							if(!c.TryResolve(out formatter))
-							{
-								formatter = new CloudFormatter();
-							}
-
-							return (IBlobStorageProvider)new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
-						});
-
-					builder.Register(c =>
-						{
-							IBinaryFormatter formatter;
-							if(!c.TryResolve(out formatter))
-							{
-								formatter = new CloudFormatter();
-							}
-
-							return (IQueueStorageProvider)new QueueStorageProvider(
-								c.Resolve<CloudQueueClient>(),
-								c.Resolve<IBlobStorageProvider>(),
-								formatter);
-						});
-
-					builder.Register(c =>
-					{
-						IBinaryFormatter formatter;
-						if (!c.TryResolve(out formatter))
-						{
-							formatter = new CloudFormatter();
-						}
-
-						return (ITableStorageProvider)new TableStorageProvider(c.Resolve<CloudTableClient>(), formatter);
-					});
+					DataConnectionString = config.Value.DataConnectionString;
 				}
 			}
+
+			// Only register storage components if the storage credentials are OK
+			// This will cause exceptions to be thrown quite soon, but this way
+			// the roles' OnStart() method returns correctly, allowing the web role
+			// to display a warning to the user (the worker is recycled indefinitely
+			// as Run() throws almost immediately)
+
+			if (string.IsNullOrEmpty(DataConnectionString))
+			{
+				return;
+			}
+
+			CloudStorageAccount account;
+			if (!CloudStorageAccount.TryParse(DataConnectionString, out account))
+			{
+				return;
+			}
+
+			builder.Register(c =>
+				{
+					var queueService = account.CreateCloudQueueClient();
+					queueService.RetryPolicy = BuildDefaultRetry();
+					return queueService;
+				});
+
+			builder.Register(c =>
+				{
+					var storage = account.CreateCloudBlobClient();
+					storage.RetryPolicy = BuildDefaultRetry();
+					return storage;
+				});
+
+			builder.Register(c =>
+				{
+					var storage = account.CreateCloudTableClient();
+					storage.RetryPolicy = BuildDefaultRetry();
+					return storage;
+				});
+
+			// registering the Lokad.Cloud providers
+			builder.Register(c =>
+				{
+					IBinaryFormatter formatter;
+					if (!c.TryResolve(out formatter))
+					{
+						formatter = new CloudFormatter();
+					}
+
+					return (IBlobStorageProvider) new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
+				});
+
+			builder.Register(c =>
+				{
+					IBinaryFormatter formatter;
+					if (!c.TryResolve(out formatter))
+					{
+						formatter = new CloudFormatter();
+					}
+
+					return (IQueueStorageProvider) new QueueStorageProvider(
+						c.Resolve<CloudQueueClient>(),
+						c.Resolve<IBlobStorageProvider>(),
+						formatter);
+				});
+
+			builder.Register(c =>
+				{
+					IBinaryFormatter formatter;
+					if (!c.TryResolve(out formatter))
+					{
+						formatter = new CloudFormatter();
+					}
+
+					return (ITableStorageProvider) new TableStorageProvider(c.Resolve<CloudTableClient>(), formatter);
+				});
 		}
 
 		static RetryPolicy BuildDefaultRetry()
@@ -120,70 +126,6 @@ namespace Lokad.Cloud.Azure
 			// at the last retry. Reflect the method for more details
 			var deltaBackoff = 0.5.Seconds();
 			return RetryPolicies.RetryExponential(10, deltaBackoff);
-		}
-
-		/// <summary>
-		/// Gets this type's properties whose value can be loaded by the IoC container.
-		/// </summary>
-		/// <returns>The properties.</returns>
-		public static PropertyInfo[] GetProperties()
-		{
-			var properties = typeof (StorageModule).GetProperties();
-
-			return
-				(from p in properties
-				where p.Name != "OverriddenProperties"
-				select p).ToArray();
-		}
-
-		/// <summary>
-		/// Gets the properties values from the Azure runtime.
-		/// </summary>
-		/// <returns>The properties values.</returns>
-		public static Dictionary<string, string> GetPropertiesValuesFromRuntime()
-		{
-			var result = new Dictionary<string, string>(5);
-
-			foreach (var info in GetProperties())
-			{
-				var value = RoleEnvironment.GetConfigurationSettingValue(info.Name);
-				if (!string.IsNullOrEmpty(value))
-				{
-					result.Add(info.Name, value);
-				}
-			}
-
-			return result;
-		}
-
-		void ApplyOverridesFromRuntime()
-		{
-			Dictionary<string, string> values = GetPropertiesValuesFromRuntime();
-
-			foreach (var info in GetProperties())
-			{
-				string value = null;
-				values.TryGetValue(info.Name, out value);
-				if (!string.IsNullOrEmpty(value))
-				{
-					info.SetValue(this, value, null);
-				}
-			}
-		}
-
-		void ApplyOverridesFromInternal()
-		{
-			if (OverriddenProperties == null) return;
-
-			foreach (var info in GetProperties())
-			{
-				string value;
-				OverriddenProperties.TryGetValue(info.Name, out value);
-				if (!string.IsNullOrEmpty(value))
-				{
-					info.SetValue(this, value, null);
-				}
-			}
 		}
 	}
 }

@@ -84,7 +84,8 @@ div.imageright { border: 1px solid #E0DAC8; background-color: #FFFFFF; padding: 
 table.imageauto { border: 1px solid #E0DAC8; background-color: #FFFFFF; padding: 4px; margin: 4px 4px 4px 0px; }
 
 /* Div acting like a box */
-div.box { border: 1px solid #CCCCCC; background-color: #F9F9F9; display: block; padding: 7px; margin: 0px; }
+div.box { border: 1px solid #CCCCCC; background-color: #F9F9F9; display: block; padding: 7px; margin: 0em 0em 1em 0em; }
+div.warning { border: solid 1px #FFCF10; background-color: #FEF693; display: inline-block; padding: 7px; margin: 0em 0em 1em 0em; }
 
 /* Contains the Header */
 #HeaderDiv { width:100%; float:left;  background: #F2EDD9 url(Images/bg_body.gif) repeat-x;     }
@@ -350,8 +351,6 @@ a.reply {	background-image: url(Images/MessageReply.png);	background-repeat: no-
 
 a.edit { background-image: url(Images/MessageEdit.png); background-repeat: no-repeat; background-position: left center; padding: 0px 0px 0px 13px; margin-left: 16px; }
 a.delete { background-image: url(Images/MessageDelete.png); background-repeat: no-repeat; background-position: left center; padding: 0px 0px 0px 10px; margin-left: 16px; }
-div.warning { padding: 6px; background-color: #FEF693; border: solid 1px #FFCF10; display: table-cell; border-collapse: collapse; }
-
 
 #ConcurrentEditingDiv { padding: 6px; background-color: #FEF693; border: solid 1px #FFCF10; }
 
@@ -456,6 +455,7 @@ img.thumb { border: solid 1px #CCCCCC; }
 #Text p { padding: 0 0 1em 0; width:530px}
 
 div.box { width:530px; }
+div.warning { max-width:530px; }
 
 span.warning { color: #ff0000; }
 

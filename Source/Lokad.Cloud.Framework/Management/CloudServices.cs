@@ -64,7 +64,13 @@ namespace Lokad.Cloud.Management
 		public IEnumerable<string> GetUserServiceNames()
 		{
 			var systemServices =
-				new[] { typeof(GarbageCollectorService), typeof(DelayedQueueService), typeof(MonitoringService) }
+				new[]
+					{
+						typeof(GarbageCollectorService),
+						typeof(DelayedQueueService),
+						typeof(MonitoringService),
+						typeof(MonitoringDataRetentionService)
+					}
 					.Select(type => type.FullName)
 					.ToList();
 
