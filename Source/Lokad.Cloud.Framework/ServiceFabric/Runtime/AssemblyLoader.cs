@@ -9,12 +9,6 @@ using System.IO;
 using System.Reflection;
 using ICSharpCode.SharpZipLib.Zip;
 
-// HACK: the current impl just loads all the assemblies in the current AppDomain.
-// This approach is simple, yet, the only way to reload a new package consists
-// in crashing the worker with an uncaught exception. Ideally, the assemblies
-// would be loaded in a separate AppDomain in order to speed-up the deployement
-// of a new app.
-
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
 	/// <remarks>
@@ -73,19 +67,52 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			var resolver = new AssemblyResolver();
 			resolver.Attach();
 
+			var assemblies = new List<Pair<string, byte[]>>();
+			var symbols = new Dictionary<string, byte[]>();
+
 			using(var zipStream = new ZipInputStream(new MemoryStream(buffer.Value)))
 			{
 				ZipEntry entry;
 				while((entry = zipStream.GetNextEntry()) != null)
 				{
+					if (!entry.IsFile)
+					{
+						continue;
+					}
+
+					var extension = Path.GetExtension(entry.Name).ToLowerInvariant();
+					var name = Path.GetFileNameWithoutExtension(entry.Name).ToLowerInvariant();
+					if (extension != ".dll" && extension != ".pdb")
+					{
+						// skipping everything but assemblies and symbols
+						continue;
+					}
+
 					var data = new byte[entry.Size];
-					zipStream.Read(data, 0, (int)entry.Size);
+					zipStream.Read(data, 0, data.Length);
 
-					// skipping everything but assemblies
-					if (!entry.IsFile || !entry.Name.ToLowerInvariant().EndsWith(".dll")) continue;
+					if (extension == ".dll")
+					{
+						assemblies.Add(Tuple.From(name, data));
+					}
+					else if(extension == ".pdb")
+					{
+						symbols.Add(name, data);
+					}
+				}
+			}
 
-					// loading assembly from data packed in zip
-					Assembly.Load(data);
+			// loading assembly from data packed in zip
+			foreach(var assembly in assemblies)
+			{
+				byte[] symbolBytes;
+				if (symbols.TryGetValue(assembly.Key, out symbolBytes))
+				{
+					Assembly.Load(assembly.Value, symbolBytes);
+				}
+				else
+				{
+					Assembly.Load(assembly.Value);
 				}
 			}
 		}

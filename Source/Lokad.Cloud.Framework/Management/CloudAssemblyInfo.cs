@@ -26,5 +26,8 @@ namespace Lokad.Cloud.Management
 
 		/// <summary>Assembly can be loaded successfully.</summary>
 		public bool IsValid { get; set; }
+
+		/// <summary>Assembly symbol store (PDB file) is available.</summary>
+		public bool HasSymbols { get; set; }
 	}
 }

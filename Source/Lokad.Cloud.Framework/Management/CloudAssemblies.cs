@@ -43,38 +43,88 @@ namespace Lokad.Cloud.Management
 				yield break;
 			}
 
+			var assemblies = new List<Pair<CloudAssemblyInfo, byte[]>>();
+			var symbols = new Dictionary<string, byte[]>();
+
 			using (var zipStream = new ZipInputStream(new MemoryStream(buffer.Value)))
 			{
 				ZipEntry entry;
 				while ((entry = zipStream.GetNextEntry()) != null)
 				{
+					var extension = Path.GetExtension(entry.Name).ToLowerInvariant();
+					if (extension != ".dll" && extension != ".pdb")
+					{
+						// skipping everything but assemblies and symbols
+						continue;
+					}
+					
 					var isValid = true;
-					var version = new Version();
-					var assemblyBytes = new byte[entry.Size];
-
+					var name = Path.GetFileNameWithoutExtension(entry.Name);
+					var data = new byte[entry.Size];
 					try
 					{
-						zipStream.Read(assemblyBytes, 0, assemblyBytes.Length);
-						using (var inspector = new AssemblyInspector(assemblyBytes))
-						{
-							version = inspector.AssemblyVersion;
-						}
+						zipStream.Read(data, 0, data.Length);
 					}
 					catch (Exception ex)
 					{
+						_log.ErrorFormat(ex, "Assembly {0} failed to unpack.", name);
 						isValid = false;
-						_log.Error(ex, "Assembly failed to unpack and load.");
 					}
 
-					yield return new CloudAssemblyInfo
-						{
-							AssemblyName = entry.Name,
-							DateTime = entry.DateTime,
-							Version = version,
-							SizeBytes = entry.Size,
-							IsValid = isValid
-						};
+					switch (extension)
+					{
+						case ".dll":
+							assemblies.Add(Tuple.From(
+								new CloudAssemblyInfo
+									{
+										AssemblyName = name,
+										DateTime = entry.DateTime,
+										SizeBytes = entry.Size,
+										IsValid = isValid,
+										Version = new Version()
+									},
+								data));
+							break;
+						case ".pdb":
+							symbols.Add(name.ToLowerInvariant(), data);
+							break;
+					}
 				}
+			}
+
+			foreach(var assembly in assemblies)
+			{
+				var info = assembly.Key;
+
+				byte[] symbolBytes;
+				if (symbols.TryGetValue(info.AssemblyName.ToLowerInvariant(), out symbolBytes)
+					&& symbolBytes != null
+					&& symbolBytes.Length > 0)
+				{
+					info.HasSymbols = true;
+				}
+
+				var assemblyBytes = assembly.Value;
+				if (!info.IsValid || assemblyBytes == null)
+				{
+					yield return info;
+					continue;
+				}
+
+				try
+				{
+					using (var inspector = new AssemblyInspector(assemblyBytes, symbolBytes))
+					{
+						info.Version = inspector.AssemblyVersion;
+					}
+				}
+				catch (Exception ex)
+				{
+					_log.ErrorFormat(ex, "Assembly {0} failed to load.", info.AssemblyName);
+					info.IsValid = false;
+				}
+
+				yield return info;
 			}
 		}
 

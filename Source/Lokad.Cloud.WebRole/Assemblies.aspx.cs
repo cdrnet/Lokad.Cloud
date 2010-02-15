@@ -45,7 +45,8 @@ namespace Lokad.Cloud.Web
 						info.DateTime,
 						Version = info.Version.ToString(),
 						Size = PrettyFormatMemory(info.SizeBytes),
-						Status = info.IsValid ? "OK" : "Corrupt"
+						Symbols = info.HasSymbols ? "Available" : "None",
+						Status = info.IsValid ? "OK" : "Corrupt",
 					});
 		}
 

@@ -24,7 +24,8 @@ namespace Lokad.Cloud.Management
 		/// Initializes a new instance of the <see cref="T:AssemblyInspector"/> class.
 		/// </summary>
 		/// <param name="assemblyBytes">The assembly bytes.</param>
-		public AssemblyInspector(byte[] assemblyBytes)
+		/// <param name="symbolBytes">The symbol store bytes if available, else null.</param>
+		public AssemblyInspector(byte[] assemblyBytes, byte[] symbolBytes)
 		{
 			_sandbox = AppDomain.CreateDomain("AsmInspector", null, AppDomain.CurrentDomain.SetupInformation);
 			_asmWrapper = _sandbox.CreateInstanceAndUnwrap(
@@ -33,7 +34,7 @@ namespace Lokad.Cloud.Management
 				false,
 				BindingFlags.CreateInstance,
 				null,
-				new object[] {assemblyBytes},
+				new object[] {assemblyBytes, symbolBytes},
 				null,
 				new object[0],
 				null) as AssemblyWrapper;
@@ -76,9 +77,11 @@ namespace Lokad.Cloud.Management
 		/// Initializes a new instance of the <see cref="T:AssemblyWrapper"/> class.
 		/// </summary>
 		/// <param name="assemblyBytes">The assembly bytes.</param>
-		public AssemblyWrapper(byte[] assemblyBytes)
+		public AssemblyWrapper(byte[] assemblyBytes, byte[] symbolBytes)
 		{
-			_wrappedAssembly = Assembly.Load(assemblyBytes);
+			_wrappedAssembly = symbolBytes == null
+				? Assembly.Load(assemblyBytes)
+				: Assembly.Load(assemblyBytes, symbolBytes);
 		}
 
 		/// <summary>Gets the assembly version.</summary>
