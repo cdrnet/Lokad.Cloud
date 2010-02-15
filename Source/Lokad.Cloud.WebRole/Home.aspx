@@ -101,7 +101,7 @@
 		    <li>Certificate: <b>
 				<asp:Label ID="CertificatesLabel" runat="server" /></b>
 				<ul>
-				    <li>Thumbprint: <asp:Label ID="CertificateThumbprintLabel" runat="server" /></b></li>
+				    <li>Thumbprint: <asp:Label ID="CertificateThumbprintLabel" runat="server" /></li>
 				</ul>
 			</li>
 		</ul>
