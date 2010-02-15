@@ -50,7 +50,7 @@ namespace Lokad.Cloud
 
 		/// <summary>Iterates through a range of entities of a given table and partition.</summary>
 		/// <param name="tableName">Name of the Table.</param>
-		/// <param name="partitionKey">Name of the partition.</param>
+		/// <param name="partitionKey">Name of the partition which can not be null.</param>
 		/// <param name="startRowKey">Inclusive start row key. If <c>null</c>, no start range
 		/// constraint is enforced.</param>
 		/// <param name="endRowKey">Exclusive end row key. If <c>null</c>, no ending range
@@ -70,6 +70,9 @@ namespace Lokad.Cloud
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey);
 
 		/// <summary>Iterates through all entities specified by their row keys.</summary>
+		/// <param name="tableName">The name of the table. This table should exists otherwise the method will fail.</param>
+		/// <param name="partitionKey">Partition key (can not be null).</param>
+		/// <param name="rowKeys">lazy enumeration of non null string representing rowKeys.</param>
         /// <remarks><para>The enumeration is typically expected to be lazy, iterating through
         /// all the entities with paged request.</para>
         /// <para>If the partition key does not exists the collection is empty.</para>
@@ -111,6 +114,8 @@ namespace Lokad.Cloud
 		// http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/4b902237-7cfb-4d48-941b-4802864fc274
 
 		/// <summary>Deletes all specified entities.</summary>
+		/// <param name="partitionKeys">The partition key (assumed to be non null).</param>
+		/// <param name="rowKeys">Lazy enumeration of non null string representing the row keys.</param>
 		/// <remarks>
 		/// <para>
         /// The implementation is expected to lazily iterate through all row keys

@@ -281,7 +281,6 @@ namespace Lokad.Cloud.Azure.Test
                 isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
             }
             Assert.That(isTestSuccess2, "#E02");
-
         }
 
         [Test]
