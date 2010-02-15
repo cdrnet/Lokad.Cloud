@@ -109,6 +109,7 @@ namespace Lokad.Cloud.Web
 			{
 				WorkerInstancesBox.Text = instanceCount.Convert(c => c.ToString(), "0");
 			}
+
 			// Lokad.Cloud Version
 			switch (_version.VersionState)
 			{
@@ -147,6 +148,9 @@ namespace Lokad.Cloud.Web
 			}
 
 			management.SetWorkerInstanceCount(int.Parse(WorkerInstancesBox.Text));
+
+			WorkerInstancesPanel.Visible = false;
+			DeploymentStatusPanel.Visible = true;
 		}
 
 		protected void ClearCache_Click(object sender, EventArgs e)
