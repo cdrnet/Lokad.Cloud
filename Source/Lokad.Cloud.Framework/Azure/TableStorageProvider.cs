@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
@@ -17,7 +16,11 @@ namespace Lokad.Cloud.Azure
 	{
 		// HACK: those tokens will probably be provided as constants in the StorageClient library
 		const int MaxEntityTransactionCount = 100;
-		const int MaxEntityTransactionPayload = 4*1024*1024; // 4 MB
+
+		// HACK: Lowering the maximal payload, to avoid corner cases #117 (ContentLengthExceeded)
+		// [vermorel] 128kB is purely arbitrary, only taken as a reasonable safety margin
+		const int MaxEntityTransactionPayload = 4*1024*1024 - 128*1024; // 4 MB - 128kB
+		
 		const string ContinuationNextRowKeyToken = "x-ms-continuation-NextRowKey";
 		const string ContinuationNextPartitionKeyToken = "x-ms-continuation-NextPartitionKey";
 		const string NextRowKeyToken = "NextRowKey";
@@ -323,6 +326,12 @@ namespace Lokad.Cloud.Azure
 							{
 								// if batch does not work, then split into elementary requests
 								// PERF: it would be better to split the request in two and retry
+								context.SaveChanges();
+								noBatchMode = true;
+							}
+							// HACK: undocumented code returned by the Table Storage
+							else if(errorCode == "ContentLengthExceeded")
+							{
 								context.SaveChanges();
 								noBatchMode = true;
 							}
