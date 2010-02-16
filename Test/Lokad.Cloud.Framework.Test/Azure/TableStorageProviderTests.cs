@@ -122,6 +122,34 @@ namespace Lokad.Cloud.Azure.Test
 			Provider.Delete<string>(TableName, missingPartition, new[] { "my-key" });
 		}
 
+		[Test]
+		public void UpdateFailsOnMissingTable()
+		{
+			try
+			{
+				var missingTableName = Guid.NewGuid().ToString("N");
+				Provider.Update(missingTableName, Entities(1, "my-key", 10));
+				Assert.Fail("#A00");
+			}
+			catch(InvalidOperationException)
+			{
+			}
+		}
+
+		[Test]
+		public void UpdateFailsOnMissingPartition()
+		{
+			try
+			{
+				var missingPartition = Guid.NewGuid().ToString("N");
+				Provider.Update(TableName, Entities(1, missingPartition, 10));
+				Assert.Fail("#A00");
+			}
+			catch (InvalidOperationException)
+			{
+			}
+		}
+
         [Test]
         public void GetMethodStartEnd()
         {
@@ -188,7 +216,10 @@ namespace Lokad.Cloud.Azure.Test
             var Pkey = Guid.NewGuid().ToString();
             var RowKey = Guid.NewGuid().ToString();
 
-            var entity = new CloudEntity<string> { PartitionKey = Pkey, RowRey = RowKey, Timestamp = DateTime.Now, Value = "value1" };
+            var entity = new CloudEntity<string>
+            	{
+            		PartitionKey = Pkey, RowRey = RowKey, Timestamp = DateTime.Now, Value = "value1"
+            	};
 
             //Insert entity.
             Provider.Insert(TableName, new[] { entity });
