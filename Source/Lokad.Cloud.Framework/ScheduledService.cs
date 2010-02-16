@@ -170,9 +170,16 @@ namespace Lokad.Cloud
 							return Result<ScheduledServiceState>.CreateError("No need to update.");
 						}
 
-						if (state.Lease != null && state.Lease.Timeout > now)
+						if (state.Lease != null)
 						{
-							return Result<ScheduledServiceState>.CreateError("Update needed but blocked by lease.");
+							if (state.Lease.Timeout > now)
+							{
+								return Result<ScheduledServiceState>.CreateError("Update needed but blocked by lease.");
+							}
+
+							Log.WarnFormat(
+								"ScheduledService {0}: Expired lease owned by {1} was reset after blocking for {2} minutes.",
+								Name, state.Lease.Owner, (int) (now - state.Lease.Acquired).TotalMinutes);
 						}
 
 						// create lease and execute
