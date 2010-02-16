@@ -459,6 +459,8 @@ div.warning { max-width:530px; }
 
 span.warning { color: #ff0000; }
 
+.statusenabled { font-weight: bold; }
+.statusdisabled { color: #FF0000; }
 
 /* Used for Lokad.skin */
 .DefaultGrid

@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using Lokad.Cloud.Management;
 
@@ -29,8 +30,29 @@ namespace Lokad.Cloud.Web
 				.Select(info => new
 					{
 						Name = info.ServiceName,
-						State = info.State.ToString()
+						State = info.State.ToString(),
+						Info = info
 					});
+		}
+
+		protected void ServicesView_RowDataBound(object sender, GridViewRowEventArgs e)
+		{
+			if(e.Row.RowType != DataControlRowType.DataRow)
+			{
+				return;
+			}
+
+			var info = (ServiceInfo)DataBinder.Eval(e.Row.DataItem, "Info");
+			var stateCell = e.Row.Cells[e.Row.Cells.Count - 1];
+			switch (info.State)
+			{
+				case CloudServiceState.Started:
+					stateCell.CssClass = "statusenabled";
+					break;
+				case CloudServiceState.Stopped:
+					stateCell.CssClass = "statusdisabled";
+					break;
+			}
 		}
 
 		protected void ServiceList_DataBinding(object sender, EventArgs e)

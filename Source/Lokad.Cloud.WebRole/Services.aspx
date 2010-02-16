@@ -15,7 +15,8 @@
 	<asp:GridView ID="ServicesView" runat="server"
 		EmptyDataText="No services listed yet."
 		OnRowCommand="ServicesView_OnRowCommand"
-		OnDataBinding="ServicesView_DataBinding">
+		OnDataBinding="ServicesView_DataBinding"
+		OnRowDataBound="ServicesView_RowDataBound">
 		<Columns>
 			<asp:ButtonField ButtonType="Link" Text="Toggle" CommandName="Toggle" />
 		</Columns>
