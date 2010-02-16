@@ -61,59 +61,86 @@ namespace Lokad.Cloud.Azure.Test
             Assert.IsTrue(tables.Contains(TableName), "#B07");
         }
 
+		[Test]
+		public void GetOnMissingTableShouldWork()
+		{
+			string missingTableName = Guid.NewGuid().ToString("N");
+
+			// checking the 4 overloads
+			var enumerable = Provider.Get<string>(missingTableName);             
+			int count = enumerable.Count();
+			Assert.AreEqual(0, count, "#A00");
+
+			enumerable = Provider.Get<string>(missingTableName, "my-partition");
+			count = enumerable.Count();
+			Assert.AreEqual(0, count, "#A01");
+
+			enumerable = Provider.Get<string>(missingTableName, "my-partition", "start", "end");
+			count = enumerable.Count();
+			Assert.AreEqual(0, count, "#A02");
+
+			enumerable = Provider.Get<string>(missingTableName, "my-partition", new [] { "my-key"});
+			count = enumerable.Count();
+			Assert.AreEqual(0, count, "#A03");
+		}
+
+		[Test]
+		public void GetOnMissingPartition()
+		{
+			const string notAPartitionKey = "IAmNotAPartitionKey";
+
+			var enumerable = Provider.Get<string>(TableName, notAPartitionKey);
+			Assert.That(enumerable.Count() == 0, "#D01");
+
+			var enumerable2 = Provider.Get<string>(TableName, notAPartitionKey, "dummyRowKeyA", "dummyRowKeyB");
+			Assert.That(enumerable2.Count() == 0, "#D02");
+
+			var enumerable3 = Provider.Get<string>(TableName, notAPartitionKey, new[] { "dummyRowKeyA", "dummyRowKeyB" });
+			Assert.That(enumerable3.Count() == 0, "#D02");
+		}
+
         [Test]
-        //TODO: #99.
-        //Test the behavior of Get method (and overloads) with a non-existing table name.
-        public void GetMissingTable()
+        //Test the behavior of Update, Insert and Delete methods with a non-existing table name.
+        public void UpdateAndInsertMissingTable()
         {
-            //const string notATableName = "IamNotATable";
+            const string notATableName = "IamNotATable";
 
-            //var enumerable = Provider.Get<string>(notATableName);
-            ////Remove / Add the comment on the following line an the test will pass/fail.                
-            //int count = enumerable.Count();
-            //Assert.AreEqual(0, count, "#C01");
+            //Insert.
+            bool isTestSuccess = false;
+            try
+            {
+                Provider.Insert(notATableName, Entities(1, "dummyPKey", 10));
+            }
+            catch (Exception exception)
+            {
+                isTestSuccess = (exception as InvalidOperationException) != null ? true : false;
+            }
+            Assert.IsTrue(isTestSuccess, "#C05");
 
-            ////Tests overloads
+            //Update.
+            bool isTestSuccess2 = false;
+            try
+            {
+                Provider.Update(notATableName, Entities(1, "dummyPKey", 10));
+            }
+            catch (Exception exception)
+            {
+                isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
+            }
+            Assert.IsTrue(isTestSuccess2, "#C06");
 
-            //var enumerable2 = Provider.Get<string>(notATableName, "dummyPKey");               
-            //int count2 = enumerable2.Count();
-            //Assert.AreEqual(0,count2, "#C02");
-
-            //var enumerable3 = Provider.Get<string>(notATableName, "dummyPKey", new[] { "dummyRowKeyA", "dummyRowKeyB" });
-            //int count3 = enumerable3.Count();
-            //Assert.AreEqual(0, count3, "#C03");
-
-            //var enumerable4 = Provider.Get<string>(notATableName, "dummyPKey", "dummyRowKeyA", "dummyRowKeyB");
-            //int count4 = enumerable4.Count();
-            //Assert.AreEqual(0, count4, "#C04");
-           
+            //Delete.
+            bool isTestSuccess3 = false;
+            try
+            {
+                Provider.Delete<string>(notATableName, "dummyPKey", new[] { "dummyRowKey" });
+            }
+            catch (Exception exception)
+            {
+                isTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
+            }
+            Assert.IsTrue(isTestSuccess3, "#C07");
         }
-
-        //[Test]
-        //TODO: #99.
-        ////Test the behavior of Update, Insert and Delete methods with a non-existing table name.
-        //public void UpdateAndInsertMissingTable()
-        //{
-        //    const string notATableName = "IamNotATable";
-        //    Provider.Insert(notATableName, Entities(1, "dummyPKey", 10));
-        //    var tables = Provider.GetTables();
-        //    Assert.That(tables.Contains(notATableName));
-           
-
-        //    //Update.
-        //    bool isTestSuccess2 = false;
-        //    try
-        //    {
-        //        Provider.Update("notATable2", Entities(1, "dummyPKey", 10));
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
-        //    }
-        //    Assert.IsTrue(isTestSuccess2, "#C06");
-
-        //    Provider.Delete<string>("notATable3", "dummyPKey", new[] { "dummyRowKey" });
-        //}
 
 
         [Test]
@@ -176,20 +203,7 @@ namespace Lokad.Cloud.Azure.Test
             Assert.That(isOrdered3, "#C03");
         }
 
-        [Test]
-        public void GetMissionPartitionName()
-        {
-            const string notAPartitionKey = "IAmNotAPartitionKey";
 
-            var enumerable = Provider.Get<string>(TableName, notAPartitionKey);
-            Assert.That(enumerable.Count() == 0, "#D01");
-
-            var enumerable2 = Provider.Get<string>(TableName, notAPartitionKey, "dummyRowKeyA", "dummyRowKeyB");
-            Assert.That(enumerable2.Count() == 0, "#D02");
-
-            var enumerable3 = Provider.Get<string>(TableName, notAPartitionKey, new[] { "dummyRowKeyA", "dummyRowKeyB" });
-            Assert.That(enumerable3.Count() == 0, "#D02");
-        }
 
         [Test]
         public void InsertAndUpdateFailures()

@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
@@ -85,8 +86,25 @@ namespace Lokad.Cloud.Azure
 
 				_storagePolicy.Do(() =>
 					{
-						response = query.Execute() as QueryOperationResponse;
-						fatEntities = ((IEnumerable<FatEntity>) response).ToArray();
+						try
+						{
+							response = query.Execute() as QueryOperationResponse;
+							fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+						}
+						catch (DataServiceQueryException ex)
+						{
+							// if the table does not exist, there is nothing to return
+							var errorCode = AzurePolicies.GetErrorCode(ex);
+							if (TableErrorCodeStrings.TableNotFound == errorCode 
+								// HACK: OutOfRangeInput is another undocumented error code
+								|| "OutOfRangeInput" == errorCode)
+							{
+								fatEntities = new FatEntity[0];
+								return;
+							}
+
+							throw;
+						}
 					});
 
 				foreach (var fatEntity in fatEntities)
@@ -94,7 +112,7 @@ namespace Lokad.Cloud.Azure
 					yield return FatEntity.Convert<T>(fatEntity, _formatter);
 				}
 
-				if (response.Headers.ContainsKey(ContinuationNextRowKeyToken))
+				if (null != response && response.Headers.ContainsKey(ContinuationNextRowKeyToken))
 				{
 					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
 					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
@@ -136,8 +154,25 @@ namespace Lokad.Cloud.Azure
 
 				_storagePolicy.Do(() =>
 				{
-					response = query.Execute() as QueryOperationResponse;
-					fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+					try
+					{
+						response = query.Execute() as QueryOperationResponse;
+						fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+					}
+					catch (DataServiceQueryException ex)
+					{
+						// if the table does not exist, there is nothing to return
+						var errorCode = AzurePolicies.GetErrorCode(ex);
+						if (TableErrorCodeStrings.TableNotFound == errorCode
+							// HACK: OutOfRangeInput is an undocumented error code.
+							|| "OutOfRangeInput" == errorCode)
+						{
+							fatEntities = new FatEntity[0];
+							return;
+						}
+
+						throw;
+					}
 				});
 
 				foreach (var fatEntity in fatEntities)
@@ -145,7 +180,7 @@ namespace Lokad.Cloud.Azure
 					yield return FatEntity.Convert<T>(fatEntity, _formatter);
 				}
 
-				if (response.Headers.ContainsKey(ContinuationNextRowKeyToken))
+				if (null != response && response.Headers.ContainsKey(ContinuationNextRowKeyToken))
 				{
 					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
 					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
@@ -202,8 +237,25 @@ namespace Lokad.Cloud.Azure
 
 				_storagePolicy.Do(() =>
 				{
-					response = query.Execute() as QueryOperationResponse;
-					fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+					try
+					{
+						response = query.Execute() as QueryOperationResponse;
+						fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+					}
+					catch (DataServiceQueryException ex)
+					{
+						// if the table does not exist, there is nothing to return
+						var errorCode = AzurePolicies.GetErrorCode(ex);
+						if (TableErrorCodeStrings.TableNotFound == errorCode
+							// HACK: OutOfRangeInput is an undocumented error code.
+							|| "OutOfRangeInput" == errorCode)
+						{
+							fatEntities = new FatEntity[0];
+							return;
+						}
+
+						throw;
+					}
 				});
 
 				foreach (var fatEntity in fatEntities)
@@ -211,7 +263,7 @@ namespace Lokad.Cloud.Azure
 					yield return FatEntity.Convert<T>(fatEntity, _formatter);
 				}
 
-				if (response.Headers.ContainsKey(ContinuationNextRowKeyToken))
+				if (null != response && response.Headers.ContainsKey(ContinuationNextRowKeyToken))
 				{
 					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
 					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
@@ -272,8 +324,25 @@ namespace Lokad.Cloud.Azure
 
 					_storagePolicy.Do(() =>
 					{
-						response = query.Execute() as QueryOperationResponse;
-						fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+						try
+						{
+							response = query.Execute() as QueryOperationResponse;
+							fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+						}
+						catch (DataServiceQueryException ex)
+						{
+							// if the table does not exist, there is nothing to return
+							var errorCode = AzurePolicies.GetErrorCode(ex);
+							if(TableErrorCodeStrings.TableNotFound == errorCode
+								// HACK: OutOfRangeInput is an undocumented error code.
+								|| "OutOfRangeInput" == errorCode)
+							{
+								fatEntities = new FatEntity[0];
+								return;
+							}
+
+							throw;
+						}	
 					});
 
 					foreach (var fatEntity in fatEntities)
@@ -281,7 +350,7 @@ namespace Lokad.Cloud.Azure
 						yield return FatEntity.Convert<T>(fatEntity, _formatter);
 					}
 
-					if (response.Headers.ContainsKey(ContinuationNextRowKeyToken))
+					if (null != response && response.Headers.ContainsKey(ContinuationNextRowKeyToken))
 					{
 						continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
 						continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
