@@ -66,107 +66,53 @@ namespace Lokad.Cloud.Azure.Test
         //Test the behavior of Get method (and overloads) with a non-existing table name.
         public void GetMissingTable()
         {
-            const string notATableName = "IamNotATable";
+            //const string notATableName = "IamNotATable";
 
-            bool isTestSuccess1 = false;
-            try
-            {
-                var enumerable = Provider.Get<string>(notATableName);
-                //Remove / Add the comment on the following line an the test will pass/fail.                
-                int count = enumerable.Count();
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess1 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess1, "#C01");
+            //var enumerable = Provider.Get<string>(notATableName);
+            ////Remove / Add the comment on the following line an the test will pass/fail.                
+            //int count = enumerable.Count();
+            //Assert.AreEqual(0, count, "#C01");
 
-            //Tests overloads
-            #region
-            bool isTestSuccess2 = false;
-            try
-            {
-                var enumerable = Provider.Get<string>(notATableName, "dummyPKey");
-                //Remove / Add the comment on the following line an the test will pass/fail.                
-                int count = enumerable.Count();
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess2, "#C02");
+            ////Tests overloads
 
+            //var enumerable2 = Provider.Get<string>(notATableName, "dummyPKey");               
+            //int count2 = enumerable2.Count();
+            //Assert.AreEqual(0,count2, "#C02");
 
-            bool isTestSuccess3 = false;
-            try
-            {
-                var enumerable = Provider.Get<string>(notATableName, "dummyPKey", new[] { "dummyRowKeyA", "dummyRowKeyB" });
-                //Remove / Add the comment on the following line an the test will pass/fail.                  
-                int count = enumerable.Count();
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess3, "#C03");
+            //var enumerable3 = Provider.Get<string>(notATableName, "dummyPKey", new[] { "dummyRowKeyA", "dummyRowKeyB" });
+            //int count3 = enumerable3.Count();
+            //Assert.AreEqual(0, count3, "#C03");
 
-            bool isTestSuccess4 = false;
-            try
-            {
-                var enumerable = Provider.Get<string>(notATableName, "dummyPKey", "dummyRowKeyA", "dummyRowKeyB");
-                //Remove / Add the comment on the following line an the test will pass/fail.                 
-                int count = enumerable.Count();
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess4 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess4, "#C04");
-            #endregion
+            //var enumerable4 = Provider.Get<string>(notATableName, "dummyPKey", "dummyRowKeyA", "dummyRowKeyB");
+            //int count4 = enumerable4.Count();
+            //Assert.AreEqual(0, count4, "#C04");
+           
         }
 
-        [Test]
-        //Test the behavior of Update, Insert and Delete methods with a non-existing table name.
-        public void UpdateAndInsertMissingTable()
-        {
-            const string notATableName = "IamNotATable";
+        //[Test]
+        ////Test the behavior of Update, Insert and Delete methods with a non-existing table name.
+        //public void UpdateAndInsertMissingTable()
+        //{
+        //    const string notATableName = "IamNotATable";
+        //    Provider.Insert(notATableName, Entities(1, "dummyPKey", 10));
+        //    var tables = Provider.GetTables();
+        //    Assert.That(tables.Contains(notATableName));
+           
 
-            //Insert.
-            bool isTestSuccess = false;
-            try
-            {
-                Provider.Insert(notATableName, Entities(1, "dummyPKey", 10));
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess, "#C05");
+        //    //Update.
+        //    bool isTestSuccess2 = false;
+        //    try
+        //    {
+        //        Provider.Update("notATable2", Entities(1, "dummyPKey", 10));
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
+        //    }
+        //    Assert.IsTrue(isTestSuccess2, "#C06");
 
-            //Update.
-            bool isTestSuccess2 = false;
-            try
-            {
-                Provider.Update(notATableName, Entities(1, "dummyPKey", 10));
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess2, "#C06");
-
-            //Delete.
-            bool isTestSuccess3 = false;
-            try
-            {
-                Provider.Delete<string>(notATableName, "dummyPKey", new[] { "dummyRowKey" });
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess3, "#C07");
-        }
+        //    Provider.Delete<string>("notATable3", "dummyPKey", new[] { "dummyRowKey" });
+        //}
 
 
         [Test]

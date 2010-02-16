@@ -89,8 +89,10 @@ namespace Lokad.Cloud.Mock
         {
             lock (_syncRoot)
             {
-                //If the table does not exist the method is supposed to throw an InvalidOperationException.
-                TableChecker(tableName);
+                if(!_tableStorage.ContainsKey(tableName))
+                {
+                    return new List<CloudEntity<T>>();
+                }
 
                 return _tableStorage[tableName].Values
                        .SelectMany(dict => dict.Values.Select(ent => FatEntity.Convert<T>(ent, _formatter)));
@@ -103,11 +105,9 @@ namespace Lokad.Cloud.Mock
         public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey)
         {
             lock (_syncRoot)
-            {
-                TableChecker(tableName);
-                
-                //If partitionKey does not exist the method is supposed to return an empty collection.
-                if(_tableStorage[tableName].ContainsKey(partitionKey))
+            {   
+                //If tableName or partitionKey does not exist the method is supposed to return an empty collection.
+                if(_tableStorage.ContainsKey(tableName) && _tableStorage[tableName].ContainsKey(partitionKey))
                 {
                     return _tableStorage[tableName][partitionKey].Values
                             .Select(ent => FatEntity.Convert<T>(ent, _formatter));
@@ -121,10 +121,8 @@ namespace Lokad.Cloud.Mock
         {
             lock (_syncRoot)
             {
-                TableChecker(tableName);
-
-                //If partition does not exist the method is supposed to return an empty collection.
-                if (_tableStorage[tableName].ContainsKey(partitionKey))
+                //If tableName or partitionKey does not exist the method is supposed to return an empty collection.
+                if (_tableStorage.ContainsKey(tableName) && _tableStorage[tableName].ContainsKey(partitionKey))
                 {
                     return _tableStorage[tableName][partitionKey].Where(
                         pair => 
@@ -142,10 +140,8 @@ namespace Lokad.Cloud.Mock
         {
             lock (_syncRoot)
             {
-                TableChecker(tableName);
-                
-                //If partition does not exist the method is supposed to return an empty collection.
-                if (_tableStorage[tableName].ContainsKey(partitionKey))
+                //If tableName or partitionKey does not exist the method is supposed to return an empty collection.
+                if (_tableStorage.ContainsKey(tableName) && _tableStorage[tableName].ContainsKey(partitionKey))
                 {
                     //Retrieves the partition.
                     var partition = _tableStorage[tableName][partitionKey];
@@ -171,10 +167,14 @@ namespace Lokad.Cloud.Mock
         {
             lock (_syncRoot)
             {
-                TableChecker(tableName);
-
                 foreach (var entity in entities)
                 {
+                    //If table does not exist then we have to create it.
+                    if(!_tableStorage.ContainsKey(tableName))
+                    {
+                        _tableStorage.Add(tableName, new Dictionary<string, Dictionary<string, FatEntity>>());
+                    }
+                    
                     //If the partitionKey does not exist then we have to create it.
                     if (!_tableStorage[tableName].ContainsKey(entity.PartitionKey))
                     {
@@ -204,8 +204,6 @@ namespace Lokad.Cloud.Mock
         {
             lock (_syncRoot)
             {
-                TableChecker(tableName);
-
                 foreach (var entity in entities)
                 {
                     //The method fails at the first non existing entity.
@@ -227,10 +225,8 @@ namespace Lokad.Cloud.Mock
         {
             lock (_syncRoot)
             {
-                TableChecker(tableName);
-
                 //Iteration on rowKey is necessary only if partitionKey exist.
-                if (_tableStorage[tableName].ContainsKey(partitionKeys))
+                if (_tableStorage.ContainsKey(tableName) && _tableStorage[tableName].ContainsKey(partitionKeys))
                 {
                     foreach (var key in rowKeys)
                     {
@@ -240,17 +236,6 @@ namespace Lokad.Cloud.Mock
                         }
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Raise InvalidOperationException when the table does not exist.
-        /// </summary>
-        void TableChecker(string tableName)
-        {
-            if (!_tableStorage.ContainsKey(tableName))
-            {
-                throw new MockTableStorageException("Table does not exist.");
             }
         }
 

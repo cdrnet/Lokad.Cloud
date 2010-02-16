@@ -36,16 +36,16 @@ namespace Lokad.Cloud
 
 		/// <summary>Iterates through all entities of a given table.</summary>
 		/// <remarks>The enumeration is typically expected to be lazy, iterating through
-		/// all the entities with paged request.</remarks>
-        ///<exception cref="InvalidOperationException"> thrown if the table does not exist.</exception>
+		/// all the entities with paged request
+		/// <para>The enumeration is empty if the table do not exist.</para>
+		/// </remarks>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName);
 
 		/// <summary>Iterates through all entities of a given table and partition.</summary>
         /// <remarks><para>The enumeration is typically expected to be lazy, iterating through
         /// all the entities with paged request.</para>
-        /// <para>If the partition key does not exists the collection is empty.</para>
+        /// <para>If the table do not exist the partition key does not exists the collection is empty.</para>
         /// </remarks>
-        ///<exception cref="InvalidOperationException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey);
 
 		/// <summary>Iterates through a range of entities of a given table and partition.</summary>
@@ -63,10 +63,9 @@ namespace Lokad.Cloud
         /// The enumeration is ordered by row key.
         /// </para>
         /// <para>
-        /// If the partition key does not exists the collection is empty.
+        /// If the table name or the partition key do not exist the collection is empty.
         /// </para>
         /// </remarks>
-        ///<exception cref="InvalidOperationException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey);
 
 		/// <summary>Iterates through all entities specified by their row keys.</summary>
@@ -75,9 +74,10 @@ namespace Lokad.Cloud
 		/// <param name="rowKeys">lazy enumeration of non null string representing rowKeys.</param>
         /// <remarks><para>The enumeration is typically expected to be lazy, iterating through
         /// all the entities with paged request.</para>
-        /// <para>If the partition key does not exists the collection is empty.</para>
+        /// <para>
+        /// If the table name or the partition key do not exist the collection is empty.
+        /// </para>
         /// </remarks>
-        ///<exception cref="InvalidOperationException"> thrown if the table does not exist.</exception>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys);
 
 		/// <summary>Inserts a collection of new entities into the table storage.</summary>
@@ -89,10 +89,10 @@ namespace Lokad.Cloud
 		/// the enumeration. The implementations are expected to lazily iterates
 		/// and to create batch requests as the move forward.
 		/// </para>
+		/// <para>If the table does not exist then it should be created.</para>
 		/// <warning>Idempotence is not enforced.</warning>
 		/// </remarks>
-        ///<exception cref="InvalidOperationException"> thrown if the table does not exist
-        /// or an already existing entity has been encountered.</exception>
+        ///<exception cref="InvalidOperationException"> if an already existing entity has been encountered.</exception>
 		void Insert<T>(string tableName, IEnumerable<CloudEntity<T>> entities);
 
 		/// <summary>Updates a collection of existing entities into the table storage.</summary>
@@ -121,8 +121,8 @@ namespace Lokad.Cloud
         /// The implementation is expected to lazily iterate through all row keys
         /// and send batch deletion request to the underlying storage.</para>
         /// <para>Idempotence of the method is required.</para>
+        /// <para>The method should not fail if the table does not exist.</para>
 		/// </remarks>
-        ///<exception cref="InvalidOperationException"> thrown if the table does not exist </exception>
 		void Delete<T>(string tableName, string partitionKeys, IEnumerable<string> rowKeys);
 	}
 }

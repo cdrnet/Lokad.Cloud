@@ -61,7 +61,6 @@ namespace Lokad.Cloud.Test.Mock
                             }
                     );
 
-
             //Insert entities.
             tableStorage.Insert("myTable", entities);
 
@@ -93,15 +92,10 @@ namespace Lokad.Cloud.Test.Mock
 
             //The next test should handle non existing table names.
             var isSuccess = false;
-            try
-            {
-                tableStorage.Get<object>("IAmNotATable", "IaMNotAPartiTion");
-            }
-            catch (Exception exception)
-            {
-                isSuccess = (exception as InvalidOperationException) == null ? false : true;
-            }
-            Assert.That(isSuccess, "#B08");
+           
+             var emptyEnumeration =  tableStorage.Get<object>("IAmNotATable", "IaMNotAPartiTion");
+
+             Assert.AreEqual(0, emptyEnumeration.Count(), "#B08");
         }
 
         [Test]
