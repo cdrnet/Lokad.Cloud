@@ -385,7 +385,25 @@ namespace Lokad.Cloud.Azure
 					{
 						try
 						{
-							context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
+							// HACK: nested try/catch
+							try
+							{
+								context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
+							}
+							// special casing the need for table instantiation
+							catch (DataServiceRequestException ex)
+							{
+								var errorCode = AzurePolicies.GetErrorCode(ex);
+								if (errorCode == TableErrorCodeStrings.TableNotFound)
+								{
+									_tableStorage.CreateTable(tableName);
+									context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
+								}
+								else
+								{
+									throw;
+								}
+							}
 						}
 						catch (DataServiceRequestException ex)
 						{
@@ -545,11 +563,25 @@ namespace Lokad.Cloud.Azure
 					context.DeleteObject(mock);
 				}
 
-				try
+				try // HACK: [vermorel] if a single entity is missing, then the whole batch operation is aborded
 				{
-					// HACK: [vermorel] if a single entity is missing, then the whole batch operation is aborded
-					_storagePolicy.Do(() =>
-						context.SaveChanges(SaveChangesOptions.Batch));
+					
+					try // HACK: nested try/catch to handle the special case where the table is missing
+					{
+						_storagePolicy.Do(() =>
+							context.SaveChanges(SaveChangesOptions.Batch));
+					}
+					catch (DataServiceRequestException ex)
+					{
+						// if the table is missing, no need to go on with the deletion
+						var errorCode = AzurePolicies.GetErrorCode(ex);
+						if("OutOfRangeInput" == errorCode)
+						{
+							return;
+						}
+						
+						throw;
+					}
 				}
 				// if some entities exist
 				catch (DataServiceRequestException ex)

@@ -98,50 +98,29 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.That(enumerable3.Count() == 0, "#D02");
 		}
 
+		[Test]
+		public void InsertOnMissingTableShouldWork()
+		{
+			var missingTableName = Guid.NewGuid().ToString("N");
+			Provider.Insert(missingTableName, Entities(1, "my-key", 10));
 
-        [Test]
-        //Test the behavior of Update, Insert and Delete methods with a non-existing table name.
-        public void UpdateAndInsertMissingTable()
-        {
-            const string notATableName = "IamNotATable";
+			// tentative clean-up
+			Provider.DeleteTable(missingTableName);
+		}
 
-            //Insert.
-            bool isTestSuccess = false;
-            try
-            {
-                Provider.Insert(notATableName, Entities(1, "dummyPKey", 10));
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess, "#C05");
+		[Test]
+		public void DeleteOnMissingTableShouldWork()
+		{
+			var missingTableName = Guid.NewGuid().ToString("N");
+			Provider.Delete<string>(missingTableName, "my-part", new []{"my-key"});
+		}
 
-            //Update.
-            bool isTestSuccess2 = false;
-            try
-            {
-                Provider.Update(notATableName, Entities(1, "dummyPKey", 10));
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess2, "#C06");
-
-            //Delete.
-            bool isTestSuccess3 = false;
-            try
-            {
-                Provider.Delete<string>(notATableName, "dummyPKey", new[] { "dummyRowKey" });
-            }
-            catch (Exception exception)
-            {
-                isTestSuccess3 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.IsTrue(isTestSuccess3, "#C07");
-        }
-
+		[Test]
+		public void DeleteOnMissingPartitionShouldWork()
+		{
+			var missingPartition = Guid.NewGuid().ToString("N");
+			Provider.Delete<string>(TableName, missingPartition, new[] { "my-key" });
+		}
 
         [Test]
         public void GetMethodStartEnd()
@@ -202,8 +181,6 @@ namespace Lokad.Cloud.Azure.Test
             }
             Assert.That(isOrdered3, "#C03");
         }
-
-
 
         [Test]
         public void InsertAndUpdateFailures()

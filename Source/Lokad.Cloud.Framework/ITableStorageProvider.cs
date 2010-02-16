@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Services.Client;
 
 // TODO: #89 missing 'UpdateOrInsert' method
 
@@ -106,7 +105,7 @@ namespace Lokad.Cloud
 
 		/// <summary>Deletes all specified entities.</summary>
 		/// <param name="tableName">Name of the table.</param>
-		/// <param name="partitionKeys">The partition key (assumed to be non null).</param>
+		/// <param name="partitionKey">The partition key (assumed to be non null).</param>
 		/// <param name="rowKeys">Lazy enumeration of non null string representing the row keys.</param>
 		/// <remarks>
 		/// <para>
@@ -115,6 +114,6 @@ namespace Lokad.Cloud
         /// <para>Idempotence of the method is required.</para>
         /// <para>The method should not fail if the table does not exist.</para>
 		/// </remarks>
-		void Delete<T>(string tableName, string partitionKeys, IEnumerable<string> rowKeys);
+		void Delete<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys);
 	}
 }
