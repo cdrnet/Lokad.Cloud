@@ -98,7 +98,6 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.That(enumerable3.Count() == 0, "#D02");
 		}
 
-		public void 
 
         [Test]
         //Test the behavior of Update, Insert and Delete methods with a non-existing table name.
