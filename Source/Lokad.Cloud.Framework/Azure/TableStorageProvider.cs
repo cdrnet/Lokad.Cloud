@@ -394,9 +394,10 @@ namespace Lokad.Cloud.Azure
 							catch (DataServiceRequestException ex)
 							{
 								var errorCode = AzurePolicies.GetErrorCode(ex);
-								if (errorCode == TableErrorCodeStrings.TableNotFound)
+								if (errorCode == TableErrorCodeStrings.TableNotFound
+									|| "OutOfRangeInput" == errorCode)
 								{
-									_tableStorage.CreateTable(tableName);
+									_tableStorage.CreateTableIfNotExist(tableName);
 									context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
 								}
 								else

@@ -63,7 +63,7 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void GetOnMissingTableShouldWork()
 		{
-			var missingTableName = Guid.NewGuid().ToString("N");
+			var missingTableName = "t" + Guid.NewGuid().ToString("N");
 
 			// checking the 4 overloads
 			var enumerable = Provider.Get<string>(missingTableName);             
@@ -101,7 +101,7 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void InsertOnMissingTableShouldWork()
 		{
-			var missingTableName = Guid.NewGuid().ToString("N");
+			var missingTableName = "t" + Guid.NewGuid().ToString("N");
 			Provider.Insert(missingTableName, Entities(1, "my-key", 10));
 
 			// tentative clean-up
@@ -111,14 +111,14 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void DeleteOnMissingTableShouldWork()
 		{
-			var missingTableName = Guid.NewGuid().ToString("N");
+			var missingTableName = "t" + Guid.NewGuid().ToString("N");
 			Provider.Delete<string>(missingTableName, "my-part", new []{"my-key"});
 		}
 
 		[Test]
 		public void DeleteOnMissingPartitionShouldWork()
 		{
-			var missingPartition = Guid.NewGuid().ToString("N");
+			var missingPartition = "t" + Guid.NewGuid().ToString("N");
 			Provider.Delete<string>(TableName, missingPartition, new[] { "my-key" });
 		}
 
@@ -127,7 +127,7 @@ namespace Lokad.Cloud.Azure.Test
 		{
 			try
 			{
-				var missingTableName = Guid.NewGuid().ToString("N");
+				var missingTableName = "t" + Guid.NewGuid().ToString("N");
 				Provider.Update(missingTableName, Entities(1, "my-key", 10));
 				Assert.Fail("#A00");
 			}
