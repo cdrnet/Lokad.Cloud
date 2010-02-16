@@ -1,7 +1,5 @@
 <%@ Page Language="C#" MasterPageFile="~/Nav.Master" AutoEventWireup="true" CodeBehind="Home.aspx.cs" Inherits="Lokad.Cloud.Web.Home" %>
 <%@ Register Src="NavBar.ascx" TagName="NavBar" TagPrefix="uc" %>
-<%@ Import Namespace="Lokad.Cloud.Azure"%>
-<%@ Import Namespace="Lokad.Cloud.Web"%>
 
 <asp:Content ContentPlaceHolderID="HeadPlaceHolder" runat="server">
 	<title>Home - Lokad.Cloud administration console</title>
@@ -27,6 +25,7 @@
 		Purge the cache of the current webrole (other instances unaffected): 
 		<asp:Button runat="server" OnClick="ClearCache_Click" Text="Clear" />
 	</div>
+	<br />
 	
 	<h2 class="separator">System status</h2>
 	<div class="box">
@@ -76,6 +75,7 @@
 			Text="This running deployment does not match the configured deployment, please verify the deployment configuration and the certificate in the Azure portal. This is the expected behavior when running in the local development fabric." />
 		<br />
 	</asp:Panel>
+	<br />
 	
 	<h2 class="separator">Azure Deployment</h2>
 	<div class="box">
@@ -94,6 +94,7 @@
 			</li>
 		</ul>
 	</div>
+	<br />
 	
 	<h2 class="separator">Azure Management</h2>
 	<div class="box">
