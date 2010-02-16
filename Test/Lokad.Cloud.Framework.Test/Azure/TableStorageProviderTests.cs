@@ -90,6 +90,7 @@ namespace Lokad.Cloud.Azure.Test
         }
 
         //[Test]
+        //TODO: #99.
         ////Test the behavior of Update, Insert and Delete methods with a non-existing table name.
         //public void UpdateAndInsertMissingTable()
         //{
