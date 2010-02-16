@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
@@ -64,7 +63,7 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void GetOnMissingTableShouldWork()
 		{
-			string missingTableName = Guid.NewGuid().ToString("N");
+			var missingTableName = Guid.NewGuid().ToString("N");
 
 			// checking the 4 overloads
 			var enumerable = Provider.Get<string>(missingTableName);             
@@ -85,19 +84,21 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
-		public void GetOnMissingPartition()
+		public void GetOnMissingPartitionShouldWork()
 		{
-			const string notAPartitionKey = "IAmNotAPartitionKey";
+			var missingPartition = Guid.NewGuid().ToString("N");
 
-			var enumerable = Provider.Get<string>(TableName, notAPartitionKey);
+			var enumerable = Provider.Get<string>(TableName, missingPartition);
 			Assert.That(enumerable.Count() == 0, "#D01");
 
-			var enumerable2 = Provider.Get<string>(TableName, notAPartitionKey, "dummyRowKeyA", "dummyRowKeyB");
+			var enumerable2 = Provider.Get<string>(TableName, missingPartition, "dummyRowKeyA", "dummyRowKeyB");
 			Assert.That(enumerable2.Count() == 0, "#D02");
 
-			var enumerable3 = Provider.Get<string>(TableName, notAPartitionKey, new[] { "dummyRowKeyA", "dummyRowKeyB" });
+			var enumerable3 = Provider.Get<string>(TableName, missingPartition, new[] { "dummyRowKeyA", "dummyRowKeyB" });
 			Assert.That(enumerable3.Count() == 0, "#D02");
 		}
+
+		public void 
 
         [Test]
         //Test the behavior of Update, Insert and Delete methods with a non-existing table name.

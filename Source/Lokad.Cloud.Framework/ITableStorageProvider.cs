@@ -36,15 +36,15 @@ namespace Lokad.Cloud
 
 		/// <summary>Iterates through all entities of a given table.</summary>
 		/// <remarks>The enumeration is typically expected to be lazy, iterating through
-		/// all the entities with paged request
-		/// <para>The enumeration is empty if the table do not exist.</para>
+		/// all the entities with paged request. If the table does not exist, an
+		/// empty enumeration is returned.
 		/// </remarks>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName);
 
 		/// <summary>Iterates through all entities of a given table and partition.</summary>
         /// <remarks><para>The enumeration is typically expected to be lazy, iterating through
-        /// all the entities with paged request.</para>
-        /// <para>If the table do not exist the partition key does not exists the collection is empty.</para>
+        /// all the entities with paged request. If the table does not exists, or if the partition
+        /// does not exists, an empty enumeration is returned.</para>
         /// </remarks>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey);
 
@@ -56,15 +56,9 @@ namespace Lokad.Cloud
 		/// <param name="endRowKey">Exclusive end row key. If <c>null</c>, no ending range
 		/// constraint is enforced.</param>
 		/// <remarks>
-		/// <para>The enumeration is typically expected to be lazy, iterating through
-        /// all the entities with paged request.
-        /// </para>
-        /// <para>
-        /// The enumeration is ordered by row key.
-        /// </para>
-        /// <para>
-        /// If the table name or the partition key do not exist the collection is empty.
-        /// </para>
+		/// The enumeration is typically expected to be lazy, iterating through
+        /// all the entities with paged request.The enumeration is ordered by row key.
+        /// If the table or the partition key does not exist, the returned enumeration is empty.
         /// </remarks>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey);
 
@@ -72,12 +66,9 @@ namespace Lokad.Cloud
 		/// <param name="tableName">The name of the table. This table should exists otherwise the method will fail.</param>
 		/// <param name="partitionKey">Partition key (can not be null).</param>
 		/// <param name="rowKeys">lazy enumeration of non null string representing rowKeys.</param>
-        /// <remarks><para>The enumeration is typically expected to be lazy, iterating through
-        /// all the entities with paged request.</para>
-        /// <para>
-        /// If the table name or the partition key do not exist the collection is empty.
-        /// </para>
-        /// </remarks>
+        /// <remarks>The enumeration is typically expected to be lazy, iterating through
+        /// all the entities with paged request. If the table or the partition key does not exist,
+        /// the returned enumeration is empty.</remarks>
 		IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys);
 
 		/// <summary>Inserts a collection of new entities into the table storage.</summary>
@@ -104,7 +95,7 @@ namespace Lokad.Cloud
 		/// the enumeration. The implementations are expected to lazily iterates
 		/// and to create batch requests as the move forward.
 		/// </para>
-		/// <para>Idempotence of the method is required.</para>
+		/// <para>Idempotence of the implementation is required.</para>
 		/// </remarks>
         /// <exception cref="InvalidOperationException"> thrown if the table does not exist
         /// or an non-existing entity has been encountered.</exception>
@@ -114,6 +105,7 @@ namespace Lokad.Cloud
 		// http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/4b902237-7cfb-4d48-941b-4802864fc274
 
 		/// <summary>Deletes all specified entities.</summary>
+		/// <param name="tableName">Name of the table.</param>
 		/// <param name="partitionKeys">The partition key (assumed to be non null).</param>
 		/// <param name="rowKeys">Lazy enumeration of non null string representing the row keys.</param>
 		/// <remarks>
