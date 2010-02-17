@@ -135,8 +135,7 @@ namespace Lokad.Cloud.Azure
 
 			PrepareRequest();
 
-			_service = _channel.GetHostedServiceWithDetails(_subscriptionId.Value, _service.Value.ServiceName, true);
-			_deployment = _service.Value.Deployments.Single(d => d.PrivateID == _deploymentId.Value);
+			_deployment = _channel.GetDeployment(_subscriptionId.Value, _service.Value.ServiceName, _deployment.Value.Name);
 		}
 
 		Maybe<int> IProvisioningProvider.GetWorkerInstanceCount()
