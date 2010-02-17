@@ -105,6 +105,8 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <summary>Stops all services.</summary>
 		public void Stop()
 		{
+			// TODO: #128 need for further proof-read.
+
 			_isStopRequested = true;
 			if (_scheduler != null)
 			{

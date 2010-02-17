@@ -10,15 +10,25 @@ using System.Security;
 using Autofac.Builder;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
-using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
 	/// <summary>
-	/// Performs the work of the <see cref="WorkerRole"/> in an isolated <see cref="AppDomain"/>.
+	/// Performs the work of the <c>WorkerRole</c> in an isolated <see cref="AppDomain"/>.
 	/// </summary>
+	/// <remarks>
+	/// The design of this class is slightly twisted, as it is both caller (in the original AppDomain) 
+	/// and callee (in the isolated AppDomain).</remarks>
 	internal class IsolatedWorker : MarshalByRefObject
 	{
+		/// <summary>Refer to the callee instance (isolated). This property is not null
+		/// only for the caller instance (non-isolated).</summary>
+		IsolatedWorker _isolatedInstance;
+
+		/// <summary>Refer to the isolated runtime. This property is not null
+		/// only for the callee instance (isolated).</summary>
+		InternalServiceRuntime _runtime;
+
 		/// <summary>Performs the work.</summary>
 		/// <returns><c>true</c> if the assemblies were updated and a restart is needed.</returns>
 		public bool DoWork()
@@ -33,12 +43,12 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 			var domain = AppDomain.CreateDomain("WorkerDomain", null, AppDomain.CurrentDomain.SetupInformation);
 
-			var isolatedInstance = (IsolatedWorker)domain.CreateInstanceAndUnwrap(
+			_isolatedInstance = (IsolatedWorker)domain.CreateInstanceAndUnwrap(
 				Assembly.GetExecutingAssembly().FullName, typeof(IsolatedWorker).FullName);
 
 			// This never throws, unless something went wrong with IoC setup and that's fine
 			// because it is not possible to execute the worker
-			var returnValue = isolatedInstance.DoWorkInternal(roleConfiguration);
+			var returnValue = _isolatedInstance.DoWorkInternal(roleConfiguration);
 
 			// If this throws, it's because something went wrong when unloading the AppDomain
 			// The exception correctly pulls down the entire worker process so that no AppDomains are
@@ -48,6 +58,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			return returnValue;
 		}
 
+		/// <summary>This method should only be called for the isolated instance.</summary>
 		bool DoWorkInternal(Maybe<RoleConfigurationSettings> externalRoleConfiguration)
 		{
 			var builder = new ContainerBuilder();
@@ -79,28 +90,28 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				var log = container.Resolve<ILog>();
 				log.Log(LogLevel.Info, "Isolated worker started.");
 
-				InternalServiceRuntime runtime = null;
+				InternalServiceRuntime _runtime = null;
 				try
 				{
-					runtime =  container.Resolve<InternalServiceRuntime>();
-					runtime.RuntimeContainer = container;
+					_runtime =  container.Resolve<InternalServiceRuntime>();
+					_runtime.RuntimeContainer = container;
 
 					// runtime endlessly keeps pinging queues for pending work
-					runtime.Execute();
+					_runtime.Execute();
 				}
 				catch (TypeLoadException typeLoadEx)
 				{
 					log.Log(LogLevel.Error, typeLoadEx, string.Format(
 						"Type {0} could not be loaded (service: {1}).",
 						typeLoadEx.TypeName,
-						GetServiceInExecution(runtime)));
+						GetServiceInExecution(_runtime)));
 				}
 				catch (FileLoadException fileLoadEx)
 				{
 					// Tentatively: referenced assembly is missing
 					log.Log(LogLevel.Error, fileLoadEx, string.Format(
 						"Could not load assembly probably due to a missing reference assembly (service: {0}).",
-						GetServiceInExecution(runtime)));
+						GetServiceInExecution(_runtime)));
 				}
 				catch (SecurityException securityEx)
 				{
@@ -108,7 +119,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 					log.Log(LogLevel.Error, securityEx, string.Format(
 						"Could not load assembly {0} probably due to security configuration (service: {1}).",
 						securityEx.FailedAssemblyInfo,
-						GetServiceInExecution(runtime)));
+						GetServiceInExecution(_runtime)));
 				}
 				catch (TriggerRestartException)
 				{
@@ -120,7 +131,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 					// Generic exception
 					log.Log(LogLevel.Error, ex, string.Format(
 						"An unhandled exception occurred (service: {0}).",
-						GetServiceInExecution(runtime)));
+						GetServiceInExecution(_runtime)));
 				}
 
 				return restartForAssemblyUpdate;
@@ -130,7 +141,19 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <summary>Called when the environment is being stopped.</summary>
 		public void OnStop()
 		{
-			// TODO: #128 need to implement worker shutdown.
+			if(null != _isolatedInstance)
+			{
+				_isolatedInstance.OnStopInternal();
+			}
+		}
+
+		/// <summary>This method should only be called for the isolated instance.</summary>
+		void OnStopInternal()
+		{
+			if (null != _runtime)
+			{
+				_runtime.Stop();
+			}
 		}
 
 		static string GetServiceInExecution(InternalServiceRuntime runtime)
