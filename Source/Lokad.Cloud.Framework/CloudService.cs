@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -28,6 +28,7 @@ namespace Lokad.Cloud
 		Stopped = 1
 	}
 
+	/// <summary>Strong-typed blob name for cloud service state.</summary>
 	public class CloudServiceStateReference : BlobReference<CloudServiceState>
 	{
 		public override string ContainerName
@@ -42,6 +43,7 @@ namespace Lokad.Cloud
 			ServiceName = serviceName;
 		}
 
+		/// <summary>Let you iterate over the state of each cloud service.</summary>
 		public static BlobNamePrefix<CloudServiceStateReference> GetPrefix()
 		{
 			return new BlobNamePrefix<CloudServiceStateReference>(CloudService.ServiceStateContainer, "");
@@ -98,7 +100,7 @@ namespace Lokad.Cloud
 		/// <summary>Short-hand for <c>Providers.QueueStorage</c>.</summary>
 		public IQueueStorageProvider QueueStorage { get { return Providers.QueueStorage; } }
 
-		/// <summary>Error logger.</summary>
+		/// <summary>Short-hand for <c>Providers.Log</c>.</summary>
 		public ILog Log { get { return Providers.Log; } }
 
 		/// <summary>

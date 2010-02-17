@@ -25,17 +25,22 @@ namespace Lokad.Cloud
 		/// <summary>Error Logger</summary>
 		public ILog Log { get; private set; }
 
+		/// <summary>Abstracts the Management API.</summary>
+		public IProvisioningProvider Provisioning { get; set; }
+
 		/// <summary>IoC constructor.</summary>
 		public CloudInfrastructureProviders(
 			IBlobStorageProvider blobStorage, 
 			IQueueStorageProvider queueStorage,
 			ITableStorageProvider tableStorage,
-			ILog log)
+			ILog log,
+			IProvisioningProvider provisioning)
 		{
 			BlobStorage = blobStorage;
 			QueueStorage = queueStorage;
 			TableStorage = tableStorage;
 			Log = log;
+			Provisioning = provisioning;
 		}
 	}
 }

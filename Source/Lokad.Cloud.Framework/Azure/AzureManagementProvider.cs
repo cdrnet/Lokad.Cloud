@@ -15,7 +15,7 @@ using Lokad.Cloud.Azure.ManagementApiClient;
 namespace Lokad.Cloud.Azure
 {
 	/// <summary>
-	/// Azure Management API Provider, Provisioning Provider
+	/// Azure Management API Provider, Provisioning Provider.
 	/// </summary>
 	public class AzureManagementProvider : IProvisioningProvider
 	{
@@ -35,6 +35,7 @@ namespace Lokad.Cloud.Azure
 		//[ThreadStatic]
 		IAzureServiceManagement _channel;
 
+		/// <summary>IoC constructor.</summary>>
 		public AzureManagementProvider(RoleConfigurationSettings settings, ILog log)
 		{
 			_log = log;

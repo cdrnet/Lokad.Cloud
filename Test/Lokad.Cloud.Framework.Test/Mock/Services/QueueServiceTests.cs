@@ -22,7 +22,8 @@ namespace Lokad.Cloud.Test.Mock.Services
 				new MemoryBlobStorageProvider(),
 				new MemoryQueueStorageProvider(new CloudFormatter()),
 				null,
-				new MemoryLogger());
+				new MemoryLogger(),
+				null);
 			
 			var service = new SquareQueueService { Providers = providersForCloudStorage };
 			var blobStorage = providersForCloudStorage.BlobStorage;

@@ -58,7 +58,6 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				storageModule.ExternalRoleConfiguration = externalRoleConfiguration.Value;
 			}
 			builder.RegisterModule(storageModule);
-			builder.Register(typeof(CloudInfrastructureProviders));
 
 			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
@@ -68,6 +67,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 			// Services
 			builder.Register(typeof(InternalServiceRuntime));
+
+			// Providers for cloud apps
+			builder.Register(typeof(CloudInfrastructureProviders));
 
 			using (var container = builder.Build())
 			{

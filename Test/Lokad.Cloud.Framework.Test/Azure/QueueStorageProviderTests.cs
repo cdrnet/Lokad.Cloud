@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -19,7 +19,7 @@ namespace Lokad.Cloud.Azure.Test
 		private static Random _rand = new Random();
 
 		[SetUp]
-		public void SetUp() 
+		public void Setup() 
 		{
 			QueueName = BaseQueueName + Guid.NewGuid().ToString("N");
 		}

@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -14,7 +14,7 @@ namespace Lokad.Cloud.Azure.Test
 	{
 		static IContainer _container;
 
-		static IContainer SetUp()
+		static IContainer Setup()
 		{
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
@@ -22,14 +22,14 @@ namespace Lokad.Cloud.Azure.Test
 			// formatter
 			builder.Register(typeof (CloudFormatter)).As<IBinaryFormatter>();
 
-			// Cloud Infrastructure
-			builder.Register(typeof(CloudInfrastructureProviders));
-
 			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
 
 			// Self Management
 			builder.RegisterModule(new AzureManagementModule());
+
+			// Cloud Infrastructure
+			builder.Register(typeof(CloudInfrastructureProviders));
 
 			return builder.Build();
 		}
@@ -41,7 +41,7 @@ namespace Lokad.Cloud.Azure.Test
 			{
 				if(null == _container)
 				{
-					_container = SetUp();
+					_container = Setup();
 				}
 
 				return _container;
