@@ -28,19 +28,25 @@ namespace Lokad.Cloud
 		/// <summary>Abstracts the Management API.</summary>
 		public IProvisioningProvider Provisioning { get; set; }
 
+		/// <summary>Abstracts the finalizer (used for fast resource release
+		/// in case of runtime shutdown).</summary>
+		public IRuntimeFinalizer RuntimeFinalizer { get; set; }
+
 		/// <summary>IoC constructor.</summary>
 		public CloudInfrastructureProviders(
 			IBlobStorageProvider blobStorage, 
 			IQueueStorageProvider queueStorage,
 			ITableStorageProvider tableStorage,
 			ILog log,
-			IProvisioningProvider provisioning)
+			IProvisioningProvider provisioning,
+			IRuntimeFinalizer runtimeFinalizer)
 		{
 			BlobStorage = blobStorage;
 			QueueStorage = queueStorage;
 			TableStorage = tableStorage;
 			Log = log;
 			Provisioning = provisioning;
+			RuntimeFinalizer = runtimeFinalizer;
 		}
 	}
 }

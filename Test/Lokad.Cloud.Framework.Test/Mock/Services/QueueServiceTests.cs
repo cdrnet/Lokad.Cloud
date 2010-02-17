@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using Lokad.Cloud.Mock;
+using Lokad.Cloud.ServiceFabric;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Test.Mock.Services
@@ -16,14 +17,13 @@ namespace Lokad.Cloud.Test.Mock.Services
 		[Test]
 		public void SquareServiceTest()
 		{
-			// TODO: missing MemoryTableStorageProvider
-
 			var providersForCloudStorage = new CloudInfrastructureProviders(
 				new MemoryBlobStorageProvider(),
 				new MemoryQueueStorageProvider(new CloudFormatter()),
-				null,
+				new MemoryTableStorageProvider(),
 				new MemoryLogger(),
-				null);
+				null,
+				new RuntimeFinalizer());
 			
 			var service = new SquareQueueService { Providers = providersForCloudStorage };
 			var blobStorage = providersForCloudStorage.BlobStorage;

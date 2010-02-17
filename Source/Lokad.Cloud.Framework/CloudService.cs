@@ -36,10 +36,14 @@ namespace Lokad.Cloud
 			get { return CloudService.ServiceStateContainer; }
 		}
 
+		/// <summary>Name of the service being refered to.</summary>
 		[Rank(0)] public readonly string ServiceName;
 
+		/// <summary>Instantiate a new blob name associated to the specified service.</summary>
 		public CloudServiceStateReference(string serviceName)
 		{
+			Enforce.That(serviceName);
+
 			ServiceName = serviceName;
 		}
 
@@ -94,11 +98,17 @@ namespace Lokad.Cloud
 		[UsedImplicitly]
 		public CloudInfrastructureProviders Providers { get; set; }
 
+		// Short-hands are only provided for the most frequently used providers.
+		// (ex: IRuntimeFinalizer is typically NOT a frequently used provider)
+
 		/// <summary>Short-hand for <c>Providers.BlobStorage</c>.</summary>
 		public IBlobStorageProvider BlobStorage { get { return Providers.BlobStorage; } }
 
 		/// <summary>Short-hand for <c>Providers.QueueStorage</c>.</summary>
 		public IQueueStorageProvider QueueStorage { get { return Providers.QueueStorage; } }
+
+		/// <summary>Short-hand for <c>Providers.TableStorage</c>.</summary>
+		public ITableStorageProvider TableStorage { get { return Providers.TableStorage; } }
 
 		/// <summary>Short-hand for <c>Providers.Log</c>.</summary>
 		public ILog Log { get { return Providers.Log; } }
@@ -186,12 +196,6 @@ namespace Lokad.Cloud
 		/// the app services.
 		/// </remarks>
 		protected abstract ServiceExecutionFeedback StartImpl();
-
-		/// <summary>Called when the service is shut down.</summary>
-		public virtual void Stop()
-		{
-			// does nothing
-		}
 
 		/// <summary>Put a message into the queue implicitly associated to the type <c>T</c>.</summary>
 		public void Put<T>(T message)
