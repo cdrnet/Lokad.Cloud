@@ -14,11 +14,6 @@ namespace Lokad.Cloud
 	/// <summary>Helper extensions methods for storage providers.</summary>
 	public static class StorageExtensions
 	{
-		static readonly char[] HexDigits = "0123456789abcdef".ToCharArray();
-
-		/// <summary>Delimiter used for prefixing iterations on Blob Storage.</summary>
-		const string Delimiter = "/";
-
 		static readonly Random _rand = new Random();
 
 		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, string containerName, string blobName, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
