@@ -26,9 +26,13 @@ namespace Lokad.Cloud
 	public interface IRuntimeFinalizer
 	{
 		/// <summary>Register a object for high priority finalization if runtime is terminating.</summary>
+		/// <remarks>The method is idempotent, once an object is registered,
+		/// registering the object again has no effect.</remarks>
 		void Register(IDisposable obj);
 
 		/// <summary>Unregister a object from high priority finalization.</summary>
+		/// <remarks>The method is idempotent, once an object is unregistered,
+		/// unregistering the object again has no effect.</remarks>
 		void Unregister(IDisposable obj);
 
 		/// <summary>

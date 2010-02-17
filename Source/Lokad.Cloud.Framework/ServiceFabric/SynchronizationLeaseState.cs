@@ -26,9 +26,7 @@ namespace Lokad.Cloud.ServiceFabric
 		[DataMember]
 		public DateTimeOffset Timeout { get; set; }
 
-		/// <summary>
-		/// Reference of the owner of this lease.
-		/// </summary>
+		/// <summary>Reference of the owner of this lease.</summary>
 		[DataMember(IsRequired = false, EmitDefaultValue = false)]
 		public string Owner { get; set; }
 	}

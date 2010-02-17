@@ -14,15 +14,11 @@ namespace Lokad.Cloud
 	[Serializable, DataContract]
 	public class ScheduledServiceState
 	{
-		/// <summary>
-		/// Indicates the frequency this service must be called.
-		/// </summary>
+		/// <summary>Indicates the frequency this service must be called.</summary>
 		[DataMember]
 		public TimeSpan TriggerInterval { get; set; }
 
-		/// <summary>
-		/// Date of the last execution.
-		/// </summary>
+		/// <summary>Date of the last execution.</summary>
 		[DataMember]
 		public DateTimeOffset LastExecuted { get; set; }
 
@@ -43,11 +39,13 @@ namespace Lokad.Cloud
 		[DataMember(IsRequired = false, EmitDefaultValue = false)]
 		public bool IsBusy { get; set; }
 
+		// TODO: #130, uncomment or remove
 		//[Obsolete("Scheduling scope is fixed at compilation time and thus not a state of the service.")]
 		[DataMember(IsRequired = false, EmitDefaultValue = false)]
 		public bool SchedulePerWorker { get; set; }
 	}
 
+	/// <summary>Strong typed blob name for <see cref="ScheduledServiceState"/>.</summary>
 	public class ScheduledServiceStateReference : BlobReference<ScheduledServiceState>
 	{
 		public override string ContainerName
@@ -55,13 +53,16 @@ namespace Lokad.Cloud
 			get { return ScheduledService.ScheduleStateContainer; }
 		}
 
+		/// <summary>Name of the service being refered to.</summary>
 		[Rank(0)] public readonly string ServiceName;
 
+		/// <summary>Instantiate the reference associated to the specified service.</summary>
 		public ScheduledServiceStateReference(string serviceName)
 		{
 			ServiceName = serviceName;
 		}
 
+		/// <summary>Helper for service states enumeration.</summary>
 		public static BlobNamePrefix<ScheduledServiceStateReference> GetPrefix()
 		{
 			return new BlobNamePrefix<ScheduledServiceStateReference>(ScheduledService.ScheduleStateContainer, "");
@@ -72,7 +73,7 @@ namespace Lokad.Cloud
 	/// on scheduled basis. Scheduling options are provided through the
 	/// <see cref="ScheduledServiceSettingsAttribute"/>.</summary>
 	/// <remarks>A empty constructor is needed for instantiation through reflection.</remarks>
-	public abstract class ScheduledService : CloudService
+	public abstract class ScheduledService : CloudService, IDisposable
 	{
 		internal const string ScheduleStateContainer = "lokad-cloud-schedule-state";
 
@@ -83,9 +84,10 @@ namespace Lokad.Cloud
 
 		DateTimeOffset _workerScopeLastExecuted;
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
+		bool _isRegisteredForFinalization;
+		bool _isLeaseOwner;
+
+		/// <summary>Constructor.</summary>
 		protected ScheduledService()
 		{
 			// runtime fixed settings
@@ -143,6 +145,17 @@ namespace Lokad.Cloud
 
 			// 2. CHECK WHETHER WE SHOULD EXECUTE NOW, ACQUIRE LEASE IF SO
 
+			// Auto-register once the service for finalization:
+			// 1) Registration should not be made within the constructor
+			//    because providers are not ready at this phase.
+			// 2) Hasty finalization is needed only for cloud-scoped scheduled
+			//    scheduled services (because they have a lease).
+			if (!_isRegisteredForFinalization)
+			{
+				_isRegisteredForFinalization = true;
+				Providers.RuntimeFinalizer.Register(this);
+			} 
+
 			// checking if the last update is not too recent, and eventually
 			// update this value if it's old enough. When the update fails,
 			// it simply means that another worker is already on its ways
@@ -195,44 +208,68 @@ namespace Lokad.Cloud
 				return ServiceExecutionFeedback.Skipped;
 			}
 
+			_isLeaseOwner = true; // flag used for eventual runtime shutdown
+
 			try
 			{
 				// 4. ACTUAL EXECUTION
-
 				StartOnSchedule();
 				return ServiceExecutionFeedback.DoneForNow;
 			}
 			finally
 			{
 				// 5. RELEASE THE LEASE
+				SurrenderLease();
+				_isLeaseOwner = false;
+			}
+		}
 
-				// we need a full update here (instead of just uploading the cached blob)
-				// to ensure we do not overwrite changes made in the console in the meantime
-				// (e.g. changed trigger interval), and to resolve the edge case when
-				// a lease has been forcefully removed from the console and another service
-				// has taken a lease in the meantime.
+		/// <summary>The lease can be surrender in two situations:
+		/// 1- the service completes normally, and we surrender the lease accordingly.
+		/// 2- the runtime is being shutdown, and we can't hold the lease any further. 
+		/// </summary>
+		void SurrenderLease()
+		{
+			// we need a full update here (instead of just uploading the cached blob)
+			// to ensure we do not overwrite changes made in the console in the meantime
+			// (e.g. changed trigger interval), and to resolve the edge case when
+			// a lease has been forcefully removed from the console and another service
+			// has taken a lease in the meantime.
 
-				ScheduledServiceState result;
-				BlobStorage.AtomicUpdate(
-					stateReference,
-					currentState =>
-						{
-							if (!currentState.HasValue)
-							{
-								return GetDefaultState();
-							}
+			var stateReference = new ScheduledServiceStateReference(Name);
 
-							var state = currentState.Value;
-							if (state.Lease == null || state.Lease.Owner != _workerKey)
-							{
-								return state;
-							}
+			ScheduledServiceState ignoredResult;
+			BlobStorage.AtomicUpdate(
+				stateReference,
+				currentState =>
+				{
+					if (!currentState.HasValue)
+					{
+						return GetDefaultState();
+					}
 
-							// remove lease
-							state.Lease = null;
-							return state;
-						},
-					out result);
+					var state = currentState.Value;
+					if (state.Lease == null || state.Lease.Owner != _workerKey)
+					{
+						return state;
+					}
+
+					// remove lease
+					state.Lease = null;
+					return state;
+				},
+				out ignoredResult);
+		}
+
+		/// <summary>Don't call this method. Disposing the scheduled service
+		/// should only be done by the <see cref="IRuntimeFinalizer"/> when
+		/// the environment is being forcibly shut down.</summary>
+		public void Dispose()
+		{
+			if(_isLeaseOwner)
+			{
+				SurrenderLease();
+				_isLeaseOwner = false;
 			}
 		}
 
@@ -250,9 +287,7 @@ namespace Lokad.Cloud
 			};
 		}
 
-		/// <summary>
-		/// Prepares a new lease.
-		/// </summary>
+		/// <summary>Prepares a new lease.</summary>
 		private SynchronizationLeaseState CreateLease(DateTimeOffset now)
 		{
 			return new SynchronizationLeaseState
