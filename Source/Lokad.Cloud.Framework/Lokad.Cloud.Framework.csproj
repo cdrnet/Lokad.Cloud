@@ -123,6 +123,7 @@
     <Compile Include="Diagnostics\Persistence\ExecutionProfilingStatisticsReference.cs" />
     <Compile Include="Diagnostics\Persistence\PartitionStatisticsReference.cs" />
     <Compile Include="Diagnostics\Persistence\ServiceStatisticsReference.cs" />
+    <Compile Include="IRuntimeFinalizer.cs" />
     <Compile Include="IProvisioningProvider.cs" />
     <Compile Include="ITableStorageProvider.cs" />
     <Compile Include="Mock\MemoryTableStorageProvider.cs" />
