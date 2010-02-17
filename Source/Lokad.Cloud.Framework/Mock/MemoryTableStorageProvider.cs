@@ -1,16 +1,11 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
 
-
 using System;
 using System.Collections.Generic;
-using System.Collections;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using Lokad.Cloud.Azure;
 
 namespace Lokad.Cloud.Mock
@@ -28,7 +23,7 @@ namespace Lokad.Cloud.Mock
         readonly Dictionary<string, Dictionary<string, Dictionary<string,FatEntity>>> _tableStorage;
 
         //A formatter is requiered to handle FatEntities.
-        IBinaryFormatter _formatter;
+    	readonly IBinaryFormatter _formatter;
 
         /// <summary>naive global lock to make methods thread-safe.</summary>
         readonly object _syncRoot;
@@ -84,7 +79,7 @@ namespace Lokad.Cloud.Mock
             }  
         }
 
-        /// <see cref="ITableStorageProvider.Get{T}(string)<>"/>
+        /// <see cref="ITableStorageProvider.Get{T}(string)"/>
         public IEnumerable<CloudEntity<T>> Get<T>(string tableName)
         {
             lock (_syncRoot)
@@ -101,7 +96,7 @@ namespace Lokad.Cloud.Mock
 
         }
 
-        /// <see cref="ITableStorageProvider.Get{T}(string,string)<>"/>
+        /// <see cref="ITableStorageProvider.Get{T}(string,string)"/>
         public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey)
         {
             lock (_syncRoot)
@@ -116,7 +111,7 @@ namespace Lokad.Cloud.Mock
             }
         }
 
-        /// <see cref="ITableStorageProvider.Get{T}(string,string,string,string)<>"/>
+        /// <see cref="ITableStorageProvider.Get{T}(string,string,string,string)"/>
         public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey)
         {
             lock (_syncRoot)
@@ -135,7 +130,7 @@ namespace Lokad.Cloud.Mock
             }
         }
 
-        /// <see cref="ITableStorageProvider.Get{T}(string,string,System.Collections.Generic.IEnumerable{string})<>"/>
+        /// <see cref="ITableStorageProvider.Get{T}(string,string,System.Collections.Generic.IEnumerable{string})"/>
         public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys)
         {
             lock (_syncRoot)
