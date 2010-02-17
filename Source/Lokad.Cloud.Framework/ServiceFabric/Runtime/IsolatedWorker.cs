@@ -90,7 +90,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				var log = container.Resolve<ILog>();
 				log.Log(LogLevel.Info, "Isolated worker started.");
 
-				InternalServiceRuntime _runtime = null;
+				_runtime = null;
 				try
 				{
 					_runtime =  container.Resolve<InternalServiceRuntime>();
