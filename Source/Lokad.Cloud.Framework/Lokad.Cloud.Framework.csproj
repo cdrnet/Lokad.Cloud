@@ -128,6 +128,7 @@
     <Compile Include="ITableStorageProvider.cs" />
     <Compile Include="Mock\MemoryTableStorageProvider.cs" />
     <Compile Include="Azure\RoleConfigurationSettings.cs" />
+    <Compile Include="ServiceFabric\Runtime\RuntimeFinalizer.cs" />
     <Compile Include="ServiceFabric\ServiceExecutionFeedback.cs" />
     <Compile Include="ServiceFabric\SynchronizationLeaseState.cs" />
     <Compile Include="ServiceFabric\Runtime\AssemblyLoader.cs" />

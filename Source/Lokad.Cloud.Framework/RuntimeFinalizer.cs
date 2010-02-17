@@ -10,8 +10,7 @@ namespace Lokad.Cloud
 
 	/// <summary>Collects objects that absolutely need to be disposed
 	/// before the runtime gets shut down.</summary>
-	/// <remarks>Implementations must be thread-safe.</remarks>
-	public interface IRuntimeFinalizer
+	public class RuntimeFinalizer
 	{
 		/// <summary>Register a object for high priority finalization if runtime is terminating.</summary>
 		void Register(IDisposable obj);
@@ -19,9 +18,8 @@ namespace Lokad.Cloud
 		/// <summary>Unregister a object from high priority finalization.</summary>
 		void Unregister(IDisposable obj);
 
-		/// <summary>
-		/// Finalize high-priority resources hold by the runtime.
-		/// </summary>
-		void FinalizeRuntime();
+		// method will be provided the implementation, not supposed to be accessible
+		// from 'collectible' objects.
+		// void FinalizeRuntime();
 	}
 }

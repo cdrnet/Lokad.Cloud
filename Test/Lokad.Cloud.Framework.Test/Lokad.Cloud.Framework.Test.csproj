@@ -89,6 +89,7 @@
     <Compile Include="Mock\Services\QueueServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DelayedQueueTests.cs" />
+    <Compile Include="ServiceFabric\Runtime\RuntimeFinalizerTests.cs" />
     <Compile Include="StorageCredentialsVerifierTests.cs" />
     <Compile Include="TemporaryBlobNameTests.cs" />
   </ItemGroup>

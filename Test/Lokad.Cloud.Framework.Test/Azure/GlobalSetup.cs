@@ -7,6 +7,7 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Diagnostics;
+using Lokad.Cloud.ServiceFabric.Runtime;
 
 namespace Lokad.Cloud.Azure.Test
 {
@@ -21,6 +22,9 @@ namespace Lokad.Cloud.Azure.Test
 
 			// formatter
 			builder.Register(typeof (CloudFormatter)).As<IBinaryFormatter>();
+
+			// Runtime
+			builder.Register(typeof(RuntimeFinalizer)).As<IRuntimeFinalizer>();
 
 			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
