@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using Lokad.Diagnostics;
 using Lokad.Quality;
@@ -22,7 +23,7 @@ namespace Lokad.Cloud.Azure
 	/// </para>
 	/// <para>All the methods of <see cref="QueueStorageProvider"/> are thread-safe.</para>
 	/// </remarks>
-	public class QueueStorageProvider : IQueueStorageProvider
+	public class QueueStorageProvider : IQueueStorageProvider, IDisposable
 	{
 		internal const string OverflowingMessagesContainerName = "lokad-cloud-overflowing-messages";
 
@@ -34,6 +35,7 @@ namespace Lokad.Cloud.Azure
 		readonly CloudQueueClient _queueStorage;
 		readonly IBlobStorageProvider _blobStorage;
 		readonly IBinaryFormatter _formatter;
+		readonly IRuntimeFinalizer _runtimeFinalizer;
 		readonly ActionPolicy _azureServerPolicy;
 
 		// Instrumentation
@@ -45,15 +47,22 @@ namespace Lokad.Cloud.Azure
 		readonly ExecutionCounter _countUnwrapMessage;
 
 		// messages currently being processed (boolean property indicates if the message is overflowing)
-		private readonly Dictionary<object, InProcessMessage> _inProcessMessages;
+		/// <summary>Mapping object --> Queue Message Id. Use to delete messages afterward.</summary>
+		readonly Dictionary<object, InProcessMessage> _inProcessMessages;
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
-			CloudQueueClient queueStorage, IBlobStorageProvider blobStorage, IBinaryFormatter formatter)
+			CloudQueueClient queueStorage, IBlobStorageProvider blobStorage, 
+			IBinaryFormatter formatter, IRuntimeFinalizer runtimeFinalizer)
 		{
 			_queueStorage = queueStorage;
 			_blobStorage = blobStorage;
 			_formatter = formatter;
+			_runtimeFinalizer = runtimeFinalizer;
+
+			// self-registration for finalization
+			_runtimeFinalizer.Register(this);
+
 			_azureServerPolicy = AzurePolicies.TransientServerErrorBackOff;
 
 			_inProcessMessages = new Dictionary<object, InProcessMessage>(20);
@@ -68,6 +77,11 @@ namespace Lokad.Cloud.Azure
 					_countWrapMessage = new ExecutionCounter("QueueStorageProvider.WrapSingle", 0, 0),
 					_countUnwrapMessage = new ExecutionCounter("QueueStorageProvider.UnwrapSingle", 0, 0),
 				});
+		}
+
+		public void Dispose()
+		{
+			// TODO: #127
 		}
 
 		public IEnumerable<string> List(string prefix)
@@ -151,6 +165,7 @@ namespace Lokad.Cloud.Azure
 						{
 							inProcMsg = new InProcessMessage
 								{
+									QueueName = queueName,
 									RawMessages = new List<CloudQueueMessage> { rawMessage },
 									IsOverflowing = false
 								};
@@ -169,6 +184,7 @@ namespace Lokad.Cloud.Azure
 
 						var overflowingInProcMsg = new InProcessMessage
 							{
+								QueueName = queueName,
 								RawMessages = new List<CloudQueueMessage> { rawMessage },
 								IsOverflowing = true
 							};
@@ -327,7 +343,6 @@ namespace Lokad.Cloud.Azure
 		{
 			foreach (var blobName in _blobStorage.List(OverflowingMessagesContainerName, queueName))
 			{
-				// TODO: leverage lazy implementation of 'List' to speed-up the process here.
 				_blobStorage.DeleteBlob(OverflowingMessagesContainerName, blobName);
 			}
 		}
@@ -426,27 +441,11 @@ namespace Lokad.Cloud.Azure
 			return deletionCount;
 		}
 
-		/// <summary>
-		/// Abandon a message being processed and put it visibly back on the queue.
-		/// </summary>
-		/// <typeparam name="T">Type of the message.</typeparam>
-		/// <param name="queueName">Identifier of the queue where the message is removed from.</param>
-		/// <param name="message">Message to be abandoned.</param>
-		/// <returns><c>True</c> if the original message has been deleted.</returns>
-		/// <remarks>Message must have first been retrieved through <see cref="Get{T}"/>.</remarks>
 		public bool Abandon<T>(string queueName, T message)
 		{
 			return AbandonRange(queueName, new[] { message }) > 0;
 		}
 
-		/// <summary>
-		/// Abandon a set of messages being processed and put them visibly back on the queue.
-		/// </summary>
-		/// <typeparam name="T">Type of the messages.</typeparam>
-		/// <param name="queueName">Identifier of the queue where the messages are removed from.</param>
-		/// <param name="messages">Messages to be abandoned.</param>
-		/// <returns>The number of original messages actually deleted.</returns>
-		/// <remarks>Messages must have first been retrieved through <see cref="Get{T}"/>.</remarks>
 		public int AbandonRange<T>(string queueName, IEnumerable<T> messages)
 		{
 			var timestamp = _countAbandonMessage.Open();
@@ -516,11 +515,15 @@ namespace Lokad.Cloud.Azure
 	/// i.e. were hidden from the queue because of calls to Get{T}.</summary>
 	internal class InProcessMessage
 	{
-		/// <summary>The multiple, different raw <see cref="CloudQueueMessage" /> objects as returned from the queue storage.</summary>
+		/// <summary>Name of the queue where messages are originating from.</summary>
+		public string QueueName { get; set; }
+
+		/// <summary>The multiple, different raw <see cref="CloudQueueMessage" /> 
+		/// objects as returned from the queue storage.</summary>
 		public List<CloudQueueMessage> RawMessages { get; set; }
 
-		/// <summary>A flag indicating whether the original message was bigger than the max allowed size and was
-		/// therefore wrapped in <see cref="MessageWrapper" />.</summary>
+		/// <summary>A flag indicating whether the original message was bigger than the max 
+		/// allowed size and was  therefore wrapped in <see cref="MessageWrapper" />.</summary>
 		public bool IsOverflowing { get; set; }
 	}
 
@@ -531,9 +534,11 @@ namespace Lokad.Cloud.Azure
 			get { return QueueStorageProvider.OverflowingMessagesContainerName; }
 		}
 
+		/// <summary>Indicates the name of the queue where the message has been originally pushed.</summary>
 		[UsedImplicitly, Rank(0)]
 		public string QueueName;
 
+		/// <summary>Message identifiers as specified by the queue storage itself.</summary>
 		[UsedImplicitly, Rank(1)]
 		public Guid MessageId;
 
@@ -543,6 +548,8 @@ namespace Lokad.Cloud.Azure
 			MessageId = guid;
 		}
 
+		/// <summary>Used to iterate over all the overflowing messages 
+		/// associated to a queue.</summary>
 		public static OverflowingMessageBlobReference<T> GetNew(string queueName)
 		{
 			return new OverflowingMessageBlobReference<T>(queueName, Guid.NewGuid());
