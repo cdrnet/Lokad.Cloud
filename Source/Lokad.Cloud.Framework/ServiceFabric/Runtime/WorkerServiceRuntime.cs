@@ -13,39 +13,42 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 	/// </summary>
 	public class WorkerServiceRuntime
 	{
+		IsolatedWorker _worker;
+
 		/// <summary>
 		/// Start up the runtime. This step is required before calling Run.
 		/// </summary>
 		public void StartRuntime()
 		{
 			RoleEnvironment.Changing += OnRoleEnvironmentChanging;
-			//RoleEnvironment.Stopping += OnRoleEnvironmentStopping;
 		}
 
-		/// <summary>
-		/// Shutdown the runtime.
-		/// </summary>
+		/// <summary>Shutdown the runtime.</summary>
 		public void ShutdownRuntime()
 		{
 			RoleEnvironment.Changing -= OnRoleEnvironmentChanging;
-			//RoleEnvironment.Stopping -= OnRoleEnvironmentStopping;
+
+			if(null != _worker)
+			{
+				_worker.OnStop();
+			}
 		}
 
-		/// <summary>
-		/// Runtime Main Thread.
-		/// </summary>
+		/// <summary>Runtime Main Thread.</summary>
 		public void Run()
 		{
 			var restartPolicy = new NoRestartFloodPolicy(isHealthy => { });
 			restartPolicy.Do(() =>
 			{
-				var worker = new IsolatedWorker();
-				return worker.DoWork();
+				_worker = new IsolatedWorker();
+				return _worker.DoWork();
 			});
 		}
 
 		void OnRoleEnvironmentChanging(object sender, RoleEnvironmentChangingEventArgs e)
 		{
+			// TODO: #129, we need to filter out topology changes
+
 			// we restart all workers if the configuration changed (e.g. the storage account)
 			// for now. This might be tweaked in the future. We do not request a recycle
 			// though if only the topology changed, e.g. if some instances have been removed or added.
@@ -55,9 +58,5 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				RoleEnvironment.RequestRecycle();
 			}
 		}
-
-		//void OnRoleEnvironmentStopping(object sender, RoleEnvironmentStoppingEventArgs e)
-		//{
-		//}
 	}
 }

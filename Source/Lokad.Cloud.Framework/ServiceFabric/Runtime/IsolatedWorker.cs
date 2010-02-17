@@ -10,6 +10,7 @@ using System.Security;
 using Autofac.Builder;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
@@ -124,6 +125,12 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 				return restartForAssemblyUpdate;
 			}
+		}
+
+		/// <summary>Called when the environment is being stopped.</summary>
+		public void OnStop()
+		{
+			// TODO: #128 need to implement worker shutdown.
 		}
 
 		static string GetServiceInExecution(InternalServiceRuntime runtime)
