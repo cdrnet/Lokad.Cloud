@@ -86,18 +86,7 @@ namespace Lokad.Cloud.Azure
 		/// </summary>
 		public void Dispose()
 		{
-			var queueBatches = _inProcessMessages.Keys.GroupBy(k => _inProcessMessages[k].QueueName)
-				 .Select(g => new
-				 	{
-				 		QueueName = g.Key,
-						Items = g.ToArray()
-					}
-				).ToArray();
-
-			foreach(var batch in queueBatches)
-			{
-				AbandonRange(batch.QueueName, batch.Items);
-			}
+			AbandonRange(_inProcessMessages.Keys.ToArray());
 		}
 
 		public IEnumerable<string> List(string prefix)
@@ -457,20 +446,100 @@ namespace Lokad.Cloud.Azure
 			return deletionCount;
 		}
 
-		public bool Abandon<T>(string queueName, T message)
+		public bool Abandon<T>(T message)
 		{
-			return AbandonRange(queueName, new[] { message }) > 0;
+			return AbandonRange(new[] { message }) > 0;
 		}
 
-		public int AbandonRange<T>(string queueName, IEnumerable<T> messages)
+		public int AbandonRange<T>(IEnumerable<T> messages)
 		{
-			var timestamp = _countAbandonMessage.Open();
+			int abandonCount = 0;
 
-			PutRange(queueName, messages);
-			var count = DeleteRange(queueName, messages);
+			foreach (var message in messages)
+			{
+				var timestamp = _countAbandonMessage.Open();
 
-			_countAbandonMessage.Close(timestamp);
-			return count;
+				// 1. GET RAW MESSAGE & QUEUE, OR SKIP IF NOT AVAILABLE/ALREADY DELETED
+
+				CloudQueueMessage oldRawMessage;
+				string queueName;
+
+				lock (_sync)
+				{
+					// ignoring message if already deleted
+					InProcessMessage inProcMsg;
+					if (!_inProcessMessages.TryGetValue(message, out inProcMsg))
+					{
+						continue;
+					}
+
+					queueName = inProcMsg.QueueName;
+					oldRawMessage = inProcMsg.RawMessages[0];
+				}
+
+				var queue = _queueStorage.GetQueueReference(queueName);
+
+				// 2. CLONE THE MESSAGE AND PUT IT TO THE QUEUE
+
+				var newRawMessage = new CloudQueueMessage(oldRawMessage.AsBytes);
+
+				try
+				{
+					_azureServerPolicy.Do(() => queue.AddMessage(newRawMessage));
+				}
+				catch (StorageClientException ex)
+				{
+					// HACK: not storage status error code yet
+					if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
+						|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+					{
+						// It usually takes time before the queue gets available
+						// (the queue might also have been freshly deleted).
+						AzurePolicies.SlowInstantiation.Do(() =>
+							{
+								queue.Create();
+								queue.AddMessage(newRawMessage);
+							});
+					}
+					else
+					{
+						throw;
+					}
+				}
+
+				// 3. DELETE THE OLD MESSAGE FROM THE QUEUE
+
+				try
+				{
+					_azureServerPolicy.Do(() => queue.DeleteMessage(oldRawMessage));
+					abandonCount++;
+				}
+				catch (StorageClientException ex)
+				{
+					if (ex.ErrorCode != StorageErrorCode.ResourceNotFound
+						&& ex.ExtendedErrorInformation.ErrorCode != QueueErrorCodeStrings.QueueNotFound)
+					{
+						throw;
+					}
+				}
+
+				// 4. REMOVE THE RAW MESSAGE
+
+				lock (_sync)
+				{
+					var inProcMsg = _inProcessMessages[message];
+					inProcMsg.RawMessages.RemoveAt(0);
+
+					if (0 == inProcMsg.RawMessages.Count)
+					{
+						_inProcessMessages.Remove(message);
+					}
+				}
+
+				_countAbandonMessage.Close(timestamp);
+			}
+
+			return abandonCount;
 		}
 
 		/// <summary>

@@ -143,7 +143,7 @@ namespace Lokad.Cloud
 		/// </summary>
 		public void Abandon(T message)
 		{
-			QueueStorage.Abandon(_queueName, message);
+			QueueStorage.Abandon(message);
 		}
 
 		/// <summary>
@@ -152,7 +152,7 @@ namespace Lokad.Cloud
 		/// </summary>
 		public void AbandonRange(IEnumerable<T> messages)
 		{
-			QueueStorage.AbandonRange(_queueName, messages);
+			QueueStorage.AbandonRange(messages);
 		}
 	}
 }

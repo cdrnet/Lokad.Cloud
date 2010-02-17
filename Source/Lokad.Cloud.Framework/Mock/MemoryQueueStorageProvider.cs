@@ -18,13 +18,13 @@ namespace Lokad.Cloud.Mock
 		readonly object _sync = new object();
 
 		readonly Dictionary<string, Queue<object>> _queues;
-		readonly Dictionary<string, HashSet<object>> _invisibleQueues;
+		readonly HashSet<Pair<string,object>> _inProgressMessages;
 		readonly IBinaryFormatter _formatter;
 
 		public MemoryQueueStorageProvider(IBinaryFormatter formatter)
 		{
 			_queues = new Dictionary<string, Queue<object>>();
-			_invisibleQueues = new Dictionary<string, HashSet<object>>();
+			_inProgressMessages = new HashSet<Pair<string, object>>();
 			_formatter = formatter;
 		}
 
@@ -43,7 +43,7 @@ namespace Lokad.Cloud.Mock
 					if (_queues[queueName].Any())
 					{
 						var message = _queues[queueName].Dequeue();
-						_invisibleQueues[queueName].Add(message);
+						_inProgressMessages.Add(Tuple.From(queueName, message));
 						items.Add((T)message);
 					}
 				}
@@ -63,7 +63,6 @@ namespace Lokad.Cloud.Mock
 				if (!_queues.ContainsKey(queueName))
 				{
 					_queues.Add(queueName, new Queue<object>());
-					_invisibleQueues.Add(queueName, new HashSet<object>());
 				}
 
 				_queues[queueName].Enqueue(message);
@@ -83,7 +82,7 @@ namespace Lokad.Cloud.Mock
 			lock (_sync)
 			{
 				_queues[queueName].Clear();
-				_invisibleQueues[queueName].Clear();
+				_inProgressMessages.RemoveWhere(p => p.Key == queueName);
 			}
 		}
 
@@ -91,12 +90,13 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_sync)
 			{
-				if (!_invisibleQueues[queueName].Contains(message))
+				var entry = _inProgressMessages.FirstOrEmpty(p => p.Value == (object) message);
+				if (!entry.HasValue)
 				{
 					return false;
 				}
 
-				_invisibleQueues[queueName].Remove(message);
+				_inProgressMessages.Remove(entry.Value);
 				return true;
 			}
 		}
@@ -109,16 +109,38 @@ namespace Lokad.Cloud.Mock
 			}
 		}
 
-		public bool Abandon<T>(string queueName, T message)
+		public bool Abandon<T>(T message)
 		{
-			Put(queueName, message);
-			return Delete(queueName, message);
+			lock (_sync)
+			{
+				var firstOrEmpty = _inProgressMessages.FirstOrEmpty(p => p.Value == (object) message);
+				if (!firstOrEmpty.HasValue)
+				{
+					return false;
+				}
+
+				// Add back to queue
+				var entry = firstOrEmpty.Value;
+				if (!_queues.ContainsKey(entry.Key))
+				{
+					_queues.Add(entry.Key, new Queue<object>());
+				}
+
+				_queues[entry.Key].Enqueue(entry.Value);
+
+				// Remove from invisible queue
+				_inProgressMessages.Remove(entry);
+
+				return true;
+			}
 		}
 
-		public int AbandonRange<T>(string queueName, IEnumerable<T> messages)
+		public int AbandonRange<T>(IEnumerable<T> messages)
 		{
-			PutRange(queueName, messages);
-			return DeleteRange(queueName, messages);
+			lock (_sync)
+			{
+				return messages.Where(Abandon).Count();
+			}
 		}
 
 		public bool DeleteQueue(string queueName)
@@ -131,7 +153,7 @@ namespace Lokad.Cloud.Mock
 				}
 
 				_queues.Remove(queueName);
-				_invisibleQueues.Remove(queueName);
+				_inProgressMessages.RemoveWhere(p => p.Key == queueName);
 				return true;
 			}
 		}

@@ -263,20 +263,32 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.AreEqual(message.MyGuid, retrieved.MyGuid, "#A01");
 
 			// abandon
-			var abandoned = provider.Abandon(QueueName, retrieved);
+			var abandoned = provider.Abandon(retrieved);
 			Assert.IsTrue(abandoned, "#A02");
+
+			// abandon II should fail (since not invisible)
+			var abandoned2 = provider.Abandon(retrieved);
+			Assert.IsFalse(abandoned2, "#A03");
 
 			// get again
 			var retrieved2 = provider.Get<MyMessage>(QueueName, 1).First();
-			Assert.AreEqual(message.MyGuid, retrieved2.MyGuid, "#A03");
+			Assert.AreEqual(message.MyGuid, retrieved2.MyGuid, "#A04");
 
 			// delete
 			var deleted = provider.Delete(QueueName, retrieved2);
-			Assert.IsTrue(deleted, "#A04");
+			Assert.IsTrue(deleted, "#A05");
 
 			// get now should fail
 			var retrieved3 = provider.Get<MyMessage>(QueueName, 1).FirstOrEmpty();
-			Assert.IsFalse(retrieved3.HasValue, "#A05");
+			Assert.IsFalse(retrieved3.HasValue, "#A06");
+
+			// abandon does not put it to the queue again
+			var abandoned3 = provider.Abandon(retrieved2);
+			Assert.IsFalse(abandoned3, "#A07");
+
+			// get now should still fail
+			var retrieved4 = provider.Get<MyMessage>(QueueName, 1).FirstOrEmpty();
+			Assert.IsFalse(retrieved4.HasValue, "#A07");
 		}
 	}
 
