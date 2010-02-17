@@ -141,7 +141,7 @@ namespace Lokad.Cloud.Azure
 			do
 			{
 				var query = context.CreateQuery<FatEntity>(tableName)
-					.AddQueryOption("$filter", string.Format("PartitionKey eq '{0}'", partitionKey));
+					.AddQueryOption("$filter", string.Format("(PartitionKey eq '{0}')", partitionKey));
 
 				if (null != continuationRowKey)
 				{
@@ -361,6 +361,13 @@ namespace Lokad.Cloud.Azure
 
 		public void Insert<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
 		{
+			entities.GroupBy(e => e.PartitionKey)
+				.ForEach(g => InsertInternal(tableName, g));
+		}
+
+
+		void InsertInternal<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
+		{
 			var context = _tableStorage.GetDataServiceContext();
 			context.MergeOption = MergeOption.NoTracking;
 
@@ -445,6 +452,12 @@ namespace Lokad.Cloud.Azure
 
 		public void Update<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
 		{
+			entities.GroupBy(e => e.PartitionKey)
+				.ForEach(g => UpdateInternal(tableName, g));
+		}
+
+		void UpdateInternal<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
+		{
 			var context = _tableStorage.GetDataServiceContext();
 
 			var fatEntities = entities.Select(e => FatEntity.Convert(e, _formatter));
@@ -504,24 +517,28 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
+		public void Upsert<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
+		{
+			entities.GroupBy(e => e.PartitionKey)
+				.ForEach(g => UpsertInternal(tableName, g));
+		}
+
 		// HACK: no 'upsert' (update or insert) available at the time
 		// http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/4b902237-7cfb-4d48-941b-4802864fc274
 
 		/// <remarks>Upsert is making several storage calls to emulate the 
 		/// missing semantic from the Table Storage.</remarks>
-		public void Upsert<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
+		void UpsertInternal<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
 		{
-			entities.GroupBy(e => e.PartitionKey)
-				.ForEach(p =>
-					{
-						// checking for entities that already exist
-						var existingKeys = 
-							Get<T>(tableName, p.Key, p.Select(e => e.RowRey)).ToSet(e => e.RowRey);
+			// checking for entities that already exist
+			var partitionKey = entities.First().PartitionKey;
+			var existingKeys =
+				Get<T>(tableName, partitionKey, entities.Select(e => e.RowRey))
+				.ToSet(e => e.RowRey);
 
-						// inserting or updating depending on the presence of the keys
-						Insert(tableName, p.Where(e => !existingKeys.Contains(e.RowRey)));
-						Update(tableName, p.Where(e => existingKeys.Contains(e.RowRey)));
-					});
+			// inserting or updating depending on the presence of the keys
+			Insert(tableName, entities.Where(e => !existingKeys.Contains(e.RowRey)));
+			Update(tableName, entities.Where(e => existingKeys.Contains(e.RowRey)));
 		}
 
 		/// <summary>Slice entities according the payload limitation of

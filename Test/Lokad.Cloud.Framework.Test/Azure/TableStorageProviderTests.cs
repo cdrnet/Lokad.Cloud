@@ -126,12 +126,13 @@ namespace Lokad.Cloud.Azure.Test
 
 			var e1 = Entities(15, p1, 10);
 			var e2 = Entities(25, p2, 10);
-			var e1And2 = e1.Union(e2);
+			var e1And2 = e1.Union(e2).ToArray();
 
             Provider.Upsert(TableName, e1);           
 			Provider.Upsert(TableName, e1And2);
 
-			var count1 = Provider.Get<string>(TableName, p1).Count();
+			var list1 = Provider.Get<string>(TableName, p1).ToArray();
+			var count1 = list1.Count();
 			Assert.AreEqual(e1.Count(), count1, "#A00");
 			
 			var count2 = Provider.Get<string>(TableName, p2).Count();
@@ -152,7 +153,7 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
-		public void GetWithPartitionShouldOnlyReturnPartition()
+		public void GetWithPartitionShouldOnlySpecifiedPartition()
 		{
 			var p1 = Guid.NewGuid().ToString("N");
 			var p2 = Guid.NewGuid().ToString("N");
@@ -163,7 +164,8 @@ namespace Lokad.Cloud.Azure.Test
 
 			Provider.Insert(TableName, e1And2);
 
-			var count1 = Provider.Get<string>(TableName, p1).Count();
+			var list1 = Provider.Get<string>(TableName, p1).ToArray();
+			var count1 = list1.Count();
 			Assert.AreEqual(e1.Count(), count1, "#A00");
 		}
 
@@ -402,7 +404,12 @@ Time:2010-01-15T12:37:25.1611631Z</message>
 
         }
 
-        IEnumerable<CloudEntity<String>> Entities(int count, string partitionKey, int entitySize)
+		CloudEntity<String>[] Entities(int count, string partitionKey, int entitySize)
+		{
+			return EntitiesInternal(count, partitionKey, entitySize).ToArray();
+		}
+
+        IEnumerable<CloudEntity<String>> EntitiesInternal(int count, string partitionKey, int entitySize)
         {
             for (int i = 0; i < count; i++)
             {
