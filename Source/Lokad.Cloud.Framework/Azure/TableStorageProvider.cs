@@ -95,9 +95,7 @@ namespace Lokad.Cloud.Azure
 						{
 							// if the table does not exist, there is nothing to return
 							var errorCode = AzurePolicies.GetErrorCode(ex);
-							if (TableErrorCodeStrings.TableNotFound == errorCode 
-								// HACK: OutOfRangeInput is another undocumented error code
-								|| "OutOfRangeInput" == errorCode)
+							if (TableErrorCodeStrings.TableNotFound == errorCode)
 							{
 								fatEntities = new FatEntity[0];
 								return;
@@ -163,9 +161,7 @@ namespace Lokad.Cloud.Azure
 					{
 						// if the table does not exist, there is nothing to return
 						var errorCode = AzurePolicies.GetErrorCode(ex);
-						if (TableErrorCodeStrings.TableNotFound == errorCode
-							// HACK: OutOfRangeInput is an undocumented error code.
-							|| "OutOfRangeInput" == errorCode)
+						if (TableErrorCodeStrings.TableNotFound == errorCode)
 						{
 							fatEntities = new FatEntity[0];
 							return;
@@ -246,9 +242,7 @@ namespace Lokad.Cloud.Azure
 					{
 						// if the table does not exist, there is nothing to return
 						var errorCode = AzurePolicies.GetErrorCode(ex);
-						if (TableErrorCodeStrings.TableNotFound == errorCode
-							// HACK: OutOfRangeInput is an undocumented error code.
-							|| "OutOfRangeInput" == errorCode)
+						if (TableErrorCodeStrings.TableNotFound == errorCode)
 						{
 							fatEntities = new FatEntity[0];
 							return;
@@ -333,9 +327,7 @@ namespace Lokad.Cloud.Azure
 						{
 							// if the table does not exist, there is nothing to return
 							var errorCode = AzurePolicies.GetErrorCode(ex);
-							if(TableErrorCodeStrings.TableNotFound == errorCode
-								// HACK: OutOfRangeInput is an undocumented error code.
-								|| "OutOfRangeInput" == errorCode)
+							if(TableErrorCodeStrings.TableNotFound == errorCode)
 							{
 								fatEntities = new FatEntity[0];
 								return;
@@ -394,8 +386,7 @@ namespace Lokad.Cloud.Azure
 							catch (DataServiceRequestException ex)
 							{
 								var errorCode = AzurePolicies.GetErrorCode(ex);
-								if (errorCode == TableErrorCodeStrings.TableNotFound
-									|| "OutOfRangeInput" == errorCode)
+								if (errorCode == TableErrorCodeStrings.TableNotFound)
 								{
 									_tableStorage.CreateTableIfNotExist(tableName);
 									context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
@@ -576,7 +567,7 @@ namespace Lokad.Cloud.Azure
 					{
 						// if the table is missing, no need to go on with the deletion
 						var errorCode = AzurePolicies.GetErrorCode(ex);
-						if("OutOfRangeInput" == errorCode)
+						if(TableErrorCodeStrings.TableNotFound == errorCode)
 						{
 							return;
 						}
