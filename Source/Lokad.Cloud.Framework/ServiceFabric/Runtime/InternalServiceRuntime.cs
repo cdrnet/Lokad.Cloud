@@ -155,7 +155,12 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			{
 				builder.Register(type)
 					.OnActivating(ActivatingHandler.InjectUnsetProperties)
-					.FactoryScoped();
+					.FactoryScoped()
+					.ExternallyOwned();
+
+				// ExternallyOwned: to prevent the container from disposing the
+				// cloud services - we manage their lifetime on our own using
+				// e.g. RuntimeFinalizer
 			}
 			builder.Build(container);
 
