@@ -105,7 +105,8 @@ namespace Lokad.Cloud.Azure
 					return (IQueueStorageProvider) new QueueStorageProvider(
 						c.Resolve<CloudQueueClient>(),
 						c.Resolve<IBlobStorageProvider>(),
-						formatter);
+						formatter,
+						c.Resolve<IRuntimeFinalizer>());
 				});
 
 			builder.Register(c =>

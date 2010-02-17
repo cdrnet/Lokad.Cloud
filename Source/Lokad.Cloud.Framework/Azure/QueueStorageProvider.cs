@@ -79,9 +79,25 @@ namespace Lokad.Cloud.Azure
 				});
 		}
 
+		/// <summary>
+		/// Disposing the provider will cause an abandon on all currently messages currently
+		/// in-process. At the end of the life-cycle of the provider, normally there is no
+		/// message in-process.
+		/// </summary>
 		public void Dispose()
 		{
-			// TODO: #127
+			var queueBatches = _inProcessMessages.Keys.GroupBy(k => _inProcessMessages[k].QueueName)
+				 .Select(g => new
+				 	{
+				 		QueueName = g.Key,
+						Items = g.ToArray()
+					}
+				).ToArray();
+
+			foreach(var batch in queueBatches)
+			{
+				AbandonRange(batch.QueueName, batch.Items);
+			}
 		}
 
 		public IEnumerable<string> List(string prefix)
