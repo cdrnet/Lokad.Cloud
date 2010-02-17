@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading;
 
 namespace Lokad.Cloud
@@ -51,21 +50,6 @@ namespace Lokad.Cloud
 				var sleepTime = _rand.Next(MaxSleepInMs).Milliseconds();
 				Thread.Sleep(sleepTime);
 			}
-		}
-
-		///<summary>Get a pseudo-random pattern that can be used to facilitate
-		/// parallel iteration.</summary>
-		public static string GetHashPrefix(int hexDepth)
-		{
-			var builder = new StringBuilder();
-
-			for (int i = 0; i < hexDepth; i++)
-			{
-				builder.Append(HexDigits[_rand.Next(17)]);
-				if(i < hexDepth - 1) builder.Append(Delimiter);
-			}
-
-			return builder.ToString();
 		}
 
 		public static void AtomicUpdate<T>(this IBlobStorageProvider provider, BlobReference<T> reference, Func<Maybe<T>, Result<T>> updater, out Result<T> result)
@@ -170,6 +154,13 @@ namespace Lokad.Cloud
 		public static IEnumerable<T> Get<T>(this IQueueStorageProvider provider, string queueName, int count)
 		{
 			return provider.Get<T>(queueName, count, new TimeSpan(2, 0, 0));
+		}
+
+		/// <summary>Gets the specified cloud entity if it exists.</summary>
+		/// <typeparam name="T"></typeparam>
+		public static Maybe<CloudEntity<T>> Get<T>(this ITableStorageProvider provider, string tableName, string partitionName, string rowKey)
+		{
+			return provider.Get<T>(tableName, partitionName, new[] {rowKey}).FirstOrEmpty();
 		}
 	}
 }
