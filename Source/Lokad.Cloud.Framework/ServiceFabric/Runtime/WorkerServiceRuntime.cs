@@ -47,12 +47,13 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 		void OnRoleEnvironmentChanging(object sender, RoleEnvironmentChangingEventArgs e)
 		{
-			// TODO: #129, we need to filter out topology changes
-
 			// we restart all workers if the configuration changed (e.g. the storage account)
-			// for now. This might be tweaked in the future. We do not request a recycle
-			// though if only the topology changed, e.g. if some instances have been removed or added.
+			// for now.
+
+			// We do not request a recycle if only the topology changed, 
+			// e.g. if some instances have been removed or added.
 			var configChanges = e.Changes.OfType<RoleEnvironmentConfigurationSettingChange>();
+
 			if(configChanges.Any())
 			{
 				RoleEnvironment.RequestRecycle();
