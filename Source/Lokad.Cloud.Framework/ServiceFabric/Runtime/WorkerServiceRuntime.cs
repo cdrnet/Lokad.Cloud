@@ -14,6 +14,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 	public class WorkerServiceRuntime
 	{
 		IsolatedWorker _worker;
+		NoRestartFloodPolicy _restartPolicy;
 
 		/// <summary>
 		/// Start up the runtime. This step is required before calling Run.
@@ -28,6 +29,11 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		{
 			RoleEnvironment.Changing -= OnRoleEnvironmentChanging;
 
+			if(null != _restartPolicy)
+			{
+				_restartPolicy.IsStopRequested = true;
+			}
+
 			if(null != _worker)
 			{
 				_worker.OnStop();
@@ -37,8 +43,10 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <summary>Runtime Main Thread.</summary>
 		public void Run()
 		{
-			var restartPolicy = new NoRestartFloodPolicy(isHealthy => { });
-			restartPolicy.Do(() =>
+			_restartPolicy = new NoRestartFloodPolicy(isHealthy => { });
+
+			// restart policy cease restarts if stop is requested
+			_restartPolicy.Do(() =>
 			{
 				_worker = new IsolatedWorker();
 				return _worker.DoWork();

@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -29,7 +29,10 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// </summary>
 		static TimeSpan DelayWhenFlooding { get { return 5.Minutes(); } }
 
-		Action<bool> _isRestartFlooding;
+		readonly Action<bool> _isRestartFlooding;
+
+		/// <summary>When stop is requested, policy won't go on with restarts anymore.</summary>
+		public bool IsStopRequested { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NoRestartFloodPolicy"/>class.
@@ -49,7 +52,8 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// </summary>
 		public void Do(Func<bool> workButNotFloodRestart)
 		{
-			while(true)
+			// once stop is requested, we stop
+			while(!IsStopRequested)
 			{
 				// The assemblyUpdated flag handles the case when a restart is caused by an asm update, "soon" after another restart
 				// In such case, the worker would be reported as unhealthy virtually forever if no more restarts occur
