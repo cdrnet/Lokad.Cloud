@@ -25,7 +25,7 @@ namespace Lokad.Cloud.Services
 
 		protected override void StartOnSchedule()
 		{
-			var executionExpiration = DateTimeOffset.Now.Add(MaxExecutionTime);
+			var executionExpiration = DateTimeOffset.UtcNow.Add(MaxExecutionTime);
 			var containerName = BlobName.GetContainerName<TemporaryBlobName>();
 
 			// lazy enumeration over the overflowing messages
@@ -33,7 +33,7 @@ namespace Lokad.Cloud.Services
 			{
 				var parsedName = BlobName.Parse<TemporaryBlobName>(blobName);
 
-				if (DateTimeOffset.Now <= parsedName.Expiration)
+				if (DateTimeOffset.UtcNow <= parsedName.Expiration)
 				{
 					// overflowing messages are iterated in date-increasing order
 					// as soon a non-expired overflowing message is encountered
@@ -45,7 +45,7 @@ namespace Lokad.Cloud.Services
 				BlobStorage.DeleteBlob(containerName, blobName);
 
 				// don't freeze the worker with this service
-				if (DateTimeOffset.Now > executionExpiration)
+				if (DateTimeOffset.UtcNow > executionExpiration)
 				{
 					break;
 				}

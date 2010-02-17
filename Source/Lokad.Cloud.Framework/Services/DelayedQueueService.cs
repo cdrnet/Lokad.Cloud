@@ -25,7 +25,7 @@ namespace Lokad.Cloud.Services
 			foreach (var blobName in BlobStorage.List<DelayedMessageReference>(nullPrefix))
 			{
 				var parsedName = BlobName.Parse<DelayedMessageReference>(blobName);
-				if (DateTimeOffset.Now <= parsedName.TriggerTime)
+				if (DateTimeOffset.UtcNow <= parsedName.TriggerTime)
 				{
 					// delayed messages are iterated in date-increasing order
 					// as soon a non-expired delayed message is encountered

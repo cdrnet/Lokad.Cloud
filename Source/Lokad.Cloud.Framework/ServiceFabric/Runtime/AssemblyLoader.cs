@@ -56,7 +56,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		public void LoadPackage()
 		{
 			var buffer = _provider.GetBlob<byte[]>(ContainerName, PackageBlobName, out _lastPackageEtag);
-			_lastPackageCheck = DateTimeOffset.Now;
+			_lastPackageCheck = DateTimeOffset.UtcNow;
 
 			// if no assemblies have been loaded yet, just skip the loading
 			if (!buffer.HasValue)
@@ -130,7 +130,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <see cref="UpdateCheckFrequency"/>.</param>
 		public void CheckUpdate(bool delayCheck)
 		{
-			var now = DateTimeOffset.Now;
+			var now = DateTimeOffset.UtcNow;
 
 			// limiting the frequency where the actual update check is performed.
 			if (delayCheck && now.Subtract(_lastPackageCheck) <= UpdateCheckFrequency)

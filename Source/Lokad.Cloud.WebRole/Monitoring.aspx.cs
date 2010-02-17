@@ -144,7 +144,7 @@ namespace Lokad.Cloud.Web
 			Func<IEnumerable<T>, object> projector,
 			string cacheNamePrefix)
 		{
-			var now = DateTimeOffset.Now;
+			var now = DateTimeOffset.UtcNow;
 			switch (selector.SelectedValue)
 			{
 				case "Today":
@@ -180,7 +180,7 @@ namespace Lokad.Cloud.Web
 					key,
 					value = f(),
 					null,
-					DateTime.Now + _cacheRefreshPeriod,
+					DateTime.UtcNow + _cacheRefreshPeriod,
 					Cache.NoSlidingExpiration,
 					CacheItemPriority.Normal,
 					null);

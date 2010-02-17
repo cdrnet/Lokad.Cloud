@@ -47,7 +47,7 @@ namespace Lokad.Cloud.Web
 		{
 			get
 			{
-				var now = DateTimeOffset.Now;
+				var now = DateTimeOffset.UtcNow;
 
 				// request new info if last update was a long time ago
 				if (now.Subtract(_checkPeriod) > _lastChecked)

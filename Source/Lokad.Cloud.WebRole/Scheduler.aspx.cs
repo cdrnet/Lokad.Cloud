@@ -120,7 +120,7 @@ namespace Lokad.Cloud.Web
 				return "available";
 			}
 
-			var now = DateTimeOffset.Now;
+			var now = DateTimeOffset.UtcNow;
 
 			if (info.LeasedUntil.Value < now)
 			{

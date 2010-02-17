@@ -204,7 +204,7 @@ namespace Lokad.Cloud.Test.Mock
                         {
                             PartitionKey = "PKey",
                             RowRey = "RowKey",
-                            Timestamp = DateTime.Now,
+                            Timestamp = DateTime.UtcNow,
                             Value = new object()
                         }
                 }

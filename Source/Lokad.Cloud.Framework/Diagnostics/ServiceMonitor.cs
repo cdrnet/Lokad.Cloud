@@ -73,7 +73,7 @@ namespace Lokad.Cloud.Diagnostics
 		/// </summary>
 		public void RemoveStatisticsBefore(int numberOfPeriods)
 		{
-			var now = DateTimeOffset.Now;
+			var now = DateTimeOffset.UtcNow;
 
 			_repository.RemoveServiceStatistics(
 				TimeSegments.DayPrefix,
@@ -98,7 +98,7 @@ namespace Lokad.Cloud.Diagnostics
 					Service = service,
 					TotalProcessorTime = process.TotalProcessorTime,
 					UserProcessorTime = process.UserProcessorTime,
-					StartDate = DateTimeOffset.Now
+					StartDate = DateTimeOffset.UtcNow
 				};
 
 			return handle;
@@ -106,7 +106,7 @@ namespace Lokad.Cloud.Diagnostics
 
 		void OnStop(RunningServiceHandle handle)
 		{
-			var timestamp = DateTimeOffset.Now;
+			var timestamp = DateTimeOffset.UtcNow;
 			var process = Process.GetCurrentProcess();
 			var serviceName = handle.Service.Name;
 			var totalCpuTime = process.TotalProcessorTime - handle.TotalProcessorTime;
@@ -150,11 +150,13 @@ namespace Lokad.Cloud.Diagnostics
 				{
 					if (!s.HasValue)
 					{
+						var now = DateTimeOffset.UtcNow;
+
 						return new ServiceStatistics
 						{
 							Name = update.ServiceName,
-							FirstStartTime = DateTimeOffset.Now,
-							LastUpdate = DateTimeOffset.Now,
+							FirstStartTime = now,
+							LastUpdate = now,
 							TotalProcessorTime = update.TotalCpuTime,
 							UserProcessorTime = update.UserCpuTime,
 							AbsoluteTime = update.AbsoluteTime,

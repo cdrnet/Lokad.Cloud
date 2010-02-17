@@ -132,7 +132,7 @@ namespace Lokad.Cloud
 
 				var state = blobState.Value;
 
-				var now = DateTimeOffset.Now;
+				var now = DateTimeOffset.UtcNow;
 				if (now.Subtract(state.TriggerInterval) >= _workerScopeLastExecuted)
 				{
 					_workerScopeLastExecuted = now;
@@ -164,7 +164,7 @@ namespace Lokad.Cloud
 				stateReference,
 				currentState =>
 					{
-						var now = DateTimeOffset.Now;
+						var now = DateTimeOffset.UtcNow;
 
 						if (!currentState.HasValue)
 						{

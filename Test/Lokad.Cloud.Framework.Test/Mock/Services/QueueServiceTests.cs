@@ -39,7 +39,7 @@ namespace Lokad.Cloud.Test.Mock.Services
 			var squareMessage = new SquareMessage
 				{
 					ContainerName = containerName,
-					Expiration = DateTimeOffset.Now + new TimeSpan(10, 0, 0, 0),
+					Expiration = DateTimeOffset.UtcNow + new TimeSpan(10, 0, 0, 0),
 					IsStart = true
 				};
 

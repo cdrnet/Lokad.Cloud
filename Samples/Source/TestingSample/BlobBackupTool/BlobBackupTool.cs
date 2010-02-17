@@ -5,8 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Lokad.Cloud;
 
 namespace TestingSample
@@ -45,7 +43,7 @@ namespace TestingSample
 				return false;
 			}
 
-			_blobStorage.PutBlob(destinationContainer, DateTime.Now.ToString("yyMMddHHmmss") + "-" + blobName, sourceBlob);
+			_blobStorage.PutBlob(destinationContainer, DateTime.UtcNow.ToString("yyMMddHHmmss") + "-" + blobName, sourceBlob);
 			return true;
 		}
 
@@ -80,7 +78,7 @@ namespace TestingSample
 			foreach(string blobName in sourceBlobs)
 			{
 				var data = _blobStorage.GetBlob<object>(containerName, blobName);
-				_blobStorage.PutBlob(destinationContainer, DateTime.Now.ToString("yyMMddHHmmss") + "-" + blobName, data);
+				_blobStorage.PutBlob(destinationContainer, DateTime.UtcNow.ToString("yyMMddHHmmss") + "-" + blobName, data);
 			}
 
 			return true;

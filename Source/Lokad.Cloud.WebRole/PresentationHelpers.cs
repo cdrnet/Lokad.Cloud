@@ -43,7 +43,7 @@ namespace Lokad.Cloud.Web
 
 		public static string PrettyFormatRelativeToNow(this DateTimeOffset dateTime)
 		{
-			var now = DateTimeOffset.Now;
+			var now = DateTimeOffset.UtcNow;
 
 			if (dateTime.UtcTicks == 0)
 			{

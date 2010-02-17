@@ -152,7 +152,7 @@ namespace Lokad.Cloud
 		/// </remarks>
 		public ServiceExecutionFeedback Start()
 		{
-			var now = DateTimeOffset.Now;
+			var now = DateTimeOffset.UtcNow;
 
 			// checking service state at regular interval
 			if(now.Subtract(_lastStateCheck) > StateCheckInterval)

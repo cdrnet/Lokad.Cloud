@@ -78,9 +78,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				// 'more of the same pattern'
 				// as long the service is active, keep triggering the same service
 				// for at least 1min (in order to avoid a single service to monopolize CPU)
-				var start = DateTimeOffset.Now;
+				var start = DateTimeOffset.UtcNow;
 				
-				while (DateTimeOffset.Now.Subtract(start) < _moreOfTheSame && DemandsImmediateStart(result))
+				while (DateTimeOffset.UtcNow.Subtract(start) < _moreOfTheSame && DemandsImmediateStart(result))
 				{
 					yield return () =>
 						{

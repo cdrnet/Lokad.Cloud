@@ -182,7 +182,7 @@ namespace Lokad.Cloud.Test
 
 			using(var stream = new MemoryStream())
 			{
-				var item = new MockWithObject { Generic = DateTime.Now.Second > 30 ? (object)100 : "hello" };
+				var item = new MockWithObject { Generic = DateTime.UtcNow.Second > 30 ? (object)100 : "hello" };
 				formatter.Serialize(stream, item);
 				stream.Seek(0, SeekOrigin.Begin);
 				var output = (MockWithObject)formatter.Deserialize(stream, typeof(MockWithObject));

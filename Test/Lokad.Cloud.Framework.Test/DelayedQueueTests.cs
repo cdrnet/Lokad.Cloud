@@ -30,7 +30,7 @@ namespace Lokad.Cloud.Test
 			var blobStorage = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
 			var delayer = new DelayedQueue(blobStorage);
 
-			var trigger = DateTimeOffset.Now.AddMinutes(5);
+			var trigger = DateTimeOffset.UtcNow.AddMinutes(5);
 
 			delayer.PutWithDelay(21, trigger, _testQueueName);
 

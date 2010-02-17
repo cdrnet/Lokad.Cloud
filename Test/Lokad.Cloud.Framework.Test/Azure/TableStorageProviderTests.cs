@@ -218,7 +218,7 @@ namespace Lokad.Cloud.Azure.Test
 
             var entity = new CloudEntity<string>
             	{
-            		PartitionKey = Pkey, RowRey = RowKey, Timestamp = DateTime.Now, Value = "value1"
+            		PartitionKey = Pkey, RowRey = RowKey, Timestamp = DateTime.UtcNow, Value = "value1"
             	};
 
             //Insert entity.

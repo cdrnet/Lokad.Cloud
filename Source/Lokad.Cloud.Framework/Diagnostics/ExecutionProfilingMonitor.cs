@@ -53,7 +53,7 @@ namespace Lokad.Cloud.Diagnostics
 				return;
 			}
 
-			var timestamp = DateTimeOffset.Now;
+			var timestamp = DateTimeOffset.UtcNow;
 			Update(TimeSegments.Day(timestamp), contextName, dataList);
 			Update(TimeSegments.Month(timestamp), contextName, dataList);
 		}
@@ -72,7 +72,7 @@ namespace Lokad.Cloud.Diagnostics
 		/// </summary>
 		public void RemoveStatisticsBefore(int numberOfPeriods)
 		{
-			var now = DateTimeOffset.Now;
+			var now = DateTimeOffset.UtcNow;
 
 			_repository.RemoveExecutionProfilingStatistics(
 				TimeSegments.DayPrefix,

@@ -33,7 +33,7 @@ namespace Lokad.Cloud.Diagnostics
 		public void UpdateStatistics()
 		{
 			var process = Process.GetCurrentProcess();
-			var timestamp = DateTimeOffset.Now;
+			var timestamp = DateTimeOffset.UtcNow;
 
 			Update(TimeSegments.Day(timestamp), process);
 			Update(TimeSegments.Month(timestamp), process);
@@ -53,7 +53,7 @@ namespace Lokad.Cloud.Diagnostics
 		/// </summary>
 		public void RemoveStatisticsBefore(int numberOfPeriods)
 		{
-			var now = DateTimeOffset.Now;
+			var now = DateTimeOffset.UtcNow;
 
 			_repository.RemovePartitionStatistics(
 				TimeSegments.DayPrefix,
@@ -71,7 +71,7 @@ namespace Lokad.Cloud.Diagnostics
 				_partitionKey,
 				s =>
 					{
-						var now = DateTimeOffset.Now;
+						var now = DateTimeOffset.UtcNow;
 
 						if (!s.HasValue)
 						{

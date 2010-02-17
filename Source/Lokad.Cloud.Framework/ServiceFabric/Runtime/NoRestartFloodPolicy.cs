@@ -58,10 +58,10 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				// The assemblyUpdated flag handles the case when a restart is caused by an asm update, "soon" after another restart
 				// In such case, the worker would be reported as unhealthy virtually forever if no more restarts occur
 
-				var lastRestart = DateTimeOffset.Now;
+				var lastRestart = DateTimeOffset.UtcNow;
 				var assemblyUpdated = workButNotFloodRestart();
 
-				if(!assemblyUpdated && DateTimeOffset.Now.Subtract(lastRestart) < FloodFrequencyThreshold)
+				if(!assemblyUpdated && DateTimeOffset.UtcNow.Subtract(lastRestart) < FloodFrequencyThreshold)
 				{
 					// Unhealthy
 					_isRestartFlooding(false);

@@ -9,6 +9,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedMethodReturnValue.Global
+
 namespace Lokad.Cloud
 {
 	/// <summary>Helper extensions methods for storage providers.</summary>
