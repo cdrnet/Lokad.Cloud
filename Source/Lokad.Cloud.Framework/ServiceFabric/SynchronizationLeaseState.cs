@@ -8,10 +8,8 @@ using System.Runtime.Serialization;
 
 namespace Lokad.Cloud.ServiceFabric
 {
-	/// <summary>
-	/// Synchronization Lease
-	/// </summary>
-	[Serializable, DataContract]
+	/// <summary>Synchronization Lease.</summary>
+	[DataContract]
 	public class SynchronizationLeaseState
 	{
 		/// <summary>
