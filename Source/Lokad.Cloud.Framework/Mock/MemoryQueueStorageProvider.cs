@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 
 namespace Lokad.Cloud.Mock
 {
@@ -18,20 +17,20 @@ namespace Lokad.Cloud.Mock
 		///</summary>
 		readonly object _sync = new object();
 
-		readonly Dictionary<string, Queue<object>> _queueStorage;
-		readonly Dictionary<string, HashSet<object>> _queuesHashset;
+		readonly Dictionary<string, Queue<object>> _queues;
+		readonly Dictionary<string, HashSet<object>> _invisibleQueues;
 		readonly IBinaryFormatter _formatter;
 
 		public MemoryQueueStorageProvider(IBinaryFormatter formatter)
 		{
-			_queueStorage = new Dictionary<string, Queue<object>>();
-			_queuesHashset = new Dictionary<string, HashSet<object>>();
+			_queues = new Dictionary<string, Queue<object>>();
+			_invisibleQueues = new Dictionary<string, HashSet<object>>();
 			_formatter = formatter;
 		}
 
 		public IEnumerable<string> List(string prefix)
 		{
-			return _queueStorage.Keys.Where(e => e.StartsWith(prefix));
+			return _queues.Keys.Where(e => e.StartsWith(prefix));
 		}
 
 		public IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout)
@@ -41,8 +40,12 @@ namespace Lokad.Cloud.Mock
 				var items = new List<T>(count);
 				for (int i = 0; i < count; i++)
 				{
-					if (_queueStorage[queueName].Any())
-						items.Add((T) _queueStorage[queueName].Dequeue());
+					if (_queues[queueName].Any())
+					{
+						var message = _queues[queueName].Dequeue();
+						_invisibleQueues[queueName].Add(message);
+						items.Add((T)message);
+					}
 				}
 				return items;
 			}
@@ -57,14 +60,13 @@ namespace Lokad.Cloud.Mock
 					_formatter.Serialize(stream, message);
 				} //Checking the message is serializable.
 
-				if ( ! _queueStorage.ContainsKey(queueName))
+				if (!_queues.ContainsKey(queueName))
 				{
-					_queueStorage.Add(queueName, new Queue<object>());
-					_queuesHashset.Add(queueName, new HashSet<object>());
+					_queues.Add(queueName, new Queue<object>());
+					_invisibleQueues.Add(queueName, new HashSet<object>());
 				}
 
-				_queueStorage[queueName].Enqueue(message);
-				_queuesHashset[queueName].Add(message);
+				_queues[queueName].Enqueue(message);
 			}
 		}
 
@@ -80,8 +82,8 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_sync)
 			{
-				_queueStorage[queueName].Clear();
-				_queuesHashset[queueName].Clear();
+				_queues[queueName].Clear();
+				_invisibleQueues[queueName].Clear();
 			}
 		}
 
@@ -89,12 +91,12 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_sync)
 			{
-				if (!_queuesHashset[queueName].Contains(message))
+				if (!_invisibleQueues[queueName].Contains(message))
 				{
 					return false;
 				}
 
-				_queuesHashset[queueName].Remove(message);
+				_invisibleQueues[queueName].Remove(message);
 				return true;
 			}
 		}
@@ -107,17 +109,29 @@ namespace Lokad.Cloud.Mock
 			}
 		}
 
+		public bool Abandon<T>(string queueName, T message)
+		{
+			Put(queueName, message);
+			return Delete(queueName, message);
+		}
+
+		public int AbandonRange<T>(string queueName, IEnumerable<T> messages)
+		{
+			PutRange(queueName, messages);
+			return DeleteRange(queueName, messages);
+		}
+
 		public bool DeleteQueue(string queueName)
 		{
 			lock (_sync)
 			{
-				if (!_queueStorage.ContainsKey(queueName))
+				if (!_queues.ContainsKey(queueName))
 				{
 					return false;
 				}
 
-				_queueStorage.Remove(queueName);
-				_queuesHashset.Remove(queueName);
+				_queues.Remove(queueName);
+				_invisibleQueues.Remove(queueName);
 				return true;
 			}
 		}
@@ -127,7 +141,7 @@ namespace Lokad.Cloud.Mock
 			lock (_sync)
 			{
 				Queue<object> queue;
-				return _queueStorage.TryGetValue(queueName, out queue)
+				return _queues.TryGetValue(queueName, out queue)
 					? queue.Count : 0;
 			}
 		}

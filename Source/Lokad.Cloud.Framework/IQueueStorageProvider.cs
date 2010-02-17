@@ -57,6 +57,26 @@ namespace Lokad.Cloud
 		/// <remarks>Messages must have first been retrieved through <see cref="Get{T}"/>.</remarks>
 		int DeleteRange<T>(string queueName, IEnumerable<T> messages);
 
+		/// <summary>
+		/// Abandon a message being processed and put it visibly back on the queue.
+		/// </summary>
+		/// <typeparam name="T">Type of the message.</typeparam>
+		/// <param name="queueName">Identifier of the queue where the message is removed from.</param>
+		/// <param name="message">Message to be abandoned.</param>
+		/// <returns><c>True</c> if the original message has been deleted.</returns>
+		/// <remarks>Message must have first been retrieved through <see cref="Get{T}"/>.</remarks>
+		bool Abandon<T>(string queueName, T message);
+
+		/// <summary>
+		/// Abandon a set of messages being processed and put them visibly back on the queue.
+		/// </summary>
+		/// <typeparam name="T">Type of the messages.</typeparam>
+		/// <param name="queueName">Identifier of the queue where the messages are removed from.</param>
+		/// <param name="messages">Messages to be abandoned.</param>
+		/// <returns>The number of original messages actually deleted.</returns>
+		/// <remarks>Messages must have first been retrieved through <see cref="Get{T}"/>.</remarks>
+		int AbandonRange<T>(string queueName, IEnumerable<T> messages);
+
 		/// <summary>Deletes a queue.</summary>
 		/// <returns><c>true</c> if the queue name has been actually deleted.</returns>
 		bool DeleteQueue(string queueName);

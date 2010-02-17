@@ -37,7 +37,7 @@ namespace Lokad.Cloud
 		{
 			var settings = GetType().GetAttribute<QueueServiceSettingsAttribute>(true);
 
-			if(null != settings) // settings are provided through custom attribute
+			if (null != settings) // settings are provided through custom attribute
 			{
 				_queueName = settings.QueueName ?? TypeMapper.GetStorageName(typeof(T));
 				_batchSize = Math.Max(settings.BatchSize, 1); // need to be at least 1
@@ -49,7 +49,7 @@ namespace Lokad.Cloud
 			}
 
 			// 1.25 * execution timeout, but limited to 2h max
-			_visibilityTimeout = TimeSpan.FromSeconds(Math.Max(1, Math.Min(7200, (1.25*ExecutionTimeout.TotalSeconds))));
+			_visibilityTimeout = TimeSpan.FromSeconds(Math.Max(1, Math.Min(7200, (1.25 * ExecutionTimeout.TotalSeconds))));
 		}
 
 		/// <summary>Do not try to override this method, use <see cref="StartRange"/>
@@ -84,7 +84,7 @@ namespace Lokad.Cloud
 		/// </remarks>
 		protected virtual void StartRange(IEnumerable<T> messages)
 		{
-			foreach(var message in messages)
+			foreach (var message in messages)
 			{
 				Start(message);
 			}
@@ -119,18 +119,40 @@ namespace Lokad.Cloud
 			return QueueStorage.Get<T>(queueName, count, _visibilityTimeout);
 		}
 
-		/// <summary>Delete message retrieved either through <see cref="StartRange"/>
-		/// or through <see cref="GetMore(int)"/>.</summary>
+		/// <summary>
+		/// Delete message retrieved either through <see cref="StartRange"/>
+		/// or through <see cref="GetMore(int)"/>.
+		/// </summary>
 		public void Delete(T message)
 		{
 			QueueStorage.Delete(_queueName, message);
 		}
 
-		/// <summary>Delete messages retrieved either through <see cref="StartRange"/>
-		/// or through <see cref="GetMore(int)"/>.</summary>
+		/// <summary>
+		/// Delete messages retrieved either through <see cref="StartRange"/>
+		/// or through <see cref="GetMore(int)"/>.
+		/// </summary>
 		public void DeleteRange(IEnumerable<T> messages)
 		{
 			QueueStorage.DeleteRange(_queueName, messages);
+		}
+
+		/// <summary>
+		/// Abandon a messages retrieved either through <see cref="StartRange"/>
+		/// or through <see cref="GetMore(int)"/> and put it visibly back on the queue.
+		/// </summary>
+		public void Abandon(T message)
+		{
+			QueueStorage.Abandon(_queueName, message);
+		}
+
+		/// <summary>
+		/// Abandon a set of messages retrieved either through <see cref="StartRange"/>
+		/// or through <see cref="GetMore(int)"/> and put them visibly back on the queue.
+		/// </summary>
+		public void AbandonRange(IEnumerable<T> messages)
+		{
+			QueueStorage.AbandonRange(_queueName, messages);
 		}
 	}
 }

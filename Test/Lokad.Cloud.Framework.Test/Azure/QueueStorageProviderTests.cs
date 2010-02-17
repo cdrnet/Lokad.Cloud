@@ -19,13 +19,13 @@ namespace Lokad.Cloud.Azure.Test
 		private static Random _rand = new Random();
 
 		[SetUp]
-		public void Setup() 
+		public void Setup()
 		{
 			QueueName = BaseQueueName + Guid.NewGuid().ToString("N");
 		}
 
 		[TearDown]
-		public void TearDown() 
+		public void TearDown()
 		{
 			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
 			provider.DeleteQueue(QueueName);
@@ -72,9 +72,9 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.AreEqual(message.MyGuid, retrieved.MyGuid, "#A01");
 			CollectionAssert.AreEquivalent(message.MyBuffer, retrieved.MyBuffer, "#A02");
 
-			for (int i = 0; i < message.MyBuffer.Length; i++ )
+			for (int i = 0; i < message.MyBuffer.Length; i++)
 			{
-				Assert.AreEqual(message.MyBuffer[i], retrieved.MyBuffer[i], "#A02-" + i);	
+				Assert.AreEqual(message.MyBuffer[i], retrieved.MyBuffer[i], "#A02-" + i);
 			}
 
 			provider.Delete(QueueName, retrieved);
@@ -93,7 +93,7 @@ namespace Lokad.Cloud.Azure.Test
 				StringValue = "hello"
 			};
 
-			for(int i = 0; i < 10; i++)
+			for (int i = 0; i < 10; i++)
 			{
 				provider.Put(QueueName, testStruct);
 			}
@@ -106,7 +106,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			var outAllStructs = provider.Get<MyStruct>(QueueName, 20);
 			Assert.AreEqual(8, outAllStructs.Count(), "Wrong queue item count");
-			foreach(var str in outAllStructs)
+			foreach (var str in outAllStructs)
 			{
 				Assert.AreEqual(testStruct.IntegerValue, str.IntegerValue, "Wrong integer value");
 				Assert.AreEqual(testStruct.StringValue, str.StringValue, "Wrong string value");
@@ -115,7 +115,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			var testDouble = 3.6D;
 
-			for(int i = 0; i < 10; i++)
+			for (int i = 0; i < 10; i++)
 			{
 				provider.Put(QueueName, testDouble);
 			}
@@ -130,7 +130,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			var outAllDoubles = provider.Get<double>(QueueName, 20);
 			Assert.AreEqual(7, outAllDoubles.Count(), "Wrong queue item count");
-			foreach(var dbl in outAllDoubles)
+			foreach (var dbl in outAllDoubles)
 			{
 				Assert.AreEqual(testDouble, dbl, "Wrong double value");
 				Assert.IsTrue(provider.Delete(QueueName, dbl), "Delete failed");
@@ -138,7 +138,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			var testString = "hi there!";
 
-			for(int i = 0; i < 10; i++)
+			for (int i = 0; i < 10; i++)
 			{
 				provider.Put(QueueName, testString);
 			}
@@ -151,7 +151,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			var outAllStrings = provider.Get<string>(QueueName, 20);
 			Assert.AreEqual(8, outAllStrings.Count(), "Wrong queue item count");
-			foreach(var str in outAllStrings)
+			foreach (var str in outAllStrings)
 			{
 				Assert.AreEqual(testString, str, "Wrong string value");
 				Assert.IsTrue(provider.Delete(QueueName, str), "Delete failed");
@@ -159,7 +159,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			var testClass = new StringBuilder("text");
 
-			for(int i = 0; i < 10; i++)
+			for (int i = 0; i < 10; i++)
 			{
 				provider.Put(QueueName, testClass);
 			}
@@ -172,7 +172,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			var outAllClasses = provider.Get<StringBuilder>(QueueName, 20);
 			Assert.AreEqual(8, outAllClasses.Count(), "Wrong queue item count");
-			foreach(var cls in outAllClasses)
+			foreach (var cls in outAllClasses)
 			{
 				Assert.AreEqual(testClass.ToString(), cls.ToString(), "Wrong deserialized class value");
 				Assert.IsTrue(provider.Delete(QueueName, cls), "Delete failed");
@@ -241,6 +241,42 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.AreEqual(0, overflowingCount, "#A01");
 
 			queueProvider.DeleteQueue(queueName);
+		}
+
+		[Test]
+		public void PutGetAbandonDelete()
+		{
+			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
+
+			Assert.IsNotNull(provider, "#A00");
+
+			var message = new MyMessage();
+
+			provider.DeleteQueue(QueueName); // deleting queue on purpose 
+			// (it's slow but necessary to really validate the retry policy)
+
+			// put
+			provider.Put(QueueName, message);
+
+			// get
+			var retrieved = provider.Get<MyMessage>(QueueName, 1).First();
+			Assert.AreEqual(message.MyGuid, retrieved.MyGuid, "#A01");
+
+			// abandon
+			var abandoned = provider.Abandon(QueueName, retrieved);
+			Assert.IsTrue(abandoned, "#A02");
+
+			// get again
+			var retrieved2 = provider.Get<MyMessage>(QueueName, 1).First();
+			Assert.AreEqual(message.MyGuid, retrieved2.MyGuid, "#A03");
+
+			// delete
+			var deleted = provider.Delete(QueueName, retrieved2);
+			Assert.IsTrue(deleted, "#A04");
+
+			// get now should fail
+			var retrieved3 = provider.Get<MyMessage>(QueueName, 1).FirstOrEmpty();
+			Assert.IsFalse(retrieved3.HasValue, "#A05");
 		}
 	}
 

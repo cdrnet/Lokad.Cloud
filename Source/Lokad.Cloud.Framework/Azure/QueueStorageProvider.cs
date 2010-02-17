@@ -40,6 +40,7 @@ namespace Lokad.Cloud.Azure
 		readonly ExecutionCounter _countGetMessage;
 		readonly ExecutionCounter _countPutMessage;
 		readonly ExecutionCounter _countDeleteMessage;
+		readonly ExecutionCounter _countAbandonMessage;
 		readonly ExecutionCounter _countWrapMessage;
 		readonly ExecutionCounter _countUnwrapMessage;
 
@@ -63,6 +64,7 @@ namespace Lokad.Cloud.Azure
 					_countGetMessage = new ExecutionCounter("QueueStorageProvider.Get", 0, 0),
 					_countPutMessage = new ExecutionCounter("QueueStorageProvider.PutSingle", 0, 0),
 					_countDeleteMessage = new ExecutionCounter("QueueStorageProvider.DeleteSingle", 0, 0),
+					_countAbandonMessage = new ExecutionCounter("QueueStorageProvider.AbandonSingle", 0, 0),
 					_countWrapMessage = new ExecutionCounter("QueueStorageProvider.WrapSingle", 0, 0),
 					_countUnwrapMessage = new ExecutionCounter("QueueStorageProvider.UnwrapSingle", 0, 0),
 				});
@@ -208,7 +210,7 @@ namespace Lokad.Cloud.Azure
 
 						throw;
 					}
-					
+
 					// skipping the message if it can't be unwrapped
 					continue;
 				}
@@ -424,6 +426,37 @@ namespace Lokad.Cloud.Azure
 			return deletionCount;
 		}
 
+		/// <summary>
+		/// Abandon a message being processed and put it visibly back on the queue.
+		/// </summary>
+		/// <typeparam name="T">Type of the message.</typeparam>
+		/// <param name="queueName">Identifier of the queue where the message is removed from.</param>
+		/// <param name="message">Message to be abandoned.</param>
+		/// <returns><c>True</c> if the original message has been deleted.</returns>
+		/// <remarks>Message must have first been retrieved through <see cref="Get{T}"/>.</remarks>
+		public bool Abandon<T>(string queueName, T message)
+		{
+			return AbandonRange(queueName, new[] { message }) > 0;
+		}
+
+		/// <summary>
+		/// Abandon a set of messages being processed and put them visibly back on the queue.
+		/// </summary>
+		/// <typeparam name="T">Type of the messages.</typeparam>
+		/// <param name="queueName">Identifier of the queue where the messages are removed from.</param>
+		/// <param name="messages">Messages to be abandoned.</param>
+		/// <returns>The number of original messages actually deleted.</returns>
+		/// <remarks>Messages must have first been retrieved through <see cref="Get{T}"/>.</remarks>
+		public int AbandonRange<T>(string queueName, IEnumerable<T> messages)
+		{
+			var timestamp = _countAbandonMessage.Open();
+
+			PutRange(queueName, messages);
+			var count = DeleteRange(queueName, messages);
+
+			_countAbandonMessage.Close(timestamp);
+			return count;
+		}
 
 		/// <summary>
 		/// Deletes a queue.
