@@ -5,6 +5,7 @@
 
 using System;
 using System.Data.Services.Client;
+using System.Net;
 using System.Text.RegularExpressions;
 using Lokad.Diagnostics;
 using Microsoft.WindowsAzure.StorageClient;
@@ -125,6 +126,16 @@ namespace Lokad.Cloud.Azure
 
 		static bool TransientTableErrorExceptionFilter(Exception exception)
 		{
+			// HACK: StorageClient does not catch very well, internal errors of the table storage.
+			// Hence we end up here manually catching exception that should have been correctly 
+			// typed by the StorageClient, such as:
+			// The remote server returned an error: (500) Internal Server Error.
+			var webException = exception as WebException;
+			if (null != webException && webException.Status == WebExceptionStatus.ProtocolError)
+			{
+				return true;
+			}
+
 			var serverException = exception as DataServiceRequestException;
 			if (serverException == null)
 			{
