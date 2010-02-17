@@ -12,7 +12,8 @@ using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Azure
 {
-	//TODO: #99.
+
+	/// <summary>Implementation based on the Table Storage of Windows Azure.</summary>
     public class TableStorageProvider : ITableStorageProvider
 	{
 		// HACK: those tokens will probably be provided as constants in the StorageClient library
@@ -31,6 +32,7 @@ namespace Lokad.Cloud.Azure
 		readonly IBinaryFormatter _formatter;
 		readonly ActionPolicy _storagePolicy;
 
+		/// <summary>IoC constructor.</summary>
 		public TableStorageProvider(CloudTableClient tableStorage, IBinaryFormatter formatter)
 		{
 			_tableStorage = tableStorage;
@@ -500,6 +502,26 @@ namespace Lokad.Cloud.Azure
 					}
 				});
 			}
+		}
+
+		// HACK: no 'upsert' (update or insert) available at the time
+		// http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/4b902237-7cfb-4d48-941b-4802864fc274
+
+		/// <remarks>Upsert is making several storage calls to emulate the 
+		/// missing semantic from the Table Storage.</remarks>
+		public void Upsert<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
+		{
+			entities.GroupBy(e => e.PartitionKey)
+				.ForEach(p =>
+					{
+						// checking for entities that already exist
+						var existingKeys = 
+							Get<T>(tableName, p.Key, p.Select(e => e.RowRey)).ToSet(e => e.RowRey);
+
+						// inserting or updating depending on the presence of the keys
+						Insert(tableName, p.Where(e => !existingKeys.Contains(e.RowRey)));
+						Update(tableName, p.Where(e => existingKeys.Contains(e.RowRey)));
+					});
 		}
 
 		/// <summary>Slice entities according the payload limitation of

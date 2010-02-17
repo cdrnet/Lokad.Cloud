@@ -100,8 +100,18 @@ namespace Lokad.Cloud
         /// or an non-existing entity has been encountered.</exception>
 		void Update<T>(string tableName, IEnumerable<CloudEntity<T>> entities);
 
-		// HACK: no 'upsert' (update or insert) available at the time
-		// http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/4b902237-7cfb-4d48-941b-4802864fc274
+		/// <summary>Updates or insert a collection of existing entities into the table storage.</summary>
+		/// <remarks>
+		/// <para>New entities will be inserted. Existing entities will be updated.
+		/// </para>
+		/// <para>There is no upper limit on the number of entities provided through
+		/// the enumeration. The implementations are expected to lazily iterates
+		/// and to create batch requests as the move forward.
+		/// </para>
+		/// <para>If the table does not exist then it should be created.</para>
+		/// <para>Idempotence of the implementation is required.</para>
+		/// </remarks>
+		void Upsert<T>(string tableName, IEnumerable<CloudEntity<T>> entities);
 
 		/// <summary>Deletes all specified entities.</summary>
 		/// <param name="tableName">Name of the table.</param>

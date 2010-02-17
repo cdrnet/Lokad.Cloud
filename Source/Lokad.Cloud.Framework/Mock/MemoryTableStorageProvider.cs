@@ -219,8 +219,21 @@ namespace Lokad.Cloud.Mock
                 }
             }
         }
+		/// <see cref="ITableStorageProvider.Update{T}"/>
+        public void Upsert<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
+		{
+			lock (_syncRoot)
+			{
+				// deleting all existing entities
+				entities.GroupBy(e => e.PartitionKey)
+					.ForEach(g => Delete<T>(tableName, g.Key, g.Select(e => e.RowRey)));
+				
+				// inserting all entities
+				Insert(tableName, entities);
+			}
+		}
 
-        /// <see cref="ITableStorageProvider.Delete{T}<>"/>
+        /// <see cref="ITableStorageProvider.Delete{T}"/>
         public void Delete<T>(string tableName, string partitionKeys, IEnumerable<string> rowKeys)
         {
             lock (_syncRoot)

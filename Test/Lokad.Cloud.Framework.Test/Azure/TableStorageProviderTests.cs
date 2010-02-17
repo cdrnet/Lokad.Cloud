@@ -109,6 +109,65 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
+		public void UpsertOnMissingTableShouldWork()
+		{
+			var missingTableName = "t" + Guid.NewGuid().ToString("N");
+			Provider.Upsert(missingTableName, Entities(1, "my-key", 10));
+
+			// tentative clean-up
+			Provider.DeleteTable(missingTableName);
+		}
+
+		[Test]
+		public void UpsertShouldUpdateOrInsert()
+		{
+			var p1 = Guid.NewGuid().ToString("N");
+			var p2 = Guid.NewGuid().ToString("N");
+
+			var e1 = Entities(15, p1, 10);
+			var e2 = Entities(25, p2, 10);
+			var e1And2 = e1.Union(e2);
+
+            Provider.Upsert(TableName, e1);           
+			Provider.Upsert(TableName, e1And2);
+
+			var count1 = Provider.Get<string>(TableName, p1).Count();
+			Assert.AreEqual(e1.Count(), count1, "#A00");
+			
+			var count2 = Provider.Get<string>(TableName, p2).Count();
+			Assert.AreEqual(e2.Count(), count2, "#A01");
+		}
+
+		[Test]
+		public void InsertShouldHandleDistintPartition()
+		{
+			var p1 = Guid.NewGuid().ToString("N");
+			var p2 = Guid.NewGuid().ToString("N");
+
+			var e1 = Entities(15, p1, 10);
+			var e2 = Entities(25, p2, 10);
+			var e1And2 = e1.Union(e2);
+
+			Provider.Insert(TableName, e1And2);
+		}
+
+		[Test]
+		public void GetWithPartitionShouldOnlyReturnPartition()
+		{
+			var p1 = Guid.NewGuid().ToString("N");
+			var p2 = Guid.NewGuid().ToString("N");
+
+			var e1 = Entities(15, p1, 10);
+			var e2 = Entities(25, p2, 10);
+			var e1And2 = e1.Union(e2);
+
+			Provider.Insert(TableName, e1And2);
+
+			var count1 = Provider.Get<string>(TableName, p1).Count();
+			Assert.AreEqual(e1.Count(), count1, "#A00");
+		}
+
+		[Test]
 		public void DeleteOnMissingTableShouldWork()
 		{
 			var missingTableName = "t" + Guid.NewGuid().ToString("N");
