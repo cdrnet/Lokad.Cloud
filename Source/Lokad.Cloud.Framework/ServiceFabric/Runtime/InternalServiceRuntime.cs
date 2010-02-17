@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
@@ -22,6 +23,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		readonly CloudInfrastructureProviders _providers;
 		readonly IServiceMonitor _monitoring;
 		readonly DiagnosticsAcquisition _diagnostics;
+
+		/// <summary>Main thread used to schedule services in <see cref="Execute()"/>.</summary>
+		Thread _executeThread;
 
 		bool _isStopRequested;
 		Scheduler _scheduler;
@@ -57,8 +61,13 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			}
 		}
 
+		/// <summary>Called once by the service fabric. Call is not supposed to return
+		/// until stop is requested, or an uncaught exception is thrown.</summary>
 		public void Execute()
 		{
+			// hook on the current thread to force shut down
+			_executeThread = Thread.CurrentThread;
+
 			var clientContainer = RuntimeContainer;
 
 			var loader = new AssemblyLoader(_providers.BlobStorage);
@@ -102,12 +111,29 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			}
 		}
 
-		/// <summary>Stops all services.</summary>
+		/// <summary>Stops all services at once.</summary>
+		/// <remarks>Called once by the service fabric when environment is about to
+		/// be shut down.</remarks>
 		public void Stop()
 		{
-			// TODO: #128 need for further proof-read.
-
 			_isStopRequested = true;
+
+			if(_executeThread != null)
+			{
+				_executeThread.Abort();
+			}
+
+			// TODO: #128 need for object finalization
+		}
+
+		/// <summary>Raise the "stop requested" flag and waits until the service
+		/// completes. This method is too slow to be used if the envirronment is
+		/// requesting immediate shutdown, but it has the advantage of gracefully
+		/// shutting down the services.</summary>
+		public void WaitForStop()
+		{
+			_isStopRequested = true;
+
 			if (_scheduler != null)
 			{
 				_scheduler.AbortWaitingSchedule();
@@ -115,9 +141,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		}
 
 		/// <summary>
-		/// Load and get all service instances using the provided IoC container
+		/// Load and get all service instances using the provided IoC container.
 		/// </summary>
-		IEnumerable<CloudService> LoadServices(IContainer container)
+		static IEnumerable<CloudService> LoadServices(IContainer container)
 		{
 			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
 				.Select(a => a.GetExportedTypes()).SelectMany(x => x)
@@ -161,7 +187,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			{
 				_diagnostics.CollectStatistics();
 			}
+// ReSharper disable EmptyGeneralCatchClause
 			catch { }
+// ReSharper restore EmptyGeneralCatchClause
 		}
 
 		/// <summary>

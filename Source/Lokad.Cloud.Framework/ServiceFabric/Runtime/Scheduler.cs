@@ -112,6 +112,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			_currentService = null;
 		}
 
+		/// <summary>Waits until the current service completes, and stop the scheduling.</summary>
+		/// <remarks>This method CANNOT be used in case the environment is stopping,
+		/// because the termination is going to be way too slow.</remarks>
 		public void AbortWaitingSchedule()
 		{
 			_isRunning = false;
