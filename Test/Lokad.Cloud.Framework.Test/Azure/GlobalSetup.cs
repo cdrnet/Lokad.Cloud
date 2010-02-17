@@ -7,7 +7,7 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Diagnostics;
-using Lokad.Cloud.ServiceFabric.Runtime;
+using Lokad.Cloud.ServiceFabric;
 
 namespace Lokad.Cloud.Azure.Test
 {

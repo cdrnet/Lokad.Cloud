@@ -6,7 +6,7 @@ using System;
 using Lokad.Cloud.Azure.Test;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.ServiceFabric.Runtime.Tests
+namespace Lokad.Cloud.ServiceFabric.Tests
 {
 	class MockDisposable : IDisposable
 	{

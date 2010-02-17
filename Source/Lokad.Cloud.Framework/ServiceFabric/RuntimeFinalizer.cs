@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lokad.Cloud.ServiceFabric.Runtime
+namespace Lokad.Cloud.ServiceFabric
 {
 	/// <summary>High-priority runtime finalizer. Attempts to finalize key cloud resources
 	/// when the runtime is forcibly shut down.</summary>
