@@ -65,7 +65,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 			// Cloud Infrastructure
 			var storageModule = new StorageModule();
-			if(externalRoleConfiguration.HasValue)
+			if (externalRoleConfiguration.HasValue)
 			{
 				storageModule.ExternalRoleConfiguration = externalRoleConfiguration.Value;
 			}
@@ -78,8 +78,8 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			builder.RegisterModule(new AzureManagementModule(externalRoleConfiguration));
 
 			// Runtime
-			builder.Register(typeof (RuntimeFinalizer)).As<IRuntimeFinalizer>();
-			builder.Register(typeof(InternalServiceRuntime));
+			builder.Register(typeof(RuntimeFinalizer)).As<IRuntimeFinalizer>();
+			builder.Register(typeof(InternalServiceRuntime)).FactoryScoped();
 
 			// Providers for cloud apps
 			builder.Register(typeof(CloudInfrastructureProviders));
@@ -89,12 +89,12 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				var restartForAssemblyUpdate = false;
 
 				var log = container.Resolve<ILog>();
-				log.Log(LogLevel.Info, "Isolated worker started.");
+				//log.Log(LogLevel.Info, "Isolated worker started.");
 
 				_runtime = null;
 				try
 				{
-					_runtime =  container.Resolve<InternalServiceRuntime>();
+					_runtime = container.Resolve<InternalServiceRuntime>();
 					_runtime.RuntimeContainer = container;
 
 					// runtime endlessly keeps pinging queues for pending work
@@ -142,7 +142,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <summary>Called when the environment is being stopped.</summary>
 		public void OnStop()
 		{
-			if(null != _isolatedInstance)
+			if (null != _isolatedInstance)
 			{
 				_isolatedInstance.OnStopInternal();
 			}

@@ -65,6 +65,8 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// until stop is requested, or an uncaught exception is thrown.</summary>
 		public void Execute()
 		{
+			OnRuntimeStarting();
+
 			// hook on the current thread to force shut down
 			_executeThread = Thread.CurrentThread;
 
@@ -100,15 +102,17 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				}
 				catch(Exception ex)
 				{
-					if(!(ex is TriggerRestartException))
+					if(!(ex is TriggerRestartException) && !(ex is ThreadAbortException))
 					{
 						_exceptions.Add(ex);
 					}
 
-					TryDumpDiagnostics();
+					OnRuntimeStopping();
 					throw;
 				}
 			}
+
+			OnRuntimeStopping();
 		}
 
 		/// <summary>Stops all services at once.</summary>
@@ -122,8 +126,6 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			{
 				_executeThread.Abort();
 			}
-
-			// TODO: #128 need for object finalization
 		}
 
 		/// <summary>Raise the "stop requested" flag and waits until the service
@@ -138,6 +140,28 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			{
 				_scheduler.AbortWaitingSchedule();
 			}
+		}
+
+		/// <summary>
+		/// Called when the runtime is starting execution.
+		/// </summary>
+		void OnRuntimeStarting()
+		{
+			TryLogInfoFormat("Runtime starting on worker {0}.", CloudEnvironment.PartitionKey);
+		}
+
+		/// <summary>
+		/// Called when the runtime is stopping execution.
+		/// </summary>
+		void OnRuntimeStopping()
+		{
+			TryLogInfoFormat("Runtime stopping on worker {0}.", CloudEnvironment.PartitionKey);
+
+			TryDumpDiagnostics();
+
+			_providers.RuntimeFinalizer.FinalizeRuntime();
+
+			TryLogInfoFormat("Runtime stopped on worker {0}.", CloudEnvironment.PartitionKey);
 		}
 
 		/// <summary>
@@ -184,7 +208,6 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 		/// <summary>
 		/// Try to dump diagnostics, but suppress any exceptions if it fails
-		/// (logging would likely fail as well)
 		/// </summary>
 		void TryDumpDiagnostics()
 		{
@@ -192,9 +215,33 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			{
 				_diagnostics.CollectStatistics();
 			}
-// ReSharper disable EmptyGeneralCatchClause
-			catch { }
-// ReSharper restore EmptyGeneralCatchClause
+			// ReSharper disable EmptyGeneralCatchClause
+			catch
+			{
+				// might fail when shutting down on exception
+				// logging is likely to fail as well in this case
+				// Suppress exception, can't do anything (will be recycled anyway)
+			}
+			// ReSharper restore EmptyGeneralCatchClause
+		}
+
+
+		/// <summary>
+		/// Try to log info, but suppress any exceptions if it fails
+		/// </summary>
+		void TryLogInfoFormat(string format, params object[] args)
+		{
+			try
+			{
+				_providers.Log.InfoFormat(format, args);
+			}
+			// ReSharper disable EmptyGeneralCatchClause
+			catch
+			{
+				// might fail when shutting down on exception
+				// Suppress exception, can't do anything (will be recycled anyway)
+			}
+			// ReSharper restore EmptyGeneralCatchClause
 		}
 
 		/// <summary>
