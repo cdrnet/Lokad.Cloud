@@ -38,7 +38,7 @@ namespace PingPongClient
 				foreach(var x in provider.Get<double>("pong", 10))
 				{
 					Console.Write("pong={0} ", x);
-					provider.Delete("pong", x);
+					provider.Delete(x);
 				}
 
 				Console.Write("sleep 1000ms. ");

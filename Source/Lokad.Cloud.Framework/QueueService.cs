@@ -125,7 +125,7 @@ namespace Lokad.Cloud
 		/// </summary>
 		public void Delete(T message)
 		{
-			QueueStorage.Delete(_queueName, message);
+			QueueStorage.Delete(message);
 		}
 
 		/// <summary>
@@ -134,7 +134,7 @@ namespace Lokad.Cloud
 		/// </summary>
 		public void DeleteRange(IEnumerable<T> messages)
 		{
-			QueueStorage.DeleteRange(_queueName, messages);
+			QueueStorage.DeleteRange(messages);
 		}
 
 		/// <summary>

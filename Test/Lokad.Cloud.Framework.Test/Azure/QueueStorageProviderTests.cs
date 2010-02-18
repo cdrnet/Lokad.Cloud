@@ -48,7 +48,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			Assert.AreEqual(message.MyGuid, retrieved.MyGuid, "#A01");
 
-			provider.Delete(QueueName, retrieved);
+			provider.Delete(retrieved);
 		}
 
 		[Test]
@@ -77,7 +77,7 @@ namespace Lokad.Cloud.Azure.Test
 				Assert.AreEqual(message.MyBuffer[i], retrieved.MyBuffer[i], "#A02-" + i);
 			}
 
-			provider.Delete(QueueName, retrieved);
+			provider.Delete(retrieved);
 		}
 
 		[Test]
@@ -100,9 +100,9 @@ namespace Lokad.Cloud.Azure.Test
 
 			var outStruct1 = provider.Get<MyStruct>(QueueName, 1).First();
 			var outStruct2 = provider.Get<MyStruct>(QueueName, 1).First();
-			Assert.IsTrue(provider.Delete(QueueName, outStruct1), "1st Delete failed");
-			Assert.IsTrue(provider.Delete(QueueName, outStruct2), "2nd Delete failed");
-			Assert.IsFalse(provider.Delete(QueueName, outStruct2), "3nd Delete succeeded");
+			Assert.IsTrue(provider.Delete(outStruct1), "1st Delete failed");
+			Assert.IsTrue(provider.Delete(outStruct2), "2nd Delete failed");
+			Assert.IsFalse(provider.Delete(outStruct2), "3nd Delete succeeded");
 
 			var outAllStructs = provider.Get<MyStruct>(QueueName, 20);
 			Assert.AreEqual(8, outAllStructs.Count(), "Wrong queue item count");
@@ -110,7 +110,7 @@ namespace Lokad.Cloud.Azure.Test
 			{
 				Assert.AreEqual(testStruct.IntegerValue, str.IntegerValue, "Wrong integer value");
 				Assert.AreEqual(testStruct.StringValue, str.StringValue, "Wrong string value");
-				Assert.IsTrue(provider.Delete(QueueName, str), "Delete failed");
+				Assert.IsTrue(provider.Delete(str), "Delete failed");
 			}
 
 			var testDouble = 3.6D;
@@ -123,17 +123,17 @@ namespace Lokad.Cloud.Azure.Test
 			var outDouble1 = provider.Get<double>(QueueName, 1).First();
 			var outDouble2 = provider.Get<double>(QueueName, 1).First();
 			var outDouble3 = provider.Get<double>(QueueName, 1).First();
-			Assert.IsTrue(provider.Delete(QueueName, outDouble1), "1st Delete failed");
-			Assert.IsTrue(provider.Delete(QueueName, outDouble2), "2nd Delete failed");
-			Assert.IsTrue(provider.Delete(QueueName, outDouble3), "3nd Delete failed");
-			Assert.IsFalse(provider.Delete(QueueName, outDouble2), "3nd Delete succeeded");
+			Assert.IsTrue(provider.Delete(outDouble1), "1st Delete failed");
+			Assert.IsTrue(provider.Delete(outDouble2), "2nd Delete failed");
+			Assert.IsTrue(provider.Delete(outDouble3), "3nd Delete failed");
+			Assert.IsFalse(provider.Delete(outDouble2), "3nd Delete succeeded");
 
 			var outAllDoubles = provider.Get<double>(QueueName, 20);
 			Assert.AreEqual(7, outAllDoubles.Count(), "Wrong queue item count");
 			foreach (var dbl in outAllDoubles)
 			{
 				Assert.AreEqual(testDouble, dbl, "Wrong double value");
-				Assert.IsTrue(provider.Delete(QueueName, dbl), "Delete failed");
+				Assert.IsTrue(provider.Delete(dbl), "Delete failed");
 			}
 
 			var testString = "hi there!";
@@ -145,16 +145,16 @@ namespace Lokad.Cloud.Azure.Test
 
 			var outString1 = provider.Get<string>(QueueName, 1).First();
 			var outString2 = provider.Get<string>(QueueName, 1).First();
-			Assert.IsTrue(provider.Delete(QueueName, outString1), "1st Delete failed");
-			Assert.IsTrue(provider.Delete(QueueName, outString2), "2nd Delete failed");
-			Assert.IsFalse(provider.Delete(QueueName, outString2), "3nd Delete succeeded");
+			Assert.IsTrue(provider.Delete(outString1), "1st Delete failed");
+			Assert.IsTrue(provider.Delete(outString2), "2nd Delete failed");
+			Assert.IsFalse(provider.Delete(outString2), "3nd Delete succeeded");
 
 			var outAllStrings = provider.Get<string>(QueueName, 20);
 			Assert.AreEqual(8, outAllStrings.Count(), "Wrong queue item count");
 			foreach (var str in outAllStrings)
 			{
 				Assert.AreEqual(testString, str, "Wrong string value");
-				Assert.IsTrue(provider.Delete(QueueName, str), "Delete failed");
+				Assert.IsTrue(provider.Delete(str), "Delete failed");
 			}
 
 			var testClass = new StringBuilder("text");
@@ -166,16 +166,16 @@ namespace Lokad.Cloud.Azure.Test
 
 			var outClass1 = provider.Get<StringBuilder>(QueueName, 1).First();
 			var outClass2 = provider.Get<StringBuilder>(QueueName, 1).First();
-			Assert.IsTrue(provider.Delete(QueueName, outClass1), "1st Delete failed");
-			Assert.IsTrue(provider.Delete(QueueName, outClass2), "2nd Delete failed");
-			Assert.IsFalse(provider.Delete(QueueName, outClass2), "3nd Delete succeeded");
+			Assert.IsTrue(provider.Delete(outClass1), "1st Delete failed");
+			Assert.IsTrue(provider.Delete(outClass2), "2nd Delete failed");
+			Assert.IsFalse(provider.Delete(outClass2), "3nd Delete succeeded");
 
 			var outAllClasses = provider.Get<StringBuilder>(QueueName, 20);
 			Assert.AreEqual(8, outAllClasses.Count(), "Wrong queue item count");
 			foreach (var cls in outAllClasses)
 			{
 				Assert.AreEqual(testClass.ToString(), cls.ToString(), "Wrong deserialized class value");
-				Assert.IsTrue(provider.Delete(QueueName, cls), "Delete failed");
+				Assert.IsTrue(provider.Delete(cls), "Delete failed");
 			}
 		}
 
@@ -275,7 +275,7 @@ namespace Lokad.Cloud.Azure.Test
 			Assert.AreEqual(message.MyGuid, retrieved2.MyGuid, "#A04");
 
 			// delete
-			var deleted = provider.Delete(QueueName, retrieved2);
+			var deleted = provider.Delete(retrieved2);
 			Assert.IsTrue(deleted, "#A05");
 
 			// get now should fail

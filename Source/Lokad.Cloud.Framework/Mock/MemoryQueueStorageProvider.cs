@@ -86,7 +86,7 @@ namespace Lokad.Cloud.Mock
 			}
 		}
 
-		public bool Delete<T>(string queueName, T message)
+		public bool Delete<T>(T message)
 		{
 			lock (_sync)
 			{
@@ -101,11 +101,11 @@ namespace Lokad.Cloud.Mock
 			}
 		}
 
-		public int DeleteRange<T>(string queueName, IEnumerable<T> messages)
+		public int DeleteRange<T>(IEnumerable<T> messages)
 		{
 			lock (_sync)
 			{
-				return messages.Where(e => Delete(queueName, e)).Count();
+				return messages.Where(Delete).Count();
 			}
 		}
 

@@ -45,17 +45,17 @@ namespace Lokad.Cloud
 		/// <summary>Clear all the messages from the specified queue.</summary>
 		void Clear(string queueName);
 
-		/// <summary>Deletes a message from a queue.</summary>
+		/// <summary>Deletes a message being processed from the queue.</summary>
 		/// <returns><c>True</c> if the message has been deleted.</returns>
-		bool Delete<T>(string queueName, T message);
+		/// <remarks>Message must have first been retrieved through <see cref="Get{T}"/>.</remarks>
+		bool Delete<T>(T message);
 
-		/// <summary>Deletes messages from a queue.</summary>
+		/// <summary>Deletes messages being processed from the queue.</summary>
 		/// <typeparam name="T">Type of the messages.</typeparam>
-		/// <param name="queueName">Identifier of the queue where the messages are removed from.</param>
 		/// <param name="messages">Messages to be removed.</param>
 		/// <returns>The number of messages actually deleted.</returns>
 		/// <remarks>Messages must have first been retrieved through <see cref="Get{T}"/>.</remarks>
-		int DeleteRange<T>(string queueName, IEnumerable<T> messages);
+		int DeleteRange<T>(IEnumerable<T> messages);
 
 		/// <summary>
 		/// Abandon a message being processed and put it visibly back on the queue.

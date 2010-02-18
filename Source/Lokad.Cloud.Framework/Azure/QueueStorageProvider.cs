@@ -52,7 +52,7 @@ namespace Lokad.Cloud.Azure
 
 		/// <summary>IoC constructor.</summary>
 		public QueueStorageProvider(
-			CloudQueueClient queueStorage, IBlobStorageProvider blobStorage, 
+			CloudQueueClient queueStorage, IBlobStorageProvider blobStorage,
 			IBinaryFormatter formatter, IRuntimeFinalizer runtimeFinalizer)
 		{
 			_queueStorage = queueStorage;
@@ -373,22 +373,23 @@ namespace Lokad.Cloud.Azure
 			}
 		}
 
-		public bool Delete<T>(string queueName, T message)
+		public bool Delete<T>(T message)
 		{
-			return DeleteRange(queueName, new[] { message }) > 0;
+			return DeleteRange(new[] { message }) > 0;
 		}
 
-		public int DeleteRange<T>(string queueName, IEnumerable<T> messages)
+		public int DeleteRange<T>(IEnumerable<T> messages)
 		{
-			var queue = _queueStorage.GetQueueReference(queueName);
-
 			int deletionCount = 0;
 
 			foreach (var message in messages)
 			{
 				var timestamp = _countDeleteMessage.Open();
 
+				// 1. GET RAW MESSAGE & QUEUE, OR SKIP IF NOT AVAILABLE/ALREADY DELETED
+
 				CloudQueueMessage rawMessage;
+				string queueName;
 				bool isOverflowing;
 
 				lock (_sync)
@@ -402,9 +403,13 @@ namespace Lokad.Cloud.Azure
 
 					rawMessage = inProcMsg.RawMessages[0];
 					isOverflowing = inProcMsg.IsOverflowing;
+					queueName = inProcMsg.QueueName;
 				}
 
-				// deleting the overflowing copy from the blob storage.
+				var queue = _queueStorage.GetQueueReference(queueName);
+
+				// 2. DELETING THE OVERFLOW BLOB, IF WRAPPED
+
 				if (isOverflowing)
 				{
 					using (var stream = new MemoryStream(rawMessage.AsBytes))
@@ -414,6 +419,8 @@ namespace Lokad.Cloud.Azure
 						_blobStorage.DeleteBlob(mw.ContainerName, mw.BlobName);
 					}
 				}
+
+				// 3. DELETE THE MESSAGE FROM THE QUEUE
 
 				try
 				{
@@ -428,6 +435,8 @@ namespace Lokad.Cloud.Azure
 						throw;
 					}
 				}
+
+				// 4. REMOVE THE RAW MESSAGE
 
 				lock (_sync)
 				{
