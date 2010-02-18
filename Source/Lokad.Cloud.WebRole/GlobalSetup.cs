@@ -9,6 +9,7 @@ using Autofac.Configuration;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
 using Lokad.Cloud.Management;
+using Lokad.Cloud.ServiceFabric;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.StorageClient;
 
@@ -32,6 +33,9 @@ namespace Lokad.Cloud.Web
 			{
 				builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 			}
+
+			// Runtime
+			builder.Register(typeof(RuntimeFinalizer)).As<IRuntimeFinalizer>();
 
 			// Diagnostics
 			builder.RegisterModule(new DiagnosticsModule());
