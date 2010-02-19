@@ -69,10 +69,22 @@ namespace Lokad.Cloud
 			_provider.Insert(_tableName, entities);
 		}
 
+		/// <seealso cref="ITableStorageProvider.Insert{T}(string, IEnumerable{CloudEntity{T}})"/>
+		void Insert(CloudEntity<T> entity)
+		{
+			_provider.Insert(_tableName, new []{entity});
+		}
+
 		/// <seealso cref="ITableStorageProvider.Update{T}(string, IEnumerable{CloudEntity{T}})"/>
 		void Update(IEnumerable<CloudEntity<T>> entities)
 		{
 			_provider.Update(_tableName, entities);
+		}
+
+		/// <seealso cref="ITableStorageProvider.Update{T}(string, IEnumerable{CloudEntity{T}})"/>
+		void Update(CloudEntity<T> entity)
+		{
+			_provider.Update(_tableName, new [] {entity});
 		}
 
 		/// <seealso cref="ITableStorageProvider.Upsert{T}(string, IEnumerable{CloudEntity{T}})"/>
@@ -81,10 +93,22 @@ namespace Lokad.Cloud
 			_provider.Upsert(_tableName, entities);
 		}
 
+		/// <seealso cref="ITableStorageProvider.Upsert{T}(string, IEnumerable{CloudEntity{T}})"/>
+		void Upsert(CloudEntity<T> entity)
+		{
+			_provider.Upsert(_tableName, new [] {entity});
+		}
+
 		/// <seealso cref="ITableStorageProvider.Delete{T}(string, string, IEnumerable{string})"/>
 		void Delete(string partitionKey, IEnumerable<string> rowKeys)
 		{
 			_provider.Delete<T>(_tableName, partitionKey, rowKeys);
+		}
+
+		/// <seealso cref="ITableStorageProvider.Delete{T}(string, string, IEnumerable{string})"/>
+		void Delete(string partitionKey, string rowKey)
+		{
+			_provider.Delete<T>(_tableName, partitionKey, new []{rowKey});
 		}
 	}
 }
