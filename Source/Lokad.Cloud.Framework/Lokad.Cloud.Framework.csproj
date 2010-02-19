@@ -119,6 +119,7 @@
     <Compile Include="BlobName.cs" />
     <Compile Include="BlobReference.cs" />
     <Compile Include="CloudEntity.cs" />
+    <Compile Include="CloudTable.cs" />
     <Compile Include="Diagnostics\Persistence\ExceptionTrackingStatisticsReference.cs" />
     <Compile Include="Diagnostics\Persistence\ExecutionProfilingStatisticsReference.cs" />
     <Compile Include="Diagnostics\Persistence\PartitionStatisticsReference.cs" />

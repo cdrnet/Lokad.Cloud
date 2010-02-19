@@ -160,5 +160,11 @@ namespace Lokad.Cloud
 		{
 			return provider.Get<T>(tableName, partitionName, new[] {rowKey}).FirstOrEmpty();
 		}
+
+		/// <summary>Gets a strong typed wrapper around the table storage provider.</summary>
+		public static CloudTable<T> GetTable<T>(this ITableStorageProvider provider, string tableName)
+		{
+			return new CloudTable<T>(provider, tableName);
+		}
 	}
 }
