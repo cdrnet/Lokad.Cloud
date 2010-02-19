@@ -40,73 +40,73 @@ namespace Lokad.Cloud
 		}
 
 		/// <seealso cref="ITableStorageProvider.Get{T}(string)"/>
-		IEnumerable<CloudEntity<T>> Get()
+		public IEnumerable<CloudEntity<T>> Get()
 		{
 			return _provider.Get<T>(_tableName);
 		}
 
 		/// <seealso cref="ITableStorageProvider.Get{T}(string, string)"/>
-		IEnumerable<CloudEntity<T>> Get(string partitionKey)
+		public IEnumerable<CloudEntity<T>> Get(string partitionKey)
 		{
 			return _provider.Get<T>(_tableName, partitionKey);
 		}
 
 		/// <seealso cref="ITableStorageProvider.Get{T}(string, string, string, string)"/>
-		IEnumerable<CloudEntity<T>> Get(string partitionKey, string startRowKey, string endRowKey)
+		public IEnumerable<CloudEntity<T>> Get(string partitionKey, string startRowKey, string endRowKey)
 		{
 			return _provider.Get<T>(_tableName, partitionKey, startRowKey, endRowKey);
 		}
 
 		/// <seealso cref="ITableStorageProvider.Get{T}(string, string, IEnumerable{string})"/>
-		IEnumerable<CloudEntity<T>> Get(string partitionKey, IEnumerable<string> rowKeys)
+		public IEnumerable<CloudEntity<T>> Get(string partitionKey, IEnumerable<string> rowKeys)
 		{
 			return _provider.Get<T>(_tableName, partitionKey, rowKeys);
 		}
 
 		/// <seealso cref="ITableStorageProvider.Insert{T}(string, IEnumerable{CloudEntity{T}})"/>
-		void Insert(IEnumerable<CloudEntity<T>> entities)
+		public void Insert(IEnumerable<CloudEntity<T>> entities)
 		{
 			_provider.Insert(_tableName, entities);
 		}
 
 		/// <seealso cref="ITableStorageProvider.Insert{T}(string, IEnumerable{CloudEntity{T}})"/>
-		void Insert(CloudEntity<T> entity)
+		public void Insert(CloudEntity<T> entity)
 		{
 			_provider.Insert(_tableName, new []{entity});
 		}
 
 		/// <seealso cref="ITableStorageProvider.Update{T}(string, IEnumerable{CloudEntity{T}})"/>
-		void Update(IEnumerable<CloudEntity<T>> entities)
+		public void Update(IEnumerable<CloudEntity<T>> entities)
 		{
 			_provider.Update(_tableName, entities);
 		}
 
 		/// <seealso cref="ITableStorageProvider.Update{T}(string, IEnumerable{CloudEntity{T}})"/>
-		void Update(CloudEntity<T> entity)
+		public void Update(CloudEntity<T> entity)
 		{
 			_provider.Update(_tableName, new [] {entity});
 		}
 
 		/// <seealso cref="ITableStorageProvider.Upsert{T}(string, IEnumerable{CloudEntity{T}})"/>
-		void Upsert(IEnumerable<CloudEntity<T>> entities)
+		public void Upsert(IEnumerable<CloudEntity<T>> entities)
 		{
 			_provider.Upsert(_tableName, entities);
 		}
 
 		/// <seealso cref="ITableStorageProvider.Upsert{T}(string, IEnumerable{CloudEntity{T}})"/>
-		void Upsert(CloudEntity<T> entity)
+		public void Upsert(CloudEntity<T> entity)
 		{
 			_provider.Upsert(_tableName, new [] {entity});
 		}
 
 		/// <seealso cref="ITableStorageProvider.Delete{T}(string, string, IEnumerable{string})"/>
-		void Delete(string partitionKey, IEnumerable<string> rowKeys)
+		public void Delete(string partitionKey, IEnumerable<string> rowKeys)
 		{
 			_provider.Delete<T>(_tableName, partitionKey, rowKeys);
 		}
 
 		/// <seealso cref="ITableStorageProvider.Delete{T}(string, string, IEnumerable{string})"/>
-		void Delete(string partitionKey, string rowKey)
+		public void Delete(string partitionKey, string rowKey)
 		{
 			_provider.Delete<T>(_tableName, partitionKey, new []{rowKey});
 		}
