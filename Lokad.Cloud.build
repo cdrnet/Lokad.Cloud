@@ -15,12 +15,13 @@
 		<ProjectName>$(MSBuildProjectName)</ProjectName>
 
 		<CloudReadyPath>$(BuildPath)\CloudReady</CloudReadyPath>
-		<CloudSource>Source/Lokad.Cloud/bin/$(Configuration)/Publish</CloudSource>
+		<CloudSource>Source\Lokad.Cloud\bin\$(Configuration)\Publish</CloudSource>
 		<CloudTargets>$(MSBuildProjectDirectory)\Resource\Build\</CloudTargets>
 
 		<CloudApiPath>$(BuildPath)\Cloud.Dev</CloudApiPath>
 		<CloudApiSource>Source\Lokad.Cloud.Framework\bin\$(Configuration)</CloudApiSource>
 
+		<ResourcePath>Resource\Library</ResourcePath>
 		<TestPath>$(BuildPath)\Test</TestPath>
 		<ProjectName>$(MSBuildProjectName)</ProjectName>
 		<SampleSource>Sample</SampleSource>
@@ -123,7 +124,7 @@
 		</CreateItem>
 		<Copy SourceFiles="@(testSources)" DestinationFolder="$(TestPath)" />
 
-		<CreateItem Include="$(CloudSource)\*.*;ReadMe.txt;$(CloudApiSource)\Lokad.Cloud.Framework.*;$(CloudApiSource)\Lokad.Shared.dll;$(CloudApiSource)\Lokad.Stack.dll">
+		<CreateItem Include="$(CloudSource)\*.*;ReadMe.txt;$(CloudApiSource)\Lokad.Cloud.Framework.*;$(ResourcePath)\Lokad.Shared.dll;$(ResourcePath)\Lokad.Stack.dll">
 			<Output ItemName="cloudSources" TaskParameter="Include" />
 		</CreateItem>
 		<Copy SourceFiles="@(cloudSources)" DestinationFolder="$(CloudReadyPath)" />
