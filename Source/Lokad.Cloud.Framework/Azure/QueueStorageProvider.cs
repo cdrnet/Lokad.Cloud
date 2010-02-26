@@ -95,10 +95,7 @@ namespace Lokad.Cloud.Azure
 
 		public IEnumerable<string> List(string prefix)
 		{
-			foreach (var queue in _queueStorage.ListQueues(prefix))
-			{
-				yield return queue.Name;
-			}
+			return _queueStorage.ListQueues(prefix).Select(queue => queue.Name);
 		}
 
 		object SafeDeserialize<T>(Stream source)

@@ -34,6 +34,7 @@ namespace Lokad.Cloud
 			_tableName = tableName;
 		}
 
+		/// <seealso cref="ITableStorageProvider.Get{T}(string, string)"/>
 		public Maybe<CloudEntity<T>> Get(string partitionName, string rowKey)
 		{
 			return _provider.Get<T>(_tableName, partitionName, new[] { rowKey }).FirstOrEmpty();

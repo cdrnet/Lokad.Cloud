@@ -6,8 +6,6 @@
 using System;
 using System.Collections.Generic;
 
-// TODO: #89 missing 'UpdateOrInsert' method
-
 namespace Lokad.Cloud
 {
 	/// <summary>Abstraction for the Table Storage.</summary>

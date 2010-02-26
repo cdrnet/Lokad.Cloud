@@ -3,10 +3,12 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using Lokad.Quality;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.Web
 {
+	[UsedImplicitly]
 	public class WebRole : RoleEntryPoint
 	{
 		public override bool OnStart()

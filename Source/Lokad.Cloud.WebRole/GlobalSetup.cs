@@ -48,7 +48,7 @@ namespace Lokad.Cloud.Web
 			Container = builder.Build();
 		}
 
-		private static readonly object _syncRoot = new object();
+		private static readonly object SyncRoot = new object();
 		private static string _storageAccountName;
 
 		/// <summary>Storage account name, cached at startup.</summary>
@@ -59,7 +59,7 @@ namespace Lokad.Cloud.Web
 				// This synchronization scheme is surely a bit overkill in this case...
 				if (null == _storageAccountName)
 				{
-					lock (_syncRoot)
+					lock (SyncRoot)
 					{
 						if (null == _storageAccountName)
 						{

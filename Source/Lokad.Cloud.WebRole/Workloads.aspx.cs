@@ -37,10 +37,10 @@ namespace Lokad.Cloud.Web
 		{
 			if(e.CommandName == "DeleteQueue")
 			{
-				var row = -1;
+				int row;
 				if(!int.TryParse(e.CommandArgument as string, out row)) return;
 
-				string queueName = QueuesView.Rows[row].Cells[1].Text;
+				var queueName = QueuesView.Rows[row].Cells[1].Text;
 
 				_provider.DeleteQueue(queueName);
 
