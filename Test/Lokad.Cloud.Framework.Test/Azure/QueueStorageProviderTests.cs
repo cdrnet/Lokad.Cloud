@@ -404,18 +404,16 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
-		public void ApproximateDelay()
+		public void QueueLatency()
 		{
 			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
 			Assert.IsNotNull(provider, "#A00");
-			Assert.IsFalse(provider.GetApproximateDelay(QueueName).HasValue);
+			Assert.IsFalse(provider.GetApproximateLatency(QueueName).HasValue);
 
 			provider.Put(QueueName, 100);
-			var delay = provider.GetApproximateDelay(QueueName);
-			Assert.IsTrue(delay.HasValue);
-			Assert.IsTrue(delay.Value > TimeSpan.FromMinutes(-5) && delay.Value < TimeSpan.FromMinutes(10));
-
-			// note: we allow negative time to allow badly synchronized clocks
+			var latency = provider.GetApproximateLatency(QueueName);
+			Assert.IsTrue(latency.HasValue);
+			Assert.IsTrue(latency.Value >= TimeSpan.Zero && latency.Value < TimeSpan.FromMinutes(10));
 
 			provider.Delete(100);
 		}

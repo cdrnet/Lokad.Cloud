@@ -1,4 +1,4 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
@@ -24,11 +24,13 @@ namespace Lokad.Cloud.Web
 			foreach(var queueName in _provider.List(null))
 			{
 				var inQueueCount = _provider.GetApproximateCount(queueName);
+				var latency = _provider.GetApproximateLatency(queueName);
 
 				yield return new
 					{
 						QueueName = queueName,
-						Count = inQueueCount
+						Messages = inQueueCount,
+						Latency = latency.Convert(ts => ts.PrettyFormat(), string.Empty),
 					};
 			}
 		}

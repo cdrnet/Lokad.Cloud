@@ -823,7 +823,7 @@ namespace Lokad.Cloud.Azure
 		/// <summary>
 		/// Gets the approximate age of the top message of this queue.
 		/// </summary>
-		public Maybe<TimeSpan> GetApproximateDelay(string queueName)
+		public Maybe<TimeSpan> GetApproximateLatency(string queueName)
 		{
 			var queue = _queueStorage.GetQueueReference(queueName);
 			CloudQueueMessage rawMessage;
@@ -848,7 +848,10 @@ namespace Lokad.Cloud.Azure
 				return Maybe<TimeSpan>.Empty;
 			}
 
-			return DateTimeOffset.UtcNow - rawMessage.InsertionTime.Value;
+			var latency = DateTimeOffset.UtcNow - rawMessage.InsertionTime.Value;
+
+			// don't return negative values when clocks are slightly out of sync 
+			return latency > TimeSpan.Zero ? latency : TimeSpan.Zero;
 		}
 	}
 
