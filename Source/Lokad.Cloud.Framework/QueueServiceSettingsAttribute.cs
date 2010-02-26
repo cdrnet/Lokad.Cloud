@@ -19,5 +19,11 @@ namespace Lokad.Cloud
 		/// <remarks>The maximal value is 1000. We suggest to retrieve small messages
 		/// in batch to reduce network overhead.</remarks>
 		public int BatchSize { get; set; }
+
+		/// <summary>
+		/// Maximum number of times a message is tried to process before it is considered as
+		/// being poisonous, removed from the queue and persisted to the 'failing-messages' store.
+		/// </summary>
+		public int MaxProcessingTrials { get; set; }
 	}
 }

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace Lokad.Cloud
 {
@@ -29,8 +30,12 @@ namespace Lokad.Cloud
 		/// The visibility timeout, indicating when the not yet deleted message should
 		/// become visible in the queue again.
 		/// </param>
+		/// <param name="maxProcessingTrials">
+		/// Maximum number of message processing trials, before the message is considered as
+		/// being poisonous, removed from the queue and persisted to the 'failing-messages' store.
+		/// </param>
 		/// <returns>Enumeration of messages, possibly empty.</returns>
-		IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout);
+		IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout, int maxProcessingTrials);
 
 		/// <summary>Put a message on a queue.</summary>
 		void Put<T>(string queueName, T message);
@@ -75,11 +80,81 @@ namespace Lokad.Cloud
 		/// <remarks>Messages must have first been retrieved through <see cref="Get{T}"/>.</remarks>
 		int AbandonRange<T>(IEnumerable<T> messages);
 
+		/// <summary>
+		/// Persist a message being processed to a store and remove it from the queue.
+		/// </summary>
+		/// <typeparam name="T">Type of the message.</typeparam>
+		/// <param name="message">Message to be persisted.</param>
+		/// <param name="storeName">Name of the message persistence store.</param>
+		/// <param name="reason">Optional reason text on why the message has been taken out of the queue.</param>
+		void Persist<T>(T message, string storeName, string reason);
+
+		/// <summary>
+		/// Persist a set of messages being processed to a store and remove them from the queue.
+		/// </summary>
+		/// <typeparam name="T">Type of the messages.</typeparam>
+		/// <param name="messages">Messages to be persisted.</param>
+		/// <param name="storeName">Name of the message persistence store.</param>
+		/// <param name="reason">Optional reason text on why the messages have been taken out of the queue.</param>
+		void PersistRange<T>(IEnumerable<T> messages, string storeName, string reason);
+
+		/// <summary>
+		/// Enumerate the keys of all persisted messages of the provided store.
+		/// </summary>
+		/// <param name="storeName">Name of the message persistence store.</param>
+		IEnumerable<string> ListPersisted(string storeName);
+
+		/// <summary>
+		/// Get details of a persisted message for inspection and recovery.
+		/// </summary>
+		/// <param name="storeName">Name of the message persistence store.</param>
+		/// <param name="key">Unique key of the persisted message as returned by ListPersisted.</param>
+		Maybe<PersistedMessage> GetPersisted(string storeName, string key);
+
+		/// <summary>
+		/// Delete a persisted message.
+		/// </summary>
+		/// <param name="storeName">Name of the message persistence store.</param>
+		/// <param name="key">Unique key of the persisted message as returned by ListPersisted.</param>
+		void DeletePersisted(string storeName, string key);
+
+		/// <summary>
+		/// Put a persisted message back to the queue and delete it.
+		/// </summary>
+		/// <param name="storeName">Name of the message persistence store.</param>
+		/// <param name="key">Unique key of the persisted message as returned by ListPersisted.</param>
+		void RestorePersisted(string storeName, string key);
+
 		/// <summary>Deletes a queue.</summary>
 		/// <returns><c>true</c> if the queue name has been actually deleted.</returns>
 		bool DeleteQueue(string queueName);
 
 		/// <summary>Gets the approximate number of items in this queue.</summary>
 		int GetApproximateCount(string queueName);
+	}
+
+	/// <summary>
+	/// Persisted message details for inspection and recovery.
+	/// </summary>
+	public class PersistedMessage
+	{
+		/// <summary>Identifier of the originating message queue.</summary>
+		public string QueueName { get; internal set; }
+		/// <summary>Name of the message persistence store.</summary>
+		public string StoreName { get; internal set; }
+		/// <summary>Unique key of the persisted message as returned by ListPersisted.</summary>
+		public string Key { get; internal set; }
+
+		/// <summary>Time when the message was inserted into the message queue.</summary>
+		public DateTimeOffset InsertionTime { get; internal set; }
+		/// <summary>Time when the message was persisted and removed from the message queue.</summary>
+		public DateTimeOffset PersistenceTime { get; internal set; }
+		/// <summary>The number of times the message has been dequeued.</summary>
+		public int DequeueCount { get; internal set; }
+		/// <summary>Optional reason text why the message was persisted.</summary>
+		public string Reason { get; internal set; }
+
+		/// <summary>XML representation of the message, if possible and supported by the serializer</summary>
+		public Maybe<XElement> DataXml { get; internal set; }
 	}
 }

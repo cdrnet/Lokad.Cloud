@@ -25,6 +25,7 @@ namespace Lokad.Cloud
 		readonly string _queueName;
 		readonly int _batchSize;
 		readonly TimeSpan _visibilityTimeout;
+		readonly int _maxProcessingTrials;
 
 		/// <summary>Name of the queue associated to the service.</summary>
 		public override string Name
@@ -37,15 +38,28 @@ namespace Lokad.Cloud
 		{
 			var settings = GetType().GetAttribute<QueueServiceSettingsAttribute>(true);
 
+			// default settings
+			_batchSize = 1;
+			_maxProcessingTrials = 50;
+
 			if (null != settings) // settings are provided through custom attribute
 			{
 				_queueName = settings.QueueName ?? TypeMapper.GetStorageName(typeof(T));
-				_batchSize = Math.Max(settings.BatchSize, 1); // need to be at least 1
+
+				if (settings.BatchSize > 0)
+				{
+					// need to be at least 1
+					_batchSize = settings.BatchSize;
+				}
+				
+				if(settings.MaxProcessingTrials > 0)
+				{
+					_maxProcessingTrials = settings.MaxProcessingTrials;
+				}
 			}
-			else // default setting
+			else
 			{
 				_queueName = TypeMapper.GetStorageName(typeof(T));
-				_batchSize = 1;
 			}
 
 			// 1.25 * execution timeout, but limited to 2h max
@@ -56,7 +70,7 @@ namespace Lokad.Cloud
 		/// instead.</summary>
 		protected sealed override ServiceExecutionFeedback StartImpl()
 		{
-			var messages = QueueStorage.Get<T>(_queueName, _batchSize, _visibilityTimeout);
+			var messages = QueueStorage.Get<T>(_queueName, _batchSize, _visibilityTimeout, _maxProcessingTrials);
 
 			var count = messages.Count();
 			if (count > 0)
@@ -107,7 +121,7 @@ namespace Lokad.Cloud
 		/// before asking for more.</remarks>
 		public IEnumerable<T> GetMore(int count)
 		{
-			return QueueStorage.Get<T>(_queueName, count, _visibilityTimeout);
+			return QueueStorage.Get<T>(_queueName, count, _visibilityTimeout, _maxProcessingTrials);
 		}
 
 		/// <summary>Get more message from an arbitrary queue.</summary>
@@ -116,7 +130,7 @@ namespace Lokad.Cloud
 		/// <returns>Retrieved message (enumeration might be empty).</returns>
 		public IEnumerable<T> GetMore(int count, string queueName)
 		{
-			return QueueStorage.Get<T>(queueName, count, _visibilityTimeout);
+			return QueueStorage.Get<T>(queueName, count, _visibilityTimeout, _maxProcessingTrials);
 		}
 
 		/// <summary>

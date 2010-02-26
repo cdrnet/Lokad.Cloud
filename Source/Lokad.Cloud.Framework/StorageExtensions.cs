@@ -144,14 +144,28 @@ namespace Lokad.Cloud
 			return provider.UpdateIfNotModified(reference.ContainerName, reference.ToString(), updater);
 		}
 
-		/// <summary>Gets messages from a queue with a visibility timeout of 2 hours.</summary>
+		/// <summary>Gets messages from a queue with a visibility timeout of 2 hours and a maximum of 50 processing trials.</summary>
 		/// <typeparam name="T">Type of the messages.</typeparam>
 		/// <param name="queueName">Identifier of the queue to be pulled.</param>
 		/// <param name="count">Maximal number of messages to be retrieved.</param>
 		/// <returns>Enumeration of messages, possibly empty.</returns>
 		public static IEnumerable<T> Get<T>(this IQueueStorageProvider provider, string queueName, int count)
 		{
-			return provider.Get<T>(queueName, count, new TimeSpan(2, 0, 0));
+			return provider.Get<T>(queueName, count, new TimeSpan(2, 0, 0), 50);
+		}
+
+		/// <summary>Gets messages from a queue with a visibility timeout of 2 hours.</summary>
+		/// <typeparam name="T">Type of the messages.</typeparam>
+		/// <param name="queueName">Identifier of the queue to be pulled.</param>
+		/// <param name="count">Maximal number of messages to be retrieved.</param>
+		/// <param name="maxProcessingTrials">
+		/// Maximum number of message processing trials, before the message is considered as
+		/// being poisonous, removed from the queue and persisted to the 'failing-messages' store.
+		/// </param>
+		/// <returns>Enumeration of messages, possibly empty.</returns>
+		public static IEnumerable<T> Get<T>(this IQueueStorageProvider provider, string queueName, int count, int maxProcessingTrials)
+		{
+			return provider.Get<T>(queueName, count, new TimeSpan(2, 0, 0), maxProcessingTrials);
 		}
 
 		/// <summary>Gets the specified cloud entity if it exists.</summary>

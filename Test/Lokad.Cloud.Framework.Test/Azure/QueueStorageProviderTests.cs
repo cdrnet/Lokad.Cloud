@@ -290,6 +290,118 @@ namespace Lokad.Cloud.Azure.Test
 			var retrieved4 = provider.Get<MyMessage>(QueueName, 1).FirstOrEmpty();
 			Assert.IsFalse(retrieved4.HasValue, "#A07");
 		}
+
+		[Test]
+		public void PersistRestore()
+		{
+			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
+			const string storeName = "TestStore";
+
+			Assert.IsNotNull(provider, "#A00");
+
+			var message = new MyMessage();
+
+			// clean up
+			provider.DeleteQueue(QueueName);
+			foreach(var skey in provider.ListPersisted(storeName))
+			{
+				provider.DeletePersisted(storeName, skey);
+			}
+
+			// put
+			provider.Put(QueueName, message);
+
+			// get
+			var retrieved = provider.Get<MyMessage>(QueueName, 1).First();
+			Assert.AreEqual(message.MyGuid, retrieved.MyGuid, "#A01");
+
+			// persist
+			provider.Persist(retrieved, storeName, "manual test");
+
+			// abandon should fail (since not invisible anymore)
+			Assert.IsFalse(provider.Abandon(retrieved), "#A02");
+
+			// list persisted message
+			var key = provider.ListPersisted(storeName).Single();
+
+			// get persisted message
+			var persisted = provider.GetPersisted(storeName, key);
+			var xml = persisted.Value.DataXml.Value;
+			var property = xml.Elements().Single(x => x.Name.LocalName == "MyGuid");
+			Assert.AreEqual(message.MyGuid, new Guid(property.Value), "#A03");
+			
+			// restore persisted message
+			provider.RestorePersisted(storeName, key);
+
+			// list no longer contains key
+			Assert.IsFalse(provider.ListPersisted(storeName).Any(), "#A04");
+
+			// get
+			var retrieved2 = provider.Get<MyMessage>(QueueName, 1).First();
+			Assert.AreEqual(message.MyGuid, retrieved2.MyGuid, "#A05");
+
+			// delete
+			Assert.IsTrue(provider.Delete(retrieved2), "#A06");
+		}
+
+		[Test]
+		public void PersistRestoreOverflowing()
+		{
+			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
+			var blobProvider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+			const string storeName = "TestStore";
+
+			Assert.IsNotNull(provider, "#A00");
+
+			// CAUTION: we are now compressing serialization output.
+			// hence, we can't just pass an empty array, as it would be compressed at near 100%.
+
+			var data = new byte[20000];
+			_rand.NextBytes(data);
+
+			// clean up
+			provider.DeleteQueue(QueueName);
+			foreach (var skey in provider.ListPersisted(storeName))
+			{
+				provider.DeletePersisted(storeName, skey);
+			}
+
+			// put
+			provider.Put(QueueName, data);
+
+			Assert.AreEqual(1,
+				blobProvider.List(QueueStorageProvider.OverflowingMessagesContainerName, QueueName).Count(),
+				"#A01");
+
+			// get
+			var retrieved = provider.Get<byte[]>(QueueName, 1).First();
+
+			// persist
+			provider.Persist(retrieved, storeName, "manual test");
+
+			Assert.AreEqual(1,
+				blobProvider.List(QueueStorageProvider.OverflowingMessagesContainerName, QueueName).Count(),
+				"#A02");
+
+			// abandon should fail (since not invisible anymore)
+			Assert.IsFalse(provider.Abandon(retrieved), "#A03");
+
+			// list persisted message
+			var key = provider.ListPersisted(storeName).Single();
+
+			// get persisted message
+			provider.GetPersisted(storeName, key);
+
+			// delete persisted message
+			provider.DeletePersisted(storeName, key);
+
+			Assert.AreEqual(0,
+				blobProvider.List(QueueStorageProvider.OverflowingMessagesContainerName, QueueName).Count(),
+				"#A04");
+
+			// list no longer contains key
+			Assert.IsFalse(provider.ListPersisted(storeName).Any(), "#A05");
+		}
 	}
 
 	[Serializable]

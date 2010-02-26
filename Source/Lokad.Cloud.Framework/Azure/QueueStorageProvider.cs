@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Xml.Linq;
 using Lokad.Diagnostics;
 using Lokad.Quality;
 using Microsoft.WindowsAzure.StorageClient;
@@ -26,6 +27,7 @@ namespace Lokad.Cloud.Azure
 	public class QueueStorageProvider : IQueueStorageProvider, IDisposable
 	{
 		internal const string OverflowingMessagesContainerName = "lokad-cloud-overflowing-messages";
+		internal const string PoisonedMessagePersistenceStoreName = "failing-messages";
 
 		/// <summary>Root used to synchronize accesses to <c>_inprocess</c>. 
 		/// Caution: do not hold the lock while performing operations on the cloud
@@ -43,6 +45,7 @@ namespace Lokad.Cloud.Azure
 		readonly ExecutionCounter _countPutMessage;
 		readonly ExecutionCounter _countDeleteMessage;
 		readonly ExecutionCounter _countAbandonMessage;
+		readonly ExecutionCounter _countPersistMessage;
 		readonly ExecutionCounter _countWrapMessage;
 		readonly ExecutionCounter _countUnwrapMessage;
 
@@ -74,6 +77,7 @@ namespace Lokad.Cloud.Azure
 					_countPutMessage = new ExecutionCounter("QueueStorageProvider.PutSingle", 0, 0),
 					_countDeleteMessage = new ExecutionCounter("QueueStorageProvider.DeleteSingle", 0, 0),
 					_countAbandonMessage = new ExecutionCounter("QueueStorageProvider.AbandonSingle", 0, 0),
+					_countPersistMessage = new ExecutionCounter("QueueStorageProvider.PersistSingle", 0, 0),
 					_countWrapMessage = new ExecutionCounter("QueueStorageProvider.WrapSingle", 0, 0),
 					_countUnwrapMessage = new ExecutionCounter("QueueStorageProvider.UnwrapSingle", 0, 0),
 				});
@@ -115,11 +119,13 @@ namespace Lokad.Cloud.Azure
 			return item;
 		}
 
-		public IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout)
+		public IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout, int maxProcessingTrials)
 		{
 			var timestamp = _countGetMessage.Open();
 
 			var queue = _queueStorage.GetQueueReference(queueName);
+
+			// 1. GET RAW MESSAGES
 
 			IEnumerable<CloudQueueMessage> rawMessages;
 
@@ -139,12 +145,15 @@ namespace Lokad.Cloud.Azure
 				throw;
 			}
 
-			// skip empty queue
+			// 2. SKIP EMPTY QUEUE
+
 			if (null == rawMessages)
 			{
 				_countGetMessage.Close(timestamp);
 				return new T[0];
 			}
+
+			// 3. DESERIALIZE MESSAGE OR MESSAGE WRAPPER, CHECK-OUT
 
 			var messages = new List<T>(count);
 			var wrappedMessages = new List<MessageWrapper>();
@@ -153,33 +162,34 @@ namespace Lokad.Cloud.Azure
 			{
 				foreach (var rawMessage in rawMessages)
 				{
+					// 3.1. PERSIST POISONED MESSAGES, SKIP
+
+					if (rawMessage.DequeueCount > maxProcessingTrials)
+					{
+						PersistRawMessage(
+							rawMessage,
+							queueName,
+							PoisonedMessagePersistenceStoreName,
+							String.Format("Message was {0} times dequeued but failed processing each time.", rawMessage.DequeueCount - 1));
+
+						continue;
+					}
+
+					// 3.2. DESERIALIZE MESSAGE
+
 					object innerMessage;
 					using (var stream = new MemoryStream(rawMessage.AsBytes))
 					{
 						innerMessage = SafeDeserialize<T>(stream);
 					}
 
+					// 3.3 CHECK-OUT, COLLECT WRAPPED MESSAGES TO BE UNWRAPPED LATER
+
 					if (innerMessage is T)
 					{
 						messages.Add((T)innerMessage);
 
-						// If T is a value type, _inprocess could already contain the message
-						// (not the same exact instance, but an instance that is value-equal to this one)
-						InProcessMessage inProcMsg;
-						if (!_inProcessMessages.TryGetValue(innerMessage, out inProcMsg))
-						{
-							inProcMsg = new InProcessMessage
-								{
-									QueueName = queueName,
-									RawMessages = new List<CloudQueueMessage> { rawMessage },
-									IsOverflowing = false
-								};
-							_inProcessMessages.Add(innerMessage, inProcMsg);
-						}
-						else
-						{
-							inProcMsg.RawMessages.Add(rawMessage);
-						}
+						CheckOutMessage(innerMessage, rawMessage, queueName, false);
 					}
 					else
 					{
@@ -187,18 +197,13 @@ namespace Lokad.Cloud.Azure
 						var mw = (MessageWrapper)innerMessage;
 						wrappedMessages.Add(mw);
 
-						var overflowingInProcMsg = new InProcessMessage
-							{
-								QueueName = queueName,
-								RawMessages = new List<CloudQueueMessage> { rawMessage },
-								IsOverflowing = true
-							};
-						_inProcessMessages.Add(mw, overflowingInProcMsg);
+						CheckOutMessage(mw, rawMessage, queueName, true);
 					}
 				}
 			}
 
-			// unwrapping messages
+			// 4. UNWRAP WRAPPED MESSAGES
+
 			foreach (var mw in wrappedMessages)
 			{
 				var unwrapTimestamp = _countUnwrapMessage.Open();
@@ -214,23 +219,10 @@ namespace Lokad.Cloud.Azure
 					lock (_sync)
 					{
 						rawMessage = _inProcessMessages[mw].RawMessages[0];
-						_inProcessMessages.Remove(mw);
+						CheckInMessage(mw);
 					}
 
-					try
-					{
-						_azureServerPolicy.Do(() => queue.DeleteMessage(rawMessage));
-					}
-					catch (StorageClientException ex)
-					{
-						if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
-							|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
-						{
-							continue;
-						}
-
-						throw;
-					}
+					DeleteRawMessage(rawMessage, queue);
 
 					// skipping the message if it can't be unwrapped
 					continue;
@@ -239,18 +231,16 @@ namespace Lokad.Cloud.Azure
 				T innerMessage = (T)blobContent.Value;
 
 				// substitution: message wrapper replaced by actual item in '_inprocess' list
-				lock (_sync)
-				{
-					var rawMessage = _inProcessMessages[mw];
-					_inProcessMessages.Remove(mw);
-					_inProcessMessages.Add(innerMessage, rawMessage);
-				}
+				CheckOutRelink(mw, innerMessage);
 
 				messages.Add(innerMessage);
 				_countUnwrapMessage.Close(unwrapTimestamp);
 			}
 
 			_countGetMessage.Close(timestamp);
+
+			// 5. RETURN LIST OF MESSAGES
+
 			return messages;
 		}
 
@@ -290,29 +280,7 @@ namespace Lokad.Cloud.Azure
 						}
 					}
 
-					try
-					{
-						_azureServerPolicy.Do(() => queue.AddMessage(queueMessage));
-					}
-					catch (StorageClientException ex)
-					{
-						// HACK: not storage status error code yet
-						if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
-							|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
-						{
-							// It usually takes time before the queue gets available
-							// (the queue might also have been freshly deleted).
-							AzurePolicies.SlowInstantiation.Do(() =>
-								{
-									queue.Create();
-									queue.AddMessage(queueMessage);
-								});
-						}
-						else
-						{
-							throw;
-						}
-					}
+					PutRawMessage(queueMessage, queue);
 				}
 				_countPutMessage.Close(timestamp);
 			}
@@ -422,32 +390,14 @@ namespace Lokad.Cloud.Azure
 
 				// 3. DELETE THE MESSAGE FROM THE QUEUE
 
-				try
+				if(DeleteRawMessage(rawMessage, queue))
 				{
-					_azureServerPolicy.Do(() => queue.DeleteMessage(rawMessage));
 					deletionCount++;
-				}
-				catch (StorageClientException ex)
-				{
-					if (ex.ErrorCode != StorageErrorCode.ResourceNotFound
-						&& ex.ExtendedErrorInformation.ErrorCode != QueueErrorCodeStrings.QueueNotFound)
-					{
-						throw;
-					}
 				}
 
 				// 4. REMOVE THE RAW MESSAGE
 
-				lock (_sync)
-				{
-					var inProcMsg = _inProcessMessages[message];
-					inProcMsg.RawMessages.RemoveAt(0);
-
-					if (0 == inProcMsg.RawMessages.Count)
-					{
-						_inProcessMessages.Remove(message);
-					}
-				}
+				CheckInMessage(message);
 
 				_countDeleteMessage.Close(timestamp);
 			}
@@ -518,37 +468,306 @@ namespace Lokad.Cloud.Azure
 
 				// 3. DELETE THE OLD MESSAGE FROM THE QUEUE
 
-				try
+				if(DeleteRawMessage(oldRawMessage, queue))
 				{
-					_azureServerPolicy.Do(() => queue.DeleteMessage(oldRawMessage));
 					abandonCount++;
-				}
-				catch (StorageClientException ex)
-				{
-					if (ex.ErrorCode != StorageErrorCode.ResourceNotFound
-						&& ex.ExtendedErrorInformation.ErrorCode != QueueErrorCodeStrings.QueueNotFound)
-					{
-						throw;
-					}
 				}
 
 				// 4. REMOVE THE RAW MESSAGE
 
-				lock (_sync)
-				{
-					var inProcMsg = _inProcessMessages[message];
-					inProcMsg.RawMessages.RemoveAt(0);
-
-					if (0 == inProcMsg.RawMessages.Count)
-					{
-						_inProcessMessages.Remove(message);
-					}
-				}
+				CheckInMessage(message);
 
 				_countAbandonMessage.Close(timestamp);
 			}
 
 			return abandonCount;
+		}
+
+		public void Persist<T>(T message, string storeName, string reason)
+		{
+			PersistRange(new[] { message }, storeName, reason);
+		}
+
+		public void PersistRange<T>(IEnumerable<T> messages, string storeName, string reason)
+		{
+			foreach (var message in messages)
+			{
+				// 1. GET MESSAGE FROM CHECK-OUT, SKIP IF NOT AVAILABLE/ALREADY DELETED
+
+				CloudQueueMessage rawMessage;
+				string queueName;
+
+				lock (_sync)
+				{
+					// ignoring message if already deleted
+					InProcessMessage inProcessMessage;
+					if (!_inProcessMessages.TryGetValue(message, out inProcessMessage))
+					{
+						continue;
+					}
+
+					queueName = inProcessMessage.QueueName;
+					rawMessage = inProcessMessage.RawMessages[0];
+				}
+
+				// 2. PERSIST MESSAGE AND DELETE FROM QUEUE
+
+				PersistRawMessage(rawMessage, queueName, storeName, reason);
+
+				// 3. REMOVE MESSAGE FROM CHECK-OUT
+
+				CheckInMessage(message);
+			}
+		}
+
+		public IEnumerable<string> ListPersisted(string storeName)
+		{
+			var blobPrefix = PersistedMessageBlobReference.GetPrefix(storeName);
+			return _blobStorage.List(blobPrefix).Select(blobReference => blobReference.Key);
+		}
+
+		public Maybe<PersistedMessage> GetPersisted(string storeName, string key)
+		{
+			// 1. GET PERSISTED MESSAGE BLOB
+
+			var blobReference = new PersistedMessageBlobReference(storeName, key);
+			var blob = _blobStorage.GetBlob(blobReference);
+			if (!blob.HasValue)
+			{
+				return Maybe<PersistedMessage>.Empty;
+			}
+
+			var persistedMessage = blob.Value;
+			var data = persistedMessage.Data;
+			var dataXml = Maybe<XElement>.Empty;
+
+			// 2. IF WRAPPED, UNWRAP; UNPACK XML IF SUPPORTED
+
+			MessageWrapper wrapper = null;
+			try
+			{
+				using (var stream = new MemoryStream(data))
+				{
+					wrapper = (MessageWrapper)_formatter.Deserialize(stream, typeof(MessageWrapper));
+				}
+			}
+			catch (SerializationException)
+			{
+			}
+
+			if (wrapper != null)
+			{
+				string ignored;
+				dataXml = _blobStorage.GetBlobXml(wrapper.ContainerName, wrapper.BlobName, out ignored);
+			}
+			else
+			{
+				var formatter = _formatter as IIntermediateBinaryFormatter;
+				if (formatter != null)
+				{
+					using (var stream = new MemoryStream(data))
+					{
+						dataXml = formatter.UnpackXml(stream);
+					}
+				}
+			}
+
+			// 3. RETURN
+
+			return new PersistedMessage
+				{
+					QueueName = persistedMessage.QueueName,
+					StoreName = storeName,
+					Key = key,
+					InsertionTime = persistedMessage.InsertionTime,
+					PersistenceTime = persistedMessage.PersistenceTime,
+					DequeueCount = persistedMessage.DequeueCount,
+					Reason = persistedMessage.Reason,
+					DataXml = dataXml,
+				};
+		}
+
+		public void DeletePersisted(string storeName, string key)
+		{
+			// 1. GET PERSISTED MESSAGE BLOB
+
+			var blobReference = new PersistedMessageBlobReference(storeName, key);
+			var blob = _blobStorage.GetBlob(blobReference);
+			if (!blob.HasValue)
+			{
+				return;
+			}
+
+			var persistedMessage = blob.Value;
+
+			// 2. IF WRAPPED, UNWRAP AND DELETE BLOB
+
+			MessageWrapper wrapper = null;
+			try
+			{
+				using (var stream = new MemoryStream(persistedMessage.Data))
+				{
+					wrapper = (MessageWrapper)_formatter.Deserialize(stream, typeof(MessageWrapper));
+				}
+			}
+			catch (SerializationException)
+			{
+			}
+
+			if (wrapper != null)
+			{
+				_blobStorage.DeleteBlob(wrapper.ContainerName, wrapper.BlobName);
+			}
+
+			// 3. DELETE PERSISTED MESSAGE
+
+			_blobStorage.DeleteBlob(blobReference);
+		}
+
+		public void RestorePersisted(string storeName, string key)
+		{
+			// 1. GET PERSISTED MESSAGE BLOB
+
+			var blobReference = new PersistedMessageBlobReference(storeName, key);
+			var blob = _blobStorage.GetBlob(blobReference);
+			if(!blob.HasValue)
+			{
+				return;
+			}
+
+			var persistedMessage = blob.Value;
+
+			// 2. PUT MESSAGE TO QUEUE
+
+			var queue = _queueStorage.GetQueueReference(persistedMessage.QueueName);
+			var rawMessage = new CloudQueueMessage(persistedMessage.Data);
+			PutRawMessage(rawMessage, queue);
+
+			// 3. DELETE PERSISTED MESSAGE
+
+			_blobStorage.DeleteBlob(blobReference);
+		}
+
+		void PersistRawMessage(CloudQueueMessage message, string queueName, string storeName, string reason)
+		{
+			var timestamp = _countPersistMessage.Open();
+
+			var queue = _queueStorage.GetQueueReference(queueName);
+
+			// 1. PERSIST MESSAGE TO BLOB
+
+			var blobReference = PersistedMessageBlobReference.GetNew(storeName);
+			var persistedMessage = new PersistedMessageData
+			{
+				QueueName = queueName,
+				InsertionTime = message.InsertionTime.Value,
+				PersistenceTime = DateTimeOffset.UtcNow,
+				DequeueCount = message.DequeueCount,
+				Reason = reason,
+				Data = message.AsBytes,
+			};
+
+			_blobStorage.PutBlob(blobReference, persistedMessage);
+
+			// 2. DELETE MESSAGE FROM QUEUE
+
+			DeleteRawMessage(message, queue);
+
+			_countPersistMessage.Close(timestamp);
+		}
+
+		bool DeleteRawMessage(CloudQueueMessage message, CloudQueue queue)
+		{
+			try
+			{
+				_azureServerPolicy.Do(() => queue.DeleteMessage(message));
+				return true;
+			}
+			catch (StorageClientException ex)
+			{
+				if (ex.ErrorCode != StorageErrorCode.ResourceNotFound
+					&& ex.ExtendedErrorInformation.ErrorCode != QueueErrorCodeStrings.QueueNotFound)
+				{
+					throw;
+				}
+			}
+
+			return false;
+		}
+
+		void PutRawMessage(CloudQueueMessage message, CloudQueue queue)
+		{
+			try
+			{
+				_azureServerPolicy.Do(() => queue.AddMessage(message));
+			}
+			catch (StorageClientException ex)
+			{
+				// HACK: not storage status error code yet
+				if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
+					|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+				{
+					// It usually takes time before the queue gets available
+					// (the queue might also have been freshly deleted).
+					AzurePolicies.SlowInstantiation.Do(() =>
+					{
+						queue.Create();
+						queue.AddMessage(message);
+					});
+				}
+				else
+				{
+					throw;
+				}
+			}
+		}
+
+		void CheckOutMessage(object message, CloudQueueMessage rawMessage, string queueName, bool isOverflowing)
+		{
+			lock (_sync)
+			{
+				// If T is a value type, _inprocess could already contain the message
+				// (not the same exact instance, but an instance that is value-equal to this one)
+				InProcessMessage inProcessMessage;
+				if (!_inProcessMessages.TryGetValue(message, out inProcessMessage))
+				{
+					inProcessMessage = new InProcessMessage
+						{
+							QueueName = queueName,
+							RawMessages = new List<CloudQueueMessage> {rawMessage},
+							IsOverflowing = isOverflowing
+						};
+					_inProcessMessages.Add(message, inProcessMessage);
+				}
+				else
+				{
+					inProcessMessage.RawMessages.Add(rawMessage);
+				}
+			}
+		}
+
+		void CheckOutRelink(object originalMessage, object newMessage)
+		{
+			lock (_sync)
+			{
+				var inProcessMessage = _inProcessMessages[originalMessage];
+				_inProcessMessages.Remove(originalMessage);
+				_inProcessMessages.Add(newMessage, inProcessMessage);
+			}
+		}
+
+		void CheckInMessage(object message)
+		{
+			lock (_sync)
+			{
+				var inProcessMessage = _inProcessMessages[message];
+				inProcessMessage.RawMessages.RemoveAt(0);
+
+				if (0 == inProcessMessage.RawMessages.Count)
+				{
+					_inProcessMessages.Remove(message);
+				}
+			}
 		}
 
 		/// <summary>
@@ -621,7 +840,7 @@ namespace Lokad.Cloud.Azure
 		public bool IsOverflowing { get; set; }
 	}
 
-	public class OverflowingMessageBlobReference<T> : BlobReference<T>
+	internal class OverflowingMessageBlobReference<T> : BlobReference<T>
 	{
 		public override string ContainerName
 		{
@@ -647,6 +866,64 @@ namespace Lokad.Cloud.Azure
 		public static OverflowingMessageBlobReference<T> GetNew(string queueName)
 		{
 			return new OverflowingMessageBlobReference<T>(queueName, Guid.NewGuid());
+		}
+	}
+
+	[DataContract]
+	internal class PersistedMessageData
+	{
+		[DataMember(Order = 1)]
+		public string QueueName { get; set; }
+
+		[DataMember(Order = 2)]
+		public DateTimeOffset InsertionTime { get; set; }
+
+		[DataMember(Order = 3)]
+		public DateTimeOffset PersistenceTime { get; set; }
+
+		[DataMember(Order = 4)]
+		public int DequeueCount { get; set; }
+
+		[DataMember(Order = 5, IsRequired = false)]
+		public string Reason { get; set; }
+
+		[DataMember(Order = 6)]
+		public byte[] Data { get; set; }
+	}
+
+	internal class PersistedMessageBlobReference : BlobReference<PersistedMessageData>
+	{
+		public override string ContainerName
+		{
+			get { return "lokad-cloud-persisted-messages"; }
+		}
+
+		/// <summary>Indicates the name of the swap out store where the message is persisted.</summary>
+		[UsedImplicitly, Rank(0)]
+		public string StoreName;
+
+		[UsedImplicitly, Rank(1)]
+		public string Key;
+
+		public PersistedMessageBlobReference(string storeName, string key)
+		{
+			StoreName = storeName;
+			Key = key;
+		}
+
+		public static PersistedMessageBlobReference GetNew(string storeName, string key)
+		{
+			return new PersistedMessageBlobReference(storeName, key);
+		}
+
+		public static PersistedMessageBlobReference GetNew(string storeName)
+		{
+			return new PersistedMessageBlobReference(storeName, Guid.NewGuid().ToString("N"));
+		}
+
+		public static BlobNamePrefix<PersistedMessageBlobReference> GetPrefix(string storeName)
+		{
+			return GetPrefix(new PersistedMessageBlobReference(storeName, null), 1);
 		}
 	}
 }

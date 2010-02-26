@@ -17,14 +17,16 @@ namespace Lokad.Cloud.Mock
 		///</summary>
 		readonly object _sync = new object();
 
-		readonly Dictionary<string, Queue<object>> _queues;
+		readonly Dictionary<string,Queue<object>> _queues;
 		readonly HashSet<Pair<string,object>> _inProgressMessages;
+		readonly HashSet<Quad<string,string,string,object>> _persistedMessages;
 		readonly IBinaryFormatter _formatter;
 
 		public MemoryQueueStorageProvider(IBinaryFormatter formatter)
 		{
 			_queues = new Dictionary<string, Queue<object>>();
-			_inProgressMessages = new HashSet<Pair<string, object>>();
+			_inProgressMessages = new HashSet<Pair<string,object>>();
+			_persistedMessages = new HashSet<Quad<string,string,string,object>>();
 			_formatter = formatter;
 		}
 
@@ -33,7 +35,7 @@ namespace Lokad.Cloud.Mock
 			return _queues.Keys.Where(e => e.StartsWith(prefix));
 		}
 
-		public IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout)
+		public IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout, int maxProcessingTrials)
 		{
 			lock (_sync)
 			{
@@ -140,6 +142,86 @@ namespace Lokad.Cloud.Mock
 			lock (_sync)
 			{
 				return messages.Where(Abandon).Count();
+			}
+		}
+
+		public void Persist<T>(T message, string storeName, string reason)
+		{
+			lock (_sync)
+			{
+				var firstOrEmpty = _inProgressMessages.FirstOrEmpty(p => p.Value == (object) message);
+				if (!firstOrEmpty.HasValue)
+				{
+					return;
+				}
+
+				// persist
+				var key = Guid.NewGuid().ToString("N");
+				_persistedMessages.Add(Tuple.From(storeName, key, firstOrEmpty.Value.Key, (object) message));
+
+				// Remove from invisible queue
+				_inProgressMessages.Remove(firstOrEmpty.Value);
+			}
+		}
+
+		public void PersistRange<T>(IEnumerable<T> messages, string storeName, string reason)
+		{
+			lock (_sync)
+			{
+				foreach(var message in messages)
+				{
+					Persist(message, storeName, reason);
+				}
+			}
+		}
+
+		public IEnumerable<string> ListPersisted(string storeName)
+		{
+			lock (_sync)
+			{
+				return _persistedMessages
+					.Where(x => x.Item1 == storeName)
+					.Select(x => x.Item2)
+					.ToArray();
+			}
+		}
+
+		public Maybe<PersistedMessage> GetPersisted(string storeName, string key)
+		{
+			lock (_sync)
+			{
+				var tuple = _persistedMessages.FirstOrEmpty(x => x.Item1 == storeName && x.Item2 == key);
+				return tuple.Convert(x => new PersistedMessage()
+					{
+						QueueName = x.Item3,
+						StoreName = x.Item1,
+						Key = x.Item2
+					});
+			}
+		}
+
+		public void DeletePersisted(string storeName, string key)
+		{
+			lock (_sync)
+			{
+				_persistedMessages.RemoveWhere(x => x.Item1 == storeName && x.Item2 == key);
+			}
+		}
+
+		public void RestorePersisted(string storeName, string key)
+		{
+			lock (_sync)
+			{
+				var item = _persistedMessages.First(x => x.Item1 == storeName && x.Item2 == key);
+				_persistedMessages.Remove(item);
+
+				if (!_queues.ContainsKey(item.Item3))
+				{
+					_queues.Add(item.Item3, new Queue<object>());
+				}
+
+				_queues[item.Item3].Enqueue(item.Item4);
+
 			}
 		}
 
