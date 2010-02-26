@@ -7,6 +7,7 @@ using System;
 using System.Runtime.Serialization;
 using System.IO;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace Lokad.Cloud
 {
@@ -14,13 +15,12 @@ namespace Lokad.Cloud
 	/// Formatter based on <c>DataContractSerializer</c> and <c>NetDataContractSerializer</c>. 
 	/// The formatter targets storage of persistent or transient data in the cloud storage.
 	/// </summary>
-	/// <typeparam name="T">The type of object to serialize.</typeparam>
 	/// <remarks>
 	/// If a <c>DataContract</c> attribute is present, then the <c>DataContractSerializer</c>
 	/// is favored. If not, then the <c>NetDataContractSerializer</c> is used instead.
 	/// This class is not <b>thread-safe</b>.
 	/// </remarks>
-	public class CloudFormatter : IBinaryFormatter
+	public class CloudFormatter : IBinaryFormatter, IIntermediateBinaryFormatter
 	{
 		XmlObjectSerializer GetXmlSerializer(Type type)
 		{
@@ -51,6 +51,26 @@ namespace Lokad.Cloud
 			using(var reader = XmlDictionaryReader.CreateBinaryReader(decompressed, XmlDictionaryReaderQuotas.Max))
 			{
 				return serializer.ReadObject(reader);
+			}
+		}
+
+		public XElement UnpackXml(Stream source)
+		{
+			using(var decompressed = source.Decompress(true))
+			using (var reader = XmlDictionaryReader.CreateBinaryReader(decompressed, XmlDictionaryReaderQuotas.Max))
+			{
+				return XElement.Load(reader);
+			}
+		}
+
+		public void RepackXml(Stream destination, XElement data)
+		{
+			using(var compressed = destination.Compress(true))
+			using(var writer = XmlDictionaryWriter.CreateBinaryWriter(compressed, null, null, false))
+			{
+				data.Save(writer);
+				writer.Flush();
+				compressed.Flush();
 			}
 		}
 	}
