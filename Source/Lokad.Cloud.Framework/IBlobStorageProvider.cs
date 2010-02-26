@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace Lokad.Cloud
 {
@@ -100,6 +101,21 @@ namespace Lokad.Cloud
 		/// object stored in the blob at compile time, but it can only be determined at run time.
 		/// In all other cases, you should use the generic overloads of the method.</remarks>
 		Maybe<object> GetBlob(string containerName, string blobName, Type type, out string etag);
+
+		/// <summary>
+		/// Gets a blob in intermediate XML representation for inspection and recovery,
+		/// if supported by the serialization formatter.
+		/// </summary>
+		/// <param name="containerName">Name of the container.</param>
+		/// <param name="blobName">Name of the blob.</param>
+		/// <param name="etag">Identifier assigned by the storage to the blob
+		/// that can be used to distinguish be successive version of the blob 
+		/// (useful to check for blob update).</param>
+		/// <returns>
+		/// If there is no such blob or the formatter supports no XML representation,
+		/// the returned object has its property HasValue set to <c>false</c>.
+		/// </returns>
+		Maybe<XElement> GetBlobXml(string containerName, string blobName, out string etag);
 
 		/// <summary>
 		/// Gets a range of blobs.

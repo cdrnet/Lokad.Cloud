@@ -98,7 +98,7 @@ namespace Lokad.Cloud.Test
 
 			var name = BlobName.Print(original);
 
-			Console.WriteLine(name);
+			//Console.WriteLine(name);
 
 			var parsed = BlobName.Parse<PatternA>(name);
 			Assert.AreNotSame(original, parsed);

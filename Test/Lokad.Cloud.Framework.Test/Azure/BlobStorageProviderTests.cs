@@ -283,6 +283,22 @@ namespace Lokad.Cloud.Azure.Test
 				Assert.IsFalse(unprefixed.Contains(n), "#A02");
 			}
 		}
+
+		[Test]
+		public void GetBlobXml()
+		{
+			var data = new MyBlob();
+			Provider.PutBlob(ContainerName, BlobName, data, true);
+
+			string ignored;
+			var blob = Provider.GetBlobXml(ContainerName, BlobName, out ignored);
+			Provider.DeleteBlob(ContainerName, BlobName);
+
+			Assert.IsTrue(blob.HasValue);
+			var xml = blob.Value;
+			var property = xml.Elements().Single();
+			Assert.AreEqual(data.MyGuid, new Guid(property.Value));
+		}
 	}
 
 	[Serializable]
@@ -292,7 +308,7 @@ namespace Lokad.Cloud.Azure.Test
 
 		public MyBlob()
 		{
-			MyGuid = new Guid();
+			MyGuid = Guid.NewGuid();
 		}
 	}
 }

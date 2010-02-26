@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Xml.Linq;
 using Lokad.Diagnostics;
 using Lokad.Threading;
 using Microsoft.WindowsAzure.StorageClient;
@@ -287,6 +288,55 @@ namespace Lokad.Cloud.Azure
 				}
 
 				_countGetBlob.Close(timestamp);
+				return Maybe.From(deserialized);
+			}
+		}
+
+		public Maybe<XElement> GetBlobXml(string containerName, string blobName, out string etag)
+		{
+			etag = null;
+
+			var formatter = _formatter as IIntermediateBinaryFormatter;
+			if (formatter == null)
+			{
+				return Maybe<XElement>.Empty;
+			}
+
+			var container = _blobStorage.GetContainerReference(containerName);
+			var blob = container.GetBlockBlobReference(blobName);
+
+			using (var stream = new MemoryStream())
+			{
+				// if no such container, return empty
+				try
+				{
+					_azureServerPolicy.Do(() =>
+					{
+						stream.Seek(0, SeekOrigin.Begin);
+						blob.DownloadToStream(stream);
+					});
+					etag = blob.Properties.ETag;
+				}
+				catch (StorageClientException ex)
+				{
+					if (ex.ErrorCode == StorageErrorCode.ContainerNotFound
+						|| ex.ErrorCode == StorageErrorCode.BlobNotFound
+						|| ex.ErrorCode == StorageErrorCode.ResourceNotFound)
+					{
+						return Maybe<XElement>.Empty;
+					}
+
+					throw;
+				}
+
+				stream.Seek(0, SeekOrigin.Begin);
+				var deserialized = formatter.UnpackXml(stream);
+
+				if (deserialized == null)
+				{
+					return Maybe<XElement>.Empty;
+				}
+
 				return Maybe.From(deserialized);
 			}
 		}

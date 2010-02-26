@@ -70,7 +70,7 @@ namespace Lokad.Cloud.Test
 				formatter.Serialize(stream, test);
 				stream.Seek(0, SeekOrigin.Begin);
 				Assert.AreEqual(test, formatter.Deserialize(stream, typeof(string)));
-				Console.WriteLine(stream.CanSeek);
+				//Console.WriteLine(stream.CanSeek);
 			}
 
 			using(var stream = new MemoryStream())

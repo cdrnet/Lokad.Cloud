@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Lokad.Threading;
 
 namespace Lokad.Cloud.Mock
@@ -130,6 +131,13 @@ namespace Lokad.Cloud.Mock
 				etag = Containers[containerName].BlobsEtag[blobName];
 				return Containers[containerName].GetBlob(blobName);
 			}
+		}
+
+		public Maybe<XElement> GetBlobXml(string containerName, string blobName, out string etag)
+		{
+			// supporting GetBlobXml is optional, and depending on formatter
+			etag = null;
+			return Maybe<XElement>.Empty;
 		}
 
 		public Maybe<T>[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
