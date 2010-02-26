@@ -822,6 +822,37 @@ namespace Lokad.Cloud.Azure
 				throw;
 			}
 		}
+
+		/// <summary>
+		/// Gets the approximate age of the top message of this queue.
+		/// </summary>
+		public Maybe<TimeSpan> GetApproximateDelay(string queueName)
+		{
+			var queue = _queueStorage.GetQueueReference(queueName);
+			CloudQueueMessage rawMessage;
+
+			try
+			{
+				rawMessage = _azureServerPolicy.Get<CloudQueueMessage>(queue.PeekMessage);
+			}
+			catch (StorageClientException ex)
+			{
+				if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
+					|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
+				{
+					return Maybe<TimeSpan>.Empty;
+				}
+
+				throw;
+			}
+
+			if(rawMessage == null || !rawMessage.InsertionTime.HasValue)
+			{
+				return Maybe<TimeSpan>.Empty;
+			}
+
+			return DateTimeOffset.UtcNow - rawMessage.InsertionTime.Value;
+		}
 	}
 
 	/// <summary>Represents a set of value-identical messages that are being processed by workers, 

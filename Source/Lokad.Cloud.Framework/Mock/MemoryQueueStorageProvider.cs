@@ -249,5 +249,10 @@ namespace Lokad.Cloud.Mock
 					? queue.Count : 0;
 			}
 		}
+
+		public Maybe<TimeSpan> GetApproximateDelay(string queueName)
+		{
+			return Maybe<TimeSpan>.Empty;
+		}
 	}
 }

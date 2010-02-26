@@ -402,6 +402,23 @@ namespace Lokad.Cloud.Azure.Test
 			// list no longer contains key
 			Assert.IsFalse(provider.ListPersisted(storeName).Any(), "#A05");
 		}
+
+		[Test]
+		public void ApproximateDelay()
+		{
+			var provider = GlobalSetup.Container.Resolve<IQueueStorageProvider>();
+			Assert.IsNotNull(provider, "#A00");
+			Assert.IsFalse(provider.GetApproximateDelay(QueueName).HasValue);
+
+			provider.Put(QueueName, 100);
+			var delay = provider.GetApproximateDelay(QueueName);
+			Assert.IsTrue(delay.HasValue);
+			Assert.IsTrue(delay.Value > TimeSpan.FromMinutes(-5) && delay.Value < TimeSpan.FromMinutes(10));
+
+			// note: we allow negative time to allow badly synchronized clocks
+
+			provider.Delete(100);
+		}
 	}
 
 	[Serializable]

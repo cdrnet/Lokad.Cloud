@@ -131,6 +131,9 @@ namespace Lokad.Cloud
 
 		/// <summary>Gets the approximate number of items in this queue.</summary>
 		int GetApproximateCount(string queueName);
+
+		/// <summary>Gets the approximate age of the top message of this queue.</summary>
+		Maybe<TimeSpan> GetApproximateDelay(string queueName);
 	}
 
 	/// <summary>
