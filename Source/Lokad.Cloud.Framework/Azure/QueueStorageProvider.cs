@@ -438,30 +438,7 @@ namespace Lokad.Cloud.Azure
 				// 2. CLONE THE MESSAGE AND PUT IT TO THE QUEUE
 
 				var newRawMessage = new CloudQueueMessage(oldRawMessage.AsBytes);
-
-				try
-				{
-					_azureServerPolicy.Do(() => queue.AddMessage(newRawMessage));
-				}
-				catch (StorageClientException ex)
-				{
-					// HACK: not storage status error code yet
-					if (ex.ErrorCode == StorageErrorCode.ResourceNotFound
-						|| ex.ExtendedErrorInformation.ErrorCode == QueueErrorCodeStrings.QueueNotFound)
-					{
-						// It usually takes time before the queue gets available
-						// (the queue might also have been freshly deleted).
-						AzurePolicies.SlowInstantiation.Do(() =>
-							{
-								queue.Create();
-								queue.AddMessage(newRawMessage);
-							});
-					}
-					else
-					{
-						throw;
-					}
-				}
+				PutRawMessage(newRawMessage, queue);
 
 				// 3. DELETE THE OLD MESSAGE FROM THE QUEUE
 
@@ -552,10 +529,12 @@ namespace Lokad.Cloud.Azure
 			{
 			}
 
+			var dataAvailable = true;
 			if (wrapper != null)
 			{
 				string ignored;
 				dataXml = _blobStorage.GetBlobXml(wrapper.ContainerName, wrapper.BlobName, out ignored);
+				dataAvailable = dataXml.HasValue;
 			}
 			else
 			{
@@ -581,6 +560,7 @@ namespace Lokad.Cloud.Azure
 					DequeueCount = persistedMessage.DequeueCount,
 					Reason = persistedMessage.Reason,
 					DataXml = dataXml,
+					IsDataAvailable = dataAvailable,
 				};
 		}
 

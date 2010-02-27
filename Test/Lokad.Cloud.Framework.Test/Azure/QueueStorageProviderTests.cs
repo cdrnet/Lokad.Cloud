@@ -303,7 +303,7 @@ namespace Lokad.Cloud.Azure.Test
 
 			// clean up
 			provider.DeleteQueue(QueueName);
-			foreach(var skey in provider.ListPersisted(storeName))
+			foreach (var skey in provider.ListPersisted(storeName))
 			{
 				provider.DeletePersisted(storeName, skey);
 			}
@@ -326,22 +326,24 @@ namespace Lokad.Cloud.Azure.Test
 
 			// get persisted message
 			var persisted = provider.GetPersisted(storeName, key);
+			Assert.IsTrue(persisted.HasValue, "#A03");
+			Assert.IsTrue(persisted.Value.DataXml.HasValue, "#A04");
 			var xml = persisted.Value.DataXml.Value;
 			var property = xml.Elements().Single(x => x.Name.LocalName == "MyGuid");
-			Assert.AreEqual(message.MyGuid, new Guid(property.Value), "#A03");
-			
+			Assert.AreEqual(message.MyGuid, new Guid(property.Value), "#A05");
+
 			// restore persisted message
 			provider.RestorePersisted(storeName, key);
 
 			// list no longer contains key
-			Assert.IsFalse(provider.ListPersisted(storeName).Any(), "#A04");
+			Assert.IsFalse(provider.ListPersisted(storeName).Any(), "#A06");
 
 			// get
 			var retrieved2 = provider.Get<MyMessage>(QueueName, 1).First();
-			Assert.AreEqual(message.MyGuid, retrieved2.MyGuid, "#A05");
+			Assert.AreEqual(message.MyGuid, retrieved2.MyGuid, "#A07");
 
 			// delete
-			Assert.IsTrue(provider.Delete(retrieved2), "#A06");
+			Assert.IsTrue(provider.Delete(retrieved2), "#A08");
 		}
 
 		[Test]
@@ -390,17 +392,19 @@ namespace Lokad.Cloud.Azure.Test
 			var key = provider.ListPersisted(storeName).Single();
 
 			// get persisted message
-			provider.GetPersisted(storeName, key);
+			var persisted = provider.GetPersisted(storeName, key);
+			Assert.IsTrue(persisted.HasValue, "#A04");
+			Assert.IsTrue(persisted.Value.DataXml.HasValue, "#A05");
 
 			// delete persisted message
 			provider.DeletePersisted(storeName, key);
 
 			Assert.AreEqual(0,
 				blobProvider.List(QueueStorageProvider.OverflowingMessagesContainerName, QueueName).Count(),
-				"#A04");
+				"#A06");
 
 			// list no longer contains key
-			Assert.IsFalse(provider.ListPersisted(storeName).Any(), "#A05");
+			Assert.IsFalse(provider.ListPersisted(storeName).Any(), "#A07");
 		}
 
 		[Test]

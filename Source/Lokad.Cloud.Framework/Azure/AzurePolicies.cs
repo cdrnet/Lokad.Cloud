@@ -172,11 +172,12 @@ namespace Lokad.Cloud.Azure
 				// those 'client' exceptions reflects server-side problem (delayed instantiation)
 				if (errorCode == StorageErrorCode.ResourceNotFound
 					|| errorCode == StorageErrorCode.ContainerNotFound
-						|| errorString == QueueErrorCodeStrings.QueueNotFound
-							|| errorString == StorageErrorCodeStrings.InternalError
-								|| errorString == StorageErrorCodeStrings.ServerBusy
-									|| errorString == TableErrorCodeStrings.TableServerOutOfMemory
-										|| errorString == TableErrorCodeStrings.TableBeingDeleted)
+					|| errorString == QueueErrorCodeStrings.QueueNotFound
+					|| errorString == QueueErrorCodeStrings.QueueBeingDeleted
+					|| errorString == StorageErrorCodeStrings.InternalError
+					|| errorString == StorageErrorCodeStrings.ServerBusy
+					|| errorString == TableErrorCodeStrings.TableServerOutOfMemory
+					|| errorString == TableErrorCodeStrings.TableBeingDeleted)
 				{
 					return true;
 				}

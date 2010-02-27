@@ -159,5 +159,9 @@ namespace Lokad.Cloud
 
 		/// <summary>XML representation of the message, if possible and supported by the serializer</summary>
 		public Maybe<XElement> DataXml { get; internal set; }
+
+		/// <summary>True if the raw message data is available and can be restored.</summary>
+		/// <remarks>Can be true even if DataXML is not available.</remarks>
+		public bool IsDataAvailable { get; internal set; }
 	}
 }
