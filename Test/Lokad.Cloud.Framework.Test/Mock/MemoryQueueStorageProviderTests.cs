@@ -1,13 +1,10 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
 
 using System;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading;
 using NUnit.Framework;
 
 using Lokad.Cloud.Mock;
@@ -17,6 +14,13 @@ namespace Lokad.Cloud.Framework.Test.Mock
 	[TestFixture]
 	public class MemoryQueueStorageProviderTests
 	{
+		[Test]
+		public void GetOnMissingQueueDoesNotFail()
+		{
+			var queueStorage = new MemoryQueueStorageProvider(new CloudFormatter());
+			queueStorage.Get<int>("nosuchqueue", 1);
+		}
+
 		[Test]
 		public void ItemsGetPutInMonoThread()
 		{

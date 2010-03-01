@@ -42,7 +42,7 @@ namespace Lokad.Cloud.Mock
 				var items = new List<T>(count);
 				for (int i = 0; i < count; i++)
 				{
-					if (_queues[queueName].Any())
+					if (_queues.ContainsKey(queueName) && _queues[queueName].Any())
 					{
 						var message = _queues[queueName].Dequeue();
 						_inProgressMessages.Add(Tuple.From(queueName, message));
