@@ -11,17 +11,16 @@ using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Azure
 {
-
 	/// <summary>Implementation based on the Table Storage of Windows Azure.</summary>
-    public class TableStorageProvider : ITableStorageProvider
+	public class TableStorageProvider : ITableStorageProvider
 	{
 		// HACK: those tokens will probably be provided as constants in the StorageClient library
 		const int MaxEntityTransactionCount = 100;
 
 		// HACK: Lowering the maximal payload, to avoid corner cases #117 (ContentLengthExceeded)
 		// [vermorel] 128kB is purely arbitrary, only taken as a reasonable safety margin
-		const int MaxEntityTransactionPayload = 4*1024*1024 - 128*1024; // 4 MB - 128kB
-		
+		const int MaxEntityTransactionPayload = 4 * 1024 * 1024 - 128 * 1024; // 4 MB - 128kB
+
 		const string ContinuationNextRowKeyToken = "x-ms-continuation-NextRowKey";
 		const string ContinuationNextPartitionKeyToken = "x-ms-continuation-NextPartitionKey";
 		const string NextRowKeyToken = "NextRowKey";
@@ -42,8 +41,8 @@ namespace Lokad.Cloud.Azure
 		public bool CreateTable(string tableName)
 		{
 			var flag = false;
-			AzurePolicies.SlowInstantiation.Do(() => 
-				flag =  _tableStorage.CreateTableIfNotExist(tableName));
+			AzurePolicies.SlowInstantiation.Do(() =>
+				flag = _tableStorage.CreateTableIfNotExist(tableName));
 
 			return flag;
 		}
@@ -51,7 +50,7 @@ namespace Lokad.Cloud.Azure
 		public bool DeleteTable(string tableName)
 		{
 			var flag = false;
-			AzurePolicies.SlowInstantiation.Do(() => 
+			AzurePolicies.SlowInstantiation.Do(() =>
 				flag = _tableStorage.DeleteTableIfExist(tableName));
 
 			return flag;
@@ -206,15 +205,15 @@ namespace Lokad.Cloud.Azure
 			do
 			{
 				var filter = string.Format("(PartitionKey eq '{0}')", partitionKey);
-				
+
 				// optional starting range constraint
-				if(!string.IsNullOrEmpty(startRowKey))
+				if (!string.IsNullOrEmpty(startRowKey))
 				{
 					// ge = GreaterThanOrEqual (inclusive)
 					filter += string.Format(" and (RowKey ge '{0}')", startRowKey);
 				}
 
-				if(!string.IsNullOrEmpty(endRowKey))
+				if (!string.IsNullOrEmpty(endRowKey))
 				{
 					// lt = LessThan (exclusive)
 					filter += string.Format(" and (RowKey lt '{0}')", endRowKey);
@@ -281,7 +280,7 @@ namespace Lokad.Cloud.Azure
 			var context = _tableStorage.GetDataServiceContext();
 			context.MergeOption = MergeOption.NoTracking;
 
-			foreach(var slice in rowKeys.Slice(MaxEntityTransactionCount))
+			foreach (var slice in rowKeys.Slice(MaxEntityTransactionCount))
 			{
 				// work-around the limitation of ADO.NET that does not provide a native way
 				// of query a set of specified entities directly.
@@ -308,7 +307,7 @@ namespace Lokad.Cloud.Azure
 					var query = context.CreateQuery<FatEntity>(tableName)
 						.AddQueryOption("$filter", builder.ToString());
 
-					if(null != continuationRowKey)
+					if (null != continuationRowKey)
 					{
 						query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
 									 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
@@ -328,14 +327,14 @@ namespace Lokad.Cloud.Azure
 						{
 							// if the table does not exist, there is nothing to return
 							var errorCode = AzurePolicies.GetErrorCode(ex);
-							if(TableErrorCodeStrings.TableNotFound == errorCode)
+							if (TableErrorCodeStrings.TableNotFound == errorCode)
 							{
 								fatEntities = new FatEntity[0];
 								return;
 							}
 
 							throw;
-						}	
+						}
 					});
 
 					foreach (var fatEntity in fatEntities)
@@ -363,7 +362,6 @@ namespace Lokad.Cloud.Azure
 			entities.GroupBy(e => e.PartitionKey)
 				.ForEach(g => InsertInternal(tableName, g));
 		}
-
 
 		void InsertInternal<T>(string tableName, IEnumerable<CloudEntity<T>> entities)
 		{
@@ -396,8 +394,11 @@ namespace Lokad.Cloud.Azure
 								var errorCode = AzurePolicies.GetErrorCode(ex);
 								if (errorCode == TableErrorCodeStrings.TableNotFound)
 								{
-									_tableStorage.CreateTableIfNotExist(tableName);
-									context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
+									AzurePolicies.SlowInstantiation.Do(() =>
+										{
+											_tableStorage.CreateTableIfNotExist(tableName);
+											context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
+										});
 								}
 								else
 								{
@@ -417,7 +418,7 @@ namespace Lokad.Cloud.Azure
 								noBatchMode = true;
 							}
 							// HACK: undocumented code returned by the Table Storage
-							else if(errorCode == "ContentLengthExceeded")
+							else if (errorCode == "ContentLengthExceeded")
 							{
 								context.SaveChanges();
 								noBatchMode = true;
@@ -481,7 +482,7 @@ namespace Lokad.Cloud.Azure
 					catch (DataServiceRequestException ex)
 					{
 						var errorCode = AzurePolicies.GetErrorCode(ex);
-						
+
 						if (errorCode == StorageErrorCodeStrings.OperationTimedOut)
 						{
 							// if batch does not work, then split into elementary requests
@@ -547,11 +548,11 @@ namespace Lokad.Cloud.Azure
 		{
 			var accumulator = new List<FatEntity>(100);
 			var payload = 0;
-			foreach(var entity in entities)
+			foreach (var entity in entities)
 			{
 				var entityPayLoad = entity.GetPayload();
 
-				if(accumulator.Count >= MaxEntityTransactionCount || 
+				if (accumulator.Count >= MaxEntityTransactionCount ||
 					payload + entityPayLoad >= MaxEntityTransactionPayload)
 				{
 					yield return accumulator.ToArray();
@@ -563,7 +564,7 @@ namespace Lokad.Cloud.Azure
 				payload += entityPayLoad;
 			}
 
-			if(accumulator.Count > 0)
+			if (accumulator.Count > 0)
 			{
 				yield return accumulator.ToArray();
 			}
@@ -577,7 +578,7 @@ namespace Lokad.Cloud.Azure
 			{
 				var slice = s;
 
-				DeletionStart: // 'slice' might have been refreshed if some entities were already deleted
+			DeletionStart: // 'slice' might have been refreshed if some entities were already deleted
 
 				foreach (var rowKey in slice)
 				{
@@ -595,7 +596,7 @@ namespace Lokad.Cloud.Azure
 
 				try // HACK: [vermorel] if a single entity is missing, then the whole batch operation is aborded
 				{
-					
+
 					try // HACK: nested try/catch to handle the special case where the table is missing
 					{
 						_storagePolicy.Do(() =>
@@ -605,11 +606,11 @@ namespace Lokad.Cloud.Azure
 					{
 						// if the table is missing, no need to go on with the deletion
 						var errorCode = AzurePolicies.GetErrorCode(ex);
-						if(TableErrorCodeStrings.TableNotFound == errorCode)
+						if (TableErrorCodeStrings.TableNotFound == errorCode)
 						{
 							return;
 						}
-						
+
 						throw;
 					}
 				}
@@ -633,8 +634,7 @@ namespace Lokad.Cloud.Azure
 					// HACK: [vermorel] yes, gotos are horrid, but other solutions are worst here.
 					goto DeletionStart;
 				}
-				
-			}	
+			}
 		}
 	}
 }

@@ -2,6 +2,7 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
 using System.Collections.Generic;
 using System.Data.Services.Client;
@@ -12,53 +13,53 @@ using NUnit.Framework;
 
 namespace Lokad.Cloud.Azure.Test
 {
-    [TestFixture]
-    public class TableStorageProviderTests
-    {
-        readonly static Random Rand = new Random();
+	[TestFixture]
+	public class TableStorageProviderTests
+	{
+		readonly static Random Rand = new Random();
 
-// ReSharper disable InconsistentNaming
-        readonly ITableStorageProvider Provider = GlobalSetup.Container.Resolve<ITableStorageProvider>();
-// ReSharper restore InconsistentNaming
+		// ReSharper disable InconsistentNaming
+		readonly ITableStorageProvider Provider = GlobalSetup.Container.Resolve<ITableStorageProvider>();
+		// ReSharper restore InconsistentNaming
 
-        const string TableName = "teststablestorageprovidermytable";
+		const string TableName = "teststablestorageprovidermytable";
 
-        [TestFixtureSetUp]
-        public void Setup()
-        {
-            Provider.CreateTable(TableName);
-        }
+		[TestFixtureSetUp]
+		public void Setup()
+		{
+			Provider.CreateTable(TableName);
+		}
 
-        [TestFixtureTearDown]
-        public void TearDown()
-        {
-            Provider.DeleteTable(TableName);
-        }
+		[TestFixtureTearDown]
+		public void TearDown()
+		{
+			Provider.DeleteTable(TableName);
+		}
 
-        [Test]
-        public void CreateDeleteTables()
-        {
-            var name = "n" + Guid.NewGuid().ToString("N");
-            Assert.IsTrue(Provider.CreateTable(name), "#A01");
-            Assert.IsFalse(Provider.CreateTable(name), "#A02");
-            Assert.IsTrue(Provider.DeleteTable(name), "#A03");
+		[Test]
+		public void CreateDeleteTables()
+		{
+			var name = "n" + Guid.NewGuid().ToString("N");
+			Assert.IsTrue(Provider.CreateTable(name), "#A01");
+			Assert.IsFalse(Provider.CreateTable(name), "#A02");
+			Assert.IsTrue(Provider.DeleteTable(name), "#A03");
 
-            // replicating the test a 2nd time, to check for slow table deletion
-            Assert.IsTrue(Provider.CreateTable(name), "#A04");
-            Assert.IsTrue(Provider.DeleteTable(name), "#A05");
+			// replicating the test a 2nd time, to check for slow table deletion
+			Assert.IsTrue(Provider.CreateTable(name), "#A04");
+			Assert.IsTrue(Provider.DeleteTable(name), "#A05");
 
-            Assert.IsFalse(Provider.DeleteTable(name), "#A06");
+			Assert.IsFalse(Provider.DeleteTable(name), "#A06");
 
-            var name2 = "IamNotATable";
-            Assert.IsFalse(Provider.DeleteTable(name2), "#A07");
-        }
+			var name2 = "IamNotATable";
+			Assert.IsFalse(Provider.DeleteTable(name2), "#A07");
+		}
 
-        [Test]
-        public void GetTables()
-        {
-            var tables = Provider.GetTables();
-            Assert.IsTrue(tables.Contains(TableName), "#B07");
-        }
+		[Test]
+		public void GetTables()
+		{
+			var tables = Provider.GetTables();
+			Assert.IsTrue(tables.Contains(TableName), "#B07");
+		}
 
 		[Test]
 		public void GetOnMissingTableShouldWork()
@@ -66,7 +67,7 @@ namespace Lokad.Cloud.Azure.Test
 			var missingTableName = "t" + Guid.NewGuid().ToString("N");
 
 			// checking the 4 overloads
-			var enumerable = Provider.Get<string>(missingTableName);             
+			var enumerable = Provider.Get<string>(missingTableName);
 			int count = enumerable.Count();
 			Assert.AreEqual(0, count, "#A00");
 
@@ -78,7 +79,7 @@ namespace Lokad.Cloud.Azure.Test
 			count = enumerable.Count();
 			Assert.AreEqual(0, count, "#A02");
 
-			enumerable = Provider.Get<string>(missingTableName, "my-partition", new [] { "my-key"});
+			enumerable = Provider.Get<string>(missingTableName, "my-partition", new[] { "my-key" });
 			count = enumerable.Count();
 			Assert.AreEqual(0, count, "#A03");
 		}
@@ -109,6 +110,18 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
+		public void InsertOnJustDeletedTableShouldWork()
+		{
+			var missingTableName = "t" + Guid.NewGuid().ToString("N");
+			Assert.IsTrue(Provider.CreateTable(missingTableName), "#A01");
+			Assert.IsTrue(Provider.DeleteTable(missingTableName), "#A02");
+			Provider.Insert(missingTableName, Entities(1, "my-key", 10));
+
+			// tentative clean-up
+			Provider.DeleteTable(missingTableName);
+		}
+
+		[Test]
 		public void UpsertOnMissingTableShouldWork()
 		{
 			var missingTableName = "t" + Guid.NewGuid().ToString("N");
@@ -128,13 +141,13 @@ namespace Lokad.Cloud.Azure.Test
 			var e2 = Entities(25, p2, 10);
 			var e1And2 = e1.Union(e2).ToArray();
 
-            Provider.Upsert(TableName, e1);           
+			Provider.Upsert(TableName, e1);
 			Provider.Upsert(TableName, e1And2);
 
 			var list1 = Provider.Get<string>(TableName, p1).ToArray();
 			var count1 = list1.Count();
 			Assert.AreEqual(e1.Count(), count1, "#A00");
-			
+
 			var count2 = Provider.Get<string>(TableName, p2).Count();
 			Assert.AreEqual(e2.Count(), count2, "#A01");
 		}
@@ -173,7 +186,7 @@ namespace Lokad.Cloud.Azure.Test
 		public void DeleteOnMissingTableShouldWork()
 		{
 			var missingTableName = "t" + Guid.NewGuid().ToString("N");
-			Provider.Delete<string>(missingTableName, "my-part", new []{"my-key"});
+			Provider.Delete<string>(missingTableName, "my-part", new[] { "my-key" });
 		}
 
 		[Test]
@@ -192,7 +205,7 @@ namespace Lokad.Cloud.Azure.Test
 				Provider.Update(missingTableName, Entities(1, "my-key", 10));
 				Assert.Fail("#A00");
 			}
-			catch(InvalidOperationException)
+			catch (InvalidOperationException)
 			{
 			}
 		}
@@ -211,185 +224,188 @@ namespace Lokad.Cloud.Azure.Test
 			}
 		}
 
-        [Test]
-        public void GetMethodStartEnd()
-        {
-            //This is a test on the ordered enumeration return by the GetMethod with StartRowKEy-EndRowKey.
-            const int N = 250;
-            string pKey = Guid.NewGuid().ToString();
+		[Test]
+		public void GetMethodStartEnd()
+		{
+			//This is a test on the ordered enumeration return by the GetMethod with StartRowKEy-EndRowKey.
+			const int N = 250;
+			string pKey = Guid.NewGuid().ToString();
 
-            Provider.CreateTable(TableName);
-            var entities = Enumerable.Range(0,N).Select(i=> new CloudEntity<string>
-        			{
-        				PartitionKey = pKey,
-						RowRey = "RowKey" +i,
+			Provider.CreateTable(TableName);
+			var entities = Enumerable.Range(0, N).Select(i => new CloudEntity<string>
+					{
+						PartitionKey = pKey,
+						RowRey = "RowKey" + i,
 						Value = Guid.NewGuid().ToString()
-        			});
+					});
 
-            Provider.Insert(TableName, entities);
+			Provider.Insert(TableName, entities);
 
-            var retrieved = Provider.Get<string>(TableName, pKey, null, null).ToArray();
-            var retrievedSorted = retrieved.OrderBy(e => e.RowRey).ToArray();
+			var retrieved = Provider.Get<string>(TableName, pKey, null, null).ToArray();
+			var retrievedSorted = retrieved.OrderBy(e => e.RowRey).ToArray();
 
-            bool isOrdered = true;
-            for (int i = 0; i < retrieved.Length; i++)
-            {
-                if (retrieved[i] != retrievedSorted[i])
-                {
-                    isOrdered = false;
-                    break;
-                }
-            }
-            Assert.That(isOrdered, "#C01");
+			bool isOrdered = true;
+			for (int i = 0; i < retrieved.Length; i++)
+			{
+				if (retrieved[i] != retrievedSorted[i])
+				{
+					isOrdered = false;
+					break;
+				}
+			}
+			Assert.That(isOrdered, "#C01");
 
-            var retrieved2 = Provider.Get<string>(TableName, pKey, "RowKey25", null).ToArray();
-            var retrievedSorted2 = retrieved2.OrderBy(e => e.RowRey).ToArray();
+			var retrieved2 = Provider.Get<string>(TableName, pKey, "RowKey25", null).ToArray();
+			var retrievedSorted2 = retrieved2.OrderBy(e => e.RowRey).ToArray();
 
-            bool isOrdered2 = true;
-            for (int i = 0; i < retrieved2.Length; i++)
-            {
-                if (retrieved2[i] != retrievedSorted2[i])
-                {
-                    isOrdered2 = false;
-                    break;
-                }
-            }
-            Assert.That(isOrdered2, "#C02");
+			bool isOrdered2 = true;
+			for (int i = 0; i < retrieved2.Length; i++)
+			{
+				if (retrieved2[i] != retrievedSorted2[i])
+				{
+					isOrdered2 = false;
+					break;
+				}
+			}
+			Assert.That(isOrdered2, "#C02");
 
-            var retrieved3 = Provider.Get<string>(TableName, pKey, null, "RowKey25").ToArray();
-            var retrievedSorted3 = retrieved3.OrderBy(e => e.RowRey).ToArray();
+			var retrieved3 = Provider.Get<string>(TableName, pKey, null, "RowKey25").ToArray();
+			var retrievedSorted3 = retrieved3.OrderBy(e => e.RowRey).ToArray();
 
-            bool isOrdered3 = true;
-            for (int i = 0; i < retrieved3.Length; i++)
-            {
-                if (retrieved3[i] != retrievedSorted3[i])
-                {
-                    isOrdered3 = false;
-                    break;
-                }
-            }
-            Assert.That(isOrdered3, "#C03");
-        }
+			bool isOrdered3 = true;
+			for (int i = 0; i < retrieved3.Length; i++)
+			{
+				if (retrieved3[i] != retrievedSorted3[i])
+				{
+					isOrdered3 = false;
+					break;
+				}
+			}
+			Assert.That(isOrdered3, "#C03");
+		}
 
-        [Test]
-        public void InsertAndUpdateFailures()
-        {
-            var Pkey = Guid.NewGuid().ToString();
-            var RowKey = Guid.NewGuid().ToString();
+		[Test]
+		public void InsertAndUpdateFailures()
+		{
+			var Pkey = Guid.NewGuid().ToString();
+			var RowKey = Guid.NewGuid().ToString();
 
-            var entity = new CloudEntity<string>
-            	{
-            		PartitionKey = Pkey, RowRey = RowKey, Timestamp = DateTime.UtcNow, Value = "value1"
-            	};
+			var entity = new CloudEntity<string>
+				{
+					PartitionKey = Pkey,
+					RowRey = RowKey,
+					Timestamp = DateTime.UtcNow,
+					Value = "value1"
+				};
 
-            //Insert entity.
-            Provider.Insert(TableName, new[] { entity });
+			//Insert entity.
+			Provider.Insert(TableName, new[] { entity });
 
-            bool iSTestSuccess1 = false;
-            try
-            {
-                //retry should fail.
-                Provider.Insert(TableName, new[] { entity });
-            }
-            catch (Exception exception)
-            {
-                iSTestSuccess1 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.That(iSTestSuccess1, "#E01");
+			bool iSTestSuccess1 = false;
+			try
+			{
+				//retry should fail.
+				Provider.Insert(TableName, new[] { entity });
+			}
+			catch (Exception exception)
+			{
+				iSTestSuccess1 = (exception as InvalidOperationException) != null ? true : false;
+			}
+			Assert.That(iSTestSuccess1, "#E01");
 
-            bool isTestSuccess2 = false;
-            //delete the entity.
-            Provider.Delete<string>(TableName, Pkey, new[] { RowKey });
-            try
-            {
-                entity.Value = "value2";
-                Provider.Update(TableName, new[] { entity });
-            }
-            catch (Exception exception)
-            {
-                //Update should fail.
-                isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
-            }
-            Assert.That(isTestSuccess2, "#E02");
-        }
+			bool isTestSuccess2 = false;
+			//delete the entity.
+			Provider.Delete<string>(TableName, Pkey, new[] { RowKey });
+			try
+			{
+				entity.Value = "value2";
+				Provider.Update(TableName, new[] { entity });
+			}
+			catch (Exception exception)
+			{
+				//Update should fail.
+				isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
+			}
+			Assert.That(isTestSuccess2, "#E02");
+		}
 
-        [Test]
-        public void IdempotenceOfDeleteMethod()
-        {
-            var pkey = Guid.NewGuid().ToString("N");
+		[Test]
+		public void IdempotenceOfDeleteMethod()
+		{
+			var pkey = Guid.NewGuid().ToString("N");
 
-        	var entities = Range.Array(10).Convert(i =>
-        		new CloudEntity<string>
-        			{
-        				PartitionKey = pkey,
+			var entities = Range.Array(10).Convert(i =>
+				new CloudEntity<string>
+					{
+						PartitionKey = pkey,
 						RowRey = Guid.NewGuid().ToString("N"),
 						Value = "nothing"
-        			});
+					});
 
-            // Insert/delete entity.
-            Provider.Insert(TableName, entities);
+			// Insert/delete entity.
+			Provider.Insert(TableName, entities);
 
 			// partial deletion
-            Provider.Delete<string>(TableName, pkey, entities.Take(5).ToArray(e => e.RowRey));
+			Provider.Delete<string>(TableName, pkey, entities.Take(5).ToArray(e => e.RowRey));
 
 			// complete deletion, but with overlap
 			Provider.Delete<string>(TableName, pkey, entities.Convert(e => e.RowRey));
 
 			// checking that all entities have been deleted
-        	var list = Provider.Get<string>(TableName, pkey, entities.Convert(e => e.RowRey));
+			var list = Provider.Get<string>(TableName, pkey, entities.Convert(e => e.RowRey));
 			Assert.That(list.Count() == 0, "#A00");
-        }
+		}
 
-        [Test]
-        public void CheckInsertHandlingOfEntityMaxCount()
-        {
-            var entityCount = 300; // above the max entity count limit
-            var partitionKey = Guid.NewGuid().ToString();
+		[Test]
+		public void CheckInsertHandlingOfEntityMaxCount()
+		{
+			var entityCount = 300; // above the max entity count limit
+			var partitionKey = Guid.NewGuid().ToString();
 
-            Provider.Insert(TableName, Entities(entityCount, partitionKey, 1));
-            var retrievedCount = Provider.Get<string>(TableName, partitionKey).Count();
+			Provider.Insert(TableName, Entities(entityCount, partitionKey, 1));
+			var retrievedCount = Provider.Get<string>(TableName, partitionKey).Count();
 
-            Assert.AreEqual(entityCount, retrievedCount);
-        }
+			Assert.AreEqual(entityCount, retrievedCount);
+		}
 
-        [Test]
-        public void CheckRangeSelection()
-        {
-            var entityCount = 300; // above the max entity count limit
-            var partitionKey = Guid.NewGuid().ToString();
+		[Test]
+		public void CheckRangeSelection()
+		{
+			var entityCount = 300; // above the max entity count limit
+			var partitionKey = Guid.NewGuid().ToString();
 
-            // entities are sorted
-            var entities = Entities(entityCount, partitionKey, 1).OrderBy(e => e.RowRey).ToArray();
+			// entities are sorted
+			var entities = Entities(entityCount, partitionKey, 1).OrderBy(e => e.RowRey).ToArray();
 
-            Provider.Insert(TableName, entities);
+			Provider.Insert(TableName, entities);
 
-            var retrievedCount = Provider.Get<string>(TableName, partitionKey,
-                entities[150].RowRey, entities[200].RowRey).Count();
+			var retrievedCount = Provider.Get<string>(TableName, partitionKey,
+				entities[150].RowRey, entities[200].RowRey).Count();
 
-            // only the range should have been retrieved
-            Assert.AreEqual(200 - 150, retrievedCount);
-        }
+			// only the range should have been retrieved
+			Assert.AreEqual(200 - 150, retrievedCount);
+		}
 
-        [Test]
-        public void CheckInsertHandlingOfHeavyTransaction()
-        {
-            var entityCount = 50;
-            var partitionKey = Guid.NewGuid().ToString();
+		[Test]
+		public void CheckInsertHandlingOfHeavyTransaction()
+		{
+			var entityCount = 50;
+			var partitionKey = Guid.NewGuid().ToString();
 
-            // 5 MB is above the max entity transaction payload
-            Provider.Insert(TableName, Entities(entityCount, partitionKey, 100 * 1024));
-            var retrievedCount = Provider.Get<string>(TableName, partitionKey).Count();
+			// 5 MB is above the max entity transaction payload
+			Provider.Insert(TableName, Entities(entityCount, partitionKey, 100 * 1024));
+			var retrievedCount = Provider.Get<string>(TableName, partitionKey).Count();
 
-            Assert.AreEqual(entityCount, retrievedCount);
-        }
+			Assert.AreEqual(entityCount, retrievedCount);
+		}
 
-        [Test]
-        public void ErrorCodeExtraction()
-        {
-            // HACK: just reproducing the code being tested, no direct linking
-            var r = new Regex(@"<code>(\w+)</code>", RegexOptions.IgnoreCase);
+		[Test]
+		public void ErrorCodeExtraction()
+		{
+			// HACK: just reproducing the code being tested, no direct linking
+			var r = new Regex(@"<code>(\w+)</code>", RegexOptions.IgnoreCase);
 
-            var errorMessage =
+			var errorMessage =
 @"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
 <error xmlns=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"">
   <code>OperationTimedOut</code>
@@ -398,41 +414,41 @@ RequestId:f8e1e934-99ca-4a6f-bca7-e8e5fbd059ea
 Time:2010-01-15T12:37:25.1611631Z</message>
 </error>";
 
-            var ex = new DataServiceRequestException("", new Exception(errorMessage));
+			var ex = new DataServiceRequestException("", new Exception(errorMessage));
 
-            Assert.AreEqual("OperationTimedOut", AzurePolicies.GetErrorCode(ex));
+			Assert.AreEqual("OperationTimedOut", AzurePolicies.GetErrorCode(ex));
 
-        }
+		}
 
 		CloudEntity<String>[] Entities(int count, string partitionKey, int entitySize)
 		{
 			return EntitiesInternal(count, partitionKey, entitySize).ToArray();
 		}
 
-        IEnumerable<CloudEntity<String>> EntitiesInternal(int count, string partitionKey, int entitySize)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                yield return new CloudEntity<string>
-                    {
-                        PartitionKey = partitionKey,
-                        RowRey = Guid.NewGuid().ToString(),
-                        Value = RandomString(entitySize)
-                    };
-            }
-        }
+		IEnumerable<CloudEntity<String>> EntitiesInternal(int count, string partitionKey, int entitySize)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return new CloudEntity<string>
+					{
+						PartitionKey = partitionKey,
+						RowRey = Guid.NewGuid().ToString(),
+						Value = RandomString(entitySize)
+					};
+			}
+		}
 
-        public static string RandomString(int size)
-        {
-            var builder = new StringBuilder();
-            for (int i = 0; i < size; i++)
-            {
+		public static string RandomString(int size)
+		{
+			var builder = new StringBuilder();
+			for (int i = 0; i < size; i++)
+			{
 
-                //26 letters in the alfabet, ascii + 65 for the capital letters
-                builder.Append(Convert.ToChar(Convert.ToInt32(Rand.Next(26) + 65)));
+				//26 letters in the alfabet, ascii + 65 for the capital letters
+				builder.Append(Convert.ToChar(Convert.ToInt32(Rand.Next(26) + 65)));
 
-            }
-            return builder.ToString();
-        }
-    }
+			}
+			return builder.ToString();
+		}
+	}
 }

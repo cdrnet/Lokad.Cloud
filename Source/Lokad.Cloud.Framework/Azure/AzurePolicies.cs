@@ -177,6 +177,7 @@ namespace Lokad.Cloud.Azure
 					|| errorString == StorageErrorCodeStrings.InternalError
 					|| errorString == StorageErrorCodeStrings.ServerBusy
 					|| errorString == TableErrorCodeStrings.TableServerOutOfMemory
+					|| errorString == TableErrorCodeStrings.TableNotFound
 					|| errorString == TableErrorCodeStrings.TableBeingDeleted)
 				{
 					return true;
@@ -190,8 +191,9 @@ namespace Lokad.Cloud.Azure
 			{
 				var errorString = GetErrorCode(tableException);
 
-				if(errorString == TableErrorCodeStrings.TableBeingDeleted ||
-					errorString == TableErrorCodeStrings.TableServerOutOfMemory)
+				if (errorString == TableErrorCodeStrings.TableBeingDeleted
+					|| errorString == TableErrorCodeStrings.TableNotFound
+					|| errorString == TableErrorCodeStrings.TableServerOutOfMemory)
 				{
 					return true;
 				}
