@@ -157,6 +157,20 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
+		public void UpsertShouldSupportLargeEntityCount()
+		{
+			var p1 = Guid.NewGuid().ToString("N");
+
+			var entities = Entities(150, p1, 500);
+
+			Provider.Upsert(TableName, entities);
+			Provider.Upsert(TableName, entities); // idempotence
+
+			var list = Provider.Get<string>(TableName, p1).ToArray();
+			Assert.AreEqual(entities.Length, list.Length, "#A00");
+		}
+
+		[Test]
 		public void UpsertShouldUpdateOrInsert()
 		{
 			var p1 = Guid.NewGuid().ToString("N");
@@ -225,7 +239,7 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void DeleteOnMissingPartitionShouldWork()
 		{
-			var missingPartition = "t" + Guid.NewGuid().ToString("N");
+			var missingPartition = Guid.NewGuid().ToString("N");
 			Provider.Delete<string>(TableName, missingPartition, new[] { "my-key" });
 		}
 
