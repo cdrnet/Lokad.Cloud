@@ -90,6 +90,8 @@ namespace Lokad.Cloud.Azure
 			Enforce.That(() => tableName);
 			Enforce.That(() => partitionKey);
 			Enforce.That(!partitionKey.Contains("'"), "Incorrect char in partitionKey.");
+			Enforce.That(!(startRowKey != null && startRowKey.Contains("'")), "Incorrect char in startRowKey.");
+			Enforce.That(!(endRowKey != null && endRowKey.Contains("'")), "Incorrect char in endRowKey.");
 
 			var filter = string.Format("(PartitionKey eq '{0}')", partitionKey);
 
