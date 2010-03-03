@@ -80,6 +80,7 @@
     <None Include="App.config" />
     <None Include="App.template.config" />
     <Compile Include="CloudFormatterTests.cs" />
+    <Compile Include="CloudTableTests.cs" />
     <Compile Include="Diagnostics\ExecutionCounterTests.cs" />
     <Compile Include="Diagnostics\ExceptionCounterTests.cs" />
     <Compile Include="MessageWrapperTests.cs" />

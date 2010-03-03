@@ -3,8 +3,10 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Lokad.Quality;
 
 namespace Lokad.Cloud
@@ -30,6 +32,12 @@ namespace Lokad.Cloud
 		/// <remarks></remarks>
 		public CloudTable(ITableStorageProvider provider, string tableName)
 		{
+			// validating against the Windows Azure rule for table names.
+			if(!Regex.Match(tableName, "^[A-Za-z][A-Za-z0-9]{2,62}").Success)
+			{
+				throw new ArgumentException("Table name is incorrect", "tableName");
+			}
+
 			_provider = provider;
 			_tableName = tableName;
 		}
