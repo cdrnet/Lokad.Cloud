@@ -68,60 +68,7 @@ namespace Lokad.Cloud.Azure
 			var context = _tableStorage.GetDataServiceContext();
 			context.MergeOption = MergeOption.NoTracking;
 
-			string continuationRowKey = null;
-			string continuationPartitionKey = null;
-
-			do
-			{
-				var query = context.CreateQuery<FatEntity>(tableName);
-
-				if (null != continuationRowKey)
-				{
-					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
-								 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
-				}
-
-				QueryOperationResponse response = null;
-				FatEntity[] fatEntities = null;
-
-				_storagePolicy.Do(() =>
-					{
-						try
-						{
-							response = query.Execute() as QueryOperationResponse;
-							fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
-						}
-						catch (DataServiceQueryException ex)
-						{
-							// if the table does not exist, there is nothing to return
-							var errorCode = AzurePolicies.GetErrorCode(ex);
-							if (TableErrorCodeStrings.TableNotFound == errorCode)
-							{
-								fatEntities = new FatEntity[0];
-								return;
-							}
-
-							throw;
-						}
-					});
-
-				foreach (var fatEntity in fatEntities)
-				{
-					yield return FatEntity.Convert<T>(fatEntity, _formatter);
-				}
-
-				if (null != response && response.Headers.ContainsKey(ContinuationNextRowKeyToken))
-				{
-					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
-					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
-				}
-				else
-				{
-					continuationRowKey = null;
-					continuationPartitionKey = null;
-				}
-
-			} while (null != continuationRowKey);
+			return GetInternal<T>(context, tableName, Maybe.String);
 		}
 
 		public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey)
@@ -130,64 +77,12 @@ namespace Lokad.Cloud.Azure
 			Enforce.That(() => partitionKey);
 			Enforce.That(!partitionKey.Contains("'"), "Incorrect char in partitionKey.");
 
+			var filter = string.Format("(PartitionKey eq '{0}')", partitionKey);
+
 			var context = _tableStorage.GetDataServiceContext();
 			context.MergeOption = MergeOption.NoTracking;
 
-			string continuationRowKey = null;
-			string continuationPartitionKey = null;
-
-			do
-			{
-				var query = context.CreateQuery<FatEntity>(tableName)
-					.AddQueryOption("$filter", string.Format("(PartitionKey eq '{0}')", partitionKey));
-
-				if (null != continuationRowKey)
-				{
-					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
-								 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
-				}
-
-				QueryOperationResponse response = null;
-				FatEntity[] fatEntities = null;
-
-				_storagePolicy.Do(() =>
-				{
-					try
-					{
-						response = query.Execute() as QueryOperationResponse;
-						fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
-					}
-					catch (DataServiceQueryException ex)
-					{
-						// if the table does not exist, there is nothing to return
-						var errorCode = AzurePolicies.GetErrorCode(ex);
-						if (TableErrorCodeStrings.TableNotFound == errorCode)
-						{
-							fatEntities = new FatEntity[0];
-							return;
-						}
-
-						throw;
-					}
-				});
-
-				foreach (var fatEntity in fatEntities)
-				{
-					yield return FatEntity.Convert<T>(fatEntity, _formatter);
-				}
-
-				if (null != response && response.Headers.ContainsKey(ContinuationNextRowKeyToken))
-				{
-					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
-					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
-				}
-				else
-				{
-					continuationRowKey = null;
-					continuationPartitionKey = null;
-				}
-
-			} while (null != continuationRowKey);
+			return GetInternal<T>(context, tableName, filter);
 		}
 
 		public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey)
@@ -196,79 +91,25 @@ namespace Lokad.Cloud.Azure
 			Enforce.That(() => partitionKey);
 			Enforce.That(!partitionKey.Contains("'"), "Incorrect char in partitionKey.");
 
+			var filter = string.Format("(PartitionKey eq '{0}')", partitionKey);
+
+			// optional starting range constraint
+			if (!string.IsNullOrEmpty(startRowKey))
+			{
+				// ge = GreaterThanOrEqual (inclusive)
+				filter += string.Format(" and (RowKey ge '{0}')", startRowKey);
+			}
+
+			if (!string.IsNullOrEmpty(endRowKey))
+			{
+				// lt = LessThan (exclusive)
+				filter += string.Format(" and (RowKey lt '{0}')", endRowKey);
+			}
+
 			var context = _tableStorage.GetDataServiceContext();
 			context.MergeOption = MergeOption.NoTracking;
 
-			string continuationRowKey = null;
-			string continuationPartitionKey = null;
-
-			do
-			{
-				var filter = string.Format("(PartitionKey eq '{0}')", partitionKey);
-
-				// optional starting range constraint
-				if (!string.IsNullOrEmpty(startRowKey))
-				{
-					// ge = GreaterThanOrEqual (inclusive)
-					filter += string.Format(" and (RowKey ge '{0}')", startRowKey);
-				}
-
-				if (!string.IsNullOrEmpty(endRowKey))
-				{
-					// lt = LessThan (exclusive)
-					filter += string.Format(" and (RowKey lt '{0}')", endRowKey);
-				}
-
-				var query = context.CreateQuery<FatEntity>(tableName)
-					.AddQueryOption("$filter", filter);
-
-				if (null != continuationRowKey)
-				{
-					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
-								 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
-				}
-
-				QueryOperationResponse response = null;
-				FatEntity[] fatEntities = null;
-
-				_storagePolicy.Do(() =>
-				{
-					try
-					{
-						response = query.Execute() as QueryOperationResponse;
-						fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
-					}
-					catch (DataServiceQueryException ex)
-					{
-						// if the table does not exist, there is nothing to return
-						var errorCode = AzurePolicies.GetErrorCode(ex);
-						if (TableErrorCodeStrings.TableNotFound == errorCode)
-						{
-							fatEntities = new FatEntity[0];
-							return;
-						}
-
-						throw;
-					}
-				});
-
-				foreach (var fatEntity in fatEntities)
-				{
-					yield return FatEntity.Convert<T>(fatEntity, _formatter);
-				}
-
-				if (null != response && response.Headers.ContainsKey(ContinuationNextRowKeyToken))
-				{
-					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
-					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
-				}
-				else
-				{
-					continuationRowKey = null;
-					continuationPartitionKey = null;
-				}
-
-			} while (null != continuationRowKey);
+			return GetInternal<T>(context, tableName, filter);
 		}
 
 		public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys)
@@ -299,62 +140,74 @@ namespace Lokad.Cloud.Azure
 				}
 				builder.Append(")");
 
-				string continuationRowKey = null;
-				string continuationPartitionKey = null;
-
-				do
+				foreach(var entity in GetInternal<T>(context, tableName, builder.ToString()))
 				{
-					var query = context.CreateQuery<FatEntity>(tableName)
-						.AddQueryOption("$filter", builder.ToString());
-
-					if (null != continuationRowKey)
-					{
-						query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
-									 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
-					}
-
-					QueryOperationResponse response = null;
-					FatEntity[] fatEntities = null;
-
-					_storagePolicy.Do(() =>
-					{
-						try
-						{
-							response = query.Execute() as QueryOperationResponse;
-							fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
-						}
-						catch (DataServiceQueryException ex)
-						{
-							// if the table does not exist, there is nothing to return
-							var errorCode = AzurePolicies.GetErrorCode(ex);
-							if (TableErrorCodeStrings.TableNotFound == errorCode)
-							{
-								fatEntities = new FatEntity[0];
-								return;
-							}
-
-							throw;
-						}
-					});
-
-					foreach (var fatEntity in fatEntities)
-					{
-						yield return FatEntity.Convert<T>(fatEntity, _formatter);
-					}
-
-					if (null != response && response.Headers.ContainsKey(ContinuationNextRowKeyToken))
-					{
-						continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
-						continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
-					}
-					else
-					{
-						continuationRowKey = null;
-						continuationPartitionKey = null;
-					}
-
-				} while (null != continuationRowKey);
+					yield return entity;
+				}
 			}
+		}
+
+		private IEnumerable<CloudEntity<T>> GetInternal<T>(TableServiceContext context, string tableName, Maybe<string> filter)
+		{
+			string continuationRowKey = null;
+			string continuationPartitionKey = null;
+
+			do
+			{
+				var query = context.CreateQuery<FatEntity>(tableName);
+
+				if (filter.HasValue)
+				{
+					query = query.AddQueryOption("$filter", filter.Value);
+				}
+
+				if (null != continuationRowKey)
+				{
+					query = query.AddQueryOption(NextRowKeyToken, continuationRowKey)
+								 .AddQueryOption(NextPartitionKeyToken, continuationPartitionKey);
+				}
+
+				QueryOperationResponse response = null;
+				FatEntity[] fatEntities = null;
+
+				_storagePolicy.Do(() =>
+				{
+					try
+					{
+						response = query.Execute() as QueryOperationResponse;
+						fatEntities = ((IEnumerable<FatEntity>)response).ToArray();
+					}
+					catch (DataServiceQueryException ex)
+					{
+						// if the table does not exist, there is nothing to return
+						var errorCode = AzurePolicies.GetErrorCode(ex);
+						if (TableErrorCodeStrings.TableNotFound == errorCode)
+						{
+							fatEntities = new FatEntity[0];
+							return;
+						}
+
+						throw;
+					}
+				});
+
+				foreach (var fatEntity in fatEntities)
+				{
+					yield return FatEntity.Convert<T>(fatEntity, _formatter);
+				}
+
+				if (null != response && response.Headers.ContainsKey(ContinuationNextRowKeyToken))
+				{
+					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
+					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
+				}
+				else
+				{
+					continuationRowKey = null;
+					continuationPartitionKey = null;
+				}
+
+			} while (null != continuationRowKey);
 		}
 
 		public void Insert<T>(string tableName, IEnumerable<CloudEntity<T>> entities)

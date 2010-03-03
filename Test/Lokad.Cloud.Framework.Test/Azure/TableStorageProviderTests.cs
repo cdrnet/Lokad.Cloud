@@ -85,6 +85,31 @@ namespace Lokad.Cloud.Azure.Test
 		}
 
 		[Test]
+		public void GetOnJustDeletedTableShouldWork()
+		{
+			var missingTableName = "t" + Guid.NewGuid().ToString("N");
+			Assert.IsTrue(Provider.CreateTable(missingTableName), "#A01");
+			Assert.IsTrue(Provider.DeleteTable(missingTableName), "#A02");
+
+			// checking the 4 overloads
+			var enumerable = Provider.Get<string>(missingTableName);
+			int count = enumerable.Count();
+			Assert.AreEqual(0, count, "#A00");
+
+			enumerable = Provider.Get<string>(missingTableName, "my-partition");
+			count = enumerable.Count();
+			Assert.AreEqual(0, count, "#A01");
+
+			enumerable = Provider.Get<string>(missingTableName, "my-partition", "start", "end");
+			count = enumerable.Count();
+			Assert.AreEqual(0, count, "#A02");
+
+			enumerable = Provider.Get<string>(missingTableName, "my-partition", new[] { "my-key" });
+			count = enumerable.Count();
+			Assert.AreEqual(0, count, "#A03");
+		}
+
+		[Test]
 		public void GetOnMissingPartitionShouldWork()
 		{
 			var missingPartition = Guid.NewGuid().ToString("N");
@@ -144,16 +169,15 @@ namespace Lokad.Cloud.Azure.Test
 			Provider.Upsert(TableName, e1);
 			Provider.Upsert(TableName, e1And2);
 
-			var list1 = Provider.Get<string>(TableName, p1).ToArray();
-			var count1 = list1.Count();
-			Assert.AreEqual(e1.Count(), count1, "#A00");
+			var count1 = Provider.Get<string>(TableName, p1).Count();
+			Assert.AreEqual(e1.Length, count1, "#A00");
 
 			var count2 = Provider.Get<string>(TableName, p2).Count();
-			Assert.AreEqual(e2.Count(), count2, "#A01");
+			Assert.AreEqual(e2.Length, count2, "#A01");
 		}
 
 		[Test]
-		public void InsertShouldHandleDistintPartition()
+		public void InsertShouldHandleDistinctPartition()
 		{
 			var p1 = Guid.NewGuid().ToString("N");
 			var p2 = Guid.NewGuid().ToString("N");
@@ -178,14 +202,23 @@ namespace Lokad.Cloud.Azure.Test
 			Provider.Insert(TableName, e1And2);
 
 			var list1 = Provider.Get<string>(TableName, p1).ToArray();
-			var count1 = list1.Count();
-			Assert.AreEqual(e1.Count(), count1, "#A00");
+			var count1 = list1.Length;
+			Assert.AreEqual(e1.Length, count1, "#A00");
 		}
 
 		[Test]
 		public void DeleteOnMissingTableShouldWork()
 		{
 			var missingTableName = "t" + Guid.NewGuid().ToString("N");
+			Provider.Delete<string>(missingTableName, "my-part", new[] { "my-key" });
+		}
+
+		[Test]
+		public void DeleteOnJustDeletedTableShouldWork()
+		{
+			var missingTableName = "t" + Guid.NewGuid().ToString("N");
+			Assert.IsTrue(Provider.CreateTable(missingTableName), "#A01");
+			Assert.IsTrue(Provider.DeleteTable(missingTableName), "#A02");
 			Provider.Delete<string>(missingTableName, "my-part", new[] { "my-key" });
 		}
 
@@ -202,6 +235,22 @@ namespace Lokad.Cloud.Azure.Test
 			try
 			{
 				var missingTableName = "t" + Guid.NewGuid().ToString("N");
+				Provider.Update(missingTableName, Entities(1, "my-key", 10));
+				Assert.Fail("#A00");
+			}
+			catch (InvalidOperationException)
+			{
+			}
+		}
+
+		[Test]
+		public void UpdateFailsOnJustDeletedTable()
+		{
+			try
+			{
+				var missingTableName = "t" + Guid.NewGuid().ToString("N");
+				Assert.IsTrue(Provider.CreateTable(missingTableName), "#A01");
+				Assert.IsTrue(Provider.DeleteTable(missingTableName), "#A02");
 				Provider.Update(missingTableName, Entities(1, "my-key", 10));
 				Assert.Fail("#A00");
 			}
