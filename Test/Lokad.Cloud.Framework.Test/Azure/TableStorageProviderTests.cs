@@ -350,13 +350,13 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void InsertAndUpdateFailures()
 		{
-			var Pkey = Guid.NewGuid().ToString();
-			var RowKey = Guid.NewGuid().ToString();
+			var partitionKey = Guid.NewGuid().ToString();
+			var rowKey = Guid.NewGuid().ToString();
 
 			var entity = new CloudEntity<string>
 				{
-					PartitionKey = Pkey,
-					RowRey = RowKey,
+					PartitionKey = partitionKey,
+					RowRey = rowKey,
 					Timestamp = DateTime.UtcNow,
 					Value = "value1"
 				};
@@ -364,32 +364,27 @@ namespace Lokad.Cloud.Azure.Test
 			//Insert entity.
 			Provider.Insert(TableName, new[] { entity });
 
-			bool iSTestSuccess1 = false;
 			try
 			{
 				//retry should fail.
 				Provider.Insert(TableName, new[] { entity });
+				Assert.Fail("#A01");
 			}
-			catch (Exception exception)
+			catch (InvalidOperationException)
 			{
-				iSTestSuccess1 = (exception as InvalidOperationException) != null ? true : false;
 			}
-			Assert.That(iSTestSuccess1, "#E01");
 
-			bool isTestSuccess2 = false;
 			//delete the entity.
-			Provider.Delete<string>(TableName, Pkey, new[] { RowKey });
+			Provider.Delete<string>(TableName, partitionKey, new[] { rowKey });
 			try
 			{
 				entity.Value = "value2";
 				Provider.Update(TableName, new[] { entity });
+				Assert.Fail("#A02");
 			}
-			catch (Exception exception)
+			catch (InvalidOperationException)
 			{
-				//Update should fail.
-				isTestSuccess2 = (exception as InvalidOperationException) != null ? true : false;
 			}
-			Assert.That(isTestSuccess2, "#E02");
 		}
 
 		[Test]
