@@ -159,9 +159,13 @@ namespace Lokad.Cloud.Azure.Test
 		[Test]
 		public void UpsertShouldSupportLargeEntityCount()
 		{
-			var p1 = Guid.NewGuid().ToString("N");
+			var p1 = "00049999DatasetRepositoryTests";
 
-			var entities = Entities(150, p1, 500);
+			var entities = Entities(150, p1, 10);
+			for (int i = 0; i < entities.Length; i++ )
+			{
+				entities[i].RowRey = "series+" + i;	
+			}
 
 			Provider.Upsert(TableName, entities);
 			Provider.Upsert(TableName, entities); // idempotence
