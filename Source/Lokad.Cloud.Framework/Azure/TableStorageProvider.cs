@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
 using System.Text;
+using System.Web;
 using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Azure
@@ -77,7 +78,7 @@ namespace Lokad.Cloud.Azure
 			Enforce.That(() => partitionKey);
 			Enforce.That(!partitionKey.Contains("'"), "Incorrect char in partitionKey.");
 
-			var filter = string.Format("(PartitionKey eq '{0}')", partitionKey);
+			var filter = string.Format("(PartitionKey eq '{0}')", HttpUtility.UrlEncode(partitionKey));
 
 			var context = _tableStorage.GetDataServiceContext();
 			context.MergeOption = MergeOption.NoTracking;
@@ -93,19 +94,19 @@ namespace Lokad.Cloud.Azure
 			Enforce.That(!(startRowKey != null && startRowKey.Contains("'")), "Incorrect char in startRowKey.");
 			Enforce.That(!(endRowKey != null && endRowKey.Contains("'")), "Incorrect char in endRowKey.");
 
-			var filter = string.Format("(PartitionKey eq '{0}')", partitionKey);
+			var filter = string.Format("(PartitionKey eq '{0}')", HttpUtility.UrlEncode(partitionKey));
 
 			// optional starting range constraint
 			if (!string.IsNullOrEmpty(startRowKey))
 			{
 				// ge = GreaterThanOrEqual (inclusive)
-				filter += string.Format(" and (RowKey ge '{0}')", startRowKey);
+				filter += string.Format(" and (RowKey ge '{0}')", HttpUtility.UrlEncode(startRowKey));
 			}
 
 			if (!string.IsNullOrEmpty(endRowKey))
 			{
 				// lt = LessThan (exclusive)
-				filter += string.Format(" and (RowKey lt '{0}')", endRowKey);
+				filter += string.Format(" and (RowKey lt '{0}')", HttpUtility.UrlEncode(endRowKey));
 			}
 
 			var context = _tableStorage.GetDataServiceContext();
@@ -128,13 +129,13 @@ namespace Lokad.Cloud.Azure
 				// work-around the limitation of ADO.NET that does not provide a native way
 				// of query a set of specified entities directly.
 				var builder = new StringBuilder();
-				builder.Append(string.Format("(PartitionKey eq '{0}') and (", partitionKey));
+				builder.Append(string.Format("(PartitionKey eq '{0}') and (", HttpUtility.UrlEncode(partitionKey)));
 				for (int i = 0; i < slice.Length; i++)
 				{
 					// in order to avoid SQL-injection-like problems 
 					Enforce.That(!slice[i].Contains("'"), "Incorrect char in rowKey.");
 
-					builder.Append(string.Format("(RowKey eq '{0}')", slice[i]));
+					builder.Append(string.Format("(RowKey eq '{0}')", HttpUtility.UrlEncode(slice[i])));
 					if (i < slice.Length - 1)
 					{
 						builder.Append(" or ");

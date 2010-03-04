@@ -482,6 +482,32 @@ Time:2010-01-15T12:37:25.1611631Z</message>
 
 		}
 
+		[Test]
+		public void EntityKeysShouldSupportSpecialCharacters()
+		{
+			// disallowed: /\#? must be <1 KB; we also disallow ' for simplicity
+			var keys = new[] {"abc", "123", "abc-123", "abc def", "abc@def", "*", "+", "~%_;:.,"};
+
+			var entities = keys.Select(key => new CloudEntity<string>
+				{
+					PartitionKey = key,
+					RowRey = key,
+					Value = key,
+				}).ToArray();
+
+			Provider.Insert(TableName, entities);
+
+			var result = keys.Select(key => Provider.Get<string>(TableName, key, key).Value).ToArray();
+			CollectionAssert.AreEqual(keys, result.Select(e => e.Value));
+			CollectionAssert.AreEqual(keys, result.Select(e => e.PartitionKey));
+			CollectionAssert.AreEqual(keys, result.Select(e => e.RowRey));
+
+			foreach (var key in keys)
+			{
+				Provider.Delete<string>(TableName, key, new[] {key});
+			}
+		}
+
 		CloudEntity<String>[] Entities(int count, string partitionKey, int entitySize)
 		{
 			return EntitiesInternal(count, partitionKey, entitySize).ToArray();
