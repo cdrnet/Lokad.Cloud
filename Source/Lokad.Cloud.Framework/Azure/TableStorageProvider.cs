@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
@@ -430,7 +431,9 @@ namespace Lokad.Cloud.Azure
 		{
 			var context = _tableStorage.GetDataServiceContext();
 
-			foreach (var s in rowKeys.Slice(MaxEntityTransactionCount))
+			// CAUTION: make sure to get rid of potential duplicate in rowkeys.
+			// (otherwise insertion in 'context' is likely to fail)
+			foreach (var s in rowKeys.Distinct().Slice(MaxEntityTransactionCount))
 			{
 				var slice = s;
 
@@ -448,6 +451,7 @@ namespace Lokad.Cloud.Azure
 
 					context.AttachTo(tableName, mock, "*");
 					context.DeleteObject(mock);
+
 				}
 
 				try // HACK: [vermorel] if a single entity is missing, then the whole batch operation is aborded
