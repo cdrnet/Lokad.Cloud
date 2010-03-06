@@ -308,6 +308,57 @@
             	Hardcoded for simplicity, but could be switched to string codes, if needed.
             </remarks>
     </member>
+    <member name="F:Lokad.CurrencyType.None">
+      <summary>
+            Undefined currency
+            </summary>
+      <remarks>this must be default!</remarks>
+    </member>
+    <member name="F:Lokad.CurrencyType.Eur">
+      <summary>
+            EUR
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyType.Usd">
+      <summary>
+            American Dollar
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyType.Aud">
+      <summary>
+            Australian dollar
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyType.Cad">
+      <summary>
+            Canadian dollar
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyType.Chf">
+      <summary>
+            Swiss franc
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyType.Gbp">
+      <summary>
+            Pound sterling
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyType.Jpy">
+      <summary>
+            Japanese yen
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyType.Rub">
+      <summary>
+            Russian ruble
+            </summary>
+    </member>
+    <member name="F:Lokad.CurrencyType.Mxn">
+      <summary>
+            Mexican Peso
+            </summary>
+    </member>
     <member name="T:Lokad.ExtendDecimal">
       <summary>
             	Extensions around
