@@ -157,9 +157,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		{
 			TryLogInfoFormat("Runtime stopping on worker {0}.", CloudEnvironment.PartitionKey);
 
-			TryDumpDiagnostics();
-
 			_providers.RuntimeFinalizer.FinalizeRuntime();
+
+			TryDumpDiagnostics();
 
 			TryLogInfoFormat("Runtime stopped on worker {0}.", CloudEnvironment.PartitionKey);
 		}
