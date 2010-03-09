@@ -32,33 +32,6 @@ namespace Lokad.Cloud.Web {
         protected global::System.Web.UI.ScriptManager MainScriptManager;
         
         /// <summary>
-        /// PartitionPanel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel PartitionPanel;
-        
-        /// <summary>
-        /// PartitionSelector control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButtonList PartitionSelector;
-        
-        /// <summary>
-        /// PartitionView control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView PartitionView;
-        
-        /// <summary>
         /// ServicePanel control.
         /// </summary>
         /// <remarks>
@@ -111,6 +84,33 @@ namespace Lokad.Cloud.Web {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView ProfilesView;
+        
+        /// <summary>
+        /// PartitionPanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel PartitionPanel;
+        
+        /// <summary>
+        /// PartitionSelector control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RadioButtonList PartitionSelector;
+        
+        /// <summary>
+        /// PartitionView control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView PartitionView;
         
         /// <summary>
         /// ExceptionsPanel control.
