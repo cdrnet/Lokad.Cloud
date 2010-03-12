@@ -115,6 +115,7 @@
     <Compile Include="Azure\ManagementApiClient\ApiConstants.cs" />
     <Compile Include="Azure\ManagementApiClient\IAzureServiceManagement.cs" />
     <Compile Include="Azure\ProvisioningModule.cs" />
+    <Compile Include="Azure\RuntimeModule.cs" />
     <Compile Include="Azure\TableStorageProvider.cs" />
     <Compile Include="BlobName.cs" />
     <Compile Include="BlobReference.cs" />

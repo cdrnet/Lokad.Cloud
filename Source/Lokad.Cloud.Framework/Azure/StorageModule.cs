@@ -17,9 +17,7 @@ namespace Lokad.Cloud.Azure
 	[NoCodeCoverage]
 	public sealed class StorageModule : Module
 	{
-		/// <summary>
-		/// The data connection string.
-		/// </summary>
+		/// <summary>Azure Storage connection string.</summary>
 		[UsedImplicitly]
 		public string DataConnectionString { get; set; }
 

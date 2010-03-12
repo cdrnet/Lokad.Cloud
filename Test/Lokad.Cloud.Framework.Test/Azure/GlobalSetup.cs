@@ -6,8 +6,6 @@
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad.Cloud.Diagnostics;
-using Lokad.Cloud.ServiceFabric;
 
 namespace Lokad.Cloud.Azure.Test
 {
@@ -18,22 +16,8 @@ namespace Lokad.Cloud.Azure.Test
 		static IContainer Setup()
 		{
 			var builder = new ContainerBuilder();
+			builder.RegisterModule(new RuntimeModule());
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
-
-			// formatter
-			builder.Register(typeof (CloudFormatter)).As<IBinaryFormatter>();
-
-			// Runtime
-			builder.Register(typeof(RuntimeFinalizer)).As<IRuntimeFinalizer>();
-
-			// Diagnostics
-			builder.RegisterModule(new DiagnosticsModule());
-
-			// Self Management
-			builder.RegisterModule(new ProvisioningModule());
-
-			// Cloud Infrastructure
-			builder.Register(typeof(CloudInfrastructureProviders));
 
 			return builder.Build();
 		}
