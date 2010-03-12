@@ -75,7 +75,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			builder.RegisterModule(new DiagnosticsModule());
 
 			// Self Management
-			builder.RegisterModule(new AzureManagementModule(externalRoleConfiguration));
+			builder.RegisterModule(new ProvisioningModule(externalRoleConfiguration));
 
 			// Runtime
 			builder.Register(typeof(RuntimeFinalizer)).As<IRuntimeFinalizer>();

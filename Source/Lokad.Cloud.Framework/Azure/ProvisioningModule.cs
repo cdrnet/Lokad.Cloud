@@ -7,16 +7,17 @@ using Autofac.Builder;
 
 namespace Lokad.Cloud.Azure
 {
-	public class AzureManagementModule : Module
+	/// <summary>IoC module for loading the Management API providers.</summary>
+	public class ProvisioningModule : Module
 	{
 		readonly Maybe<RoleConfigurationSettings> _settings;
 
-		public AzureManagementModule()
+		public ProvisioningModule()
 			: this(Maybe<RoleConfigurationSettings>.Empty)
 		{
 		}
 
-		public AzureManagementModule(Maybe<RoleConfigurationSettings> externalSettings)
+		public ProvisioningModule(Maybe<RoleConfigurationSettings> externalSettings)
 		{
 			_settings = externalSettings;
 			if (!_settings.HasValue)
@@ -33,8 +34,8 @@ namespace Lokad.Cloud.Azure
 			}
 			var settings = _settings.Value;
 
-			moduleBuilder.Register(c => new AzureManagementProvider(settings, c.Resolve<ILog>()))
-				.As<AzureManagementProvider, IProvisioningProvider>()
+			moduleBuilder.Register(c => new ProvisioningProvider(settings, c.Resolve<ILog>()))
+				.As<ProvisioningProvider, IProvisioningProvider>()
 				.SingletonScoped();
 		}
 	}

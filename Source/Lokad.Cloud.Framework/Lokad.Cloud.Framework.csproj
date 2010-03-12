@@ -111,10 +111,10 @@
     <Compile Include="Azure\ManagementApiClient\InputParameters\CreateDeploymentInput.cs" />
     <Compile Include="Azure\ManagementApiClient\InputParameters\SwapDeploymentInput.cs" />
     <Compile Include="Azure\ManagementApiClient\ManagementClient.cs" />
-    <Compile Include="Azure\AzureManagementProvider.cs" />
+    <Compile Include="Azure\ProvisioningProvider.cs" />
     <Compile Include="Azure\ManagementApiClient\ApiConstants.cs" />
     <Compile Include="Azure\ManagementApiClient\IAzureServiceManagement.cs" />
-    <Compile Include="Azure\AzureManagementModule.cs" />
+    <Compile Include="Azure\ProvisioningModule.cs" />
     <Compile Include="Azure\TableStorageProvider.cs" />
     <Compile Include="BlobName.cs" />
     <Compile Include="BlobReference.cs" />

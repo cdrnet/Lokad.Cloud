@@ -30,7 +30,7 @@ namespace Lokad.Cloud.Azure.Test
 			builder.RegisterModule(new DiagnosticsModule());
 
 			// Self Management
-			builder.RegisterModule(new AzureManagementModule());
+			builder.RegisterModule(new ProvisioningModule());
 
 			// Cloud Infrastructure
 			builder.Register(typeof(CloudInfrastructureProviders));

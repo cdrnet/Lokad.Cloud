@@ -24,7 +24,7 @@ namespace Lokad.Cloud.Web
 			StorageAccountLabel.Text = GlobalSetup.StorageAccountName;
 
 			// Management
-			var management = GlobalSetup.Container.Resolve<AzureManagementProvider>();
+			var management = GlobalSetup.Container.Resolve<ProvisioningProvider>();
 			management.Update();
 
 			SubscriptionLabel.Text = management.Subscription.GetValue("unknown");
@@ -141,7 +141,7 @@ namespace Lokad.Cloud.Web
 				return;
 			}
 
-			var management = GlobalSetup.Container.Resolve<AzureManagementProvider>();
+			var management = GlobalSetup.Container.Resolve<ProvisioningProvider>();
 			if (!management.IsAvailable)
 			{
 				return;

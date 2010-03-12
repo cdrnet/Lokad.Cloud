@@ -17,7 +17,7 @@ namespace Lokad.Cloud.Azure
 	/// <summary>
 	/// Azure Management API Provider, Provisioning Provider.
 	/// </summary>
-	public class AzureManagementProvider : IProvisioningProvider
+	public class ProvisioningProvider : IProvisioningProvider
 	{
 		readonly ILog _log;
 
@@ -36,7 +36,7 @@ namespace Lokad.Cloud.Azure
 		IAzureServiceManagement _channel;
 
 		/// <summary>IoC constructor.</summary>>
-		public AzureManagementProvider(RoleConfigurationSettings settings, ILog log)
+		public ProvisioningProvider(RoleConfigurationSettings settings, ILog log)
 		{
 			_log = log;
 
