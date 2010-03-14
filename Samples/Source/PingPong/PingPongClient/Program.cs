@@ -7,7 +7,7 @@ using System;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud;
-using Lokad.Cloud.Diagnostics;
+using Lokad.Cloud.Azure;
 
 namespace PingPongClient
 {
@@ -52,9 +52,7 @@ namespace PingPongClient
 		{
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
-
-			// Diagnostics
-			builder.RegisterModule(new DiagnosticsModule());
+			builder.RegisterModule(new RuntimeModule());
 
 			return builder.Build();
 		}
