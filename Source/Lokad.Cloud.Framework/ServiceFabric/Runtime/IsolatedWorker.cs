@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Security;
+using System.Threading;
 using Autofac.Builder;
 using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
@@ -89,7 +90,6 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				var restartForAssemblyUpdate = false;
 
 				var log = container.Resolve<ILog>();
-				//log.Log(LogLevel.Info, "Isolated worker started.");
 
 				_runtime = null;
 				try
@@ -99,6 +99,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 					// runtime endlessly keeps pinging queues for pending work
 					_runtime.Execute();
+					log.Log(LogLevel.Warn, "Isolated worker stopped execution.");
 				}
 				catch (TypeLoadException typeLoadEx)
 				{
@@ -124,8 +125,14 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				}
 				catch (TriggerRestartException)
 				{
-					//log.Log(LogLevel.Debug, "TriggerRestartException");
 					restartForAssemblyUpdate = true;
+				}
+				catch (ThreadAbortException)
+				{
+					// isolated worked is forced to shut down
+					log.Log(LogLevel.Warn, "Isolated worker aborted execution.");
+
+					// NOTE: exception will be automatically rethrown
 				}
 				catch (Exception ex)
 				{
