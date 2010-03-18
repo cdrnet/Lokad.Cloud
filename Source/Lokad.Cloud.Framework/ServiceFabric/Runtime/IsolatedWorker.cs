@@ -37,8 +37,13 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			// This is necessary to load config values in the main AppDomain because
 			// RoleManager is not properly working when invoked from another AppDomain
 			// These override values are passed to StorageModule living in another AppDomain
-			var roleConfiguration = RoleConfigurationSettings.LoadFromRoleEnvironment();
+			return DoWork(RoleConfigurationSettings.LoadFromRoleEnvironment());
+		}
 
+		/// <summary>Performs the work using the provided configuration.</summary>
+		/// <returns><c>true</c> if the assemblies were updated and a restart is needed.</returns>
+		public bool DoWork(Maybe<RoleConfigurationSettings> configuration)
+		{
 			// The trick is to load this same assembly in another domain, then
 			// instantiate this same class and invoke DoWorkInternal
 
@@ -49,7 +54,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 			// This never throws, unless something went wrong with IoC setup and that's fine
 			// because it is not possible to execute the worker
-			var returnValue = _isolatedInstance.DoWorkInternal(roleConfiguration);
+			var returnValue = _isolatedInstance.DoWorkInternal(configuration);
 
 			// If this throws, it's because something went wrong when unloading the AppDomain
 			// The exception correctly pulls down the entire worker process so that no AppDomains are

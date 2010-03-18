@@ -11,9 +11,9 @@ namespace Lokad.Cloud.Azure
 	[Serializable]
 	public class RoleConfigurationSettings
 	{
-		public string DataConnectionString { get; private set; }
-		public string SelfManagementSubscriptionId { get; private set; }
-		public string SelfManagementCertificateThumbprint { get; private set; }
+		public string DataConnectionString { get; set; }
+		public string SelfManagementSubscriptionId { get; set; }
+		public string SelfManagementCertificateThumbprint { get; set; }
 
 		public static Maybe<RoleConfigurationSettings> LoadFromRoleEnvironment()
 		{
