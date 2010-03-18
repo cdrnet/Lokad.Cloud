@@ -56,6 +56,7 @@ namespace Lokad.Cloud.Azure
 			}
 
 			builder.Register(this).As<ICloudConnectionSettings>();
+			builder.RegisterModule(new StorageModuleWithSettings());
 		}
 	}
 
