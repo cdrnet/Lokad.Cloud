@@ -136,8 +136,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				{
 					// isolated worked is forced to shut down
 					log.Log(LogLevel.Warn, "Isolated worker aborted execution.");
-
-					// NOTE: exception will be automatically rethrown
+					Thread.ResetAbort();
 				}
 				catch (Exception ex)
 				{
