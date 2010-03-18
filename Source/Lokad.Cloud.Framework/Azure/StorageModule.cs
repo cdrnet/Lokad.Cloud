@@ -3,6 +3,8 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
+using Autofac;
 using Autofac.Builder;
 using Lokad.Quality;
 using Microsoft.WindowsAzure;
@@ -15,7 +17,7 @@ namespace Lokad.Cloud.Azure
 	/// <see cref="BlobStorageProvider"/>, <see cref="QueueStorageProvider"/> and
 	/// <see cref="TableStorageProvider"/> from the IoC settings.</summary>
 	[NoCodeCoverage]
-	public sealed class StorageModule : Module
+	public sealed class StorageModule : Module, ICloudConnectionSettings
 	{
 		/// <summary>Azure Storage connection string.</summary>
 		[UsedImplicitly]
@@ -53,70 +55,116 @@ namespace Lokad.Cloud.Azure
 				return;
 			}
 
+			builder.Register(this).As<ICloudConnectionSettings>();
+		}
+	}
+
+	/// <summary>
+	/// Settings used by the <see cref="StorageModuleWithSettings"></see>
+	/// </summary>
+	public interface ICloudConnectionSettings
+	{
+		/// <summary>
+		/// Gets the data connection string.
+		/// </summary>
+		/// <value>The data connection string.</value>
+		string DataConnectionString { get; }
+	}
+
+	/// <summary>IoC module that registers
+	/// <see cref="BlobStorageProvider"/>, <see cref="QueueStorageProvider"/> and
+	/// <see cref="TableStorageProvider"/> from the <see cref="ICloudConnectionSettings"/>.</summary>
+	public sealed class StorageModuleWithSettings : Module
+	{
+		protected override void Load(ContainerBuilder builder)
+		{
+			
+			// .NET 3.5 compiler can't infer types properly here, hence the directive
+			// After moving to VS2010 (in .NET 3.5 mode), lambdas
+			// could be replaced with the method groups.
+
+			// ReSharper disable ConvertClosureToMethodGroup
+			builder.Register(context => StorageAccountFromSettings(context));
+			builder.Register(context => QueueClient(context));
+			builder.Register(context => BlobClient(context));
+			builder.Register(context => TableClient(context));
+
+			builder.Register(context => BlobStorageProvider(context));
+			builder.Register(context => QueueStorageProvider(context));
+			builder.Register(context => TableStorageProvider(context));
+			// ReSharper restore ConvertClosureToMethodGroup
+		}
+
+		private static CloudStorageAccount StorageAccountFromSettings(IContext c)
+		{
+			var settings = c.Resolve<ICloudConnectionSettings>();
 			CloudStorageAccount account;
-			if (!CloudStorageAccount.TryParse(DataConnectionString, out account))
+			if (CloudStorageAccount.TryParse(settings.DataConnectionString, out account))
 			{
-				return;
+				return account;
+			}
+			throw new InvalidOperationException("Failed to get valid connection string");
+		}
+
+		static ITableStorageProvider TableStorageProvider(IContext c)
+		{
+			IBinaryFormatter formatter;
+			if (!c.TryResolve(out formatter))
+			{
+				formatter = new CloudFormatter();
 			}
 
-			builder.Register(c =>
-				{
-					var queueService = account.CreateCloudQueueClient();
-					queueService.RetryPolicy = BuildDefaultRetry();
-					return queueService;
-				});
+			return new TableStorageProvider(c.Resolve<CloudTableClient>(), formatter);
+		}
 
-			builder.Register(c =>
-				{
-					var storage = account.CreateCloudBlobClient();
-					storage.RetryPolicy = BuildDefaultRetry();
-					return storage;
-				});
+		static IQueueStorageProvider QueueStorageProvider(IContext c)
+		{
+			IBinaryFormatter formatter;
+			if (!c.TryResolve(out formatter))
+			{
+				formatter = new CloudFormatter();
+			}
 
-			builder.Register(c =>
-				{
-					var storage = account.CreateCloudTableClient();
-					storage.RetryPolicy = BuildDefaultRetry();
-					return storage;
-				});
+			return new QueueStorageProvider(
+				c.Resolve<CloudQueueClient>(),
+				c.Resolve<IBlobStorageProvider>(),
+				formatter,
+				c.Resolve<IRuntimeFinalizer>());
+		}
 
-			// registering the Lokad.Cloud providers
-			builder.Register(c =>
-				{
-					IBinaryFormatter formatter;
-					if (!c.TryResolve(out formatter))
-					{
-						formatter = new CloudFormatter();
-					}
+		static IBlobStorageProvider BlobStorageProvider(IContext c)
+		{
+			IBinaryFormatter formatter;
+			if (!c.TryResolve(out formatter))
+			{
+				formatter = new CloudFormatter();
+			}
 
-					return (IBlobStorageProvider) new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
-				});
+			return new BlobStorageProvider(c.Resolve<CloudBlobClient>(), formatter);
+		}
 
-			builder.Register(c =>
-				{
-					IBinaryFormatter formatter;
-					if (!c.TryResolve(out formatter))
-					{
-						formatter = new CloudFormatter();
-					}
+		static CloudTableClient TableClient(IContext c)
+		{
+			var account = c.Resolve<CloudStorageAccount>();
+			var storage = account.CreateCloudTableClient();
+			storage.RetryPolicy = BuildDefaultRetry();
+			return storage;
+		}
 
-					return (IQueueStorageProvider) new QueueStorageProvider(
-						c.Resolve<CloudQueueClient>(),
-						c.Resolve<IBlobStorageProvider>(),
-						formatter,
-						c.Resolve<IRuntimeFinalizer>());
-				});
+		static CloudBlobClient BlobClient(IContext c)
+		{
+			var account = c.Resolve<CloudStorageAccount>();
+			var storage = account.CreateCloudBlobClient();
+			storage.RetryPolicy = BuildDefaultRetry();
+			return storage;
+		}
 
-			builder.Register(c =>
-				{
-					IBinaryFormatter formatter;
-					if (!c.TryResolve(out formatter))
-					{
-						formatter = new CloudFormatter();
-					}
-
-					return (ITableStorageProvider) new TableStorageProvider(c.Resolve<CloudTableClient>(), formatter);
-				});
+		static CloudQueueClient QueueClient(IContext c)
+		{
+			var account = c.Resolve<CloudStorageAccount>();
+			var queueService = account.CreateCloudQueueClient();
+			queueService.RetryPolicy = BuildDefaultRetry();
+			return queueService;
 		}
 
 		static RetryPolicy BuildDefaultRetry()
