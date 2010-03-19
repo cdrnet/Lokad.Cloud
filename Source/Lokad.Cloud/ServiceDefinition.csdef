@@ -2,33 +2,39 @@
 <!-- Single upgrade domain to speed-up worker instantiation. -->
 <ServiceDefinition name="Lokad.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition"
 	upgradeDomainCount="1">
-		<!-- Full trust is needed for binary serialization -->
-  <WebRole name="Lokad.Cloud.WebRole" enableNativeCodeExecution="true">
-    <InputEndpoints>
-      <!-- Must use port 80 for http and port 443 for https when running in the cloud -->
-      <InputEndpoint name="HttpIn" protocol="http" port="80" />
-    </InputEndpoints>
-    <ConfigurationSettings>
-      <Setting name="DataConnectionString" />
-      <!--Space separated OpenId identifiers (don't forget the trailing slash) -->
-      <Setting name="Admins" />
-      <Setting name="SelfManagementCertificateThumbprint" />
-      <Setting name="SelfManagementSubscriptionId" />
-    </ConfigurationSettings>
-    <Certificates>
-      <Certificate name="SelfManagement" storeLocation="CurrentUser" storeName="My" />
-    </Certificates>
-  </WebRole>
-  <!-- Full trust is needed for binary serialization -->
-  <WorkerRole name="Lokad.Cloud.WorkerRole" enableNativeCodeExecution="true">
-    <LocalStorage name="LokadCloudStorage" sizeInMB="2" />
-    <ConfigurationSettings>
-      <Setting name="DataConnectionString" />
-      <Setting name="SelfManagementCertificateThumbprint" />
-      <Setting name="SelfManagementSubscriptionId" />
-    </ConfigurationSettings>
-    <Certificates>
-      <Certificate name="SelfManagement" storeLocation="CurrentUser" storeName="My" />
-    </Certificates>
-  </WorkerRole>
+	<!-- Full trust is needed for binary serialization -->
+	<WebRole name="Lokad.Cloud.WebRole" enableNativeCodeExecution="true">
+		<LocalResources>
+			<LocalStorage name="LocalCacheStorage" sizeInMB="1024" cleanOnRoleRecycle="true" />
+		</LocalResources>
+		<InputEndpoints>
+			<!-- Must use port 80 for http and port 443 for https when running in the cloud -->
+			<InputEndpoint name="HttpIn" protocol="http" port="80" />
+		</InputEndpoints>
+		<ConfigurationSettings>
+			<Setting name="DataConnectionString" />
+			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
+			<Setting name="Admins" />
+			<Setting name="SelfManagementCertificateThumbprint" />
+			<Setting name="SelfManagementSubscriptionId" />
+		</ConfigurationSettings>
+		<Certificates>
+			<Certificate name="SelfManagement" storeLocation="CurrentUser" storeName="My" />
+		</Certificates>
+	</WebRole>
+	<!-- Full trust is needed for binary serialization -->
+	<WorkerRole name="Lokad.Cloud.WorkerRole" enableNativeCodeExecution="true">
+		<LocalResources>
+			<LocalStorage name="LokadCloudStorage" sizeInMB="2" cleanOnRoleRecycle="true" />
+			<LocalStorage name="LocalCacheStorage" sizeInMB="1024" cleanOnRoleRecycle="true" />
+		</LocalResources>
+		<ConfigurationSettings>
+			<Setting name="DataConnectionString" />
+			<Setting name="SelfManagementCertificateThumbprint" />
+			<Setting name="SelfManagementSubscriptionId" />
+		</ConfigurationSettings>
+		<Certificates>
+			<Certificate name="SelfManagement" storeLocation="CurrentUser" storeName="My" />
+		</Certificates>
+	</WorkerRole>
 </ServiceDefinition>
