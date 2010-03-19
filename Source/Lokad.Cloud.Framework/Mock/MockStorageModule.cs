@@ -14,18 +14,7 @@ namespace Lokad.Cloud.Mock
 		protected override void Load(ContainerBuilder builder)
 		{
 			builder.Register(c => new MemoryBlobStorageProvider()).As<IBlobStorageProvider>();
-
-			builder.Register(c =>
-			{
-				IBinaryFormatter formatter;
-				if (!c.TryResolve(out formatter))
-				{
-					formatter = new CloudFormatter();
-				}
-
-				return new MemoryQueueStorageProvider(formatter);
-			}).As<IQueueStorageProvider>();
+			builder.Register(c => new MemoryQueueStorageProvider()).As<IQueueStorageProvider>();
 		}
-
 	}
 }

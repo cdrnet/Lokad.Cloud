@@ -19,7 +19,7 @@ namespace Lokad.Cloud.Test.Mock.Services
 		{
 			var providersForCloudStorage = new CloudInfrastructureProviders(
 				new MemoryBlobStorageProvider(),
-				new MemoryQueueStorageProvider(new CloudFormatter()),
+				new MemoryQueueStorageProvider(),
 				new MemoryTableStorageProvider(),
 				new MemoryLogger(),
 				null,

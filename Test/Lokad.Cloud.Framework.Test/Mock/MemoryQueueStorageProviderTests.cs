@@ -17,14 +17,14 @@ namespace Lokad.Cloud.Framework.Test.Mock
 		[Test]
 		public void GetOnMissingQueueDoesNotFail()
 		{
-			var queueStorage = new MemoryQueueStorageProvider(new CloudFormatter());
+			var queueStorage = new MemoryQueueStorageProvider();
 			queueStorage.Get<int>("nosuchqueue", 1);
 		}
 
 		[Test]
 		public void ItemsGetPutInMonoThread()
 		{
-			var queueStorage = new MemoryQueueStorageProvider(new CloudFormatter());
+			var queueStorage = new MemoryQueueStorageProvider();
 			var fakeMessages = Enumerable.Range(0, 3).Select(i => new FakeMessage(i)).ToArray();
 
 			var firstQueueName = "firstQueueName";
@@ -40,7 +40,7 @@ namespace Lokad.Cloud.Framework.Test.Mock
 		[Test]
 		public void ItemsReturnedInMonoThread()
 		{
-			var queueStorage = new MemoryQueueStorageProvider(new CloudFormatter());
+			var queueStorage = new MemoryQueueStorageProvider();
 			var fakeMessages = Enumerable.Range(0, 10).Select(i => new FakeMessage(i)).ToArray();
 
 			var firstQueueName = "firstQueueName";
@@ -67,7 +67,7 @@ namespace Lokad.Cloud.Framework.Test.Mock
 		[Test]
 		public void ListInMonoThread()
 		{
-			var queueStorage = new MemoryQueueStorageProvider(new CloudFormatter());
+			var queueStorage = new MemoryQueueStorageProvider();
 			var fakeMessages = Enumerable.Range(0, 10).Select(i => new FakeMessage(i)).ToArray();
 
 			var firstQueueName = "firstQueueName";

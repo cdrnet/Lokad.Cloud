@@ -13,21 +13,21 @@ namespace Lokad.Cloud.Mock
 	/// <summary>Mock in-memory Queue Storage.</summary>
 	public class MemoryQueueStorageProvider : IQueueStorageProvider
 	{
-		/// <summary>Root used to synchronize accesses to <c>_inprocess</c>. 
-		///</summary>
+		/// <summary>Root used to synchronize accesses to <c>_inprocess</c>.</summary>
 		readonly object _sync = new object();
 
 		readonly Dictionary<string,Queue<object>> _queues;
 		readonly HashSet<Pair<string,object>> _inProgressMessages;
 		readonly HashSet<Quad<string,string,string,object>> _persistedMessages;
 		readonly IBinaryFormatter _formatter;
-
-		public MemoryQueueStorageProvider(IBinaryFormatter formatter)
+		
+		/// <summary>Default constructor.</summary>
+		public MemoryQueueStorageProvider() 
 		{
 			_queues = new Dictionary<string, Queue<object>>();
-			_inProgressMessages = new HashSet<Pair<string,object>>();
-			_persistedMessages = new HashSet<Quad<string,string,string,object>>();
-			_formatter = formatter;
+			_inProgressMessages = new HashSet<Pair<string, object>>();
+			_persistedMessages = new HashSet<Quad<string, string, string, object>>();
+			_formatter = new CloudFormatter();
 		}
 
 		public IEnumerable<string> List(string prefix)
@@ -191,7 +191,7 @@ namespace Lokad.Cloud.Mock
 			lock (_sync)
 			{
 				var tuple = _persistedMessages.FirstOrEmpty(x => x.Item1 == storeName && x.Item2 == key);
-				return tuple.Convert(x => new PersistedMessage()
+				return tuple.Convert(x => new PersistedMessage
 					{
 						QueueName = x.Item3,
 						StoreName = x.Item1,
