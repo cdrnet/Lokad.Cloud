@@ -16,6 +16,9 @@ namespace Lokad.Cloud.Azure
 	/// <summary>IoC module that auto-load storage credential along with 
 	/// <see cref="BlobStorageProvider"/>, <see cref="QueueStorageProvider"/> and
 	/// <see cref="TableStorageProvider"/> from the IoC settings.</summary>
+	/// <remarks>The purpose of this module is to enable the O/C mapper scenario.
+	/// If you need the execution framework, then the <see cref="RuntimeModule"/>
+	/// should be loaded too.</remarks>
 	[NoCodeCoverage]
 	public sealed class StorageModule : Module, ICloudConnectionSettings
 	{
@@ -79,13 +82,18 @@ namespace Lokad.Cloud.Azure
 	{
 		protected override void Load(ContainerBuilder builder)
 		{
-			
+			// HACK: we end-up hard-coding the cloud formatter here.
+			builder.Register(typeof(CloudFormatter)).As<IBinaryFormatter>();
+
+			builder.Register(typeof(CloudInfrastructureProviders));
+
 			// .NET 3.5 compiler can't infer types properly here, hence the directive
 			// After moving to VS2010 (in .NET 3.5 mode), lambdas
 			// could be replaced with the method groups.
 
 			// ReSharper disable ConvertClosureToMethodGroup
 			builder.Register(context => StorageAccountFromSettings(context));
+			builder.Register(context => CloudInfrastructureProviders(context));
 			builder.Register(context => QueueClient(context));
 			builder.Register(context => BlobClient(context));
 			builder.Register(context => TableClient(context));
@@ -105,6 +113,22 @@ namespace Lokad.Cloud.Azure
 				return account;
 			}
 			throw new InvalidOperationException("Failed to get valid connection string");
+		}
+
+		static CloudInfrastructureProviders CloudInfrastructureProviders(IContext c)
+		{
+			return new CloudInfrastructureProviders
+			(
+				// storage providers supporting the O/C mapper scenario
+				c.Resolve<IBlobStorageProvider>(),
+				c.Resolve<IQueueStorageProvider>(),
+				c.Resolve<ITableStorageProvider>(),
+
+				// optional providers supporting the execution framework scenario
+				c.ResolveOptional<ILog>(),
+				c.ResolveOptional<IProvisioningProvider>(),
+				c.ResolveOptional<IRuntimeFinalizer>()
+			);
 		}
 
 		static ITableStorageProvider TableStorageProvider(IContext c)
@@ -130,7 +154,10 @@ namespace Lokad.Cloud.Azure
 				c.Resolve<CloudQueueClient>(),
 				c.Resolve<IBlobStorageProvider>(),
 				formatter,
-				c.Resolve<IRuntimeFinalizer>());
+				// RuntimeFinalizer is a dependency (as the name suggest) on the worker runtime
+				// This dependency is typically not available in a pure O/C mapper scenario.
+				// In such case, we just pass a dummy finalizer (that won't be used any
+				c.ResolveOptional<IRuntimeFinalizer>());
 		}
 
 		static IBlobStorageProvider BlobStorageProvider(IContext c)

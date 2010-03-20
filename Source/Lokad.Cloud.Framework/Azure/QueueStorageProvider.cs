@@ -54,6 +54,11 @@ namespace Lokad.Cloud.Azure
 		readonly Dictionary<object, InProcessMessage> _inProcessMessages;
 
 		/// <summary>IoC constructor.</summary>
+		/// <param name="blobStorage">Not null.</param>
+		/// <param name="queueStorage">Not null.</param>
+		/// <param name="formatter">Not null.</param>
+		/// <param name="runtimeFinalizer">May be null (handy for strict O/C mapper
+		/// scenario).</param>
 		public QueueStorageProvider(
 			CloudQueueClient queueStorage, IBlobStorageProvider blobStorage,
 			IBinaryFormatter formatter, IRuntimeFinalizer runtimeFinalizer)
@@ -63,8 +68,12 @@ namespace Lokad.Cloud.Azure
 			_formatter = formatter;
 			_runtimeFinalizer = runtimeFinalizer;
 
-			// self-registration for finalization
-			_runtimeFinalizer.Register(this);
+			// finalizer can be null in a strict O/C mapper scenario
+			if(null != _runtimeFinalizer)
+			{
+				// self-registration for finalization
+				_runtimeFinalizer.Register(this);
+			}
 
 			_azureServerPolicy = AzurePolicies.TransientServerErrorBackOff;
 

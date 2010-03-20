@@ -23,22 +23,20 @@ namespace Lokad.Cloud.Web
 		{
 			var builder = new ContainerBuilder();
 
+			// O/C mapper
+
 			// loading configuration from the Azure Service Configuration
 			if (RoleEnvironment.IsAvailable)
 			{
 				builder.RegisterModule(new StorageModule());
-				builder.RegisterModule(new ProvisioningModule());
 			}
 			else // or from the web.config directly (when azure config is not available)
 			{
 				builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 			}
 
-			// Runtime
-			builder.Register(typeof(RuntimeFinalizer)).As<IRuntimeFinalizer>();
-
-			// Diagnostics
-			builder.RegisterModule(new DiagnosticsModule());
+			// execution framework
+			builder.RegisterModule(new RuntimeModule());
 
 			// Management
 			builder.RegisterModule(new ManagementModule());

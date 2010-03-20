@@ -12,11 +12,7 @@ namespace Lokad.Cloud.Azure
 	{
 		readonly Maybe<RoleConfigurationSettings> _settings;
 
-		public ProvisioningModule()
-			: this(Maybe<RoleConfigurationSettings>.Empty)
-		{
-		}
-
+		/// <summary>Regular IoC constructor.</summary>
 		public ProvisioningModule(Maybe<RoleConfigurationSettings> externalSettings)
 		{
 			_settings = externalSettings;

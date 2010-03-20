@@ -36,7 +36,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{BC3C
 		Samples\Source\IoCforService\ReadMe.IoCforService.txt = Samples\Source\IoCforService\ReadMe.IoCforService.txt
 		Samples\Source\MapReduce\ReadMe.MapReduce.txt = Samples\Source\MapReduce\ReadMe.MapReduce.txt
 		Samples\Source\PingPong\ReadMe.PingPong.txt = Samples\Source\PingPong\ReadMe.PingPong.txt
-		Samples\Source\TestingSample\ReadMe.TestingSample.txt = Samples\Source\TestingSample\ReadMe.TestingSample.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingPongClient", "Samples\Source\PingPong\PingPongClient\PingPongClient.csproj", "{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874}"
@@ -50,8 +49,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapReduceService", "Samples\Source\MapReduce\MapReduceService\MapReduceService.csproj", "{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoCforService", "Samples\Source\IoCforService\IoCforService.csproj", "{7C11E5A4-4F68-4521-A530-74C7BD30E328}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingSample", "Samples\Source\TestingSample\TestingSample.csproj", "{3D5D1F0F-BEA2-4A77-A872-F10B6328D1F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -120,12 +117,6 @@ Global
 		{7C11E5A4-4F68-4521-A530-74C7BD30E328}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7C11E5A4-4F68-4521-A530-74C7BD30E328}.ReleaseApi|Any CPU.ActiveCfg = Release|Any CPU
 		{7C11E5A4-4F68-4521-A530-74C7BD30E328}.ReleaseApi|Any CPU.Build.0 = Release|Any CPU
-		{3D5D1F0F-BEA2-4A77-A872-F10B6328D1F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3D5D1F0F-BEA2-4A77-A872-F10B6328D1F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3D5D1F0F-BEA2-4A77-A872-F10B6328D1F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3D5D1F0F-BEA2-4A77-A872-F10B6328D1F2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3D5D1F0F-BEA2-4A77-A872-F10B6328D1F2}.ReleaseApi|Any CPU.ActiveCfg = Release|Any CPU
-		{3D5D1F0F-BEA2-4A77-A872-F10B6328D1F2}.ReleaseApi|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -143,6 +134,5 @@ Global
 		{600A345F-DEE1-41E4-B106-3366AFB3B56C} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 		{7C11E5A4-4F68-4521-A530-74C7BD30E328} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
-		{3D5D1F0F-BEA2-4A77-A872-F10B6328D1F2} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 	EndGlobalSection
 EndGlobal

@@ -5,7 +5,6 @@
 
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad.Cloud.Azure;
 
 namespace Lokad.Cloud.Samples.MapReduce
 {
@@ -22,7 +21,6 @@ namespace Lokad.Cloud.Samples.MapReduce
 		{
 			var builder = new ContainerBuilder();
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
-			builder.RegisterModule(new RuntimeModule());
 
 			return builder.Build();
 		}

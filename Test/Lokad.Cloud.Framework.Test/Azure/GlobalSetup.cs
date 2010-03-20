@@ -16,8 +16,8 @@ namespace Lokad.Cloud.Azure.Test
 		static IContainer Setup()
 		{
 			var builder = new ContainerBuilder();
-			builder.RegisterModule(new RuntimeModule());
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
+			builder.RegisterModule(new RuntimeModule());
 
 			return builder.Build();
 		}

@@ -69,7 +69,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		{
 			var builder = new ContainerBuilder();
 
-			// Cloud Infrastructure
+			// O/C mapper
 			var storageModule = new StorageModule();
 			if (externalRoleConfiguration.HasValue)
 			{
@@ -77,18 +77,15 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			}
 			builder.RegisterModule(storageModule);
 
-			// Diagnostics
-			builder.RegisterModule(new DiagnosticsModule());
+			// runtime
+			var runtimeModule = new RuntimeModule
+				{
+					RoleConfiguration = externalRoleConfiguration
+				};
+			builder.Register(runtimeModule);
 
-			// Self Management
-			builder.RegisterModule(new ProvisioningModule(externalRoleConfiguration));
-
-			// Runtime
-			builder.Register(typeof(RuntimeFinalizer)).As<IRuntimeFinalizer>();
+			// executor
 			builder.Register(typeof(InternalServiceRuntime)).FactoryScoped();
-
-			// Providers for cloud apps
-			builder.Register(typeof(CloudInfrastructureProviders));
 
 			using (var container = builder.Build())
 			{

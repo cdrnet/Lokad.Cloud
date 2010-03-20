@@ -17,19 +17,25 @@ namespace Lokad.Cloud.Azure
 	[NoCodeCoverage]
 	public class RuntimeModule : Module
 	{
+		/// <summary>Optional provisioning settings.</summary>
+		public Maybe<RoleConfigurationSettings> RoleConfiguration { get; set;}
+
+		/// <summary>IoC constructor.</summary>
+		public RuntimeModule()
+		{
+			RoleConfiguration = Maybe<RoleConfigurationSettings>.Empty;
+		}
+
 		protected override void Load(ContainerBuilder builder)
 		{
 			// azure specific
-			builder.RegisterModule(new StorageModule());
-			builder.RegisterModule(new ProvisioningModule());
+			builder.RegisterModule(new ProvisioningModule(RoleConfiguration));
 
-			// generic modules
+			// logger and statistics
 			builder.RegisterModule(new DiagnosticsModule());
 
-			// misc components
-			builder.Register(typeof(CloudFormatter)).As<IBinaryFormatter>();
+			// runtime specific
 			builder.Register(typeof(RuntimeFinalizer)).As<IRuntimeFinalizer>();
-			builder.Register(typeof(CloudInfrastructureProviders));
 		}
 	}
 }
