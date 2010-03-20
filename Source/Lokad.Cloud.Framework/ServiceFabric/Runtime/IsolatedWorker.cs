@@ -82,7 +82,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				{
 					RoleConfiguration = externalRoleConfiguration
 				};
-			builder.Register(runtimeModule);
+			builder.RegisterModule(runtimeModule);
 
 			// executor
 			builder.Register(typeof(InternalServiceRuntime)).FactoryScoped();
