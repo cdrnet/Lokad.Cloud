@@ -14,6 +14,11 @@ namespace Lokad.Cloud.Azure
 	/// <summary>Loads all the modules required to setup a worker runtime,
 	/// with <see cref="StorageModule"/>, <see cref="ProvisioningModule"/>
 	/// and <see cref="DiagnosticsModule"/> among others.</summary>
+	/// <remarks>
+	/// The <c>RuntimeModule</c> only make sense to leverage the execution
+	/// framework of Lokad.Cloud. In particular, it depends implicitely on
+	/// <see cref="StorageModule"/> which must be loaded too.
+	/// </remarks>
 	[NoCodeCoverage]
 	public class RuntimeModule : Module
 	{
