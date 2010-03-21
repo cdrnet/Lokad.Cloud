@@ -147,10 +147,8 @@ namespace Lokad.Cloud.Azure
 
 			if (errorCode == StorageErrorCodeStrings.InternalError
 				|| errorCode == StorageErrorCodeStrings.ServerBusy
-				|| errorCode == TableErrorCodeStrings.TableServerOutOfMemory)
-				// OperationTimedOut is ignored on purpose (to be more precisely handled in the provider)
-				// Indeed, time-out is aggressively set at 30s for the Table Storage
-				// hence, if a request fails, we should rather reduce the number for transferred entities
+				|| errorCode == TableErrorCodeStrings.TableServerOutOfMemory
+				|| errorCode == StorageErrorCodeStrings.OperationTimedOut)
 			{
 				return true;
 			}
