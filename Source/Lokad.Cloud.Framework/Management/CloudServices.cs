@@ -5,7 +5,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Lokad.Cloud.ServiceFabric;
 using Lokad.Cloud.Services;
+using Lokad.Cloud.Storage;
 
 // TODO: blobs are sequentially enumerated, performance issue
 // if there are more than a few dozen services

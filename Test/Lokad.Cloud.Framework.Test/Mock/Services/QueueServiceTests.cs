@@ -5,11 +5,11 @@
 
 using System;
 using System.Linq;
-using Lokad.Cloud.Mock;
 using Lokad.Cloud.ServiceFabric;
+using Lokad.Cloud.Storage;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Test.Mock.Services
+namespace Lokad.Cloud.Mock.Services.Test
 {
 	[TestFixture]
 	public class QueueServiceTests

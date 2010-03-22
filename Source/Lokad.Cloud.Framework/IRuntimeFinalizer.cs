@@ -6,8 +6,6 @@ using System;
 
 namespace Lokad.Cloud
 {
-	// #128 drafting a provider that will handle speedy-runtime finalization
-
 	/// <summary>Collects objects that absolutely need to be disposed
 	/// before the runtime gets shut down.</summary>
 	/// <remarks>

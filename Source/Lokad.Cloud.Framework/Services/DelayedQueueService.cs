@@ -4,6 +4,8 @@
 #endregion
 
 using System;
+using Lokad.Cloud.ServiceFabric;
+using Lokad.Cloud.Storage;
 
 // HACK: the delayed queue service does not provide a scalable iteration pattern.
 // (single instance iterating over the delayed message)

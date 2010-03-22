@@ -1,7 +1,6 @@
 ﻿<%@ Page Language="C#" MasterPageFile="~/Nav.Master" AutoEventWireup="true" CodeBehind="Config.aspx.cs" 
 	Inherits="Lokad.Cloud.Web.Config" ValidateRequest="false" %>
 <%@ Register Src="NavBar.ascx" TagName="NavBar" TagPrefix="uc" %>
-<%@ Import Namespace="Lokad.Cloud.Azure"%>
 <%@ Import Namespace="Lokad.Cloud.Web"%>
 
 <asp:Content ContentPlaceHolderID="HeadPlaceHolder" runat="server">

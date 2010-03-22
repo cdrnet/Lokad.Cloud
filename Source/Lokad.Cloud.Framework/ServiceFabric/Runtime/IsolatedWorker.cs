@@ -9,8 +9,7 @@ using System.Reflection;
 using System.Security;
 using System.Threading;
 using Autofac.Builder;
-using Lokad.Cloud.Azure;
-using Lokad.Cloud.Diagnostics;
+using Lokad.Cloud.Storage.Azure;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {

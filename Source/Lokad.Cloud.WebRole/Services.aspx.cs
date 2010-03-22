@@ -8,6 +8,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Lokad.Cloud.Management;
+using Lokad.Cloud.ServiceFabric;
 
 namespace Lokad.Cloud.Web
 {

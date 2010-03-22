@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using DotNetOpenAuth.OpenId.RelyingParty;
+using Lokad.Cloud.Storage;
 
 namespace Lokad.Cloud.Web
 {

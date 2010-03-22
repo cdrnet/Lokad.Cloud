@@ -67,32 +67,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Azure\AssemblyLoaderTests.cs" />
-    <Compile Include="Azure\BlobStorageProviderTests.cs" />
-    <Compile Include="Azure\CloudLoggerTests.cs" />
-    <Compile Include="Azure\FatEntityTests.cs" />
-    <Compile Include="Azure\GlobalSetup.cs" />
-    <Compile Include="Azure\QueueStorageProviderTests.cs" />
-    <Compile Include="Azure\TableStorageProviderTests.cs" />
-    <Compile Include="Azure\TypeMapperProviderTests.cs" />
-    <Compile Include="BlobCounterTests.cs" />
-    <Compile Include="BaseBlobNameTests.cs" />
     <None Include="App.config" />
     <None Include="App.template.config" />
-    <Compile Include="CloudFormatterTests.cs" />
-    <Compile Include="CloudTableTests.cs" />
+    <Compile Include="Diagnostics\CloudLoggerTests.cs" />
     <Compile Include="Diagnostics\ExecutionCounterTests.cs" />
     <Compile Include="Diagnostics\ExceptionCounterTests.cs" />
-    <Compile Include="MessageWrapperTests.cs" />
+    <Compile Include="GlobalSetup.cs" />
     <Compile Include="Mock\MemoryBlobStorageProviderTests.cs" />
     <Compile Include="Mock\MemoryQueueStorageProviderTests.cs" />
     <Compile Include="Mock\MemoryTableStorageProviderTests.cs" />
     <Compile Include="Mock\Services\QueueServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DelayedQueueTests.cs" />
+    <Compile Include="ServiceFabric\AssemblyLoaderTests.cs" />
     <Compile Include="ServiceFabric\RuntimeFinalizerTests.cs" />
-    <Compile Include="StorageCredentialsVerifierTests.cs" />
-    <Compile Include="TemporaryBlobNameTests.cs" />
+    <Compile Include="Storage\BaseBlobNameTests.cs" />
+    <Compile Include="Storage\BlobCounterTests.cs" />
+    <Compile Include="Storage\BlobStorageProviderTests.cs" />
+    <Compile Include="Storage\CloudFormatterTests.cs" />
+    <Compile Include="Storage\CloudTableTests.cs" />
+    <Compile Include="Storage\DelayedQueueTests.cs" />
+    <Compile Include="Storage\FatEntityTests.cs" />
+    <Compile Include="Storage\MessageWrapperTests.cs" />
+    <Compile Include="Storage\QueueStorageProviderTests.cs" />
+    <Compile Include="Storage\StorageCredentialsVerifierTests.cs" />
+    <Compile Include="Storage\TableStorageProviderTests.cs" />
+    <Compile Include="Storage\TemporaryBlobNameTests.cs" />
+    <Compile Include="TypeMapperProviderTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Source\Lokad.Cloud.Framework\Lokad.Cloud.Framework.csproj">

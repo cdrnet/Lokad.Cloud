@@ -3,6 +3,10 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using Lokad.Cloud.Provisioning;
+using Lokad.Cloud.ServiceFabric;
+using Lokad.Cloud.Storage;
+
 namespace Lokad.Cloud
 {
 	/// <summary>IoC argument for <see cref="CloudService"/> and other

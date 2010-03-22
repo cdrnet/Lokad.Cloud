@@ -5,9 +5,6 @@
 
 using System;
 using System.Diagnostics;
-using Lokad.Cloud.Azure;
-
-// TODO: Discard old data
 
 namespace Lokad.Cloud.Diagnostics
 {

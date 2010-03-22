@@ -6,10 +6,9 @@
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad.Cloud.Azure;
-using Lokad.Cloud.Diagnostics;
 using Lokad.Cloud.Management;
 using Lokad.Cloud.ServiceFabric;
+using Lokad.Cloud.Storage.Azure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.StorageClient;
 

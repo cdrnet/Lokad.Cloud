@@ -4,6 +4,8 @@
 #endregion
 
 using System;
+using Lokad.Cloud.ServiceFabric;
+using Lokad.Cloud.Storage;
 
 namespace Lokad.Cloud.Services
 {

@@ -7,8 +7,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-// TODO: Discard old data
+using Lokad.Cloud.ServiceFabric;
 
 namespace Lokad.Cloud.Diagnostics
 {

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using Lokad.Cloud;
 using Lokad;
+using Lokad.Cloud.Storage;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Samples.MapReduce

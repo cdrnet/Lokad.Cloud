@@ -3,7 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using Lokad.Cloud;
+using Lokad.Cloud.ServiceFabric;
 
 namespace PingPong
 {

@@ -11,7 +11,6 @@ using System.Threading;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics;
 using Lokad.Diagnostics;
 

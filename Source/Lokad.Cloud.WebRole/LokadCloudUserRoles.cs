@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using Lokad.Cloud.Azure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud.Web

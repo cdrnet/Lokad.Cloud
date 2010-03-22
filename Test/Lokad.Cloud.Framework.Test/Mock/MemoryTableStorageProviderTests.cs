@@ -4,17 +4,13 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading;
-using Lokad.Cloud.Azure;
-using Lokad.Cloud.Azure.Test;
-using Lokad.Cloud.Mock;
+using Lokad.Cloud.Storage;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.Test.Mock
+namespace Lokad.Cloud.Mock.Test
 {
     [TestFixture]
     public class MemoryTableStorageProviderTests

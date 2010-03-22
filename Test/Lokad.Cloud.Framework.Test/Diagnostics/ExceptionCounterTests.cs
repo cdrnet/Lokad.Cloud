@@ -5,13 +5,12 @@
 
 using System;
 using System.Linq;
-using Lokad.Cloud.Azure.Test;
-using Lokad.Cloud.Diagnostics;
 using Lokad.Cloud.Management;
+using Lokad.Cloud.Test;
 using NUnit.Framework;
 using Lokad.Diagnostics;
 
-namespace Lokad.Cloud.Test.Diagnostics
+namespace Lokad.Cloud.Diagnostics.Test
 {
 	[TestFixture]
 	public class ExceptionCounterTests

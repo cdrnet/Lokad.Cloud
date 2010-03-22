@@ -4,7 +4,7 @@
 #endregion
 
 using System;
-using Lokad.Cloud;
+using Lokad.Cloud.ServiceFabric;
 
 namespace IoCforService
 {

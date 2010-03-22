@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using Lokad.Cloud.ServiceFabric;
 
 namespace Lokad.Cloud.Diagnostics
 {

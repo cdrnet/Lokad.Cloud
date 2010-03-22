@@ -5,6 +5,7 @@
 
 using System;
 using Lokad.Cloud.Diagnostics;
+using Lokad.Cloud.ServiceFabric;
 
 namespace Lokad.Cloud.Services
 {

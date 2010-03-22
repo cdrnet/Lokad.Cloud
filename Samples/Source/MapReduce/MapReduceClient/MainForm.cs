@@ -13,6 +13,7 @@ using System.Text;
 using System.Windows.Forms;
 using Lokad.Cloud.Samples.MapReduce;
 using System.Threading;
+using Lokad.Cloud.Storage;
 
 namespace Lokad.Cloud.Samples.MapReduce
 {
@@ -56,8 +57,8 @@ namespace Lokad.Cloud.Samples.MapReduce
 			_pnlHistogram.Refresh();
 
 			_mapReduceJob = new MapReduceJob<byte[], Histogram>(
-				Setup.Container.Resolve<Lokad.Cloud.IBlobStorageProvider>(),
-				Setup.Container.Resolve<Lokad.Cloud.IQueueStorageProvider>());
+				Setup.Container.Resolve<IBlobStorageProvider>(),
+				Setup.Container.Resolve<IQueueStorageProvider>());
 
 			// Do this asynchronously because it requires a few seconds
 			ThreadPool.QueueUserWorkItem(new WaitCallback((s) =>

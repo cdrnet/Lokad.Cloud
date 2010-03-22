@@ -26,7 +26,7 @@ namespace Lokad.Cloud.Web
 			ExceptionsView.DataBind();
 		}
 
-		object ToPresentationModel(IEnumerable<PartitionStatistics> partitionStatistics)
+		static object ToPresentationModel(IEnumerable<PartitionStatistics> partitionStatistics)
 		{
 			return partitionStatistics
 				.Select<PartitionStatistics, object>(s => new
@@ -46,7 +46,7 @@ namespace Lokad.Cloud.Web
 				.ToList();
 		}
 
-		object ToPresentationModel(IEnumerable<ServiceStatistics> serviceStatistics)
+		static object ToPresentationModel(IEnumerable<ServiceStatistics> serviceStatistics)
 		{
 			return serviceStatistics
 				.Select<ServiceStatistics, object>(s => new
@@ -64,7 +64,7 @@ namespace Lokad.Cloud.Web
 				.ToList();
 		}
 
-		object ToPresentationModel(IEnumerable<ExecutionProfilingStatistics> profilingStatisticses)
+		static object ToPresentationModel(IEnumerable<ExecutionProfilingStatistics> profilingStatisticses)
 		{
 			return profilingStatisticses
 				.SelectMany(s => s.Statistics
@@ -82,7 +82,7 @@ namespace Lokad.Cloud.Web
 				.ToList();
 		}
 
-		object ToPresentationModel(IEnumerable<ExceptionTrackingStatistics> exceptionStatisticses)
+		static object ToPresentationModel(IEnumerable<ExceptionTrackingStatistics> exceptionStatisticses)
 		{
 			return exceptionStatisticses
 				.SelectMany(s => s.Statistics

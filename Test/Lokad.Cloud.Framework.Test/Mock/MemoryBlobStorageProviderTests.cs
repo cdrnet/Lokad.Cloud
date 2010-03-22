@@ -8,9 +8,7 @@ using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 
-using Lokad.Cloud.Mock;
-
-namespace Lokad.Cloud.Test.Mock
+namespace Lokad.Cloud.Mock.Test
 {
 	[TestFixture]
 	public class MemoryBlobStorageProviderTests

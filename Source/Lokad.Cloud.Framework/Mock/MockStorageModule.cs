@@ -4,6 +4,7 @@
 #endregion
 
 using Autofac.Builder;
+using Lokad.Cloud.Storage;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Mock

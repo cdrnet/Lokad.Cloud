@@ -3,6 +3,8 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using Lokad.Cloud.ServiceFabric;
+
 namespace Lokad.Cloud.Management
 {
 	/// <summary>

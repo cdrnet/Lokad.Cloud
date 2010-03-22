@@ -6,6 +6,7 @@
 using System;
 using System.Text;
 using Lokad.Cloud.ServiceFabric.Runtime;
+using Lokad.Cloud.Storage;
 
 namespace Lokad.Cloud.Management
 {

@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lokad.Cloud.Storage;
+using Lokad.Quality;
 
 namespace Lokad.Cloud.Diagnostics.Persistence
 {
@@ -16,6 +18,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 	/// In order for retention to work correctly, time segments need to be strictly
 	/// ordered ascending by time and date when compared as string.
 	/// </remarks>
+	[UsedImplicitly]
 	public class BlobDiagnosticsRepository : ICloudDiagnosticsRepository
 	{
 		readonly IBlobStorageProvider _provider;

@@ -4,8 +4,8 @@
 #endregion
 
 using Autofac.Builder;
-using Lokad.Cloud.Azure;
 using Lokad.Cloud.Diagnostics.Persistence;
+using Lokad.Cloud.Storage;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Diagnostics

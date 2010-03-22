@@ -5,11 +5,10 @@
 
 using System;
 using System.Linq;
+using Lokad.Cloud.Storage;
 using NUnit.Framework;
 
-using Lokad.Cloud.Mock;
-
-namespace Lokad.Cloud.Framework.Test.Mock
+namespace Lokad.Cloud.Mock.Test
 {
 	[TestFixture]
 	public class MemoryQueueStorageProviderTests

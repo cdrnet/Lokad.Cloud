@@ -6,7 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lokad.Cloud.Azure;
+using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Azure;
 
 namespace Lokad.Cloud.Mock
 {

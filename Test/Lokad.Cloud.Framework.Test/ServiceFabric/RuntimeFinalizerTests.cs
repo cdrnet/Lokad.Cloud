@@ -2,11 +2,12 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
-using Lokad.Cloud.Azure.Test;
+using Lokad.Cloud.Test;
 using NUnit.Framework;
 
-namespace Lokad.Cloud.ServiceFabric.Tests
+namespace Lokad.Cloud.ServiceFabric.Test
 {
 	class MockDisposable : IDisposable
 	{

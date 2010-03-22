@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.Caching;
-using Lokad.Cloud.Azure;
+using Lokad.Cloud.Diagnostics;
 
 namespace Lokad.Cloud.Web
 {

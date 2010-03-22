@@ -5,8 +5,8 @@
 
 using System;
 using System.Collections.Generic;
-using Lokad.Cloud.Azure;
-using Lokad.Cloud.Azure.ManagementApiClient;
+using Lokad.Cloud.Provisioning.Azure;
+using Lokad.Cloud.Provisioning.Azure.Entities;
 
 namespace Lokad.Cloud.Web
 {

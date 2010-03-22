@@ -6,7 +6,7 @@
 using System;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad.Cloud;
+using Lokad.Cloud.Storage;
 
 namespace PingPongClient
 {
