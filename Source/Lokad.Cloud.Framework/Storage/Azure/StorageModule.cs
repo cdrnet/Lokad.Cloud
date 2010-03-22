@@ -6,7 +6,7 @@
 using System;
 using Autofac;
 using Autofac.Builder;
-using Lokad.Cloud.Provisioning;
+using Lokad.Cloud.Management;
 using Lokad.Cloud.ServiceFabric;
 using Lokad.Quality;
 using Microsoft.WindowsAzure;
@@ -119,8 +119,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 		static CloudInfrastructureProviders CloudInfrastructureProviders(IContext c)
 		{
-			return new CloudInfrastructureProviders
-				(
+			return new CloudInfrastructureProviders(
 				// storage providers supporting the O/C mapper scenario
 				c.Resolve<IBlobStorageProvider>(),
 				c.Resolve<IQueueStorageProvider>(),
@@ -129,8 +128,7 @@ namespace Lokad.Cloud.Storage.Azure
 				// optional providers supporting the execution framework scenario
 				c.ResolveOptional<ILog>(),
 				c.ResolveOptional<IProvisioningProvider>(),
-				c.ResolveOptional<IRuntimeFinalizer>()
-				);
+				c.ResolveOptional<IRuntimeFinalizer>());
 		}
 
 		static ITableStorageProvider TableStorageProvider(IContext c)

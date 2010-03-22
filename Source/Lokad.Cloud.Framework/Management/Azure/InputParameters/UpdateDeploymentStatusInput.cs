@@ -13,20 +13,15 @@
 #endregion
 
 using System.Runtime.Serialization;
+using Lokad.Cloud.Management.Azure.Entities;
 
-namespace Lokad.Cloud.Provisioning.Azure.InputParameters
+namespace Lokad.Cloud.Management.Azure.InputParameters
 {
-	[DataContract(Name = "CertificateFile", Namespace = ApiConstants.XmlNamespace)]
-	internal class CertificateFileInput : IExtensibleDataObject
+	[DataContract(Name = "UpdateDeploymentStatus", Namespace = ApiConstants.XmlNamespace)]
+	internal class UpdateDeploymentStatusInput : IExtensibleDataObject
 	{
 		[DataMember(Order = 1)]
-		public string Data { get; set; }
-
-		[DataMember(Order = 2)]
-		public string CertificateFormat { get; set; }
-
-		[DataMember(Order = 3)]
-		public string Password { get; set; }
+		public DeploymentStatus Status { get; set; }
 
 		public ExtensionDataObject ExtensionData { get; set; }
 	}

@@ -14,7 +14,7 @@
 
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Provisioning.Azure.Entities
+namespace Lokad.Cloud.Management.Azure.Entities
 {
 	/// <summary>
 	/// Asynchronous Operation

@@ -12,19 +12,16 @@
 //---------------------------------------------------------------------------------
 #endregion
 
-using System.Runtime.Serialization;
+// TODO: To be replaced with official REST client once available
 
-namespace Lokad.Cloud.Provisioning.Azure.InputParameters
+namespace Lokad.Cloud.Management.Azure
 {
-	[DataContract(Name = "Swap", Namespace = ApiConstants.XmlNamespace)]
-	internal class SwapDeploymentInput : IExtensibleDataObject
+	internal static class ApiConstants
 	{
-		[DataMember(Order = 1)]
-		public string Production { get; set; }
-
-		[DataMember(Order = 2)]
-		public string SourceDeployment { get; set; }
-
-		public ExtensionDataObject ExtensionData { get; set; }
+		public const string ServiceEndpoint = "https://management.core.windows.net";
+		public const string XmlNamespace = "http://schemas.microsoft.com/windowsazure";
+		public const string VersionHeaderName = "x-ms-version";
+		public const string OperationTrackingIdHeader = "x-ms-request-id";
+		public const string VersionHeaderContent = "2009-10-01";
 	}
 }

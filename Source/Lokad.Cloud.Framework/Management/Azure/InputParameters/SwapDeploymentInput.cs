@@ -14,13 +14,16 @@
 
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Provisioning.Azure.InputParameters
+namespace Lokad.Cloud.Management.Azure.InputParameters
 {
-	[DataContract(Name = "WalkUpgradeDomain", Namespace = ApiConstants.XmlNamespace)]
-	internal class WalkUpgradeDomainInput : IExtensibleDataObject
+	[DataContract(Name = "Swap", Namespace = ApiConstants.XmlNamespace)]
+	internal class SwapDeploymentInput : IExtensibleDataObject
 	{
 		[DataMember(Order = 1)]
-		public int UpgradeDomain { get; set; }
+		public string Production { get; set; }
+
+		[DataMember(Order = 2)]
+		public string SourceDeployment { get; set; }
 
 		public ExtensionDataObject ExtensionData { get; set; }
 	}

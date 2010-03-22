@@ -12,16 +12,26 @@
 //---------------------------------------------------------------------------------
 #endregion
 
-// TODO: To be replaced with official REST client once available
+using System;
+using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Provisioning.Azure
+namespace Lokad.Cloud.Management.Azure.InputParameters
 {
-	internal static class ApiConstants
+	[DataContract(Name = "CreateDeployment", Namespace = ApiConstants.XmlNamespace)]
+	internal class CreateDeploymentInput : IExtensibleDataObject
 	{
-		public const string ServiceEndpoint = "https://management.core.windows.net";
-		public const string XmlNamespace = "http://schemas.microsoft.com/windowsazure";
-		public const string VersionHeaderName = "x-ms-version";
-		public const string OperationTrackingIdHeader = "x-ms-request-id";
-		public const string VersionHeaderContent = "2009-10-01";
+		[DataMember(Order = 1)]
+		public string Name { get; set; }
+
+		[DataMember(Order = 2)]
+		public Uri PackageUrl { get; set; }
+
+		[DataMember(Order = 3)]
+		public string Label { get; set; }
+
+		[DataMember(Order = 4)]
+		public string Configuration { get; set; }
+
+		public ExtensionDataObject ExtensionData { get; set; }
 	}
 }

@@ -5,7 +5,7 @@
 
 using Autofac.Builder;
 
-namespace Lokad.Cloud.Provisioning.Azure
+namespace Lokad.Cloud.Management
 {
 	/// <summary>IoC module for loading the Management API providers.</summary>
 	public class ProvisioningModule : Module
@@ -30,8 +30,8 @@ namespace Lokad.Cloud.Provisioning.Azure
 			}
 			var settings = _settings.Value;
 
-			moduleBuilder.Register(c => new ProvisioningProvider(settings, c.Resolve<ILog>()))
-				.As<ProvisioningProvider, IProvisioningProvider>()
+			moduleBuilder.Register(c => new CloudProvisioning(settings, c.Resolve<ILog>()))
+				.As<CloudProvisioning, IProvisioningProvider>()
 				.SingletonScoped();
 		}
 	}

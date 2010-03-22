@@ -10,15 +10,16 @@ using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel.Security;
 using System.Text;
 using System.Xml.Linq;
-using Lokad.Cloud.Provisioning.Azure.Entities;
-using Lokad.Cloud.Provisioning.Azure.InputParameters;
+using Lokad.Cloud.Management.Azure;
+using Lokad.Cloud.Management.Azure.Entities;
+using Lokad.Cloud.Management.Azure.InputParameters;
 
-namespace Lokad.Cloud.Provisioning.Azure
+namespace Lokad.Cloud.Management
 {
 	/// <summary>
 	/// Azure Management API Provider, Provisioning Provider.
 	/// </summary>
-	public class ProvisioningProvider : IProvisioningProvider
+	public class CloudProvisioning : IProvisioningProvider
 	{
 		readonly ILog _log;
 
@@ -37,7 +38,7 @@ namespace Lokad.Cloud.Provisioning.Azure
 		IAzureServiceManagement _channel;
 
 		/// <summary>IoC constructor.</summary>>
-		public ProvisioningProvider(RoleConfigurationSettings settings, ILog log)
+		public CloudProvisioning(RoleConfigurationSettings settings, ILog log)
 		{
 			_log = log;
 

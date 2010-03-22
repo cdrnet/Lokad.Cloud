@@ -13,7 +13,7 @@ using System.ServiceModel.Web;
 
 // TODO: To be replaced with official REST client once available
 
-namespace Lokad.Cloud.Provisioning.Azure
+namespace Lokad.Cloud.Management.Azure
 {
 	internal class ManagementClient : IDisposable
 	{

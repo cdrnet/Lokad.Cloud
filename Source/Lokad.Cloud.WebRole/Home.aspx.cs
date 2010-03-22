@@ -5,8 +5,8 @@
 
 using System;
 using System.Collections.Generic;
-using Lokad.Cloud.Provisioning.Azure;
-using Lokad.Cloud.Provisioning.Azure.Entities;
+using Lokad.Cloud.Management;
+using Lokad.Cloud.Management.Azure.Entities;
 
 namespace Lokad.Cloud.Web
 {
@@ -24,16 +24,16 @@ namespace Lokad.Cloud.Web
 			StorageAccountLabel.Text = GlobalSetup.StorageAccountName;
 
 			// Management
-			var management = GlobalSetup.Container.Resolve<ProvisioningProvider>();
-			management.Update();
+			var provisioning = GlobalSetup.Container.Resolve<CloudProvisioning>();
+			provisioning.Update();
 
-			SubscriptionLabel.Text = management.Subscription.GetValue("unknown");
-			CertificatesLabel.Text = management.Certificate.Convert(c => c.SubjectName.Name, "unknown");
-			CertificateThumbprintLabel.Text = management.Certificate.Convert(c => c.Thumbprint, "unknown");
+			SubscriptionLabel.Text = provisioning.Subscription.GetValue("unknown");
+			CertificatesLabel.Text = provisioning.Certificate.Convert(c => c.SubjectName.Name, "unknown");
+			CertificateThumbprintLabel.Text = provisioning.Certificate.Convert(c => c.Thumbprint, "unknown");
 
 			// Management Warnings
 			_managementWarningPanel.Visible = true;
-			switch(management.Status)
+			switch(provisioning.Status)
 			{
 				case ManagementStatus.ConfigurationMissing:
 					_managementConfigurationMissing.Visible = true;
@@ -57,9 +57,9 @@ namespace Lokad.Cloud.Web
 			// Worker Instance Update
 			WorkerInstancesPanel.Visible = false;
 			DeploymentStatusPanel.Visible = false;
-			if (management.Status == ManagementStatus.Available)
+			if (provisioning.Status == ManagementStatus.Available)
 			{
-				if(management.DeploymentStatus == DeploymentStatus.Running)
+				if(provisioning.DeploymentStatus == DeploymentStatus.Running)
 				{
 					WorkerInstancesPanel.Visible = true;
 				}
@@ -71,12 +71,12 @@ namespace Lokad.Cloud.Web
 
 			// Deployment Label
 			DeploymentLabel.Text = CloudEnvironment.AzureDeploymentId.GetValue("unknown");
-			var deploymentLabel = management.DeploymentLabel;
+			var deploymentLabel = provisioning.DeploymentLabel;
 			if (deploymentLabel.HasValue)
 			{
 				DeploymentLabel.Text = String.Format("{0} ({1})", deploymentLabel.Value, DeploymentLabel.Text);
 			}
-			var deploymentSlot = management.DeploymentSlot;
+			var deploymentSlot = provisioning.DeploymentSlot;
 			if (deploymentSlot.HasValue)
 			{
 				DeploymentLabel.Text = String.Format("{0}: {1}", deploymentSlot.Value, DeploymentLabel.Text);
@@ -87,15 +87,15 @@ namespace Lokad.Cloud.Web
 			}
 
 			// Service Label
-			HostedServiceLabel.Text = management.ServiceName.GetValue("unknown");
-			var serviceLabel = management.ServiceLabel;
+			HostedServiceLabel.Text = provisioning.ServiceName.GetValue("unknown");
+			var serviceLabel = provisioning.ServiceLabel;
 			if (serviceLabel.HasValue)
 			{
 				HostedServiceLabel.Text = String.Format("{0} ({1})", serviceLabel.Value, HostedServiceLabel.Text);
 			}
 
 			// Worker Instance Count
-			var instanceCount = management.WorkerInstanceCount;
+			var instanceCount = provisioning.WorkerInstanceCount;
 			if (!instanceCount.HasValue)
 			{
 				// RoleEnvironment always returns 0 if it fails to evaluate it,
@@ -141,13 +141,13 @@ namespace Lokad.Cloud.Web
 				return;
 			}
 
-			var management = GlobalSetup.Container.Resolve<ProvisioningProvider>();
-			if (!management.IsAvailable)
+			var provisioning = GlobalSetup.Container.Resolve<IProvisioningProvider>();
+			if (!provisioning.IsAvailable)
 			{
 				return;
 			}
 
-			management.SetWorkerInstanceCount(int.Parse(WorkerInstancesBox.Text));
+			provisioning.SetWorkerInstanceCount(int.Parse(WorkerInstancesBox.Text));
 
 			WorkerInstancesPanel.Visible = false;
 			DeploymentStatusPanel.Visible = true;

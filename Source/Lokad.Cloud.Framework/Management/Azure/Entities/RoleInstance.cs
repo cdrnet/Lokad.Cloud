@@ -12,46 +12,51 @@
 //---------------------------------------------------------------------------------
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Provisioning.Azure.Entities
+namespace Lokad.Cloud.Management.Azure.Entities
 {
 	/// <summary>
-	/// Certificate
+	/// Role Instance
 	/// </summary>
 	[DataContract(Namespace = ApiConstants.XmlNamespace)]
-	internal class Certificate : IExtensibleDataObject
+	internal class RoleInstance
 	{
-		[DataMember(Order = 1, EmitDefaultValue = false)]
-		public Uri CertificateUrl { get; set; }
+		[DataMember(Order = 1)]
+		public string RoleName { get; set; }
 
-		[DataMember(Order = 2, EmitDefaultValue = false)]
-		public string Thumbprint { get; set; }
+		[DataMember(Order = 2)]
+		public string InstanceName { get; set; }
 
-		[DataMember(Order = 3, EmitDefaultValue = false)]
-		public string ThumbprintAlgorithm { get; set; }
-
-		/// <remarks>Base64-Encoded X509</remarks>
-		[DataMember(Order = 4, EmitDefaultValue = false)]
-		public string Data { get; set; }
+		[DataMember(Order = 3)]
+		public RoleInstanceStatus InstanceStatus { get; set; }
 
 		public ExtensionDataObject ExtensionData { get; set; }
 	}
 
-	/// <summary>
-	/// List of certificates
-	/// </summary>
-	[CollectionDataContract(Name = "Certificates", ItemName = "Certificate", Namespace = ApiConstants.XmlNamespace)]
-	internal class CertificateList : List<Certificate>
+	public enum RoleInstanceStatus
 	{
-		public CertificateList()
+		Initializing,
+		Ready,
+		Busy,
+		Stopping,
+		Stopped,
+		Unresponsive
+	}
+
+	/// <summary>
+	/// List of role instances
+	/// </summary>
+	[CollectionDataContract(Name = "RoleInstanceList", ItemName = "RoleInstance", Namespace = ApiConstants.XmlNamespace)]
+	internal class RoleInstanceList : List<RoleInstance>
+	{
+		public RoleInstanceList()
 		{
 		}
 
-		public CertificateList(IEnumerable<Certificate> certificateList)
-			: base(certificateList)
+		public RoleInstanceList(IEnumerable<RoleInstance> roles)
+			: base(roles)
 		{
 		}
 	}

@@ -12,26 +12,22 @@
 //---------------------------------------------------------------------------------
 #endregion
 
-using System;
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Provisioning.Azure.InputParameters
+namespace Lokad.Cloud.Management.Azure.InputParameters
 {
-	[DataContract(Name = "CreateDeployment", Namespace = ApiConstants.XmlNamespace)]
-	internal class CreateDeploymentInput : IExtensibleDataObject
+	[DataContract(Name = "RegenerateKeys", Namespace = ApiConstants.XmlNamespace)]
+	internal class RegenerateKeysInput : IExtensibleDataObject
 	{
 		[DataMember(Order = 1)]
-		public string Name { get; set; }
-
-		[DataMember(Order = 2)]
-		public Uri PackageUrl { get; set; }
-
-		[DataMember(Order = 3)]
-		public string Label { get; set; }
-
-		[DataMember(Order = 4)]
-		public string Configuration { get; set; }
+		public KeyType KeyType { get; set; }
 
 		public ExtensionDataObject ExtensionData { get; set; }
+	}
+
+	public enum KeyType
+	{
+		Primary,
+		Secondary,
 	}
 }

@@ -14,10 +14,10 @@
 
 // TODO: To be replaced with official REST client once available
 
-using Lokad.Cloud.Provisioning.Azure.Entities;
-using Lokad.Cloud.Provisioning.Azure.InputParameters;
+using Lokad.Cloud.Management.Azure.Entities;
+using Lokad.Cloud.Management.Azure.InputParameters;
 
-namespace Lokad.Cloud.Provisioning.Azure
+namespace Lokad.Cloud.Management.Azure
 {
 	/// <summary>
 	/// Synchronous wrappers around the asynchronous web service channel.

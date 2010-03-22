@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Provisioning.Azure.Entities
+namespace Lokad.Cloud.Management.Azure.Entities
 {
 	/// <summary>
 	/// Hosted Service

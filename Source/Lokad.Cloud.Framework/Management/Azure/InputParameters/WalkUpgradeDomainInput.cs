@@ -14,20 +14,14 @@
 
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Provisioning.Azure.InputParameters
+namespace Lokad.Cloud.Management.Azure.InputParameters
 {
-	[DataContract(Name = "RegenerateKeys", Namespace = ApiConstants.XmlNamespace)]
-	internal class RegenerateKeysInput : IExtensibleDataObject
+	[DataContract(Name = "WalkUpgradeDomain", Namespace = ApiConstants.XmlNamespace)]
+	internal class WalkUpgradeDomainInput : IExtensibleDataObject
 	{
 		[DataMember(Order = 1)]
-		public KeyType KeyType { get; set; }
+		public int UpgradeDomain { get; set; }
 
 		public ExtensionDataObject ExtensionData { get; set; }
-	}
-
-	public enum KeyType
-	{
-		Primary,
-		Secondary,
 	}
 }

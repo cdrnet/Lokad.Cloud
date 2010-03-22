@@ -12,52 +12,22 @@
 //---------------------------------------------------------------------------------
 #endregion
 
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Provisioning.Azure.Entities
+namespace Lokad.Cloud.Management.Azure.InputParameters
 {
-	/// <summary>
-	/// Role Instance
-	/// </summary>
-	[DataContract(Namespace = ApiConstants.XmlNamespace)]
-	internal class RoleInstance
+	[DataContract(Name = "CertificateFile", Namespace = ApiConstants.XmlNamespace)]
+	internal class CertificateFileInput : IExtensibleDataObject
 	{
 		[DataMember(Order = 1)]
-		public string RoleName { get; set; }
+		public string Data { get; set; }
 
 		[DataMember(Order = 2)]
-		public string InstanceName { get; set; }
+		public string CertificateFormat { get; set; }
 
 		[DataMember(Order = 3)]
-		public RoleInstanceStatus InstanceStatus { get; set; }
+		public string Password { get; set; }
 
 		public ExtensionDataObject ExtensionData { get; set; }
-	}
-
-	public enum RoleInstanceStatus
-	{
-		Initializing,
-		Ready,
-		Busy,
-		Stopping,
-		Stopped,
-		Unresponsive
-	}
-
-	/// <summary>
-	/// List of role instances
-	/// </summary>
-	[CollectionDataContract(Name = "RoleInstanceList", ItemName = "RoleInstance", Namespace = ApiConstants.XmlNamespace)]
-	internal class RoleInstanceList : List<RoleInstance>
-	{
-		public RoleInstanceList()
-		{
-		}
-
-		public RoleInstanceList(IEnumerable<RoleInstance> roles)
-			: base(roles)
-		{
-		}
 	}
 }

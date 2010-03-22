@@ -5,7 +5,7 @@
 
 using Autofac.Builder;
 using Lokad.Cloud.Diagnostics;
-using Lokad.Cloud.Provisioning.Azure;
+using Lokad.Cloud.Management;
 using Lokad.Cloud.Storage.Azure;
 using Lokad.Quality;
 using Module = Autofac.Builder.Module;

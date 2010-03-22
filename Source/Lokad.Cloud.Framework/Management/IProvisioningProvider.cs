@@ -3,7 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
-namespace Lokad.Cloud.Provisioning
+namespace Lokad.Cloud.Management
 {
 	/// <summary>Defines an interface to auto-scale your cloud app.</summary>
 	/// <remarks>The implementation relies on the Management API on Windows Azure.</remarks>

@@ -14,9 +14,9 @@
 
 using System;
 using System.Runtime.Serialization;
-using Lokad.Cloud.Provisioning.Azure.Entities;
+using Lokad.Cloud.Management.Azure.Entities;
 
-namespace Lokad.Cloud.Provisioning.Azure.InputParameters
+namespace Lokad.Cloud.Management.Azure.InputParameters
 {
 	[DataContract(Name = "UpgradeDeployment", Namespace = ApiConstants.XmlNamespace)]
 	internal class UpgradeDeploymentInput : IExtensibleDataObject

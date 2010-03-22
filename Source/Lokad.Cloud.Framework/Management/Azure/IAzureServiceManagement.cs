@@ -15,12 +15,12 @@
 using System;
 using System.ServiceModel;
 using System.ServiceModel.Web;
-using Lokad.Cloud.Provisioning.Azure.Entities;
-using Lokad.Cloud.Provisioning.Azure.InputParameters;
+using Lokad.Cloud.Management.Azure.Entities;
+using Lokad.Cloud.Management.Azure.InputParameters;
 
 // TODO: To be replaced with official REST client once available
 
-namespace Lokad.Cloud.Provisioning.Azure
+namespace Lokad.Cloud.Management.Azure
 {
 	/// <summary>
 	/// Windows Azure Service Management API. 
