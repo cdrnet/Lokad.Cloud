@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Linq;
 using System.Data.Services.Client;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -100,23 +101,43 @@ namespace Lokad.Cloud.Storage.Azure
 			_countOnSlowInstantiation.Close(timestamp);
 		}
 
+		static bool IsErrorCodeMatch(StorageException exception, params StorageErrorCode[] codes)
+		{
+			return exception != null
+				&& codes.Contains(exception.ErrorCode);
+		}
+
+		static bool IsErrorStringMatch(StorageException exception, params string[] errorStrings)
+		{
+			return exception != null && exception.ExtendedErrorInformation != null
+				&& errorStrings.Contains(exception.ExtendedErrorInformation.ErrorCode);
+		}
+
+		static bool IsErrorStringMatch(string exceptionErrorString, params string[] errorStrings)
+		{
+			return errorStrings.Contains(exceptionErrorString);
+		}
+
 		static bool TransientServerErrorExceptionFilter(Exception exception)
 		{
 			var serverException = exception as StorageServerException;
 			if (serverException == null)
 			{
-				// we only handle server exceptions
+				// we only handle server exceptions here
 				return false;
 			}
 
-			var errorCode = serverException.ErrorCode;
-			var errorString = serverException.ExtendedErrorInformation.ErrorCode;
+			if (IsErrorCodeMatch(serverException,
+				StorageErrorCode.ServiceInternalError,
+				StorageErrorCode.ServiceTimeout))
+			{
+				return true;
+			}
 
-			if (errorCode == StorageErrorCode.ServiceInternalError
-				|| errorCode == StorageErrorCode.ServiceTimeout
-				|| errorString == StorageErrorCodeStrings.InternalError
-				|| errorString == StorageErrorCodeStrings.ServerBusy
-				|| errorString == StorageErrorCodeStrings.OperationTimedOut)
+			if (IsErrorStringMatch(serverException,
+				StorageErrorCodeStrings.InternalError,
+				StorageErrorCodeStrings.ServerBusy,
+				StorageErrorCodeStrings.OperationTimedOut))
 			{
 				return true;
 			}
@@ -136,21 +157,17 @@ namespace Lokad.Cloud.Storage.Azure
 				return true;
 			}
 
-			var serverException = exception as DataServiceRequestException;
-			if (serverException == null)
+			var dataServiceException = exception as DataServiceRequestException;
+			if (dataServiceException != null)
 			{
-				// we only handle server exceptions
-				return false;
-			}
-
-			var errorCode = GetErrorCode(serverException);
-
-			if (errorCode == StorageErrorCodeStrings.InternalError
-				|| errorCode == StorageErrorCodeStrings.ServerBusy
-				|| errorCode == TableErrorCodeStrings.TableServerOutOfMemory
-				|| errorCode == StorageErrorCodeStrings.OperationTimedOut)
-			{
-				return true;
+				if (IsErrorStringMatch(GetErrorCode(dataServiceException),
+					StorageErrorCodeStrings.InternalError,
+					StorageErrorCodeStrings.ServerBusy,
+					StorageErrorCodeStrings.OperationTimedOut,
+					TableErrorCodeStrings.TableServerOutOfMemory))
+				{
+					return true;
+				}
 			}
 
 			return false;
@@ -162,36 +179,38 @@ namespace Lokad.Cloud.Storage.Azure
 
 			// Blob Storage or Queue Storage exceptions
 			// Table Storage may throw exception of type 'StorageClientException'
-			if (null != storageException)
+			if (storageException != null)
 			{
-				var errorCode = storageException.ErrorCode;
-				var errorString = storageException.ExtendedErrorInformation.ErrorCode;
+				// 'client' exceptions reflect server-side problems (delayed instantiation)
 
-				// those 'client' exceptions reflects server-side problem (delayed instantiation)
-				if (errorCode == StorageErrorCode.ResourceNotFound
-					|| errorCode == StorageErrorCode.ContainerNotFound
-					|| errorString == QueueErrorCodeStrings.QueueNotFound
-					|| errorString == QueueErrorCodeStrings.QueueBeingDeleted
-					|| errorString == StorageErrorCodeStrings.InternalError
-					|| errorString == StorageErrorCodeStrings.ServerBusy
-					|| errorString == TableErrorCodeStrings.TableServerOutOfMemory
-					|| errorString == TableErrorCodeStrings.TableNotFound
-					|| errorString == TableErrorCodeStrings.TableBeingDeleted)
+				if (IsErrorCodeMatch(storageException,
+					StorageErrorCode.ResourceNotFound,
+					StorageErrorCode.ContainerNotFound))
+				{
+					return true;
+				}
+
+				if (IsErrorStringMatch(storageException,
+					QueueErrorCodeStrings.QueueNotFound,
+					QueueErrorCodeStrings.QueueBeingDeleted,
+					StorageErrorCodeStrings.InternalError,
+					StorageErrorCodeStrings.ServerBusy,
+					TableErrorCodeStrings.TableServerOutOfMemory,
+					TableErrorCodeStrings.TableNotFound,
+					TableErrorCodeStrings.TableBeingDeleted))
 				{
 					return true;
 				}
 			}
 
-			var tableException = exception as DataServiceQueryException;
-
 			// Table Storage may also throw exception of type 'DataServiceQueryException'.
-			if (null != tableException)
+			var dataServiceException = exception as DataServiceQueryException;
+			if (null != dataServiceException)
 			{
-				var errorString = GetErrorCode(tableException);
-
-				if (errorString == TableErrorCodeStrings.TableBeingDeleted
-					|| errorString == TableErrorCodeStrings.TableNotFound
-					|| errorString == TableErrorCodeStrings.TableServerOutOfMemory)
+				if (IsErrorStringMatch(GetErrorCode(dataServiceException),
+					TableErrorCodeStrings.TableBeingDeleted,
+					TableErrorCodeStrings.TableNotFound,
+					TableErrorCodeStrings.TableServerOutOfMemory))
 				{
 					return true;
 				}
