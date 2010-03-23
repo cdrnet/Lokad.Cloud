@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Security;
 using System.Threading;
 using Autofac.Builder;
-using Lokad.Cloud.Storage.Azure;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
@@ -41,7 +40,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 		/// <summary>Performs the work using the provided configuration.</summary>
 		/// <returns><c>true</c> if the assemblies were updated and a restart is needed.</returns>
-		public bool DoWork(Maybe<RoleConfigurationSettings> configuration)
+		public bool DoWork(Maybe<ICloudConfigurationSettings> configuration)
 		{
 			// The trick is to load this same assembly in another domain, then
 			// instantiate this same class and invoke DoWorkInternal
@@ -64,26 +63,20 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		}
 
 		/// <summary>This method should only be called for the isolated instance.</summary>
-		bool DoWorkInternal(Maybe<RoleConfigurationSettings> externalRoleConfiguration)
+		bool DoWorkInternal(Maybe<ICloudConfigurationSettings> externalRoleConfiguration)
 		{
 			var builder = new ContainerBuilder();
-
-			// O/C mapper
-			var storageModule = new StorageModule();
-			if (externalRoleConfiguration.HasValue)
+			builder.RegisterModule(new CloudModule());
+			if(externalRoleConfiguration.HasValue)
 			{
-				storageModule.ExternalRoleConfiguration = externalRoleConfiguration.Value;
+				builder.RegisterModule(new CloudConfigurationModule(externalRoleConfiguration.Value));
 			}
-			builder.RegisterModule(storageModule);
+			else
+			{
+				builder.RegisterModule(new CloudConfigurationModule());
+			}
 
-			// runtime
-			var runtimeModule = new RuntimeModule
-				{
-					RoleConfiguration = externalRoleConfiguration
-				};
-			builder.RegisterModule(runtimeModule);
-
-			// executor
+			// runtime specific
 			builder.Register(typeof(InternalServiceRuntime)).FactoryScoped();
 
 			using (var container = builder.Build())

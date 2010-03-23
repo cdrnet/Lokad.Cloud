@@ -20,6 +20,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 		private static Autofac.IContainer SetupContainer()
 		{
 			var builder = new ContainerBuilder();
+			builder.RegisterModule(new CloudModule());
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
 
 			return builder.Build();

@@ -19,6 +19,13 @@ namespace Lokad.Cloud.Management
 			builder.Register<CloudServices>().FactoryScoped();
 			builder.Register<CloudServiceScheduling>().FactoryScoped();
 			builder.Register<CloudStatistics>().FactoryScoped();
+
+			// in some cases (like standalone mock storage) the RoleConfigurationSettings
+			// will not be available. That's ok, since in this case Provisioning is not
+			// available anyway and there's no need to make Provisioning resolveable.
+			builder.Register(c => new CloudProvisioning(c.Resolve<ICloudConfigurationSettings>(), c.Resolve<ILog>()))
+				.As<CloudProvisioning, IProvisioningProvider>()
+				.SingletonScoped();
 		}
 	}
 }

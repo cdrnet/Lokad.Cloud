@@ -6,7 +6,6 @@
 using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
-using Lokad.Cloud.ServiceFabric;
 
 namespace Lokad.Cloud.Test
 {
@@ -17,8 +16,8 @@ namespace Lokad.Cloud.Test
 		static IContainer Setup()
 		{
 			var builder = new ContainerBuilder();
+			builder.RegisterModule(new CloudModule());
 			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
-			builder.RegisterModule(new RuntimeModule());
 
 			return builder.Build();
 		}

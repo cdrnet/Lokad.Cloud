@@ -4,8 +4,7 @@
 #endregion
 
 using System;
-using Autofac.Builder;
-using Autofac.Configuration;
+using Lokad.Cloud;
 using Lokad.Cloud.Storage;
 
 namespace PingPongClient
@@ -14,14 +13,13 @@ namespace PingPongClient
 	{
 		static void Main(string[] args)
 		{
-			var container = Setup();
-
-			var provider = container.Resolve<IQueueStorageProvider>();
+			var providers = Standalone.CreateProvidersFromConfiguration("autofac");
+			var queues = providers.QueueStorage;
 
 			var input = new[] {0.0, 1.0, 2.0};
 
 			// pushing item to the 'ping' queue
-			provider.PutRange("ping", input);
+			queues.PutRange("ping", input);
 			foreach(var x in input)
 			{
 				Console.Write("ping={0} ", x);
@@ -34,10 +32,10 @@ namespace PingPongClient
 			// getting items from the 'pong' queue
 			for(int i = 0; i < 100; i++) 
 			{
-				foreach(var x in provider.Get<double>("pong", 10))
+				foreach (var x in queues.Get<double>("pong", 10))
 				{
 					Console.Write("pong={0} ", x);
-					provider.Delete(x);
+					queues.Delete(x);
 				}
 
 				Console.Write("sleep 1000ms. ");
@@ -45,14 +43,6 @@ namespace PingPongClient
 
 				Console.WriteLine();
 			}
-		}
-
-		static Autofac.IContainer Setup()
-		{
-			var builder = new ContainerBuilder();
-			builder.RegisterModule(new ConfigurationSettingsReader("autofac"));
-
-			return builder.Build();
 		}
 	}
 }

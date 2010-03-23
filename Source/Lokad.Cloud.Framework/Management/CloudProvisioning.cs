@@ -38,7 +38,7 @@ namespace Lokad.Cloud.Management
 		IAzureServiceManagement _channel;
 
 		/// <summary>IoC constructor.</summary>>
-		public CloudProvisioning(RoleConfigurationSettings settings, ILog log)
+		public CloudProvisioning(ICloudConfigurationSettings settings, ILog log)
 		{
 			_log = log;
 
