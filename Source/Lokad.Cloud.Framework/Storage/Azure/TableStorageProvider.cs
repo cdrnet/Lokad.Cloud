@@ -8,6 +8,7 @@ using System.Data.Services.Client;
 using System.Linq;
 using System.Text;
 using System.Web;
+using Lokad.Diagnostics;
 using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Storage.Azure
@@ -31,12 +32,27 @@ namespace Lokad.Cloud.Storage.Azure
 		readonly IBinaryFormatter _formatter;
 		readonly ActionPolicy _storagePolicy;
 
+		// Instrumentation
+		readonly ExecutionCounter _countQuery;
+		readonly ExecutionCounter _countInsert;
+		readonly ExecutionCounter _countUpdate;
+		readonly ExecutionCounter _countDelete;
+
 		/// <summary>IoC constructor.</summary>
 		public TableStorageProvider(CloudTableClient tableStorage, IBinaryFormatter formatter)
 		{
 			_tableStorage = tableStorage;
 			_formatter = formatter;
 			_storagePolicy = AzurePolicies.TransientTableErrorBackOff;
+
+			// Instrumentation
+			ExecutionCounters.Default.RegisterRange(new[]
+				{
+					_countQuery = new ExecutionCounter("TableStorageProvider.QuerySegment", 0, 0),
+					_countInsert = new ExecutionCounter("TableStorageProvider.InsertSlice", 0, 0),
+					_countUpdate = new ExecutionCounter("TableStorageProvider.UpdateSlice", 0, 0),
+					_countDelete = new ExecutionCounter("TableStorageProvider.DeleteSlice", 0, 0),
+				});
 		}
 
 		public bool CreateTable(string tableName)
@@ -154,6 +170,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			string continuationRowKey = null;
 			string continuationPartitionKey = null;
+			var timestamp = _countQuery.Open();
 
 			do
 			{
@@ -194,6 +211,8 @@ namespace Lokad.Cloud.Storage.Azure
 						}
 					});
 
+				_countQuery.Close(timestamp);
+
 				foreach (var fatEntity in fatEntities)
 				{
 					yield return FatEntity.Convert<T>(fatEntity, _formatter);
@@ -203,6 +222,8 @@ namespace Lokad.Cloud.Storage.Azure
 				{
 					continuationRowKey = response.Headers[ContinuationNextRowKeyToken];
 					continuationPartitionKey = response.Headers[ContinuationNextPartitionKeyToken];
+
+					timestamp = _countQuery.Open();
 				}
 				else
 				{
@@ -230,6 +251,8 @@ namespace Lokad.Cloud.Storage.Azure
 
 			foreach (var slice in SliceEntities(fatEntities))
 			{
+				var timestamp = _countInsert.Open();
+
 				foreach (var fatEntity in slice)
 				{
 					context.AddObject(tableName, fatEntity);
@@ -303,6 +326,8 @@ namespace Lokad.Cloud.Storage.Azure
 							}
 						}
 					});
+
+				_countInsert.Close(timestamp);
 			}
 		}
 
@@ -322,6 +347,8 @@ namespace Lokad.Cloud.Storage.Azure
 
 			foreach (var slice in SliceEntities(fatEntities))
 			{
+				var timestamp = _countUpdate.Open();
+
 				foreach (var fatEntity in slice)
 				{
 					// entities should be updated in a single round-trip
@@ -370,6 +397,8 @@ namespace Lokad.Cloud.Storage.Azure
 							}
 						}
 					});
+
+				_countUpdate.Close(timestamp);
 			}
 		}
 
@@ -434,6 +463,8 @@ namespace Lokad.Cloud.Storage.Azure
 			// (otherwise insertion in 'context' is likely to fail)
 			foreach (var s in rowKeys.Distinct().Slice(MaxEntityTransactionCount))
 			{
+				var timestamp = _countDelete.Open();
+
 				var slice = s;
 
 				DeletionStart: // 'slice' might have been refreshed if some entities were already deleted
@@ -467,6 +498,7 @@ namespace Lokad.Cloud.Storage.Azure
 						var errorCode = AzurePolicies.GetErrorCode(ex);
 						if (TableErrorCodeStrings.TableNotFound == errorCode)
 						{
+							_countDelete.Close(timestamp);
 							return;
 						}
 
@@ -493,6 +525,8 @@ namespace Lokad.Cloud.Storage.Azure
 					// HACK: [vermorel] yes, gotos are horrid, but other solutions are worst here.
 					goto DeletionStart;
 				}
+
+				_countDelete.Close(timestamp);
 			}
 		}
 	}
