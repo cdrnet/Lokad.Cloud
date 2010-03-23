@@ -31,8 +31,14 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 		readonly Action<bool> _isRestartFlooding;
 
+		volatile bool _isStopRequested;
+
 		/// <summary>When stop is requested, policy won't go on with restarts anymore.</summary>
-		public bool IsStopRequested { get; set; }
+		public bool IsStopRequested
+		{
+			get { return _isStopRequested; }
+			set { _isStopRequested = value; }
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="NoRestartFloodPolicy"/>class.
@@ -53,7 +59,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		public void Do(Func<bool> workButNotFloodRestart)
 		{
 			// once stop is requested, we stop
-			while(!IsStopRequested)
+			while (!_isStopRequested)
 			{
 				// The assemblyUpdated flag handles the case when a restart is caused by an asm update, "soon" after another restart
 				// In such case, the worker would be reported as unhealthy virtually forever if no more restarts occur
@@ -61,7 +67,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				var lastRestart = DateTimeOffset.UtcNow;
 				var assemblyUpdated = workButNotFloodRestart();
 
-				if(!assemblyUpdated && DateTimeOffset.UtcNow.Subtract(lastRestart) < FloodFrequencyThreshold)
+				if (!assemblyUpdated && DateTimeOffset.UtcNow.Subtract(lastRestart) < FloodFrequencyThreshold)
 				{
 					// Unhealthy
 					_isRestartFlooding(false);

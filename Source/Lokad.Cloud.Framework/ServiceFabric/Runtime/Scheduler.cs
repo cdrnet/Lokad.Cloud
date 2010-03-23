@@ -30,7 +30,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		readonly TimeSpan _idleSleep = 10.Seconds();
 
 		CloudService _currentService;
-		bool _isRunning;
+		volatile bool _isRunning;
 
 		// Instrumentation
 		readonly ExecutionCounter _countIdleSleep;
@@ -80,7 +80,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				// for at least 1min (in order to avoid a single service to monopolize CPU)
 				var start = DateTimeOffset.UtcNow;
 				
-				while (DateTimeOffset.UtcNow.Subtract(start) < _moreOfTheSame && DemandsImmediateStart(result))
+				while (DateTimeOffset.UtcNow.Subtract(start) < _moreOfTheSame && _isRunning && DemandsImmediateStart(result))
 				{
 					yield return () =>
 						{
@@ -90,10 +90,9 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 						};
 					isRunOnce |= WasSuccessfullyExecuted(result);
 				}
-				
 
 				skippedConsecutively = isRunOnce ? 0 : skippedConsecutively + 1;
-				if (skippedConsecutively >= services.Length)
+				if (skippedConsecutively >= services.Length && _isRunning)
 				{
 					// We are not using 'Thread.Sleep' because we want the worker
 					// to terminate fast if 'Stop' is requested.

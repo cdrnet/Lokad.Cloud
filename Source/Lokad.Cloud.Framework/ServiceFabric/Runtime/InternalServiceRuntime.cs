@@ -26,7 +26,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <summary>Main thread used to schedule services in <see cref="Execute()"/>.</summary>
 		Thread _executeThread;
 
-		bool _isStopRequested;
+		volatile bool _isStopRequested;
 		Scheduler _scheduler;
 
 		/// <summary>Container used to populate cloud service properties.</summary>
@@ -85,30 +85,44 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			clientContainer.InjectProperties(_diagnostics);
 
 			_scheduler = new Scheduler(() => LoadServices(clientContainer), RunService);
-			foreach (var action in _scheduler.Schedule())
+
+			try
 			{
-				if(_isStopRequested)
+				foreach (var action in _scheduler.Schedule())
 				{
-					break;
-				}
-
-				try
-				{
-					action();
-
-					// throws a 'TriggerRestartException' if a new package is detected.
-					loader.CheckUpdate(true);
-				}
-				catch(Exception ex)
-				{
-					if(!(ex is TriggerRestartException) && !(ex is ThreadAbortException))
+					if (_isStopRequested)
 					{
-						_exceptions.Add(ex);
+						break;
 					}
 
-					OnRuntimeStopping();
-					throw;
+					try
+					{
+						action();
+
+						// throws a 'TriggerRestartException' if a new package is detected.
+						loader.CheckUpdate(true);
+					}
+					catch (Exception ex)
+					{
+						if (!(ex is TriggerRestartException) && !(ex is ThreadAbortException))
+						{
+							_exceptions.Add(ex);
+						}
+
+						if (!(ex is ThreadAbortException))
+						{
+							OnRuntimeStopping();
+						}
+
+						throw;
+					}
 				}
+			}
+			catch (ThreadAbortException)
+			{
+				Thread.ResetAbort();
+				OnRuntimeStopping();
+				return;
 			}
 
 			OnRuntimeStopping();
@@ -119,19 +133,22 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// be shut down.</remarks>
 		public void Stop()
 		{
-			_isStopRequested = true;
-
 			if(_executeThread != null)
 			{
 				_executeThread.Abort();
 			}
+			else
+			{
+				RequestToStop();
+			}
 		}
 
-		/// <summary>Raise the "stop requested" flag and waits until the service
-		/// completes. This method is too slow to be used if the envirronment is
-		/// requesting immediate shutdown, but it has the advantage of gracefully
+		/// <summary>Raise the "stop requested" flag and aborts the runtime
+		/// if it was waiting idly. This method does not force running jobs though
+		/// and is thus too slow to be used if the envirronment is
+		/// requesting immediate shutdown, but has the advantage of gracefully
 		/// shutting down the services.</summary>
-		public void WaitForStop()
+		public void RequestToStop()
 		{
 			_isStopRequested = true;
 
@@ -146,7 +163,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// </summary>
 		void OnRuntimeStarting()
 		{
-			TryLogInfoFormat("Runtime starting on worker {0}.", CloudEnvironment.PartitionKey);
+			TryLogInfoFormat("Runtime started on worker {0}.", CloudEnvironment.PartitionKey);
 		}
 
 		/// <summary>
@@ -157,6 +174,8 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			TryLogInfoFormat("Runtime stopping on worker {0}.", CloudEnvironment.PartitionKey);
 
 			_providers.RuntimeFinalizer.FinalizeRuntime();
+
+			TryLogInfoFormat("Runtime finalized on worker {0}.", CloudEnvironment.PartitionKey);
 
 			TryDumpDiagnostics();
 
@@ -214,9 +233,16 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			{
 				_diagnostics.CollectStatistics();
 			}
-			// ReSharper disable EmptyGeneralCatchClause
-			catch
+			catch (ThreadAbortException)
 			{
+				Thread.ResetAbort();
+				_providers.Log.WarnFormat("Runtime skipped acquiring statistics on {0}", CloudEnvironment.PartitionKey);
+				// TODO: consider 2nd trial here
+			}
+			// ReSharper disable EmptyGeneralCatchClause
+			catch(Exception e)
+			{
+				_providers.Log.ErrorFormat("Runtime failed to acquire statistics on {0}: {1}", CloudEnvironment.PartitionKey, e.ToString());
 				// might fail when shutting down on exception
 				// logging is likely to fail as well in this case
 				// Suppress exception, can't do anything (will be recycled anyway)
@@ -232,6 +258,11 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		{
 			try
 			{
+				_providers.Log.InfoFormat(format, args);
+			}
+			catch (ThreadAbortException)
+			{
+				Thread.ResetAbort();
 				_providers.Log.InfoFormat(format, args);
 			}
 			// ReSharper disable EmptyGeneralCatchClause

@@ -22,11 +22,11 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 	{
 		/// <summary>Refer to the callee instance (isolated). This property is not null
 		/// only for the caller instance (non-isolated).</summary>
-		IsolatedWorker _isolatedInstance;
+		volatile IsolatedWorker _isolatedInstance;
 
 		/// <summary>Refer to the isolated runtime. This property is not null
 		/// only for the callee instance (isolated).</summary>
-		InternalServiceRuntime _runtime;
+		volatile InternalServiceRuntime _runtime;
 
 		/// <summary>Performs the work.</summary>
 		/// <returns><c>true</c> if the assemblies were updated and a restart is needed.</returns>
@@ -135,6 +135,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 						GetServiceInExecution(_runtime)));
 				}
 
+				_runtime = null;
 				return restartForAssemblyUpdate;
 			}
 		}
