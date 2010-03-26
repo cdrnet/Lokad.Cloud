@@ -152,9 +152,11 @@ namespace Lokad.Cloud.Storage.Azure
 			// typed by the StorageClient, such as:
 			// The remote server returned an error: (500) Internal Server Error.
 			var webException = exception as WebException;
-			if (null != webException && webException.Status == WebExceptionStatus.ProtocolError)
+			if (null != webException && 
+				(webException.Status == WebExceptionStatus.ProtocolError ||
+				 webException.Status == WebExceptionStatus.ConnectionClosed))
 			{
-				return true;
+				return true; 
 			}
 
 			var dataServiceException = exception as DataServiceRequestException;
