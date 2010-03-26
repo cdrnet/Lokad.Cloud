@@ -81,7 +81,7 @@
     <Compile Include="ServiceFabric\AssemblyLoaderTests.cs" />
     <Compile Include="ServiceFabric\RuntimeFinalizerTests.cs" />
     <Compile Include="StandaloneTests.cs" />
-    <Compile Include="Storage\BaseBlobNameTests.cs" />
+    <Compile Include="Storage\BlobNameTests.cs" />
     <Compile Include="Storage\BlobCounterTests.cs" />
     <Compile Include="Storage\BlobStorageProviderTests.cs" />
     <Compile Include="Storage\CloudFormatterTests.cs" />

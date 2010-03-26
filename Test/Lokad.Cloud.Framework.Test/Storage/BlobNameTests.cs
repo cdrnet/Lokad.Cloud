@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace Lokad.Cloud.Storage.Test
 {
 	[TestFixture]
-	public class BaseBlobNameTests
+	public class BlobNameTests
 	{
 		// ReSharper disable InconsistentNaming
 
@@ -83,7 +83,9 @@ namespace Lokad.Cloud.Storage.Test
 			[Rank(1)]
 			public readonly DateTimeOffset AbsoluteTime;
 
-			public PatternE(DateTime userTime, DateTimeOffset absoluteTime)
+			// 'dummy' is not used on purpose
+			// Provided to make sure 'BlobName' does not rely on specific constructor
+			public PatternE(DateTime userTime, DateTimeOffset absoluteTime, string dummy)
 			{
 				UserTime = userTime;
 				AbsoluteTime = absoluteTime;
@@ -187,7 +189,8 @@ namespace Lokad.Cloud.Storage.Test
 			var unsafeUtcNow = utcNow.UtcDateTime;
 			var unsafeLocalNow = localNow.DateTime;
 
-			var localString = BlobName.Print(new PatternE(unsafeLocalNow, localNow));
+			// 'dummy' argument set as 'null'
+			var localString = BlobName.Print(new PatternE(unsafeLocalNow, localNow, null));
 			var localName = BlobName.Parse<PatternE>(localString);
 
 			Assert.AreEqual(now, localName.AbsoluteTime, "DateTimeOffset-local");
@@ -199,7 +202,9 @@ namespace Lokad.Cloud.Storage.Test
 			Assert.AreEqual(unsafeLocalNow, localName.UserTime, "DateTime-local-local");
 
 			Assert.AreNotEqual(unsafeUtcNow, localName.UserTime, "DateTime-local");
-			var utcString = BlobName.Print(new PatternE(unsafeUtcNow, utcNow));
+
+			// 'dummy' argument set as 'null'
+			var utcString = BlobName.Print(new PatternE(unsafeUtcNow, utcNow, null));
 			var utcName = BlobName.Parse<PatternE>(utcString);
 
 			Assert.AreEqual(now, utcName.AbsoluteTime, "DateTimeOffset-utc");

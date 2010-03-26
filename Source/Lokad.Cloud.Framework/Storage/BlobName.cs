@@ -159,7 +159,14 @@ namespace Lokad.Cloud.Storage
 					parameters[i] = InternalParse(split[i], Fields[i].FieldType);
 				}
 
-				return (T)FirstCtor.Invoke(parameters);
+				// Initialization through reflection (no assumption on constructors)
+				var name = (T)FormatterServices.GetUninitializedObject(typeof (T));
+				for (int i = 0; i < Fields.Length; i++)
+				{
+					Fields[i].SetValue(name, parameters[i]);
+				}
+
+				return name;
 			}
 		}
 
