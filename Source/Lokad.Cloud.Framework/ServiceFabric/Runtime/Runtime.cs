@@ -17,7 +17,7 @@ using Lokad.Diagnostics;
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
 	/// <summary>Organize the executions of the services.</summary>
-	internal class InternalServiceRuntime
+	internal class Runtime
 	{
 		readonly CloudInfrastructureProviders _providers;
 		readonly IServiceMonitor _monitoring;
@@ -36,7 +36,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		readonly ExceptionCounters _exceptions;
 
 		/// <summary>IoC constructor.</summary>
-		public InternalServiceRuntime(
+		public Runtime(
 			CloudInfrastructureProviders providers,
 			ICloudDiagnosticsRepository diagnosticsRepository)
 		{
@@ -109,23 +109,14 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 							_exceptions.Add(ex);
 						}
 
-						if (!(ex is ThreadAbortException))
-						{
-							OnRuntimeStopping();
-						}
-
 						throw;
 					}
 				}
 			}
-			catch (ThreadAbortException)
+			finally
 			{
-				Thread.ResetAbort();
 				OnRuntimeStopping();
-				return;
 			}
-
-			OnRuntimeStopping();
 		}
 
 		/// <summary>Stops all services at once.</summary>
@@ -133,6 +124,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// be shut down.</remarks>
 		public void Stop()
 		{
+			TryLogInfoFormat("Runtime::Stop");
 			if(_executeThread != null)
 			{
 				_executeThread.Abort();
@@ -150,6 +142,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// shutting down the services.</summary>
 		public void RequestToStop()
 		{
+			TryLogInfoFormat("Runtime::RequestToStop");
 			_isStopRequested = true;
 
 			if (_scheduler != null)
@@ -175,7 +168,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 
 			_providers.RuntimeFinalizer.FinalizeRuntime();
 
-			TryLogInfoFormat("Runtime finalized on worker {0}.", CloudEnvironment.PartitionKey);
+			//TryLogInfoFormat("Runtime finalized on worker {0}.", CloudEnvironment.PartitionKey);
 
 			TryDumpDiagnostics();
 

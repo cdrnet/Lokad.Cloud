@@ -9,12 +9,18 @@ using Microsoft.WindowsAzure.ServiceRuntime;
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
 	/// <summary>
-	/// Worker Runtime for Cloud Services
+	/// Entry point, hosting the service fabric with one or more
+	/// continuously running isolated runtimes.
 	/// </summary>
-	public class WorkerServiceRuntime
+	public class ServiceFabricHost
 	{
-		IsolatedWorker _worker;
-		NoRestartFloodPolicy _restartPolicy;
+		readonly NoRestartFloodPolicy _restartPolicy;
+		volatile IsolatedSingleRuntimeHost _primaryRuntimeHost;
+
+		public ServiceFabricHost()
+		{
+			_restartPolicy = new NoRestartFloodPolicy();
+		}
 
 		/// <summary>
 		/// Start up the runtime. This step is required before calling Run.
@@ -29,31 +35,26 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		{
 			RoleEnvironment.Changing -= OnRoleEnvironmentChanging;
 
-			if(null != _restartPolicy)
-			{
-				_restartPolicy.IsStopRequested = true;
-			}
+			_restartPolicy.IsStopRequested = true;
 
-			if(null != _worker)
+			if(null != _primaryRuntimeHost)
 			{
-				_worker.OnStop();
+				_primaryRuntimeHost.Stop();
 			}
 		}
 
 		/// <summary>Runtime Main Thread.</summary>
 		public void Run()
 		{
-			_restartPolicy = new NoRestartFloodPolicy(isHealthy => { });
-
 			// restart policy cease restarts if stop is requested
 			_restartPolicy.Do(() =>
-			{
-				_worker = new IsolatedWorker();
-				return _worker.DoWork();
-			});
+				{
+					_primaryRuntimeHost = new IsolatedSingleRuntimeHost();
+					return _primaryRuntimeHost.Run();
+				});
 		}
 
-		void OnRoleEnvironmentChanging(object sender, RoleEnvironmentChangingEventArgs e)
+		static void OnRoleEnvironmentChanging(object sender, RoleEnvironmentChangingEventArgs e)
 		{
 			// we restart all workers if the configuration changed (e.g. the storage account)
 			// for now.

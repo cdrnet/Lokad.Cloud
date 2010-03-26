@@ -29,8 +29,6 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// </summary>
 		static TimeSpan DelayWhenFlooding { get { return 5.Minutes(); } }
 
-		readonly Action<bool> _isRestartFlooding;
-
 		volatile bool _isStopRequested;
 
 		/// <summary>When stop is requested, policy won't go on with restarts anymore.</summary>
@@ -38,18 +36,6 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		{
 			get { return _isStopRequested; }
 			set { _isStopRequested = value; }
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="NoRestartFloodPolicy"/>class.
-		/// </summary>
-		/// <param name="isRestartFlooding">
-		/// The parameter indicates whether the worker is healthy (<c>true</c>) or not
-		/// (<c>false</c>).
-		/// </param>
-		public NoRestartFloodPolicy(Action<bool> isRestartFlooding)
-		{
-			_isRestartFlooding = isRestartFlooding;
 		}
 
 		/// <summary>
@@ -70,12 +56,8 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 				if (!assemblyUpdated && DateTimeOffset.UtcNow.Subtract(lastRestart) < FloodFrequencyThreshold)
 				{
 					// Unhealthy
-					_isRestartFlooding(false);
 					Thread.Sleep(DelayWhenFlooding);
 				}
-
-				// Healthy
-				_isRestartFlooding(true);
 			}
 		}
 	}

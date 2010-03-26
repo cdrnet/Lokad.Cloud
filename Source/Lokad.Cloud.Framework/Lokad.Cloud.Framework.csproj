@@ -127,6 +127,9 @@
     <Compile Include="ServiceFabric\QueueService.cs" />
     <Compile Include="ServiceFabric\QueueServiceSettingsAttribute.cs" />
     <Compile Include="ServiceFabric\RuntimeFinalizer.cs" />
+    <Compile Include="ServiceFabric\Runtime\Runtime.cs" />
+    <Compile Include="ServiceFabric\Runtime\ServiceFabricHost.cs" />
+    <Compile Include="ServiceFabric\Runtime\SingleRuntimeHost.cs" />
     <Compile Include="ServiceFabric\Runtime\TriggerRestartException.cs" />
     <Compile Include="ServiceFabric\ScheduledService.cs" />
     <Compile Include="ServiceFabric\ScheduledServiceSettingsAttribute.cs" />
@@ -162,10 +165,7 @@
     <Compile Include="Management\CloudServiceScheduling.cs" />
     <Compile Include="Mock\MemoryMonitor.cs" />
     <Compile Include="Mock\MockStorageModule.cs" />
-    <Compile Include="ServiceFabric\Runtime\IsolatedWorker.cs" />
     <Compile Include="ServiceFabric\Runtime\Scheduler.cs" />
-    <Compile Include="ServiceFabric\Runtime\InternalServiceRuntime.cs" />
-    <Compile Include="ServiceFabric\Runtime\WorkerServiceRuntime.cs" />
     <Compile Include="Services\MonitoringDataRetentionService.cs" />
     <Compile Include="Services\MonitoringService.cs" />
     <Compile Include="Standalone.cs" />

@@ -11,11 +11,11 @@ namespace Lokad.Cloud
 	/// <summary>Entry point of Lokad.Cloud.</summary>
 	public class WorkerRole : RoleEntryPoint
 	{
-		readonly WorkerServiceRuntime _serviceRuntime;
+		readonly ServiceFabricHost _serviceFabricHost;
 
 		public WorkerRole()
 		{
-			_serviceRuntime = new WorkerServiceRuntime();
+			_serviceFabricHost = new ServiceFabricHost();
 		}
 
 		/// <summary>
@@ -29,7 +29,7 @@ namespace Lokad.Cloud
 		/// </remarks>
 		public override bool OnStart()
 		{
-			_serviceRuntime.StartRuntime();
+			_serviceFabricHost.StartRuntime();
 			return true;
 		}
 
@@ -57,7 +57,7 @@ namespace Lokad.Cloud
 		/// </remarks>
 		public override void OnStop()
 		{
-			_serviceRuntime.ShutdownRuntime();
+			_serviceFabricHost.ShutdownRuntime();
 		}
 
 		/// <summary>
@@ -70,7 +70,7 @@ namespace Lokad.Cloud
 		/// </remarks>
 		public override void Run()
 		{
-			_serviceRuntime.Run();
+			_serviceFabricHost.Run();
 		}
 	}
 }
