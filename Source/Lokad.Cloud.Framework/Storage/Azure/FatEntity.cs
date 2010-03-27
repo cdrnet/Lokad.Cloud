@@ -137,7 +137,7 @@ namespace Lokad.Cloud.Storage.Azure
 		}
 
 		/// <summary>Converts a <c>FatEntity</c> toward a <c>CloudEntity</c>.</summary>
-		public static CloudEntity<T> Convert<T>(FatEntity fatEntity, IBinaryFormatter formatter)
+		public static CloudEntity<T> Convert<T>(FatEntity fatEntity, IBinaryFormatter formatter, string etag)
 		{
 			var stream = new MemoryStream(fatEntity.GetData()) { Position = 0 };
 			var val = (T)formatter.Deserialize(stream, typeof(T));
@@ -147,6 +147,7 @@ namespace Lokad.Cloud.Storage.Azure
 					PartitionKey = fatEntity.PartitionKey,
 					RowRey = fatEntity.RowKey,
 					Timestamp = fatEntity.Timestamp,
+					ETag = etag,
 					Value = val
 				};
 		}

@@ -22,6 +22,8 @@ namespace Lokad.Cloud.Storage
 		/// <summary>Flag indicating last update.</summary>
 		public DateTime Timestamp { get; set; }
 
+		public string ETag { get; set; }
+
 		/// <summary>Value carried by the entity.</summary>
 		public T Value { get; set; }
 	}

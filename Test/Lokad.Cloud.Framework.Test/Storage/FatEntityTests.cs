@@ -61,7 +61,7 @@ namespace Lokad.Cloud.Storage.Test
 				};
 
 			var fatEntity = FatEntity.Convert(cloudEntity, Formatter);
-			var cloudEntity2 = FatEntity.Convert<TimeSerie>(fatEntity, Formatter);
+			var cloudEntity2 = FatEntity.Convert<TimeSerie>(fatEntity, Formatter, null);
 			var fatEntity2 = FatEntity.Convert(cloudEntity2, Formatter);
 
 			Assert.IsNotNull(cloudEntity2);
@@ -111,7 +111,7 @@ namespace Lokad.Cloud.Storage.Test
 			};
 
 			var fatEntity = FatEntity.Convert(cloudEntity, Formatter);
-			var cloudEntity2 = FatEntity.Convert<TimeSerieNoContract>(fatEntity, Formatter);
+			var cloudEntity2 = FatEntity.Convert<TimeSerieNoContract>(fatEntity, Formatter, null);
 			var fatEntity2 = FatEntity.Convert(cloudEntity2, Formatter);
 
 			Assert.IsNotNull(cloudEntity2);

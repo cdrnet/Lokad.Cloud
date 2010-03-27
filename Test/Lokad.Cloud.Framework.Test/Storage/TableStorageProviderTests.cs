@@ -510,6 +510,100 @@ Time:2010-01-15T12:37:25.1611631Z</message>
 			}
 		}
 
+		[Test]
+		public void EntitiesShouldHaveETagAfterInsert()
+		{
+			var partition = Guid.NewGuid().ToString("N");
+			var entities = Entities(3, partition, 10);
+
+			Provider.Insert(TableName, entities);
+
+			// note: ETags are not unique (they're actually the same per request)
+			CollectionAssert.AllItemsAreNotNull(entities.Select(e => e.ETag));
+		}
+
+		[Test]
+		public void EntitiesShouldHaveNewETagAfterUpdate()
+		{
+			var partition = Guid.NewGuid().ToString("N");
+			var entities = Entities(3, partition, 10);
+
+			Provider.Insert(TableName, entities);
+
+			var oldETags = entities.Select(e => e.ETag).ToArray();
+
+			foreach(var entity in entities)
+			{
+				entity.Value += "modified";
+			}
+
+			Provider.Update(TableName, entities);
+
+			var newETags = entities.Select(e => e.ETag).ToArray();
+			CollectionAssert.AllItemsAreNotNull(newETags);
+			CollectionAssert.AreNotEqual(newETags, oldETags);
+		}
+
+		[Test, ExpectedException(typeof(DataServiceRequestException))]
+		public void UpdateOnRemotelyModifiedEntityShouldFailIfNotForced()
+		{
+			var partition = Guid.NewGuid().ToString("N");
+			var entities = Entities(1, partition, 10);
+			var entity = entities.First();
+
+			Provider.Insert(TableName, entities);
+
+			entity.ETag = "abc";
+			entity.Value = "def";
+
+			Provider.Update(TableName, entities, false);
+		}
+
+		[Test]
+		public void UpdateOnRemotelyModifiedEntityShouldNotFailIfForced()
+		{
+			var partition = Guid.NewGuid().ToString("N");
+			var entities = Entities(1, partition, 10);
+			var entity = entities.First();
+
+			Provider.Insert(TableName, entities);
+
+			entity.ETag = "abc";
+			entity.Value = "def";
+
+			Provider.Update(TableName, entities, true);
+		}
+
+		[Test, ExpectedException(typeof(DataServiceRequestException))]
+		public void DeleteOnRemotelyModifiedEntityShouldFailIfNotForced()
+		{
+			var partition = Guid.NewGuid().ToString("N");
+			var entities = Entities(1, partition, 10);
+			var entity = entities.First();
+
+			Provider.Insert(TableName, entities);
+
+			entity.ETag = "abc";
+			entity.Value = "def";
+
+			Provider.Delete(TableName, entities, false);
+		}
+
+		[Test]
+		public void DeleteOnRemotelyModifiedEntityShouldNotFailIfForced()
+		{
+			var partition = Guid.NewGuid().ToString("N");
+			var entities = Entities(1, partition, 10);
+			var entity = entities.First();
+
+			Provider.Insert(TableName, entities);
+
+			entity.ETag = "abc";
+			entity.Value = "def";
+
+			Provider.Delete(TableName, entities, true);
+		}
+
 		CloudEntity<String>[] Entities(int count, string partitionKey, int entitySize)
 		{
 			return EntitiesInternal(count, partitionKey, entitySize).ToArray();

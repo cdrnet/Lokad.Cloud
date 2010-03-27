@@ -88,6 +88,10 @@ namespace Lokad.Cloud.Storage
 		/// <para>The call is expected to fail on the first non-existing entity. 
 		/// Results are not garanteed if one or several entities do not exist already.
 		/// </para>
+		/// <para>If <paramref name="force"/> is <c>false</c>, the call is expected to
+		/// fail if one or several entities have changed in the meantime. If <c>true</c>,
+		/// the entities are overwritten even if they've been changed remotely in the meantime.
+		/// </para>
 		/// <para>There is no upper limit on the number of entities provided through
 		/// the enumeration. The implementations are expected to lazily iterates
 		/// and to create batch requests as the move forward.
@@ -96,11 +100,12 @@ namespace Lokad.Cloud.Storage
 		/// </remarks>
 		/// <exception cref="InvalidOperationException"> thrown if the table does not exist
 		/// or an non-existing entity has been encountered.</exception>
-		void Update<T>(string tableName, IEnumerable<CloudEntity<T>> entities);
+		void Update<T>(string tableName, IEnumerable<CloudEntity<T>> entities, bool force);
 
 		/// <summary>Updates or insert a collection of existing entities into the table storage.</summary>
 		/// <remarks>
-		/// <para>New entities will be inserted. Existing entities will be updated.
+		/// <para>New entities will be inserted. Existing entities will be updated,
+		/// even if they have changed remotely in the meantime.
 		/// </para>
 		/// <para>There is no upper limit on the number of entities provided through
 		/// the enumeration. The implementations are expected to lazily iterates
@@ -123,5 +128,19 @@ namespace Lokad.Cloud.Storage
 		/// <para>The method should not fail if the table does not exist.</para>
 		/// </remarks>
 		void Delete<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys);
+
+		/// <summary>Deletes a collection of entities.</summary>
+		/// <remarks>
+		/// <para>
+		/// The implementation is expected to lazily iterate through all row keys
+		/// and send batch deletion request to the underlying storage.</para>
+		/// <para>Idempotence of the method is required.</para>
+		/// <para>The method should not fail if the table does not exist.</para>
+		/// <para>If <paramref name="force"/> is <c>false</c>, the call is expected to
+		/// fail if one or several entities have changed remotely in the meantime. If <c>true</c>,
+		/// the entities are deleted even if they've been changed remotely in the meantime.
+		/// </para>
+		/// </remarks>
+		void Delete<T>(string tableName, IEnumerable<CloudEntity<T>> entities, bool force);
 	}
 }
