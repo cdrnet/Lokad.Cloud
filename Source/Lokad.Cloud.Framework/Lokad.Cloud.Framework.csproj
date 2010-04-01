@@ -166,6 +166,7 @@
     <Compile Include="Mock\MemoryMonitor.cs" />
     <Compile Include="Mock\MockStorageModule.cs" />
     <Compile Include="ServiceFabric\Runtime\Scheduler.cs" />
+    <Compile Include="Services\AssemblyConfigurationUpdateService.cs" />
     <Compile Include="Services\MonitoringDataRetentionService.cs" />
     <Compile Include="Services\MonitoringService.cs" />
     <Compile Include="Standalone.cs" />

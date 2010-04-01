@@ -98,9 +98,6 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 					try
 					{
 						action();
-
-						// throws a 'TriggerRestartException' if a new package is detected.
-						loader.CheckUpdate(true);
 					}
 					catch (Exception ex)
 					{

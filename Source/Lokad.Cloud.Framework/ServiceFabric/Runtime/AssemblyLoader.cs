@@ -123,6 +123,17 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			return _provider.GetBlob<byte[]>(ContainerName, ConfigurationBlobName, out _lastConfigurationEtag);
 		}
 
+		/// <summary>
+		/// Reset the update status to the currently available version,
+		/// such that <see cref="CheckUpdate"/> does not cause an update to happen.
+		/// </summary>
+		public void ResetUpdateStatus()
+		{
+			_lastPackageEtag = _provider.GetBlobEtag(ContainerName, PackageBlobName);
+			_lastConfigurationEtag = _provider.GetBlobEtag(ContainerName, ConfigurationBlobName);
+			_lastPackageCheck = DateTimeOffset.UtcNow;
+		}
+
 		/// <summary>Check for the availability of a new assembly package
 		/// and throw a <see cref="TriggerRestartException"/> if a new package
 		/// is available.</summary>

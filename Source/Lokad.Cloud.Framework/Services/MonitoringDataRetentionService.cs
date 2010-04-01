@@ -3,7 +3,6 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System;
 using Lokad.Cloud.Diagnostics;
 using Lokad.Cloud.ServiceFabric;
 
