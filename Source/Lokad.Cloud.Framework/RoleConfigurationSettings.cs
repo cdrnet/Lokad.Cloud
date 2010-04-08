@@ -4,7 +4,6 @@
 #endregion
 
 using System;
-using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Lokad.Cloud
 {
@@ -26,30 +25,12 @@ namespace Lokad.Cloud
 			ApplySettingFromRole("DataConnectionString", v => setting.DataConnectionString = v);
 			ApplySettingFromRole("SelfManagementSubscriptionId", v => setting.SelfManagementSubscriptionId = v);
 			ApplySettingFromRole("SelfManagementCertificateThumbprint", v => setting.SelfManagementCertificateThumbprint = v);
-			
 			return setting;
 		}
 
 		static void ApplySettingFromRole(string setting, Action<string> setter)
 		{
-			try
-			{
-				var value = RoleEnvironment.GetConfigurationSettingValue(setting);
-				if(!string.IsNullOrEmpty(value))
-				{
-					value = value.Trim();
-				}
-				if(string.IsNullOrEmpty(value))
-				{
-					value = null;
-				}
-				setter(value);
-			}
-			catch (RoleEnvironmentException)
-			{
-				// setting was removed from the csdef, skip
-				// (logging is usually not available at that stage)
-			}
+			CloudEnvironment.GetConfigurationSetting(setting).Apply(setter);
 		}
 	}
 

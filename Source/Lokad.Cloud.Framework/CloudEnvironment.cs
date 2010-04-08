@@ -5,6 +5,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
@@ -113,6 +114,36 @@ namespace Lokad.Cloud
 			finally
 			{
 				store.Close();
+			}
+		}
+
+		///<summary>
+		/// Retreives the configuration setting from the <see cref="RoleEnvironment"/>.
+		///</summary>
+		///<param name="configurationSettingName">Name of the configuration setting</param>
+		///<returns>configuration value, or an empty result, if the environment is not present, or the value is null or empty</returns>
+		public static Maybe<string> GetConfigurationSetting(string configurationSettingName)
+		{
+			if (!_runtimeAvailable)
+				return Maybe<string>.Empty;
+			try
+			{
+				var value = RoleEnvironment.GetConfigurationSettingValue(configurationSettingName);
+				if (!String.IsNullOrEmpty(value))
+				{
+					value = value.Trim();
+				}
+				if (String.IsNullOrEmpty(value))
+				{
+					value = null;
+				}
+				return value;
+			}
+			catch (RoleEnvironmentException)
+			{
+				return Maybe<string>.Empty;
+				// setting was removed from the csdef, skip
+				// (logging is usually not available at that stage)
 			}
 		}
 	}
