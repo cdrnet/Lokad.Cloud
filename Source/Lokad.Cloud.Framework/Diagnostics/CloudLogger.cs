@@ -23,6 +23,7 @@ namespace Lokad.Cloud.Diagnostics
 		public string Level { get; set; }
 		public string Message { get; set; }
 		public string Error { get; set; }
+		public string Source { get; set; }
 	}
 
 	/// <summary>Logger built on top of the Blob Storage.</summary>
@@ -49,6 +50,7 @@ namespace Lokad.Cloud.Diagnostics
 
 
 		readonly IBlobStorageProvider _provider;
+		readonly string _source;
 		LogLevel _logLevelThreshold;
 
 		/// <summary>Minimal log level (inclusive), below this level,
@@ -59,9 +61,10 @@ namespace Lokad.Cloud.Diagnostics
 			set { _logLevelThreshold = value; }
 		}
 
-		public CloudLogger(IBlobStorageProvider provider)
+		public CloudLogger(IBlobStorageProvider provider, string source)
 		{
 			_provider = provider;
+			_source = source;
 			_logLevelThreshold = LogLevel.Min;
 		}
 
@@ -76,13 +79,17 @@ namespace Lokad.Cloud.Diagnostics
 
 			var blobName = GetNewLogBlobName(level);
 
-			var log = string.Format(@"
+			var log = string.Format(
+				@"
 <log>
   <message>{0}</message>
   <error>{1}</error>
+  <source>{2}</source>
 </log>
-", SecurityElement.Escape(message.ToString()),
-				ex != null ? SecurityElement.Escape(ex.ToString()) : string.Empty);
+",
+				SecurityElement.Escape(message.ToString()),
+				ex != null ? SecurityElement.Escape(ex.ToString()) : string.Empty,
+				string.IsNullOrEmpty(_source) ? "" : SecurityElement.Escape(_source));
 
 
 			// on first execution, container needs to be created.
@@ -120,24 +127,21 @@ namespace Lokad.Cloud.Diagnostics
 			var dateTime = ToDateTime(prefix);
 
 			var level = blobName.Substring(23).Split(DelimiterCharArray, StringSplitOptions.RemoveEmptyEntries)[0];
-
-			string message;
-			string error;
+			
 			using(var stream = new StringReader(blobContent))
 			{
 				var xpath = new XPathDocument(stream);
 				var nav = xpath.CreateNavigator();
-				message = nav.SelectSingleNode("/log/message").InnerXml;
-				error = nav.SelectSingleNode("/log/error").InnerXml;
-			}
 
-			return new LogEntry
-				{
-					DateTime = dateTime,
-					Level = level,
-					Message = message,
-					Error = error
-				};
+				return new LogEntry
+					{
+						DateTime = dateTime,
+						Level = level,
+						Message = nav.SelectSingleNode("/log/message").InnerXml,
+						Error = nav.SelectSingleNode("/log/error").InnerXml,
+						Source = nav.SelectSingleNode("/log/source").InnerXml,
+					};
+			}
 		}
 
 		/// <summary>Lazily enumerates over the entire logs.</summary>
@@ -291,6 +295,24 @@ namespace Lokad.Cloud.Diagnostics
 			var millisecond = 999 - int.Parse(tokens[6], CultureInfo.InvariantCulture);
 
 			return new DateTime(year, month, day, hour, minute, second, millisecond, DateTimeKind.Utc);
+		}
+	}
+
+	///<summary>
+	/// Log provider for the cloud logger
+	///</summary>
+	public class CloudLogProvider : ILogProvider
+	{
+		readonly IBlobStorageProvider _provider;
+
+		public CloudLogProvider(IBlobStorageProvider provider)
+		{
+			_provider = provider;
+		}
+
+		ILog IProvider<string, ILog>.Get(string key)
+		{
+			return new CloudLogger(_provider, key);
 		}
 	}
 }

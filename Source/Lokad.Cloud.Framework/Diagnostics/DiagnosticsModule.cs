@@ -19,7 +19,8 @@ namespace Lokad.Cloud.Diagnostics
 		protected override void Load(ContainerBuilder builder)
 		{
 			// Instrumentation
-			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>())).As<ILog>().DefaultOnly();
+			builder.Register(c => new CloudLogger(c.Resolve<IBlobStorageProvider>(), "")).As<ILog>().DefaultOnly();
+			builder.Register<ILogProvider>(c => new CloudLogProvider(c.Resolve<IBlobStorageProvider>())).DefaultOnly();
 
 			// Cloud Monitoring
 			builder.Register<BlobDiagnosticsRepository>().As<ICloudDiagnosticsRepository>().DefaultOnly();
