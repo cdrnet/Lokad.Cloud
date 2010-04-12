@@ -5,9 +5,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Lokad.Cloud.Management.Api10;
 using Lokad.Cloud.ServiceFabric;
 using Lokad.Cloud.Services;
 using Lokad.Cloud.Storage;
+using Lokad.Quality;
 
 // TODO: blobs are sequentially enumerated, performance issue
 // if there are more than a few dozen services
@@ -17,7 +19,8 @@ namespace Lokad.Cloud.Management
 	/// <summary>
 	/// Management facade for cloud services.
 	/// </summary>
-	public class CloudServices
+	[UsedImplicitly]
+	public class CloudServices : ICloudServicesApi
 	{
 		readonly IBlobStorageProvider _blobProvider;
 
@@ -32,38 +35,45 @@ namespace Lokad.Cloud.Management
 		/// <summary>
 		/// Enumerate infos of all cloud services.
 		/// </summary>
-		public IEnumerable<ServiceInfo> GetServices()
+		public List<CloudServiceInfo> GetServices()
 		{
-			foreach (var blobRef in _blobProvider.List(CloudServiceStateReference.GetPrefix()))
-			{
-				var blob = _blobProvider.GetBlobOrDelete(blobRef);
-				if (!blob.HasValue)
-				{
-					continue;
-				}
-
-				var state = blob.Value;
-				yield return new ServiceInfo
+			return _blobProvider.List(CloudServiceStateReference.GetPrefix())
+				.Select(blobRef => Tuple.From(blobRef, _blobProvider.GetBlobOrDelete(blobRef)))
+				.Where(pair => pair.Value.HasValue)
+				.Select(pair => new CloudServiceInfo
 					{
-						ServiceName = blobRef.ServiceName,
-						State = state
-					};
-			}
+						ServiceName = pair.Key.ServiceName,
+						IsStarted = pair.Value.Value == CloudServiceState.Started
+					})
+				.ToList();
+		}
+
+		/// <summary>
+		/// Gets info of one cloud service.
+		/// </summary>
+		public CloudServiceInfo GetService(string serviceName)
+		{
+			var blob = _blobProvider.GetBlob(new CloudServiceStateReference(serviceName));
+			return new CloudServiceInfo
+				{
+					ServiceName = serviceName,
+					IsStarted = blob.Value == CloudServiceState.Started
+				};
 		}
 
 		/// <summary>
 		/// Enumerate the names of all cloud services.
 		/// </summary>
-		public IEnumerable<string> GetServiceNames()
+		public List<string> GetServiceNames()
 		{
 			return _blobProvider.List(CloudServiceStateReference.GetPrefix())
-				.Select(reference => reference.ServiceName);
+				.Select(reference => reference.ServiceName).ToList();
 		}
 
 		/// <summary>
 		/// Enumerate the names of all user cloud services (system services are skipped).
 		/// </summary>
-		public IEnumerable<string> GetUserServiceNames()
+		public List<string> GetUserServiceNames()
 		{
 			var systemServices =
 				new[]
@@ -78,7 +88,7 @@ namespace Lokad.Cloud.Management
 					.ToList();
 
 			return GetServiceNames()
-				.Where(service => !systemServices.Contains(service));
+				.Where(service => !systemServices.Contains(service)).ToList();
 		}
 
 		/// <summary>
@@ -115,7 +125,7 @@ namespace Lokad.Cloud.Management
 		/// <summary>
 		/// Remove the state information of a cloud service
 		/// </summary>
-		public void RemoveServiceState(string serviceName)
+		public void ResetServiceState(string serviceName)
 		{
 			var blobRef = new CloudServiceStateReference(serviceName);
 			_blobProvider.DeleteBlob(blobRef);

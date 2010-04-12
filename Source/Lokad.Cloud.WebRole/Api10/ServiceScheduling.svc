@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="Lokad.Cloud.Web.Api10.CloudServiceSchedulingAdapter" Factory="Lokad.Cloud.Web.Api10.HybridServiceHostFactory" %>

@@ -7,19 +7,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.ServiceModel;
 using System.ServiceModel.Security;
 using System.Text;
 using System.Xml.Linq;
+using Lokad.Cloud.Management.Api10;
 using Lokad.Cloud.Management.Azure;
 using Lokad.Cloud.Management.Azure.Entities;
 using Lokad.Cloud.Management.Azure.InputParameters;
+using Lokad.Quality;
 
 namespace Lokad.Cloud.Management
 {
 	/// <summary>
 	/// Azure Management API Provider, Provisioning Provider.
 	/// </summary>
-	public class CloudProvisioning : IProvisioningProvider
+	[UsedImplicitly]
+	public class CloudProvisioning : IProvisioningProvider, ICloudProvisioningApi 
 	{
 		readonly ILog _log;
 
@@ -137,7 +141,10 @@ namespace Lokad.Cloud.Management
 
 			PrepareRequest();
 
-			_deployment = _channel.GetDeployment(_subscriptionId.Value, _service.Value.ServiceName, _deployment.Value.Name);
+			//using (new OperationContextScope((IContextChannel)_channel))
+			//{
+				_deployment = _channel.GetDeployment(_subscriptionId.Value, _service.Value.ServiceName, _deployment.Value.Name);
+			//}
 		}
 
 		Maybe<int> IProvisioningProvider.GetWorkerInstanceCount()
@@ -148,6 +155,11 @@ namespace Lokad.Cloud.Management
 
 		public void SetWorkerInstanceCount(int count)
 		{
+			if(count <= 0 && count > 500)
+			{
+				throw new ArgumentOutOfRangeException("count");
+			}
+
 			ChangeDeploymentConfiguration(
 				config =>
 					{
@@ -181,10 +193,13 @@ namespace Lokad.Cloud.Management
 		{
 			PrepareRequest();
 
-			_deployment = _channel.GetDeployment(
-				_subscriptionId.Value,
-				_service.Value.ServiceName,
-				_deployment.Value.Name);
+			//using (new OperationContextScope((IContextChannel) _channel))
+			//{
+				_deployment = _channel.GetDeployment(
+					_subscriptionId.Value,
+					_service.Value.ServiceName,
+					_deployment.Value.Name);
+			//}
 
 			var config = Base64Decode(_deployment.Value.Configuration);
 			var xml = XDocument.Parse(config, LoadOptions.SetBaseUri | LoadOptions.PreserveWhitespace);
@@ -193,14 +208,17 @@ namespace Lokad.Cloud.Management
 
 			var newConfig = xml.ToString(SaveOptions.DisableFormatting);
 
-			_channel.ChangeConfiguration(
-				_subscriptionId.Value,
-				_service.Value.ServiceName,
-				_deployment.Value.Name,
-				new ChangeConfigurationInput
-					{
-						Configuration = Base64Encode(newConfig)
-					});
+			//using (new OperationContextScope((IContextChannel) _channel))
+			//{
+				_channel.ChangeConfiguration(
+					_subscriptionId.Value,
+					_service.Value.ServiceName,
+					_deployment.Value.Name,
+					new ChangeConfigurationInput
+						{
+							Configuration = Base64Encode(newConfig)
+						});
+			//}
 		}
 
 		void PrepareRequest()
@@ -248,25 +266,28 @@ namespace Lokad.Cloud.Management
 				_channel = _client.CreateChannel();
 			}
 
+
 			var deployments = new List<Pair<Deployment, HostedService>>();
 			try
 			{
-				var hostedServices = _channel.ListHostedServices(_subscriptionId.Value);
-				foreach (var hostedService in hostedServices)
-				{
-					var service = _channel.GetHostedServiceWithDetails(_subscriptionId.Value, hostedService.ServiceName, true);
-					if (service == null || service.Deployments == null)
+				//using (new OperationContextScope((IContextChannel)_channel))
+				//{
+					var hostedServices = _channel.ListHostedServices(_subscriptionId.Value);
+					foreach (var hostedService in hostedServices)
 					{
-						_log.Warn("Azure Self-Management: skipped unexpected null service or deployment list");
-						continue;
-					}
+						var service = _channel.GetHostedServiceWithDetails(_subscriptionId.Value, hostedService.ServiceName, true);
+						if (service == null || service.Deployments == null)
+						{
+							_log.Warn("Azure Self-Management: skipped unexpected null service or deployment list");
+							continue;
+						}
 
-					foreach (var deployment in service.Deployments)
-					{
-						deployments.Add(Tuple.From(deployment, service));
+						foreach (var deployment in service.Deployments)
+						{
+							deployments.Add(Tuple.From(deployment, service));
+						}
 					}
-				}
-
+				//}
 			}
 			catch (MessageSecurityException)
 			{
@@ -310,6 +331,24 @@ namespace Lokad.Cloud.Management
 		{
 			var bytes = Encoding.UTF8.GetBytes(value);
 			return Convert.ToBase64String(bytes);
+		}
+
+		int ICloudProvisioningApi.GetWorkerInstanceCount()
+		{
+			if (!IsAvailable)
+			{
+				throw new NotSupportedException("Provisioning not supported on this environment.");
+			}
+			return WorkerInstanceCount.Value;
+		}
+
+		void ICloudProvisioningApi.SetWorkerInstanceCount(int count)
+		{
+			if (!IsAvailable)
+			{
+				throw new NotSupportedException("Provisioning not supported on this environment.");
+			}
+			SetWorkerInstanceCount(count);
 		}
 	}
 

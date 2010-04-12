@@ -7,15 +7,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using ICSharpCode.SharpZipLib.Zip;
+using Lokad.Cloud.Management.Api10;
 using Lokad.Cloud.ServiceFabric.Runtime;
 using Lokad.Cloud.Storage;
+using Lokad.Quality;
 
 namespace Lokad.Cloud.Management
 {
 	/// <summary>
 	/// Management facade for cloud assemblies.
 	/// </summary>
-	public class CloudAssemblies
+	[UsedImplicitly]
+	public class CloudAssemblies : ICloudAssembliesApi
 	{
 		readonly IBlobStorageProvider _blobProvider;
 		readonly ILog _log;
@@ -32,7 +35,7 @@ namespace Lokad.Cloud.Management
 		/// <summary>
 		/// Enumerate infos of all configured cloud service assemblies.
 		/// </summary>
-		public IEnumerable<CloudAssemblyInfo> GetAssemblies()
+		public List<CloudAssemblyInfo> GetAssemblies()
 		{
 			var buffer = _blobProvider.GetBlob<byte[]>(
 				AssemblyLoader.ContainerName,
@@ -41,7 +44,7 @@ namespace Lokad.Cloud.Management
 			// do not return anything if no assembly is loaded
 			if (!buffer.HasValue)
 			{
-				yield break;
+				return new List<CloudAssemblyInfo>();
 			}
 
 			var assemblies = new List<Pair<CloudAssemblyInfo, byte[]>>();
@@ -93,6 +96,7 @@ namespace Lokad.Cloud.Management
 				}
 			}
 
+			var infos = new List<CloudAssemblyInfo>();
 			foreach(var assembly in assemblies)
 			{
 				var info = assembly.Key;
@@ -108,7 +112,7 @@ namespace Lokad.Cloud.Management
 				var assemblyBytes = assembly.Value;
 				if (!info.IsValid || assemblyBytes == null)
 				{
-					yield return info;
+					infos.Add(info);
 					continue;
 				}
 
@@ -125,14 +129,16 @@ namespace Lokad.Cloud.Management
 					info.IsValid = false;
 				}
 
-				yield return info;
+				infos.Add(info);
 			}
+
+			return infos;
 		}
 
 		/// <summary>
 		/// Configure a .dll assembly file as the new cloud service assembly.
 		/// </summary>
-		public void SetAssemblyDll(byte[] data, string fileName)
+		public void UploadAssemblyDll(byte[] data, string fileName)
 		{
 			using (var tempStream = new MemoryStream())
 			{
@@ -143,14 +149,14 @@ namespace Lokad.Cloud.Management
 					zip.CloseEntry();
 				}
 
-				SetAssemblyZipContainer(tempStream.ToArray());
+				UploadAssemblyZipContainer(tempStream.ToArray());
 			}
 		}
 
 		/// <summary>
 		/// Configure a zip container with one or more assemblies as the new cloud services.
 		/// </summary>
-		public void SetAssemblyZipContainer(byte[] data)
+		public void UploadAssemblyZipContainer(byte[] data)
 		{
 			_blobProvider.PutBlob(
 				AssemblyLoader.ContainerName,

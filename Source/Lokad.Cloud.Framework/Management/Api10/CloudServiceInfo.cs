@@ -3,19 +3,22 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using Lokad.Cloud.ServiceFabric;
+using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Management
+namespace Lokad.Cloud.Management.Api10
 {
 	/// <summary>
 	/// Cloud Service Info
 	/// </summary>
-	public class ServiceInfo
+	[DataContract(Name = "CloudServiceInfo", Namespace = "http://schemas.lokad.com/lokad-cloud/management/1.0")]
+	public class CloudServiceInfo
 	{
 		/// <summary>Name of the service</summary>
+		[DataMember(Order = 0, IsRequired = true)]
 		public string ServiceName { get; set; }
 
 		/// <summary>Current state of the service</summary>
-		public CloudServiceState State { get; set; }
+		[DataMember(Order = 1)]
+		public bool IsStarted { get; set; }
 	}
 }

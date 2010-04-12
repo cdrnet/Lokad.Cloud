@@ -44,6 +44,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Resource\Library\Lokad.Stack.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ServiceModel.Web, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resource\Library\Microsoft.ServiceModel.Web.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.WindowsAzure.Diagnostics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.WindowsAzure.ServiceRuntime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.WindowsAzure.StorageClient, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
@@ -53,6 +57,18 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.IdentityModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel.Web">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Web.Extensions">
@@ -83,6 +99,15 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Api10\CloudAssembliesAdapter.cs" />
+    <Compile Include="Api10\CloudConfigurationAdapter.cs" />
+    <Compile Include="Api10\CloudProvisioningAdapter.cs" />
+    <Compile Include="Api10\CloudServicesAdapter.cs" />
+    <Compile Include="Api10\CloudServiceSchedulingAdapter.cs" />
+    <Compile Include="Api10\RestApiKeyVerifier.cs" />
+    <Compile Include="Api10\HybridServiceHostFactory.cs" />
+    <Compile Include="Api10\HybridServiceHost.cs" />
+    <Compile Include="Api10\SoapApiKeyVerifier.cs" />
     <Compile Include="Assemblies.aspx.cs">
       <DependentUpon>Assemblies.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -121,6 +146,7 @@
     </Compile>
     <Compile Include="LokadCloudUserRoles.cs" />
     <Compile Include="LokadCloudVersion.cs" />
+    <Compile Include="Api10\CloudStatisticsAdapter.cs" />
     <Compile Include="Monitoring.aspx.cs">
       <DependentUpon>Monitoring.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -180,6 +206,12 @@
     <Content Include="Workloads.aspx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Api10\Configuration.svc" />
+    <Content Include="Api10\Assemblies.svc" />
+    <Content Include="Api10\ServiceScheduling.svc" />
+    <Content Include="Api10\Provisioning.svc" />
+    <Content Include="Api10\Services.svc" />
+    <Content Include="Api10\Statistics.svc" />
     <Content Include="App_Themes\Lokad\Images\bg_body.gif" />
     <Content Include="App_Themes\Lokad\Images\bg_col2.gif" />
     <Content Include="App_Themes\Lokad\Images\bg_content.gif" />

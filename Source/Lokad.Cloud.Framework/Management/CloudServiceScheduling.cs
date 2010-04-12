@@ -6,9 +6,11 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Lokad.Cloud.Management.Api10;
 using Lokad.Cloud.ServiceFabric;
 using Lokad.Cloud.Services;
 using Lokad.Cloud.Storage;
+using Lokad.Quality;
 
 // TODO: blobs are sequentially enumerated, performance issue
 // if there are more than a few dozen services
@@ -18,7 +20,8 @@ namespace Lokad.Cloud.Management
 	/// <summary>
 	/// Management facade for scheduled cloud services.
 	/// </summary>
-	public class CloudServiceScheduling
+	[UsedImplicitly]
+	public class CloudServiceScheduling : ICloudServiceSchedulingApi
 	{
 		readonly IBlobStorageProvider _blobProvider;
 
@@ -33,52 +36,79 @@ namespace Lokad.Cloud.Management
 		/// <summary>
 		/// Enumerate infos of all cloud service schedules.
 		/// </summary>
-		public IEnumerable<ServiceSchedulingInfo> GetSchedules()
+		public List<CloudServiceSchedulingInfo> GetSchedules()
 		{
-			foreach (var blobRef in _blobProvider.List(ScheduledServiceStateReference.GetPrefix()))
-			{
-				var blob = _blobProvider.GetBlobOrDelete(blobRef);
-				if (!blob.HasValue)
-				{
-					continue;
-				}
-
-				var state = blob.Value;
-				var info =  new ServiceSchedulingInfo
+			return _blobProvider.List(ScheduledServiceStateReference.GetPrefix())
+				.Select(blobRef => Tuple.From(blobRef, _blobProvider.GetBlobOrDelete(blobRef)))
+				.Where(pair => pair.Value.HasValue)
+				.Select(pair =>
 					{
-						ServiceName = blobRef.ServiceName,
-						TriggerInterval = state.TriggerInterval,
-						LastExecuted = state.LastExecuted,
-						WorkerScoped = state.SchedulePerWorker,
-						LeasedBy = Maybe.String,
-						LeasedSince = Maybe<DateTimeOffset>.Empty,
-						LeasedUntil = Maybe<DateTimeOffset>.Empty
-					};
+						var state = pair.Value.Value;
+						var info = new CloudServiceSchedulingInfo
+							{
+								ServiceName = pair.Key.ServiceName,
+								TriggerInterval = state.TriggerInterval,
+								LastExecuted = state.LastExecuted,
+								WorkerScoped = state.SchedulePerWorker,
+								LeasedBy = Maybe.String,
+								LeasedSince = Maybe<DateTimeOffset>.Empty,
+								LeasedUntil = Maybe<DateTimeOffset>.Empty
+							};
 
-				if(state.Lease != null)
-				{
-					info.LeasedBy = state.Lease.Owner;
-					info.LeasedSince = state.Lease.Acquired;
-					info.LeasedUntil = state.Lease.Timeout;
-				}
+						if (state.Lease != null)
+						{
+							info.LeasedBy = state.Lease.Owner;
+							info.LeasedSince = state.Lease.Acquired;
+							info.LeasedUntil = state.Lease.Timeout;
+						}
 
-				yield return info;
+						return info;
+					})
+				.ToList();
+		}
+
+		/// <summary>
+		/// Gets infos of one cloud service schedule.
+		/// </summary>
+		public CloudServiceSchedulingInfo GetSchedule(string serviceName)
+		{
+			var blob = _blobProvider.GetBlob(new ScheduledServiceStateReference(serviceName));
+
+			var state = blob.Value;
+			var info = new CloudServiceSchedulingInfo
+			{
+				ServiceName = serviceName,
+				TriggerInterval = state.TriggerInterval,
+				LastExecuted = state.LastExecuted,
+				WorkerScoped = state.SchedulePerWorker,
+				LeasedBy = Maybe.String,
+				LeasedSince = Maybe<DateTimeOffset>.Empty,
+				LeasedUntil = Maybe<DateTimeOffset>.Empty
+			};
+
+			if (state.Lease != null)
+			{
+				info.LeasedBy = state.Lease.Owner;
+				info.LeasedSince = state.Lease.Acquired;
+				info.LeasedUntil = state.Lease.Timeout;
 			}
+
+			return info;
 		}
 
 		/// <summary>
 		/// Enumerate the names of all scheduled cloud service.
 		/// </summary>
-		public IEnumerable<string> GetScheduledServiceNames()
+		public List<string> GetScheduledServiceNames()
 		{
 			return _blobProvider.List(ScheduledServiceStateReference.GetPrefix())
-				.Select(reference => reference.ServiceName);
+				.Select(reference => reference.ServiceName).ToList();
 		}
 
 		/// <summary>
 		/// Enumerate the names of all scheduled user cloud service (system services are skipped).
 		/// </summary>
-		public IEnumerable<string> GetScheduledUserServiceNames()
+		public List<string> GetScheduledUserServiceNames()
 		{
 			var systemServices =
 				new[]
@@ -93,7 +123,7 @@ namespace Lokad.Cloud.Management
 					.ToList();
 
 			return GetScheduledServiceNames()
-				.Where(service => !systemServices.Contains(service));
+				.Where(service => !systemServices.Contains(service)).ToList();
 		}
 
 		/// <summary>
@@ -114,12 +144,11 @@ namespace Lokad.Cloud.Management
 		/// <summary>
 		/// Remove the scheduling information of a cloud service
 		/// </summary>
-		public void RemoveSchedule(string serviceName)
+		public void ResetSchedule(string serviceName)
 		{
 			var blobRef = new ScheduledServiceStateReference(serviceName);
 			_blobProvider.DeleteBlob(blobRef);
 		}
-
 
 		/// <summary>
 		/// Forcibly remove the synchronization lease of a periodic cloud service

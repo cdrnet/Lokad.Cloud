@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
 using System.Linq;
 using Lokad.Cloud.Management;
 using Lokad.Cloud.Test;
@@ -20,7 +21,7 @@ namespace Lokad.Cloud.Diagnostics.Test
 			var monitor = new ExecutionProfilingMonitor(GlobalSetup.Container.Resolve<ICloudDiagnosticsRepository>());
 			var statistics = new CloudStatistics(GlobalSetup.Container.Resolve<ICloudDiagnosticsRepository>());
 
-			var count = statistics.GetAllExecutionProfiles()
+			var count = statistics.GetProfilesOfDay(DateTime.UtcNow)
 				.SelectMany(s => s.Statistics)
 				.Where(e => e.Name.Contains("Test Profile"))
 				.Sum(e => e.OpenCount);
@@ -34,7 +35,7 @@ namespace Lokad.Cloud.Diagnostics.Test
 
 			Assert.AreEqual(
 				count + 1,
-				statistics.GetAllExecutionProfiles()
+				statistics.GetProfilesOfDay(DateTime.UtcNow)
 					.SelectMany(s => s.Statistics)
 					.Where(e => e.Name.Contains("Test Profile"))
 					.Sum(e => e.OpenCount));

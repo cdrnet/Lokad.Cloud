@@ -9,14 +9,14 @@ using System.Linq;
 using System.Web.Caching;
 using System.Web.UI.WebControls;
 using Lokad.Cloud.Diagnostics;
-using Lokad.Cloud.Management;
+using Lokad.Cloud.Management.Api10;
 
 namespace Lokad.Cloud.Web
 {
 	public partial class Monitoring : System.Web.UI.Page
 	{
 		readonly TimeSpan _cacheRefreshPeriod = 2.Minutes();
-		readonly CloudStatistics _cloudStatistics = GlobalSetup.Container.Resolve<CloudStatistics>();
+		readonly ICloudStatisticsApi _cloudStatistics = GlobalSetup.Container.Resolve<ICloudStatisticsApi>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
@@ -102,7 +102,8 @@ namespace Lokad.Cloud.Web
 			ApplySelectedDataSource<PartitionStatistics>(
 				PartitionView,
 				PartitionSelector,
-				_cloudStatistics.GetPartitionsInPeriod,
+				_cloudStatistics.GetPartitionsOfMonth,
+				_cloudStatistics.GetPartitionsOfDay,
 				ToPresentationModel,
 				"lokad-cloud-diag-partitions");
 		}
@@ -112,7 +113,8 @@ namespace Lokad.Cloud.Web
 			ApplySelectedDataSource<ServiceStatistics>(
 				ServiceView,
 				ServiceSelector,
-				_cloudStatistics.GetServicesInPeriod,
+				_cloudStatistics.GetServicesOfMonth,
+				_cloudStatistics.GetServicesOfDay,
 				ToPresentationModel,
 				"lokad-cloud-diag-services");
 		}
@@ -122,7 +124,8 @@ namespace Lokad.Cloud.Web
 			ApplySelectedDataSource<ExecutionProfilingStatistics>(
 				ProfilesView,
 				ProfilesSelector,
-				_cloudStatistics.GetExecutionProfilesInPeriod,
+				_cloudStatistics.GetProfilesOfMonth,
+				_cloudStatistics.GetProfilesOfDay,
 				ToPresentationModel,
 				"lokad-cloud-diag-profiles");
 		}
@@ -132,7 +135,8 @@ namespace Lokad.Cloud.Web
 			ApplySelectedDataSource<ExceptionTrackingStatistics>(
 				ExceptionsView,
 				ExceptionsSelector,
-				_cloudStatistics.GetTrackedExceptionsInPeriod,
+				_cloudStatistics.GetExceptionsOfMonth,
+				_cloudStatistics.GetExceptionsOfDay,
 				ToPresentationModel,
 				"lokad-cloud-diag-exceptions");
 		}
@@ -140,7 +144,8 @@ namespace Lokad.Cloud.Web
 		void ApplySelectedDataSource<T>(
 			BaseDataBoundControl target,
 			ListControl selector,
-			Func<TimeSegmentPeriod, DateTimeOffset, IEnumerable<T>> provider,
+			Func<DateTime?, IEnumerable<T>> monthProvider,
+			Func<DateTime?, IEnumerable<T>> dayProvider,
 			Func<IEnumerable<T>, object> projector,
 			string cacheNamePrefix)
 		{
@@ -149,22 +154,22 @@ namespace Lokad.Cloud.Web
 			{
 				case "Today":
 					target.DataSource = Cached(
-						() => projector(provider(TimeSegmentPeriod.Day, now)),
+						() => projector(dayProvider(now.UtcDateTime)),
 						cacheNamePrefix + "-today");
 					break;
 				case "Yesterday":
 					target.DataSource = Cached(
-						() => projector(provider(TimeSegmentPeriod.Day, now.AddDays(-1))),
+						() => projector(dayProvider(now.AddDays(-1).UtcDateTime)),
 						cacheNamePrefix + "-yesterday");
 					break;
 				case "This Month":
 					target.DataSource = Cached(
-						() => projector(provider(TimeSegmentPeriod.Month, now)),
+						() => projector(monthProvider(now.UtcDateTime)),
 						cacheNamePrefix + "-thismonth");
 					break;
 				case "Last Month":
 					target.DataSource = Cached(
-						() => projector(provider(TimeSegmentPeriod.Month, now.AddMonths(-1))),
+						() => projector(monthProvider(now.AddMonths(-1).UtcDateTime)),
 						cacheNamePrefix + "-lastmonth");
 					break;
 			}

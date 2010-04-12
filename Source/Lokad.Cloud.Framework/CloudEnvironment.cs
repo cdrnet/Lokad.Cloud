@@ -5,6 +5,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.WindowsAzure.ServiceRuntime;
@@ -125,7 +126,10 @@ namespace Lokad.Cloud
 		public static Maybe<string> GetConfigurationSetting(string configurationSettingName)
 		{
 			if (!_runtimeAvailable)
+			{
 				return Maybe<string>.Empty;
+			}
+
 			try
 			{
 				var value = RoleEnvironment.GetConfigurationSettingValue(configurationSettingName);
@@ -145,6 +149,16 @@ namespace Lokad.Cloud
 				// setting was removed from the csdef, skip
 				// (logging is usually not available at that stage)
 			}
+		}
+
+		public static bool HasSecureEndpoint()
+		{
+			if (!_runtimeAvailable)
+			{
+				return false;
+			}
+
+			return RoleEnvironment.CurrentRoleInstance.InstanceEndpoints.ContainsKey("HttpsIn");
 		}
 	}
 }

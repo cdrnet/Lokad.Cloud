@@ -84,7 +84,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			// give the client a chance to register external diagnostics sources
 			clientContainer.InjectProperties(_diagnostics);
 
-			_scheduler = new Scheduler(() => LoadServices(clientContainer), RunService);
+			_scheduler = new Scheduler(() => LoadServices<CloudService>(clientContainer), RunService);
 
 			try
 			{
@@ -175,11 +175,11 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <summary>
 		/// Load and get all service instances using the provided IoC container.
 		/// </summary>
-		static IEnumerable<CloudService> LoadServices(IContainer container)
+		static IEnumerable<T> LoadServices<T>(IContainer container)
 		{
 			var serviceTypes = AppDomain.CurrentDomain.GetAssemblies()
 				.Select(a => a.GetExportedTypes()).SelectMany(x => x)
-				.Where(t => t.IsSubclassOf(typeof (CloudService)) && !t.IsAbstract && !t.IsGenericType)
+				.Where(t => t.IsSubclassOf(typeof (T)) && !t.IsAbstract && !t.IsGenericType)
 				.ToList();
 
 			var builder = new ContainerBuilder();
@@ -196,7 +196,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			}
 			builder.Build(container);
 
-			return serviceTypes.Select(type => (CloudService) container.Resolve(type));
+			return serviceTypes.Select(type => (T) container.Resolve(type));
 		}
 
 		/// <summary>

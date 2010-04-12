@@ -8,13 +8,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
-using Lokad.Cloud.Management;
+using Lokad.Cloud.Management.Api10;
 
 namespace Lokad.Cloud.Web
 {
 	public partial class Assemblies : System.Web.UI.Page
 	{
-		readonly CloudAssemblies _cloudAssemblies = GlobalSetup.Container.Resolve<CloudAssemblies>();
+		readonly ICloudAssembliesApi _cloudAssemblies = GlobalSetup.Container.Resolve<ICloudAssembliesApi>();
 		readonly ILog _log = GlobalSetup.Container.Resolve<ILog>();
 
 		protected void Page_Load(object sender, EventArgs e)
@@ -69,13 +69,13 @@ namespace Lokad.Cloud.Web
 			// If the file is a DLL, it must be compressed as ZIP
 			if(extension == ".dll")
 			{
-				_cloudAssemblies.SetAssemblyDll(
+				_cloudAssemblies.UploadAssemblyDll(
 					AssemblyFileUpload.FileBytes,
 					AssemblyFileUpload.FileName);
 			}
 			else
 			{
-				_cloudAssemblies.SetAssemblyZipContainer(
+				_cloudAssemblies.UploadAssemblyZipContainer(
 					AssemblyFileUpload.FileBytes);
 			}
 

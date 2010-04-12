@@ -64,7 +64,7 @@ namespace Lokad.Cloud.ServiceFabric.Test
 			}
 
 			// forcing update, this time using the management class
-			cloudAssemblies.SetAssemblyZipContainer(buffer);
+			cloudAssemblies.UploadAssemblyZipContainer(buffer);
 
 			// update, re-checking
 			try

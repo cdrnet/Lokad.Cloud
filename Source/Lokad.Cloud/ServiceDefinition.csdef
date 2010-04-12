@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Single upgrade domain to speed-up worker instantiation. -->
-<ServiceDefinition name="Lokad.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition"
-	upgradeDomainCount="1">
+<ServiceDefinition name="Lokad.Cloud" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" upgradeDomainCount="1">
 	<!-- Full trust is needed for binary serialization -->
 	<WebRole name="Lokad.Cloud.WebRole" enableNativeCodeExecution="true">
 		<LocalResources>
@@ -10,16 +9,22 @@
 		<InputEndpoints>
 			<!-- Must use port 80 for http and port 443 for https when running in the cloud -->
 			<InputEndpoint name="HttpIn" protocol="http" port="80" />
+			<!-- remove the https endpoint if you're not interested or can't use secure access -->
+			<!-- note: removing the https endpoint disables the soap service endpoint (but not the rest endpoint) -->
+			<InputEndpoint name="HttpsIn" protocol="https" port="443" certificate="SSL" />
 		</InputEndpoints>
 		<ConfigurationSettings>
 			<Setting name="DataConnectionString" />
 			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
 			<Setting name="Admins" />
+			<!--Apikey for clients to authenticate against the Lokad.Cloud Management Api-->
+			<Setting name="ManagementApiKey" />
 			<Setting name="SelfManagementCertificateThumbprint" />
 			<Setting name="SelfManagementSubscriptionId" />
 		</ConfigurationSettings>
 		<Certificates>
 			<Certificate name="SelfManagement" storeLocation="CurrentUser" storeName="My" />
+			<Certificate name="SSL" storeLocation="CurrentUser" storeName="My" />
 		</Certificates>
 	</WebRole>
 	<!-- Full trust is needed for binary serialization -->

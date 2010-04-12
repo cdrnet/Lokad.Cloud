@@ -5,13 +5,13 @@
 
 using System;
 using System.Linq;
-using Lokad.Cloud.Management;
+using Lokad.Cloud.Management.Api10;
 
 namespace Lokad.Cloud.Web
 {
 	public partial class Scheduler : System.Web.UI.Page
 	{
-		readonly CloudServiceScheduling _cloudServiceScheduling = GlobalSetup.Container.Resolve<CloudServiceScheduling>();
+		readonly ICloudServiceSchedulingApi _cloudServiceScheduling = GlobalSetup.Container.Resolve<ICloudServiceSchedulingApi>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
@@ -80,7 +80,7 @@ namespace Lokad.Cloud.Web
 			}
 
 			var serviceName = ServiceList.SelectedValue;
-			_cloudServiceScheduling.RemoveSchedule(serviceName);
+			_cloudServiceScheduling.ResetSchedule(serviceName);
 
 			ServiceList.DataBind();
 			ScheduleView.DataBind();
@@ -103,7 +103,7 @@ namespace Lokad.Cloud.Web
 			ServiceList.DataBind();
 		}
 
-		string PrettyFormatLastExecuted(ServiceSchedulingInfo info)
+		string PrettyFormatLastExecuted(CloudServiceSchedulingInfo info)
 		{
 			if(info.WorkerScoped)
 			{
@@ -113,7 +113,7 @@ namespace Lokad.Cloud.Web
 			return info.LastExecuted.PrettyFormatRelativeToNow();
 		}
 
-		string PrettyFormatLease(ServiceSchedulingInfo info)
+		string PrettyFormatLease(CloudServiceSchedulingInfo info)
 		{
 			if (!info.LeasedSince.HasValue || !info.LeasedUntil.HasValue)
 			{

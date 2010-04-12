@@ -5,14 +5,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Lokad.Cloud.Diagnostics;
+using Lokad.Cloud.Management.Api10;
+using Lokad.Quality;
 
 namespace Lokad.Cloud.Management
 {
 	/// <summary>
 	/// Management facade for cloud configuration.
 	/// </summary>
-	public class CloudStatistics
+	[UsedImplicitly]
+	public class CloudStatistics : ICloudStatisticsApi 
 	{
 		readonly ICloudDiagnosticsRepository _repository;
 
@@ -24,48 +28,48 @@ namespace Lokad.Cloud.Management
 			_repository = diagnosticsRepository;
 		}
 
-		/// <summary>Get the statistics of all cloud partitions.</summary>
-		public IEnumerable<PartitionStatistics> GetPartitionsInPeriod(TimeSegmentPeriod period, DateTimeOffset date)
+		/// <summary>Get the statistics of all cloud partitions on the provided month.</summary>
+		public List<PartitionStatistics> GetPartitionsOfMonth(DateTime? monthUtc)
 		{
-			return _repository.GetAllPartitionStatistics(TimeSegments.For(period, date));
+			return _repository.GetAllPartitionStatistics(TimeSegments.For(TimeSegmentPeriod.Month, new DateTimeOffset(monthUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
 		}
-		/// <summary>Get the statistics of all cloud partitions.</summary>
-		public IEnumerable<PartitionStatistics> GetAllPartitions()
+		/// <summary>Get the statistics of all cloud partitions on the provided day.</summary>
+		public List<PartitionStatistics> GetPartitionsOfDay(DateTime? dayUtc)
 		{
-			return _repository.GetAllPartitionStatistics(TimeSegments.MonthPrefix);
-		}
-
-		/// <summary>Get the statistics of monthly cloud services.</summary>
-		public IEnumerable<ServiceStatistics> GetServicesInPeriod(TimeSegmentPeriod period, DateTimeOffset date)
-		{
-			return _repository.GetAllServiceStatistics(TimeSegments.For(period, date));
-		}
-		/// <summary>Get the statistics of all cloud services.</summary>
-		public IEnumerable<ServiceStatistics> GetAllServices()
-		{
-			return _repository.GetAllServiceStatistics(TimeSegments.MonthPrefix);
+			return _repository.GetAllPartitionStatistics(TimeSegments.For(TimeSegmentPeriod.Day, new DateTimeOffset(dayUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
 		}
 
-		/// <summary>Get the statistics of monthly tracked exceptions.</summary>
-		public IEnumerable<ExceptionTrackingStatistics> GetTrackedExceptionsInPeriod(TimeSegmentPeriod period, DateTimeOffset date)
+		/// <summary>Get the statistics of all cloud services on the provided month.</summary>
+		public List<ServiceStatistics> GetServicesOfMonth(DateTime? monthUtc)
 		{
-			return _repository.GetExceptionTrackingStatistics(TimeSegments.For(period, date));
+			return _repository.GetAllServiceStatistics(TimeSegments.For(TimeSegmentPeriod.Month, new DateTimeOffset(monthUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
 		}
-		/// <summary>Get the statistics of all tracked exceptions.</summary>
-		public IEnumerable<ExceptionTrackingStatistics> GetAllTrackedExceptions()
+		/// <summary>Get the statistics of all cloud services on the provided day.</summary>
+		public List<ServiceStatistics> GetServicesOfDay(DateTime? dayUtc)
 		{
-			return _repository.GetExceptionTrackingStatistics(TimeSegments.MonthPrefix);
+			return _repository.GetAllServiceStatistics(TimeSegments.For(TimeSegmentPeriod.Day, new DateTimeOffset(dayUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
 		}
-		
-		/// <summary>Get the statistics of monthly execution profiles.</summary>
-		public IEnumerable<ExecutionProfilingStatistics> GetExecutionProfilesInPeriod(TimeSegmentPeriod period, DateTimeOffset date)
+
+		/// <summary>Get the statistics of all tracked exceptions on the provided month.</summary>
+		public List<ExceptionTrackingStatistics> GetExceptionsOfMonth(DateTime? monthUtc)
 		{
-			return _repository.GetExecutionProfilingStatistics(TimeSegments.For(period, date));
+			return _repository.GetExceptionTrackingStatistics(TimeSegments.For(TimeSegmentPeriod.Month, new DateTimeOffset(monthUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
 		}
-		/// <summary>Get the statistics of all execution profiles.</summary>
-		public IEnumerable<ExecutionProfilingStatistics> GetAllExecutionProfiles()
+		/// <summary>Get the statistics of all tracked exceptions on the provided day.</summary>
+		public List<ExceptionTrackingStatistics> GetExceptionsOfDay(DateTime? dayUtc)
 		{
-			return _repository.GetExecutionProfilingStatistics(TimeSegments.MonthPrefix);
+			return _repository.GetExceptionTrackingStatistics(TimeSegments.For(TimeSegmentPeriod.Day, new DateTimeOffset(dayUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
+		}
+
+		/// <summary>Get the statistics of all execution profiles on the provided month.</summary>
+		public List<ExecutionProfilingStatistics> GetProfilesOfMonth(DateTime? monthUtc)
+		{
+			return _repository.GetExecutionProfilingStatistics(TimeSegments.For(TimeSegmentPeriod.Month, new DateTimeOffset(monthUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
+		}
+		/// <summary>Get the statistics of all execution profiles on the provided day.</summary>
+		public List<ExecutionProfilingStatistics> GetProfilesOfDay(DateTime? dayUtc)
+		{
+			return _repository.GetExecutionProfilingStatistics(TimeSegments.For(TimeSegmentPeriod.Day, new DateTimeOffset(dayUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
 		}
 	}
 }

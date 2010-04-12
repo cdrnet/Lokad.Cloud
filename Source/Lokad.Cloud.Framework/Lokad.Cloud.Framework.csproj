@@ -66,6 +66,9 @@
     <Reference Include="System.Data.Services.Client">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.IdentityModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -98,6 +101,12 @@
     <Compile Include="Diagnostics\Persistence\PartitionStatisticsReference.cs" />
     <Compile Include="Diagnostics\Persistence\ServiceStatisticsReference.cs" />
     <Compile Include="IRuntimeFinalizer.cs" />
+    <Compile Include="Management\Api10\ICloudAssembliesApi.cs" />
+    <Compile Include="Management\Api10\ICloudConfigurationApi.cs" />
+    <Compile Include="Management\Api10\ICloudProvisioningApi.cs" />
+    <Compile Include="Management\Api10\ICloudServicesApi.cs" />
+    <Compile Include="Management\Api10\ICloudServiceSchedulingApi.cs" />
+    <Compile Include="Management\Api10\ICloudStatisticsApi.cs" />
     <Compile Include="Management\Azure\ApiConstants.cs" />
     <Compile Include="Management\Azure\Entities\AffinityGroup.cs" />
     <Compile Include="Management\Azure\Entities\Certificate.cs" />
@@ -155,13 +164,13 @@
     <Compile Include="Diagnostics\TimeSegments.cs" />
     <Compile Include="Management\AssemblyInspector.cs" />
     <Compile Include="Management\CloudAssemblies.cs" />
-    <Compile Include="Management\CloudAssemblyInfo.cs" />
+    <Compile Include="Management\Api10\CloudAssemblyInfo.cs" />
     <Compile Include="Management\CloudConfiguration.cs" />
     <Compile Include="Management\CloudStatistics.cs" />
     <Compile Include="Management\ManagementModule.cs" />
-    <Compile Include="Management\ServiceInfo.cs" />
+    <Compile Include="Management\Api10\CloudServiceInfo.cs" />
     <Compile Include="Management\CloudServices.cs" />
-    <Compile Include="Management\ServiceSchedulingInfo.cs" />
+    <Compile Include="Management\Api10\CloudServiceSchedulingInfo.cs" />
     <Compile Include="Management\CloudServiceScheduling.cs" />
     <Compile Include="Mock\MemoryMonitor.cs" />
     <Compile Include="Mock\MockStorageModule.cs" />

@@ -21,7 +21,7 @@ namespace Lokad.Cloud.Diagnostics.Test
 			var monitor = new ExceptionTrackingMonitor(GlobalSetup.Container.Resolve<ICloudDiagnosticsRepository>());
 			var statistics = new CloudStatistics(GlobalSetup.Container.Resolve<ICloudDiagnosticsRepository>());
 
-			var countBefore = statistics.GetAllTrackedExceptions()
+			var countBefore = statistics.GetExceptionsOfDay(DateTime.UtcNow)
 				.SelectMany(s => s.Statistics)
 				.Where(e => e.Text.Contains("Test Exception"))
 				.Sum(e => e.Count);
@@ -31,7 +31,7 @@ namespace Lokad.Cloud.Diagnostics.Test
 
 			Assert.AreEqual(
 				countBefore + 1,
-				statistics.GetAllTrackedExceptions()
+				statistics.GetExceptionsOfDay(DateTime.UtcNow)
 					.SelectMany(s => s.Statistics)
 					.Where(e => e.Text.Contains("Test Exception"))
 					.Sum(e => e.Count));

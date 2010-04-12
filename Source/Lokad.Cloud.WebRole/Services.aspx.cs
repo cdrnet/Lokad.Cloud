@@ -7,14 +7,13 @@ using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Lokad.Cloud.Management;
-using Lokad.Cloud.ServiceFabric;
+using Lokad.Cloud.Management.Api10;
 
 namespace Lokad.Cloud.Web
 {
 	public partial class Services : System.Web.UI.Page
 	{
-		readonly CloudServices _cloudServices = GlobalSetup.Container.Resolve<CloudServices>();
+		readonly ICloudServicesApi _cloudServices = GlobalSetup.Container.Resolve<ICloudServicesApi>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
@@ -31,7 +30,7 @@ namespace Lokad.Cloud.Web
 				.Select(info => new
 					{
 						Name = info.ServiceName,
-						State = info.State.ToString(),
+						State = info.IsStarted ? "started" : "stopped",
 						Info = info
 					});
 		}
@@ -43,17 +42,9 @@ namespace Lokad.Cloud.Web
 				return;
 			}
 
-			var info = (ServiceInfo)DataBinder.Eval(e.Row.DataItem, "Info");
+			var info = (CloudServiceInfo)DataBinder.Eval(e.Row.DataItem, "Info");
 			var stateCell = e.Row.Cells[e.Row.Cells.Count - 1];
-			switch (info.State)
-			{
-				case CloudServiceState.Started:
-					stateCell.CssClass = "statusenabled";
-					break;
-				case CloudServiceState.Stopped:
-					stateCell.CssClass = "statusdisabled";
-					break;
-			}
+			stateCell.CssClass = info.IsStarted ? "statusenabled" : "statusdisabled";
 		}
 
 		protected void ServiceList_DataBinding(object sender, EventArgs e)
@@ -85,7 +76,7 @@ namespace Lokad.Cloud.Web
 			}
 
 			var serviceName = ServiceList.SelectedValue;
-			_cloudServices.RemoveServiceState(serviceName);
+			_cloudServices.ResetServiceState(serviceName);
 
 			ServiceList.DataBind();
 		}

@@ -6,12 +6,13 @@
 using System;
 using System.Web.UI;
 using Lokad.Cloud.Management;
+using Lokad.Cloud.Management.Api10;
 
 namespace Lokad.Cloud.Web
 {
 	public partial class Config : Page
 	{
-		readonly CloudConfiguration _cloudConfig = GlobalSetup.Container.Resolve<CloudConfiguration>();
+		readonly ICloudConfigurationApi _cloudConfig = GlobalSetup.Container.Resolve<ICloudConfigurationApi>();
 
 		protected void Page_Load(object sender, EventArgs e)
 		{
