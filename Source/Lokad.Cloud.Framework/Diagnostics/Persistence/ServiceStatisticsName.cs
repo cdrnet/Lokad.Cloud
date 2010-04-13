@@ -8,7 +8,7 @@ using Lokad.Quality;
 
 namespace Lokad.Cloud.Diagnostics.Persistence
 {
-	internal class ServiceStatisticsReference : BlobReference<ServiceStatistics>
+	internal class ServiceStatisticsName : BlobName<ServiceStatistics>
 	{
 		public override string ContainerName
 		{
@@ -21,25 +21,25 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		[UsedImplicitly, Rank(1)]
 		public readonly string ServiceName;
 
-		public ServiceStatisticsReference(string timeSegment, string serviceName)
+		public ServiceStatisticsName(string timeSegment, string serviceName)
 		{
 			TimeSegment = timeSegment;
 			ServiceName = serviceName;
 		}
 
-		public static ServiceStatisticsReference New(string timeSegment, string serviceName)
+		public static ServiceStatisticsName New(string timeSegment, string serviceName)
 		{
-			return new ServiceStatisticsReference(timeSegment, serviceName);
+			return new ServiceStatisticsName(timeSegment, serviceName);
 		}
 
-        public static ServiceStatisticsReference GetPrefix()
+        public static ServiceStatisticsName GetPrefix()
 		{
-			return new ServiceStatisticsReference(null, null);
+			return new ServiceStatisticsName(null, null);
 		}
 
-        public static ServiceStatisticsReference GetPrefix(string timeSegment)
+        public static ServiceStatisticsName GetPrefix(string timeSegment)
 		{
-			return new ServiceStatisticsReference(timeSegment, null);
+			return new ServiceStatisticsName(timeSegment, null);
 		}
 	}
 }

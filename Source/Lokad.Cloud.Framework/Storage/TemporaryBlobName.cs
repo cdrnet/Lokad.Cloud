@@ -21,9 +21,9 @@ namespace Lokad.Cloud.Storage
 	/// <see cref="GetNew(System.DateTimeOffset)"/> to instantiate a new instance
 	/// directly linked to the garbage collected container.
 	/// </remarks>
-	/// <typeparam name="T">Type referred by the blob reference.</typeparam>
+	/// <typeparam name="T">Type referred by the blob name.</typeparam>
 	[Serializable, DataContract]
-	public class TemporaryBlobReference<T> : BlobReference<T>
+	public class TemporaryBlobName<T> : BlobName<T>
 	{
 		/// <summary>
 		/// Returns the garbage collected container.
@@ -47,27 +47,27 @@ namespace Lokad.Cloud.Storage
 		/// inheritor). If the provided suffix is <c>null</c>then the 
 		/// default prefix <c>GetType().FullName</c> is used instead.
 		/// </param>
-		protected TemporaryBlobReference(DateTimeOffset expiration, string suffix)
+		protected TemporaryBlobName(DateTimeOffset expiration, string suffix)
 		{
 			Expiration = expiration;
 			Suffix = suffix ?? GetType().FullName;
 		}
 
 		/// <summary>
-		/// Gets a full reference to a temporary blob.
+		/// Gets a full name to a temporary blob.
 		/// </summary>
-		public static TemporaryBlobReference<T> GetNew(DateTimeOffset expiration)
+		public static TemporaryBlobName<T> GetNew(DateTimeOffset expiration)
 		{
-			return new TemporaryBlobReference<T>(expiration, Guid.NewGuid().ToString("N"));
+			return new TemporaryBlobName<T>(expiration, Guid.NewGuid().ToString("N"));
 		}
 
 		/// <summary>
-		/// Gets a full reference to a temporary blob.
+		/// Gets a full name to a temporary blob.
 		/// </summary>
-		public static TemporaryBlobReference<T> GetNew(DateTimeOffset expiration, string prefix)
+		public static TemporaryBlobName<T> GetNew(DateTimeOffset expiration, string prefix)
 		{
 			// hyphen used on purpose, not to interfere with parsing later on.
-			return new TemporaryBlobReference<T>(expiration, prefix + "-" + Guid.NewGuid().ToString("N"));
+			return new TemporaryBlobName<T>(expiration, prefix + "-" + Guid.NewGuid().ToString("N"));
 		}
 	}
 }

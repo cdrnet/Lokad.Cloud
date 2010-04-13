@@ -29,7 +29,7 @@ namespace Lokad.Cloud.ServiceFabric
 	}
 
 	/// <summary>Strong-typed blob name for cloud service state.</summary>
-	public class CloudServiceStateReference : BlobReference<CloudServiceState>
+	public class CloudServiceStateName : BlobName<CloudServiceState>
 	{
 		public override string ContainerName
 		{
@@ -40,7 +40,7 @@ namespace Lokad.Cloud.ServiceFabric
 		[Rank(0)] public readonly string ServiceName;
 
 		/// <summary>Instantiate a new blob name associated to the specified service.</summary>
-		public CloudServiceStateReference(string serviceName)
+		public CloudServiceStateName(string serviceName)
 		{
 			Enforce.That(serviceName);
 
@@ -48,9 +48,9 @@ namespace Lokad.Cloud.ServiceFabric
 		}
 
 		/// <summary>Let you iterate over the state of each cloud service.</summary>
-        public static CloudServiceStateReference GetPrefix()
+        public static CloudServiceStateName GetPrefix()
 		{
-			return new CloudServiceStateReference(null);
+			return new CloudServiceStateName(null);
 		}
 
 	}
@@ -157,7 +157,7 @@ namespace Lokad.Cloud.ServiceFabric
 			// checking service state at regular interval
 			if(now.Subtract(_lastStateCheck) > StateCheckInterval)
 			{
-				var stateBlobName = new CloudServiceStateReference(Name);
+				var stateBlobName = new CloudServiceStateName(Name);
 
 				var state = BlobStorage.GetBlobOrDelete(stateBlobName);
 

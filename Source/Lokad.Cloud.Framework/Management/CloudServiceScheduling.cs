@@ -38,7 +38,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public List<CloudServiceSchedulingInfo> GetSchedules()
 		{
-			return _blobProvider.List(ScheduledServiceStateReference.GetPrefix())
+			return _blobProvider.List(ScheduledServiceStateName.GetPrefix())
 				.Select(blobRef => Tuple.From(blobRef, _blobProvider.GetBlobOrDelete(blobRef)))
 				.Where(pair => pair.Value.HasValue)
 				.Select(pair =>
@@ -72,7 +72,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public CloudServiceSchedulingInfo GetSchedule(string serviceName)
 		{
-			var blob = _blobProvider.GetBlob(new ScheduledServiceStateReference(serviceName));
+			var blob = _blobProvider.GetBlob(new ScheduledServiceStateName(serviceName));
 
 			var state = blob.Value;
 			var info = new CloudServiceSchedulingInfo
@@ -101,7 +101,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public List<string> GetScheduledServiceNames()
 		{
-			return _blobProvider.List(ScheduledServiceStateReference.GetPrefix())
+			return _blobProvider.List(ScheduledServiceStateName.GetPrefix())
 				.Select(reference => reference.ServiceName).ToList();
 		}
 
@@ -131,7 +131,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void SetTriggerInterval(string serviceName, TimeSpan triggerInterval)
 		{
-			var blobRef = new ScheduledServiceStateReference(serviceName);
+			var blobRef = new ScheduledServiceStateName(serviceName);
 			_blobProvider.UpdateIfNotModified(blobRef,
 				blob =>
 				{
@@ -146,7 +146,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void ResetSchedule(string serviceName)
 		{
-			var blobRef = new ScheduledServiceStateReference(serviceName);
+			var blobRef = new ScheduledServiceStateName(serviceName);
 			_blobProvider.DeleteBlob(blobRef);
 		}
 
@@ -155,7 +155,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void ReleaseLease(string serviceName)
 		{
-			var blobRef = new ScheduledServiceStateReference(serviceName);
+			var blobRef = new ScheduledServiceStateName(serviceName);
 			_blobProvider.UpdateIfNotModified(
 				blobRef,
 				currentState =>

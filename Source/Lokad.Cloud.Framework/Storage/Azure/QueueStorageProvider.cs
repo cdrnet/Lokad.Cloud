@@ -296,7 +296,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			var timestamp = _countWrapMessage.Open();
 
-			var blobRef = OverflowingMessageBlobReference<T>.GetNew(queueName);
+			var blobRef = OverflowingMessageBlobName<T>.GetNew(queueName);
 
 			// HACK: In this case serialization is performed another time (internally)
 			_blobStorage.PutBlob(blobRef, message);
@@ -505,7 +505,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 		public IEnumerable<string> ListPersisted(string storeName)
 		{
-			var blobPrefix = PersistedMessageBlobReference.GetPrefix(storeName);
+			var blobPrefix = PersistedMessageBlobName.GetPrefix(storeName);
 			return _blobStorage.List(blobPrefix).Select(blobReference => blobReference.Key);
 		}
 
@@ -513,7 +513,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			// 1. GET PERSISTED MESSAGE BLOB
 
-			var blobReference = new PersistedMessageBlobReference(storeName, key);
+			var blobReference = new PersistedMessageBlobName(storeName, key);
 			var blob = _blobStorage.GetBlob(blobReference);
 			if (!blob.HasValue)
 			{
@@ -577,7 +577,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			// 1. GET PERSISTED MESSAGE BLOB
 
-			var blobReference = new PersistedMessageBlobReference(storeName, key);
+			var blobReference = new PersistedMessageBlobName(storeName, key);
 			var blob = _blobStorage.GetBlob(blobReference);
 			if (!blob.HasValue)
 			{
@@ -614,7 +614,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			// 1. GET PERSISTED MESSAGE BLOB
 
-			var blobReference = new PersistedMessageBlobReference(storeName, key);
+			var blobReference = new PersistedMessageBlobName(storeName, key);
 			var blob = _blobStorage.GetBlob(blobReference);
 			if(!blob.HasValue)
 			{
@@ -642,7 +642,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 			// 1. PERSIST MESSAGE TO BLOB
 
-			var blobReference = PersistedMessageBlobReference.GetNew(storeName);
+			var blobReference = PersistedMessageBlobName.GetNew(storeName);
 			var persistedMessage = new PersistedMessageData
 				{
 					QueueName = queueName,
@@ -860,7 +860,7 @@ namespace Lokad.Cloud.Storage.Azure
 		public bool IsOverflowing { get; set; }
 	}
 
-	internal class OverflowingMessageBlobReference<T> : BlobReference<T>
+	internal class OverflowingMessageBlobName<T> : BlobName<T>
 	{
 		public override string ContainerName
 		{
@@ -875,7 +875,7 @@ namespace Lokad.Cloud.Storage.Azure
 		[UsedImplicitly, Rank(1)]
 		public Guid MessageId;
 
-		OverflowingMessageBlobReference(string queueName, Guid guid)
+		OverflowingMessageBlobName(string queueName, Guid guid)
 		{
 			QueueName = queueName;
 			MessageId = guid;
@@ -883,9 +883,9 @@ namespace Lokad.Cloud.Storage.Azure
 
 		/// <summary>Used to iterate over all the overflowing messages 
 		/// associated to a queue.</summary>
-		public static OverflowingMessageBlobReference<T> GetNew(string queueName)
+		public static OverflowingMessageBlobName<T> GetNew(string queueName)
 		{
-			return new OverflowingMessageBlobReference<T>(queueName, Guid.NewGuid());
+			return new OverflowingMessageBlobName<T>(queueName, Guid.NewGuid());
 		}
 	}
 
@@ -911,7 +911,7 @@ namespace Lokad.Cloud.Storage.Azure
 		public byte[] Data { get; set; }
 	}
 
-	internal class PersistedMessageBlobReference : BlobReference<PersistedMessageData>
+	internal class PersistedMessageBlobName : BlobName<PersistedMessageData>
 	{
 		public override string ContainerName
 		{
@@ -925,25 +925,25 @@ namespace Lokad.Cloud.Storage.Azure
 		[UsedImplicitly, Rank(1)]
 		public string Key;
 
-		public PersistedMessageBlobReference(string storeName, string key)
+		public PersistedMessageBlobName(string storeName, string key)
 		{
 			StoreName = storeName;
 			Key = key;
 		}
 
-		public static PersistedMessageBlobReference GetNew(string storeName, string key)
+		public static PersistedMessageBlobName GetNew(string storeName, string key)
 		{
-			return new PersistedMessageBlobReference(storeName, key);
+			return new PersistedMessageBlobName(storeName, key);
 		}
 
-		public static PersistedMessageBlobReference GetNew(string storeName)
+		public static PersistedMessageBlobName GetNew(string storeName)
 		{
-			return new PersistedMessageBlobReference(storeName, Guid.NewGuid().ToString("N"));
+			return new PersistedMessageBlobName(storeName, Guid.NewGuid().ToString("N"));
 		}
 
-        public static PersistedMessageBlobReference GetPrefix(string storeName)
+        public static PersistedMessageBlobName GetPrefix(string storeName)
 		{
-			return new PersistedMessageBlobReference(storeName, null);
+			return new PersistedMessageBlobName(storeName, null);
 		}
 	}
 }

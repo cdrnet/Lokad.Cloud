@@ -32,7 +32,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		}
 
 		IEnumerable<T> GetAll<T, TReference>(TReference prefix)
-			where TReference : BlobReference<T>
+			where TReference : BlobName<T>
 			where T : class
 		{
 			return _provider
@@ -42,25 +42,25 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 				.Select(x => x.Value);
 		}
 
-		void Update<T>(BlobReference<T> reference, Func<Maybe<T>, T> updater)
+		void Update<T>(BlobName<T> name, Func<Maybe<T>, T> updater)
 		{
 			T result;
 			_provider.AtomicUpdate(
-				reference,
+				name,
 				updater,
 				out result);
 		}
 
-		void Set<T>(BlobReference<T> reference, T value)
+		void Set<T>(BlobName<T> name, T value)
 		{
 			_provider.PutBlob(
-				reference,
+				name,
 				value,
 				true);
 		}
 
 		void RemoveWhile<TReference>(TReference prefix, Func<TReference, string> segmentProvider, string timeSegmentBefore)
-			where TReference : BlobName
+			where TReference : UntypedBlobName
 		{
 			// since the blobs are strictly ordered we can stop once we reach the condition.
 			var matchingBlobs = _provider
@@ -78,8 +78,8 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public IEnumerable<ExceptionTrackingStatistics> GetExceptionTrackingStatistics(string timeSegment)
 		{
-			return GetAll<ExceptionTrackingStatistics,ExceptionTrackingStatisticsReference>(
-				ExceptionTrackingStatisticsReference.GetPrefix(timeSegment));
+			return GetAll<ExceptionTrackingStatistics,ExceptionTrackingStatisticsName>(
+				ExceptionTrackingStatisticsName.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
@@ -87,8 +87,8 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public IEnumerable<ExecutionProfilingStatistics> GetExecutionProfilingStatistics(string timeSegment)
 		{
-			return GetAll<ExecutionProfilingStatistics, ExecutionProfilingStatisticsReference>(
-				ExecutionProfilingStatisticsReference.GetPrefix(timeSegment));
+			return GetAll<ExecutionProfilingStatistics, ExecutionProfilingStatisticsName>(
+				ExecutionProfilingStatisticsName.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
@@ -96,8 +96,8 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public IEnumerable<PartitionStatistics> GetAllPartitionStatistics(string timeSegment)
 		{
-			return GetAll<PartitionStatistics, PartitionStatisticsReference>(
-				PartitionStatisticsReference.GetPrefix(timeSegment));
+			return GetAll<PartitionStatistics, PartitionStatisticsName>(
+				PartitionStatisticsName.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
@@ -105,8 +105,8 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public IEnumerable<ServiceStatistics> GetAllServiceStatistics(string timeSegment)
 		{
-			return GetAll<ServiceStatistics, ServiceStatisticsReference>(
-				ServiceStatisticsReference.GetPrefix(timeSegment));
+			return GetAll<ServiceStatistics, ServiceStatisticsName>(
+				ServiceStatisticsName.GetPrefix(timeSegment));
 		}
 
 		/// <summary>
@@ -114,7 +114,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public void UpdateExceptionTrackingStatistics(string timeSegment, string contextName, Func<Maybe<ExceptionTrackingStatistics>, ExceptionTrackingStatistics> updater)
 		{
-			Update(ExceptionTrackingStatisticsReference.New(timeSegment, contextName), updater);
+			Update(ExceptionTrackingStatisticsName.New(timeSegment, contextName), updater);
 		}
 
 		/// <summary>
@@ -122,7 +122,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public void UpdateExecutionProfilingStatistics(string timeSegment, string contextName, Func<Maybe<ExecutionProfilingStatistics>, ExecutionProfilingStatistics> updater)
 		{
-			Update(ExecutionProfilingStatisticsReference.New(timeSegment, contextName), updater);
+			Update(ExecutionProfilingStatisticsName.New(timeSegment, contextName), updater);
 		}
 
 		/// <summary>
@@ -130,7 +130,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public void UpdatePartitionStatistics(string timeSegment, string partitionName, Func<Maybe<PartitionStatistics>, PartitionStatistics> updater)
 		{
-			Update(PartitionStatisticsReference.New(timeSegment, partitionName), updater);
+			Update(PartitionStatisticsName.New(timeSegment, partitionName), updater);
 		}
 
 		/// <summary>
@@ -138,7 +138,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		/// </summary>
 		public void UpdateServiceStatistics(string timeSegment, string serviceName, Func<Maybe<ServiceStatistics>, ServiceStatistics> updater)
 		{
-			Update(ServiceStatisticsReference.New(timeSegment, serviceName), updater);
+			Update(ServiceStatisticsName.New(timeSegment, serviceName), updater);
 		}
 
 		/// <summary>
@@ -147,7 +147,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		public void RemoveExceptionTrackingStatistics(string timeSegmentPrefix, string timeSegmentBefore)
 		{
 			RemoveWhile(
-				ExceptionTrackingStatisticsReference.GetPrefix(timeSegmentPrefix),
+				ExceptionTrackingStatisticsName.GetPrefix(timeSegmentPrefix),
 				blobRef => blobRef.TimeSegment,
 				timeSegmentBefore);
 		}
@@ -158,7 +158,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		public void RemoveExecutionProfilingStatistics(string timeSegmentPrefix, string timeSegmentBefore)
 		{
 			RemoveWhile(
-				ExecutionProfilingStatisticsReference.GetPrefix(timeSegmentPrefix),
+				ExecutionProfilingStatisticsName.GetPrefix(timeSegmentPrefix),
 				blobRef => blobRef.TimeSegment,
 				timeSegmentBefore);
 		}
@@ -169,7 +169,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		public void RemovePartitionStatistics(string timeSegmentPrefix, string timeSegmentBefore)
 		{
 			RemoveWhile(
-				PartitionStatisticsReference.GetPrefix(timeSegmentPrefix),
+				PartitionStatisticsName.GetPrefix(timeSegmentPrefix),
 				blobRef => blobRef.TimeSegment,
 				timeSegmentBefore);
 		}
@@ -180,7 +180,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		public void RemoveServiceStatistics(string timeSegmentPrefix, string timeSegmentBefore)
 		{
 			RemoveWhile(
-				ServiceStatisticsReference.GetPrefix(timeSegmentPrefix),
+				ServiceStatisticsName.GetPrefix(timeSegmentPrefix),
 				blobRef => blobRef.TimeSegment,
 				timeSegmentBefore);
 		}

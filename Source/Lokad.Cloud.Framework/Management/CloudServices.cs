@@ -37,7 +37,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public List<CloudServiceInfo> GetServices()
 		{
-			return _blobProvider.List(CloudServiceStateReference.GetPrefix())
+			return _blobProvider.List(CloudServiceStateName.GetPrefix())
 				.Select(blobRef => Tuple.From(blobRef, _blobProvider.GetBlobOrDelete(blobRef)))
 				.Where(pair => pair.Value.HasValue)
 				.Select(pair => new CloudServiceInfo
@@ -53,7 +53,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public CloudServiceInfo GetService(string serviceName)
 		{
-			var blob = _blobProvider.GetBlob(new CloudServiceStateReference(serviceName));
+			var blob = _blobProvider.GetBlob(new CloudServiceStateName(serviceName));
 			return new CloudServiceInfo
 				{
 					ServiceName = serviceName,
@@ -66,7 +66,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public List<string> GetServiceNames()
 		{
-			return _blobProvider.List(CloudServiceStateReference.GetPrefix())
+			return _blobProvider.List(CloudServiceStateName.GetPrefix())
 				.Select(reference => reference.ServiceName).ToList();
 		}
 
@@ -96,7 +96,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void EnableService(string serviceName)
 		{
-			var blobRef = new CloudServiceStateReference(serviceName);
+			var blobRef = new CloudServiceStateName(serviceName);
 			_blobProvider.PutBlob(blobRef, CloudServiceState.Started);
 		}
 
@@ -105,7 +105,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void DisableService(string serviceName)
 		{
-			var blobRef = new CloudServiceStateReference(serviceName);
+			var blobRef = new CloudServiceStateName(serviceName);
 			_blobProvider.PutBlob(blobRef, CloudServiceState.Stopped);
 		}
 
@@ -114,7 +114,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void ToggleServiceState(string serviceName)
 		{
-			var blobRef = new CloudServiceStateReference(serviceName);
+			var blobRef = new CloudServiceStateName(serviceName);
 			_blobProvider.UpdateIfNotModified(
 				blobRef,
 				s => s.HasValue
@@ -127,7 +127,7 @@ namespace Lokad.Cloud.Management
 		/// </summary>
 		public void ResetServiceState(string serviceName)
 		{
-			var blobRef = new CloudServiceStateReference(serviceName);
+			var blobRef = new CloudServiceStateName(serviceName);
 			_blobProvider.DeleteBlob(blobRef);
 		}
 	}

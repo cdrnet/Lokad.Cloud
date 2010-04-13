@@ -19,7 +19,7 @@ namespace SimpleBlob
         public string Author { get; set; }
     }
 
-    class BookName : BlobReference<Book>
+    class BookName : BlobName<Book>
     {
         public override string ContainerName
         {

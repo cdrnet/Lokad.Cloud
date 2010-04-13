@@ -381,7 +381,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 
 		}
 
-		public class MapReduceConfigurationName : BlobReference<MapReduceConfiguration>
+		public class MapReduceConfigurationName : BlobName<MapReduceConfiguration>
 		{
 			public override string ContainerName
 			{
@@ -411,7 +411,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 
 		}
 
-		private class InputBlobName : BlobReference<object>
+		private class InputBlobName : BlobName<object>
 		{
 			public override string ContainerName
 			{
@@ -452,7 +452,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 
 		}
 
-		private class ReducedBlobName : BlobReference<object>
+		private class ReducedBlobName : BlobName<object>
 		{
 			public override string ContainerName
 			{
@@ -485,7 +485,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 
 		}
 
-		private class AggregatedBlobName : BlobReference<object>
+		private class AggregatedBlobName : BlobName<object>
 		{
 			public override string ContainerName
 			{
@@ -510,7 +510,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 			
 		}
 
-		private class BlobCounterName : BlobReference<decimal>
+		private class BlobCounterName : BlobName<decimal>
 		{
 			public override string ContainerName
 			{

@@ -45,7 +45,7 @@ namespace Lokad.Cloud.ServiceFabric
 	}
 
 	/// <summary>Strong typed blob name for <see cref="ScheduledServiceState"/>.</summary>
-	public class ScheduledServiceStateReference : BlobReference<ScheduledServiceState>
+	public class ScheduledServiceStateName : BlobName<ScheduledServiceState>
 	{
 		public override string ContainerName
 		{
@@ -56,15 +56,15 @@ namespace Lokad.Cloud.ServiceFabric
 		[Rank(0)] public readonly string ServiceName;
 
 		/// <summary>Instantiate the reference associated to the specified service.</summary>
-		public ScheduledServiceStateReference(string serviceName)
+		public ScheduledServiceStateName(string serviceName)
 		{
 			ServiceName = serviceName;
 		}
 
 		/// <summary>Helper for service states enumeration.</summary>
-		public static ScheduledServiceStateReference GetPrefix()
+		public static ScheduledServiceStateName GetPrefix()
 		{
-			return new ScheduledServiceStateReference(null);
+			return new ScheduledServiceStateName(null);
 		}
 	}
 
@@ -113,7 +113,7 @@ namespace Lokad.Cloud.ServiceFabric
 		/// <seealso cref="CloudService.StartImpl"/>
 		protected sealed override ServiceExecutionFeedback StartImpl()
 		{
-			var stateReference = new ScheduledServiceStateReference(Name);
+			var stateReference = new ScheduledServiceStateName(Name);
 
 			// 1. SIMPLE WORKER-SCOPED SCHEDULING CASE
 
@@ -235,7 +235,7 @@ namespace Lokad.Cloud.ServiceFabric
 			// a lease has been forcefully removed from the console and another service
 			// has taken a lease in the meantime.
 
-			var stateReference = new ScheduledServiceStateReference(Name);
+			var stateReference = new ScheduledServiceStateName(Name);
 
 			ScheduledServiceState ignoredResult;
 			BlobStorage.AtomicUpdate(

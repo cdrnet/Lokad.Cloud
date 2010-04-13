@@ -8,7 +8,7 @@ using Lokad.Quality;
 
 namespace Lokad.Cloud.Diagnostics.Persistence
 {
-	internal class PartitionStatisticsReference : BlobReference<PartitionStatistics>
+	internal class PartitionStatisticsName : BlobName<PartitionStatistics>
 	{
 		public override string ContainerName
 		{
@@ -21,25 +21,25 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		[UsedImplicitly, Rank(1)]
 		public readonly string PartitionKey;
 
-		public PartitionStatisticsReference(string timeSegment, string partitionKey)
+		public PartitionStatisticsName(string timeSegment, string partitionKey)
 		{
 			TimeSegment = timeSegment;
 			PartitionKey = partitionKey;
 		}
 
-		public static PartitionStatisticsReference New(string timeSegment, string partitionKey)
+		public static PartitionStatisticsName New(string timeSegment, string partitionKey)
 		{
-			return new PartitionStatisticsReference(timeSegment, partitionKey);
+			return new PartitionStatisticsName(timeSegment, partitionKey);
 		}
 
-        public static PartitionStatisticsReference GetPrefix()
+        public static PartitionStatisticsName GetPrefix()
 		{
-			return new PartitionStatisticsReference(null, null);
+			return new PartitionStatisticsName(null, null);
 		}
 
-        public static PartitionStatisticsReference GetPrefix(string timeSegment)
+        public static PartitionStatisticsName GetPrefix(string timeSegment)
 		{
-			return new PartitionStatisticsReference(timeSegment, null);
+			return new PartitionStatisticsName(timeSegment, null);
 		}
 	}
 }

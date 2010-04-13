@@ -33,7 +33,7 @@ namespace Lokad.Cloud.Services
             foreach (var blobName in BlobStorage.List(TemporaryContainer, null))
 			{
                 // HACK: targeted object is irrelevant
-				var parsedName = BlobName.Parse<TemporaryBlobReference<object>>(blobName);
+				var parsedName = UntypedBlobName.Parse<TemporaryBlobName<object>>(blobName);
 
 				if (DateTimeOffset.UtcNow <= parsedName.Expiration)
 				{

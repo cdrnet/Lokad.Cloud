@@ -36,7 +36,7 @@ namespace Lokad.Cloud.Storage
 	}
 
 	[Serializable, DataContract]
-	class DelayedMessageReference : BlobReference<DelayedMessage>
+	class DelayedMessageName : BlobName<DelayedMessage>
 	{
 		public override string ContainerName
 		{
@@ -47,11 +47,11 @@ namespace Lokad.Cloud.Storage
 		[UsedImplicitly, Rank(1, true), DataMember] public readonly Guid Identifier;
 
         /// <summary>Empty constructor, used for prefixing.</summary>
-        public DelayedMessageReference()
+        public DelayedMessageName()
         {
         }
 
-		public DelayedMessageReference(DateTimeOffset triggerTime, Guid identifier)
+		public DelayedMessageName(DateTimeOffset triggerTime, Guid identifier)
 		{
 			TriggerTime = triggerTime;
 			Identifier = identifier;
@@ -103,7 +103,7 @@ namespace Lokad.Cloud.Storage
 		{
 			foreach(var message in messages)
 			{
-				var blobRef = new DelayedMessageReference(triggerTime, Guid.NewGuid());
+				var blobRef = new DelayedMessageName(triggerTime, Guid.NewGuid());
 				var envelope = new DelayedMessage(queueName, message);
 				_provider.PutBlob(blobRef, envelope);
 			}

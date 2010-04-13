@@ -96,10 +96,10 @@
     <Compile Include="CloudEnvironment.cs" />
     <Compile Include="CloudModule.cs" />
     <Compile Include="Diagnostics\CloudLogger.cs" />
-    <Compile Include="Diagnostics\Persistence\ExceptionTrackingStatisticsReference.cs" />
-    <Compile Include="Diagnostics\Persistence\ExecutionProfilingStatisticsReference.cs" />
-    <Compile Include="Diagnostics\Persistence\PartitionStatisticsReference.cs" />
-    <Compile Include="Diagnostics\Persistence\ServiceStatisticsReference.cs" />
+    <Compile Include="Diagnostics\Persistence\ExceptionTrackingStatisticsName.cs" />
+    <Compile Include="Diagnostics\Persistence\ExecutionProfilingStatisticsName.cs" />
+    <Compile Include="Diagnostics\Persistence\PartitionStatisticsName.cs" />
+    <Compile Include="Diagnostics\Persistence\ServiceStatisticsName.cs" />
     <Compile Include="IRuntimeFinalizer.cs" />
     <Compile Include="Management\Api10\ICloudAssembliesApi.cs" />
     <Compile Include="Management\Api10\ICloudConfigurationApi.cs" />
@@ -186,8 +186,8 @@
     <Compile Include="Storage\Azure\StorageModule.cs" />
     <Compile Include="Storage\Azure\TableStorageProvider.cs" />
     <Compile Include="Storage\BlobCounter.cs" />
+    <Compile Include="Storage\UntypedBlobName.cs" />
     <Compile Include="Storage\BlobName.cs" />
-    <Compile Include="Storage\BlobReference.cs" />
     <Compile Include="Storage\CloudEntity.cs" />
     <Compile Include="Storage\CloudFormatter.cs" />
     <Compile Include="Storage\CloudTable.cs" />
@@ -200,7 +200,7 @@
     <Compile Include="Storage\RankAttribute.cs" />
     <Compile Include="Storage\StorageCredentialsVerifier.cs" />
     <Compile Include="Storage\StorageExtensions.cs" />
-    <Compile Include="Storage\TemporaryBlobReference.cs" />
+    <Compile Include="Storage\TemporaryBlobName.cs" />
     <Compile Include="TypeMapperProvider.cs" />
     <Compile Include="Mock\MemoryLogger.cs" />
     <Compile Include="Mock\MemoryBlobStorageProvider.cs" />
