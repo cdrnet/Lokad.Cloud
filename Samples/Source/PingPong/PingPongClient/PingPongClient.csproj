@@ -69,9 +69,11 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="BeforeBuild">
+    <!-- Copy template for developer only if it does not exist -->
+    <Copy SourceFiles="app.template.config" DestinationFiles="app.config" Condition="!Exists('app.config')" />
+  </Target>
 </Project>
