@@ -13,7 +13,7 @@ namespace Lokad.Cloud.Storage.Test
 	{
 		// ReSharper disable InconsistentNaming
 
-		class PatternA : BlobName
+		class PatternA : BlobReference<string>
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -36,7 +36,7 @@ namespace Lokad.Cloud.Storage.Test
 			}
 		}
 
-		class PatternB : BlobName
+        class PatternB : BlobReference<string>
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -51,7 +51,7 @@ namespace Lokad.Cloud.Storage.Test
 			}
 		}
 
-		class PatternC : BlobName
+        class PatternC : BlobReference<string>
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -77,7 +77,7 @@ namespace Lokad.Cloud.Storage.Test
 			}
 		}
 
-		class PatternE : BlobName
+        class PatternE : BlobReference<string>
 		{
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
@@ -96,7 +96,7 @@ namespace Lokad.Cloud.Storage.Test
 			}
 		}
 
-        class PatternF : BlobName
+        class PatternF : BlobReference<string>
         {
             public override string ContainerName { get { return "my-test-container"; } }
 

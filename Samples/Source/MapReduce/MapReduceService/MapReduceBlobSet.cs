@@ -510,7 +510,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 			
 		}
 
-		private class BlobCounterName : BlobReference<BlobCounter>
+		private class BlobCounterName : BlobReference<decimal>
 		{
 			public override string ContainerName
 			{
@@ -532,7 +532,6 @@ namespace Lokad.Cloud.Samples.MapReduce
 			{
 				return new BlobCounterName(CounterPrefix, jobName);
 			}
-
 		}
 
 		#endregion

@@ -60,7 +60,7 @@ namespace Lokad.Cloud.Storage
 			AtomicUpdate(provider, reference.ContainerName, reference.ToString(), updater, out result);
 		}
 
-		public static bool DeleteBlob(this IBlobStorageProvider provider, BlobName fullName)
+		public static bool DeleteBlob<T>(this IBlobStorageProvider provider, BlobReference<T> fullName)
 		{
 			return provider.DeleteBlob(fullName.ContainerName, fullName.ToString());
 		}
