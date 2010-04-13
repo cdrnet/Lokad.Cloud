@@ -95,16 +95,19 @@ namespace Lokad.Cloud.Storage
 		[UsedImplicitly]
 		class ConverterTypeCache<T>
 		{
-			static readonly FieldInfo[] Fields;
+			static readonly MemberInfo[] Members; // either 'FieldInfo' or 'PropertyInfo'
+		    static readonly bool[] TreatDefaultAsNull;
 			const string Delimeter = "/";
 
 			static readonly ConstructorInfo FirstCtor;
 
 			static ConverterTypeCache()
 			{
+               
 				// HACK: optimize this to IL code, if needed
 				// NB: this approach could be used to generate F# style objects!
-				Fields = typeof(T).GetFields()
+				Members = 
+                    (typeof(T).GetFields().Select(f => (MemberInfo)f).Union(typeof(T).GetProperties()))
 					.Where(f => f.GetCustomAttributes(typeof(RankAttribute), true).Exists())
 					// ordering always respect inheritance
 					.GroupBy(f => f.DeclaringType)
@@ -114,24 +117,34 @@ namespace Lokad.Cloud.Storage
 					.SelectMany(f => f)
 					.ToArray();
 
+			    TreatDefaultAsNull = Members.ToArray(m =>
+			        ((RankAttribute) (m.GetCustomAttributes(typeof (RankAttribute), true).First())).TreatDefaultAsNull);
+
 				FirstCtor = typeof(T).GetConstructors(
 					BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).First();
 			}
 
 			public static string Print(T instance)
 			{
-				return PartialPrint(instance, Fields.Length);
-			}
-
-			public static string PartialPrint(T instance, int fieldCount)
-			{
 				var sb = new StringBuilder();
-				for (int i = 0; i < fieldCount; i++)
+                for (int i = 0; i < Members.Length; i++)
 				{
-					var info = Fields[i];
-					var s = InternalPrint(info.GetValue(instance), info.FieldType);
+					var info = Members[i];
+				    var fieldInfo = info as FieldInfo;
+				    var propInfo = info as PropertyInfo;
+
+				    var memberType = (null != fieldInfo) ? fieldInfo.FieldType : propInfo.PropertyType;
+				    var value = (null != fieldInfo) ? fieldInfo.GetValue(instance) : propInfo.GetValue(instance, new object[0]);
+				    
+                    if(null == value
+                        || (TreatDefaultAsNull[i] && Activator.CreateInstance(memberType).Equals(value)))
+                    {
+                        break;
+                    }
+
+				    var s = InternalPrint(value, memberType);
+                    if (i > 0) sb.Append(Delimeter);
 					sb.Append(s);
-					if (i < fieldCount - 1) sb.Append(Delimeter);
 				}
 				return sb.ToString();
 			}
@@ -147,23 +160,34 @@ namespace Lokad.Cloud.Storage
 
 				// In order to support parsing blob names also to blob name supper classes
 				// in case of inheritance, we simply ignore supplement items in the name
-				if (split.Length < Fields.Length)
+				if (split.Length < Members.Length)
 				{
 					throw new ArgumentException("Number of items in the string is invalid. Are you missing something?", "value");
 				}
 
-				var parameters = new object[Fields.Length];
+				var parameters = new object[Members.Length];
 
 				for (int i = 0; i < parameters.Length; i++)
 				{
-					parameters[i] = InternalParse(split[i], Fields[i].FieldType);
+				    var memberType = Members[i] is FieldInfo
+				        ? ((FieldInfo) Members[i]).FieldType
+				        : ((PropertyInfo) Members[i]).PropertyType;
+
+                    parameters[i] = InternalParse(split[i], memberType);
 				}
 
 				// Initialization through reflection (no assumption on constructors)
 				var name = (T)FormatterServices.GetUninitializedObject(typeof (T));
-				for (int i = 0; i < Fields.Length; i++)
+				for (int i = 0; i < Members.Length; i++)
 				{
-					Fields[i].SetValue(name, parameters[i]);
+                    if (Members[i] is FieldInfo)
+                    {
+                        ((FieldInfo)Members[i]).SetValue(name, parameters[i]);
+                    }
+                    else
+                    {
+                        ((PropertyInfo)Members[i]).SetValue(name, parameters[i], new object[0]);
+                    }
 				}
 
 				return name;
@@ -174,16 +198,6 @@ namespace Lokad.Cloud.Storage
 		public static string Print<T>(T instance) where T : BlobName
 		{
 			return ConverterTypeCache<T>.Print(instance);
-		}
-
-		public static string PartialPrint<T>(T instance, int fieldCount) where T : BlobName
-		{
-			return ConverterTypeCache<T>.PartialPrint(instance, fieldCount);
-		}
-
-		public static BlobNamePrefix<T> GetPrefix<T>(T instance, int fieldCount) where T : BlobName
-		{
-			return new BlobNamePrefix<T>(GetContainerName<T>(), PartialPrint(instance, fieldCount));
 		}
 
 		/// <summary>Parse a hierarchical blob name.</summary>

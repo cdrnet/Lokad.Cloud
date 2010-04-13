@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoCforService", "Samples\So
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTable", "Samples\Source\SimpleTable\SimpleTable.csproj", "{B623302E-9423-4D1D-AB99-24C7BB3A53D9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlob", "Samples\Source\SimpleBlob\SimpleBlob.csproj", "{F9922DE1-60D0-4BEC-895C-591C5BC4FFAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,6 +128,12 @@ Global
 		{B623302E-9423-4D1D-AB99-24C7BB3A53D9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B623302E-9423-4D1D-AB99-24C7BB3A53D9}.ReleaseApi|Any CPU.ActiveCfg = Release|Any CPU
 		{B623302E-9423-4D1D-AB99-24C7BB3A53D9}.ReleaseApi|Any CPU.Build.0 = Release|Any CPU
+		{F9922DE1-60D0-4BEC-895C-591C5BC4FFAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9922DE1-60D0-4BEC-895C-591C5BC4FFAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9922DE1-60D0-4BEC-895C-591C5BC4FFAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9922DE1-60D0-4BEC-895C-591C5BC4FFAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9922DE1-60D0-4BEC-895C-591C5BC4FFAF}.ReleaseApi|Any CPU.ActiveCfg = Release|Any CPU
+		{F9922DE1-60D0-4BEC-895C-591C5BC4FFAF}.ReleaseApi|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -144,5 +152,6 @@ Global
 		{81BFCE50-70C9-434D-9AD4-55C4054A2CC8} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 		{7C11E5A4-4F68-4521-A530-74C7BD30E328} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 		{B623302E-9423-4D1D-AB99-24C7BB3A53D9} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
+		{F9922DE1-60D0-4BEC-895C-591C5BC4FFAF} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 	EndGlobalSection
 EndGlobal

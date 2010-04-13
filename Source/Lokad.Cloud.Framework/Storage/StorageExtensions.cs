@@ -107,17 +107,11 @@ namespace Lokad.Cloud.Storage
 			return provider.PutBlob(reference.ContainerName, reference.ToString(), item, overwrite);
 		}
 
-		public static IEnumerable<string> List<N>(this IBlobStorageProvider provider, string prefix)
-			where N : BlobName
+        public static IEnumerable<T> List<T>(
+            this IBlobStorageProvider provider, T prefix) where T : BlobName
 		{
-			return provider.List(BlobName.GetContainerName<N>(), prefix);
-		}
-
-		public static IEnumerable<T> List<T>(
-			this IBlobStorageProvider provider, BlobNamePrefix<T> prefix) where T : BlobName
-		{
-			return provider.List(prefix.Container, prefix.Prefix)
-				.Select(rawName => BlobName.Parse<T>(rawName));
+			return provider.List(prefix.ContainerName, prefix.ToString())
+                .Select(rawName => BlobName.Parse<T>(rawName));
 		}
 
 		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,

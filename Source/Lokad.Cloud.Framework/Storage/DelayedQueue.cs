@@ -43,8 +43,13 @@ namespace Lokad.Cloud.Storage
 			get { return CloudService.DelayedMessageContainer; }
 		}
 
-		[Rank(0), DataMember] public readonly DateTimeOffset TriggerTime;
-		[UsedImplicitly, Rank(1), DataMember] public readonly Guid Identifier;
+		[Rank(0, true), DataMember] public readonly DateTimeOffset TriggerTime;
+		[UsedImplicitly, Rank(1, true), DataMember] public readonly Guid Identifier;
+
+        /// <summary>Empty constructor, used for prefixing.</summary>
+        public DelayedMessageReference()
+        {
+        }
 
 		public DelayedMessageReference(DateTimeOffset triggerTime, Guid identifier)
 		{

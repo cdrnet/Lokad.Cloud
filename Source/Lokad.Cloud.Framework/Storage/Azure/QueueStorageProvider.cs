@@ -941,9 +941,9 @@ namespace Lokad.Cloud.Storage.Azure
 			return new PersistedMessageBlobReference(storeName, Guid.NewGuid().ToString("N"));
 		}
 
-		public static BlobNamePrefix<PersistedMessageBlobReference> GetPrefix(string storeName)
+        public static PersistedMessageBlobReference GetPrefix(string storeName)
 		{
-			return GetPrefix(new PersistedMessageBlobReference(storeName, null), 1);
+			return new PersistedMessageBlobReference(storeName, null);
 		}
 	}
 }

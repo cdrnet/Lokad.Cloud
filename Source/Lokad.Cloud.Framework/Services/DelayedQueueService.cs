@@ -23,10 +23,8 @@ namespace Lokad.Cloud.Services
 		protected override void StartOnSchedule()
 		{
 			// lazy enumeration over the delayed messages
-			const string nullPrefix = null;
-			foreach (var blobName in BlobStorage.List<DelayedMessageReference>(nullPrefix))
+            foreach (var parsedName in BlobStorage.List(new DelayedMessageReference()))
 			{
-				var parsedName = BlobName.Parse<DelayedMessageReference>(blobName);
 				if (DateTimeOffset.UtcNow <= parsedName.TriggerTime)
 				{
 					// delayed messages are iterated in date-increasing order

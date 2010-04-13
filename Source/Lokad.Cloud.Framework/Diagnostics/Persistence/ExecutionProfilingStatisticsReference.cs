@@ -32,14 +32,14 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 			return new ExecutionProfilingStatisticsReference(timeSegment, contextName);
 		}
 
-		public static BlobNamePrefix<ExecutionProfilingStatisticsReference> GetPrefix()
+        public static ExecutionProfilingStatisticsReference GetPrefix()
 		{
-			return GetPrefix(new ExecutionProfilingStatisticsReference(null, null), 0);
+			return new ExecutionProfilingStatisticsReference(null, null);
 		}
 
-		public static BlobNamePrefix<ExecutionProfilingStatisticsReference> GetPrefix(string timeSegment)
+        public static ExecutionProfilingStatisticsReference GetPrefix(string timeSegment)
 		{
-			return GetPrefix(new ExecutionProfilingStatisticsReference(timeSegment, null), 1);
+			return new ExecutionProfilingStatisticsReference(timeSegment, null);
 		}
 	}
 }

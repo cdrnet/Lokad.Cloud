@@ -62,9 +62,9 @@ namespace Lokad.Cloud.ServiceFabric
 		}
 
 		/// <summary>Helper for service states enumeration.</summary>
-		public static BlobNamePrefix<ScheduledServiceStateReference> GetPrefix()
+		public static ScheduledServiceStateReference GetPrefix()
 		{
-			return new BlobNamePrefix<ScheduledServiceStateReference>(ScheduledService.ScheduleStateContainer, "");
+			return new ScheduledServiceStateReference(null);
 		}
 	}
 

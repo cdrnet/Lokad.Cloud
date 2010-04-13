@@ -187,7 +187,6 @@
     <Compile Include="Storage\Azure\TableStorageProvider.cs" />
     <Compile Include="Storage\BlobCounter.cs" />
     <Compile Include="Storage\BlobName.cs" />
-    <Compile Include="Storage\BlobNamePrefix.cs" />
     <Compile Include="Storage\BlobReference.cs" />
     <Compile Include="Storage\CloudEntity.cs" />
     <Compile Include="Storage\CloudFormatter.cs" />

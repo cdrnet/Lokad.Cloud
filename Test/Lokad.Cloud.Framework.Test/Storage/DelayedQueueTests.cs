@@ -34,8 +34,7 @@ namespace Lokad.Cloud.Storage.Test
 
 			delayer.PutWithDelay(21, trigger, _testQueueName);
 
-			var msgRef = new DelayedMessageReference(trigger, Guid.Empty);
-			var prefix = BlobName.GetPrefix(msgRef, 1);
+			var prefix = new DelayedMessageReference(trigger, Guid.Empty);
 
 			var blobReferences = blobStorage.List(prefix);
 

@@ -156,9 +156,9 @@ namespace Lokad.Cloud.Samples.MapReduce
 			var blobsetPrefix = InputBlobName.GetPrefix(jobName, blobSetId);
 			var mapResults = new List<object>();
 
-			IMapReduceFunctions mapReduceFunctions = GetMapReduceFunctions(config.MapReduceFunctionsImplementor);
-			Type mapIn = Type.GetType(config.TMapInType);
-			Type mapOut = Type.GetType(config.TMapOutType);
+			var mapReduceFunctions = GetMapReduceFunctions(config.MapReduceFunctionsImplementor);
+			var mapIn = Type.GetType(config.TMapInType);
+			var mapOut = Type.GetType(config.TMapOutType);
 
 			// 2. Do map for all blobs in the blobset
 			string ignored;
@@ -404,9 +404,9 @@ namespace Lokad.Cloud.Samples.MapReduce
 				return new MapReduceConfigurationName(ConfigPrefix, jobName);
 			}
 
-			public static BlobNamePrefix<MapReduceConfigurationName> GetPrefix()
+            public static MapReduceConfigurationName GetPrefix()
 			{
-				return GetPrefix(new MapReduceConfigurationName(ConfigPrefix, null), 1);
+				return new MapReduceConfigurationName(ConfigPrefix, null);
 			}
 
 		}
@@ -423,11 +423,11 @@ namespace Lokad.Cloud.Samples.MapReduce
 			[UsedImplicitly, Rank(1)]
 			public string JobName;
 			[UsedImplicitly, Rank(2)]
-			public int BlobSetId;
+			public int? BlobSetId;
 			[UsedImplicitly, Rank(3)]
-			public int BlobId;
+			public int? BlobId;
 
-			public InputBlobName(string prefix, string jobName, int blobSetId, int blobId)
+			public InputBlobName(string prefix, string jobName, int? blobSetId, int? blobId)
 			{
 				Prefix = prefix;
 				JobName = jobName;
@@ -440,14 +440,14 @@ namespace Lokad.Cloud.Samples.MapReduce
 				return new InputBlobName(InputPrefix, jobName, blobSetId, blobId);
 			}
 
-			public static BlobNamePrefix<InputBlobName> GetPrefix(string jobName, int blobSetId)
+            public static InputBlobName GetPrefix(string jobName, int blobSetId)
 			{
-				return GetPrefix(new InputBlobName(InputPrefix, jobName, blobSetId, 0), 3);
+				return new InputBlobName(InputPrefix, jobName, blobSetId, null);
 			}
 
-			public static BlobNamePrefix<InputBlobName> GetPrefix(string jobName)
+			public static InputBlobName GetPrefix(string jobName)
 			{
-				return GetPrefix(new InputBlobName(InputPrefix, jobName, 0, 0), 2);
+				return new InputBlobName(InputPrefix, jobName, null, null);
 			}
 
 		}
@@ -463,7 +463,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 			public string Prefix;
 			[UsedImplicitly, Rank(1)]
 			public string JobName;
-			[UsedImplicitly, Rank(2)]
+			[UsedImplicitly, Rank(2, true)]
 			public int BlobSetId;
 
 			public ReducedBlobName(string prefix, string jobName, int blobSetIt)
@@ -478,9 +478,9 @@ namespace Lokad.Cloud.Samples.MapReduce
 				return new ReducedBlobName(ReducedPrefix, jobName, blobSetId);
 			}
 
-			public static BlobNamePrefix<ReducedBlobName> GetPrefix(string jobName)
+			public static ReducedBlobName GetPrefix(string jobName)
 			{
-				return GetPrefix(new ReducedBlobName(ReducedPrefix, jobName, 0), 2);
+				return new ReducedBlobName(ReducedPrefix, jobName, 0);
 			}
 
 		}

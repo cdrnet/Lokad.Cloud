@@ -18,12 +18,16 @@ namespace Lokad.Cloud.Storage.Test
 			// not a field
 			public override string ContainerName { get { return "my-test-container"; } }
 
-			[Rank(0)] public readonly DateTime Timestamp;
+			[Rank(0, true)] public readonly DateTime Timestamp;
 			[Rank(1)] public readonly long AccountHRID;
-			[Rank(2)] public readonly Guid ChunkID;
+			[Rank(2, true)] public readonly Guid ChunkID;
 			[Rank(3)] public readonly int ChunkSize;
 
-			public PatternA(DateTime timestamp, long accountHrid, Guid chunkID, int chunkSize)
+            public PatternA()
+            {
+            }
+
+		    public PatternA(DateTime timestamp, long accountHrid, Guid chunkID, int chunkSize)
 			{
 				Timestamp = timestamp;
 				AccountHRID = accountHrid;
@@ -91,6 +95,14 @@ namespace Lokad.Cloud.Storage.Test
 				AbsoluteTime = absoluteTime;
 			}
 		}
+
+        class PatternF : BlobName
+        {
+            public override string ContainerName { get { return "my-test-container"; } }
+
+            [Rank(0)] public long AccountHRID { get; set;}
+            [Rank(1)] public Guid ChunkID { get; set; }
+        }
 
 
 		[Test]
@@ -165,15 +177,19 @@ namespace Lokad.Cloud.Storage.Test
 		}
 
 		[Test]
-		public void PartialPrint()
+		public void PartialPrint_Manage_EmptyGuid()
 		{
 			var date = new DateTime(2009, 1, 1, 3, 4, 5);
-			var pattern = new PatternA(date, 12000, Guid.NewGuid(), 120);
-
-			Assert.IsTrue(pattern.ToString().StartsWith(BlobName.PartialPrint(pattern, 1)));
-			Assert.IsTrue(pattern.ToString().StartsWith(BlobName.PartialPrint(pattern, 2)));
-			Assert.IsTrue(pattern.ToString().StartsWith(BlobName.PartialPrint(pattern, 3)));
+            var pattern = new PatternA(date, 12000, Guid.Empty, 120);
+            Assert.IsTrue(!pattern.ToString().EndsWith(120.ToString()));
 		}
+
+        [Test]
+        public void PartialPrint_Manage_DefaultTimeValue()
+        {
+            var pattern = new PatternA();
+            Assert.AreEqual(string.Empty, pattern.ToString());
+        }
 
 		[Test]
 		public void Time_zone_safe_when_using_DateTimeOffset()
@@ -223,5 +239,12 @@ namespace Lokad.Cloud.Storage.Test
 				Assert.AreNotEqual(unsafeLocalNow, utcName.UserTime, "DateTime-utc-local");
 			}
 		}
+
+        [Test]
+        public void Properties_Should_Work()
+        {
+            var pattern = new PatternF {AccountHRID = 17, ChunkID = Guid.NewGuid()};
+            Assert.AreEqual(pattern.AccountHRID + "/" + pattern.ChunkID.ToString("N"), pattern.ToString());
+        }
 	}
 }

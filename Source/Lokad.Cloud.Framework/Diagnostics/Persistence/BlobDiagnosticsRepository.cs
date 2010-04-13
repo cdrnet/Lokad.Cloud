@@ -31,7 +31,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 			_provider = provider;
 		}
 
-		IEnumerable<T> GetAll<T, TReference>(BlobNamePrefix<TReference> prefix)
+		IEnumerable<T> GetAll<T, TReference>(TReference prefix)
 			where TReference : BlobReference<T>
 			where T : class
 		{
@@ -59,7 +59,7 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 				true);
 		}
 
-		void RemoveWhile<TReference>(BlobNamePrefix<TReference> prefix, Func<TReference, string> segmentProvider, string timeSegmentBefore)
+		void RemoveWhile<TReference>(TReference prefix, Func<TReference, string> segmentProvider, string timeSegmentBefore)
 			where TReference : BlobName
 		{
 			// since the blobs are strictly ordered we can stop once we reach the condition.

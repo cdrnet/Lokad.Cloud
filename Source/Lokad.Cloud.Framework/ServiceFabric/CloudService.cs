@@ -48,9 +48,9 @@ namespace Lokad.Cloud.ServiceFabric
 		}
 
 		/// <summary>Let you iterate over the state of each cloud service.</summary>
-		public static BlobNamePrefix<CloudServiceStateReference> GetPrefix()
+        public static CloudServiceStateReference GetPrefix()
 		{
-			return new BlobNamePrefix<CloudServiceStateReference>(CloudService.ServiceStateContainer, "");
+			return new CloudServiceStateReference(null);
 		}
 
 	}

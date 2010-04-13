@@ -32,14 +32,14 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 			return new PartitionStatisticsReference(timeSegment, partitionKey);
 		}
 
-		public static BlobNamePrefix<PartitionStatisticsReference> GetPrefix()
+        public static PartitionStatisticsReference GetPrefix()
 		{
-			return GetPrefix(new PartitionStatisticsReference(null, null), 0);
+			return new PartitionStatisticsReference(null, null);
 		}
 
-		public static BlobNamePrefix<PartitionStatisticsReference> GetPrefix(string timeSegment)
+        public static PartitionStatisticsReference GetPrefix(string timeSegment)
 		{
-			return GetPrefix(new PartitionStatisticsReference(timeSegment, null), 1);
+			return new PartitionStatisticsReference(timeSegment, null);
 		}
 	}
 }

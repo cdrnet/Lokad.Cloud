@@ -32,14 +32,14 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 			return new ExceptionTrackingStatisticsReference(timeSegment, contextName);
 		}
 
-		public static BlobNamePrefix<ExceptionTrackingStatisticsReference> GetPrefix()
+		public static ExceptionTrackingStatisticsReference GetPrefix()
 		{
-			return GetPrefix(new ExceptionTrackingStatisticsReference(null, null), 0);
+			return new ExceptionTrackingStatisticsReference(null, null);
 		}
 
-		public static BlobNamePrefix<ExceptionTrackingStatisticsReference> GetPrefix(string timeSegment)
+        public static ExceptionTrackingStatisticsReference GetPrefix(string timeSegment)
 		{
-			return GetPrefix(new ExceptionTrackingStatisticsReference(timeSegment, null), 1);
+			return new ExceptionTrackingStatisticsReference(timeSegment, null);
 		}
 	}
 }
