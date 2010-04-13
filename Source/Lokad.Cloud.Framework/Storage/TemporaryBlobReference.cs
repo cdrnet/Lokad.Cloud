@@ -22,7 +22,6 @@ namespace Lokad.Cloud.Storage
 	/// directly linked to the garbage collected container.
 	/// </remarks>
 	/// <typeparam name="T">Type referred by the blob reference.</typeparam>
-	/// <seealso cref="TemporaryBlobName"/>
 	[Serializable, DataContract]
 	public class TemporaryBlobReference<T> : BlobReference<T>
 	{
@@ -35,7 +34,7 @@ namespace Lokad.Cloud.Storage
 		}
 
 		[UsedImplicitly, Rank(0), DataMember] public readonly DateTimeOffset Expiration;
-		[UsedImplicitly, Rank(1), DataMember] public readonly string Prefix;
+		[UsedImplicitly, Rank(1), DataMember] public readonly string Suffix;
 
 		/// <summary>
 		/// Explicit constructor.
@@ -43,15 +42,15 @@ namespace Lokad.Cloud.Storage
 		/// <param name="expiration">
 		/// Date that triggers the garbage collection.
 		/// </param>
-		/// <param name="prefix">
-		/// Fixed prefix (typically used to avoid overlaps between temporary blob name
-		/// inheritor). If the prefix is <c>null</c>then the 
-		/// <see cref="DefaultPrefix"/> get used instead.
+		/// <param name="suffix">
+		/// Static suffix (typically used to avoid overlaps between temporary blob name
+		/// inheritor). If the provided suffix is <c>null</c>then the 
+		/// default prefix <c>GetType().FullName</c> is used instead.
 		/// </param>
-		protected TemporaryBlobReference(DateTimeOffset expiration, string prefix)
+		protected TemporaryBlobReference(DateTimeOffset expiration, string suffix)
 		{
 			Expiration = expiration;
-			Prefix = prefix ?? GetType().FullName;
+			Suffix = suffix ?? GetType().FullName;
 		}
 
 		/// <summary>

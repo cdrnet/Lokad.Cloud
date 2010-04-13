@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{BC3C
 		Samples\Source\IoCforService\ReadMe.IoCforService.txt = Samples\Source\IoCforService\ReadMe.IoCforService.txt
 		Samples\Source\MapReduce\ReadMe.MapReduce.txt = Samples\Source\MapReduce\ReadMe.MapReduce.txt
 		Samples\Source\PingPong\ReadMe.PingPong.txt = Samples\Source\PingPong\ReadMe.PingPong.txt
+		Samples\Source\SimpleBlob\ReadMe.SimpleBlob.txt = Samples\Source\SimpleBlob\ReadMe.SimpleBlob.txt
 		Samples\Source\SimpleTable\ReadMe.SimpleTable.txt = Samples\Source\SimpleTable\ReadMe.SimpleTable.txt
 	EndProjectSection
 EndProject

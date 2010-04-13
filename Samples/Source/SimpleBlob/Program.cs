@@ -28,7 +28,8 @@ namespace SimpleBlob
 
         [Rank(0)] public string Publisher { get; set;}
 
-        [Rank(1)] public int BookId { get; set;}
+        // TreatDefaultAsNull = true, '0' will be ignored
+        [Rank(1, true)] public int BookId { get; set;}
     }
 
     class Program
@@ -44,21 +45,22 @@ namespace SimpleBlob
             var potterRef = new BookName {Publisher = "Bloomsbury Publishing", BookId = 1};
 
             var poemsBook = new Book { Author = "John Keats", Title = "Complete Poems" };
-            // Resulting blob name is: Harvard University Press/1
+            // Resulting blob name is: Harvard University Press/2
             var poemsRef = new BookName {Publisher = "Harvard University Press", BookId = 2};
             
-
             // writing entities to the storage
             blobStorage.PutBlob(potterRef, potterBook);
             blobStorage.PutBlob(poemsRef, poemsBook);
 
-            // retriving all entities from 'Bloomsbury Publishing'
-
-            //foreach(var book in blobStorage.List("Bloomsbury Publishing"))
+            // retrieving all entities from 'Bloomsbury Publishing'
+            foreach (var bookName in blobStorage.List(new BookName { Publisher = "Bloomsbury Publishing" }))
             {
-                // TODO: to be completed
+                var book = blobStorage.GetBlob(bookName).Value;
+                Console.WriteLine("{0} by {1}", book.Title, book.Author);
             }
 
+            Console.WriteLine("Press enter to exit.");
+            Console.ReadLine();
         }
     }
 }

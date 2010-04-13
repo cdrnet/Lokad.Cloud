@@ -69,7 +69,7 @@ namespace Lokad.Cloud.Mock.Services.Test
 
 			public string BlobName { get; set;}
 
-			public TemporaryBlobName BlobCounter { get; set; }
+			public TemporaryBlobReference<decimal> BlobCounter { get; set; }
 		}
 
 		[QueueServiceSettings(AutoStart = true, BatchSize = 100, //QueueName = "SquareQueue",
@@ -87,7 +87,7 @@ namespace Lokad.Cloud.Mock.Services.Test
 
 				if (message.IsStart)
 				{
-					var counterName = TemporaryBlobName.GetNew(message.Expiration);
+                    var counterName = TemporaryBlobReference<decimal>.GetNew(message.Expiration);
 					var counter = new BlobCounter(blobStorage, counterName);
 					counter.Reset(BlobCounter.Aleph);
 
@@ -114,7 +114,7 @@ namespace Lokad.Cloud.Mock.Services.Test
 				else
 				{
 					var value = blobStorage.GetBlob<double>(message.ContainerName, message.BlobName).Value;
-					blobStorage.PutBlob<double>(message.ContainerName, message.BlobName, value * value);
+					blobStorage.PutBlob(message.ContainerName, message.BlobName, value * value);
 
 					var counter = new BlobCounter(Providers.BlobStorage, message.BlobCounter);
 					if (0m >= counter.Increment(-1))

@@ -13,23 +13,13 @@ namespace Lokad.Cloud.Storage.Test
 	public class TemporaryBlobNameTests
 	{
 		[Test]
-		public void TemporaryBlobNamesAreUnique()
-		{
-			var expiration = new DateTime(2100, 12, 31);
-			var firstBlobName = TemporaryBlobName.GetNew(expiration);
-			var secondBlobName = TemporaryBlobName.GetNew(expiration);
-
-			Assert.AreNotEqual(firstBlobName.Suffix, secondBlobName.Suffix, "two different temporary blob names should have different prefix");
-		}
-
-		[Test]
 		public void TemporaryBlobReferencesAreUnique()
 		{
 			var expiration = new DateTime(2100, 12, 31);
 			var firstBlobRef = TemporaryBlobReference<int>.GetNew(expiration);
 			var secondBlobRef = TemporaryBlobReference<int>.GetNew(expiration);
 
-			Assert.AreNotEqual(firstBlobRef.Prefix, secondBlobRef.Prefix, "two different temporary blob references should have different prefix");
+			Assert.AreNotEqual(firstBlobRef.Suffix, secondBlobRef.Suffix, "two different temporary blob references should have different prefix");
 		}
 
 		[Test]
@@ -42,7 +32,7 @@ namespace Lokad.Cloud.Storage.Test
 			var testRef = new TestTemporaryBlobReference(now, "test", Guid.NewGuid());
 			var printed = BlobName.Print(testRef);
 
-			var parsedRef = BlobName.Parse<TemporaryBlobName>(printed);
+			var parsedRef = BlobName.Parse<TemporaryBlobReference<object>>(printed);
 			Assert.AreEqual(now, parsedRef.Expiration);
 			Assert.AreEqual("test", parsedRef.Suffix);
 		}

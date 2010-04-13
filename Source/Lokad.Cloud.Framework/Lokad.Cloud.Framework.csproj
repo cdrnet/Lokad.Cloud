@@ -200,7 +200,6 @@
     <Compile Include="Storage\RankAttribute.cs" />
     <Compile Include="Storage\StorageCredentialsVerifier.cs" />
     <Compile Include="Storage\StorageExtensions.cs" />
-    <Compile Include="Storage\TemporaryBlobName.cs" />
     <Compile Include="Storage\TemporaryBlobReference.cs" />
     <Compile Include="TypeMapperProvider.cs" />
     <Compile Include="Mock\MemoryLogger.cs" />

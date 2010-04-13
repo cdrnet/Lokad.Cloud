@@ -15,7 +15,8 @@ using Lokad.Quality;
 namespace Lokad.Cloud.Storage
 {
 	/// <summary>
-	/// Base class for strong-typed hierarchical blob names.
+	/// Base class for strong-typed hierarchical blob names. Implementations should
+	/// not inherit <c>BlobName</c> but <see cref="BlobReference{T}"/> instead.
 	/// </summary>
 	[Serializable, DataContract]
 	public abstract class BlobName
@@ -159,7 +160,7 @@ namespace Lokad.Cloud.Storage
 				var split = value.Split(new[] { Delimeter }, StringSplitOptions.RemoveEmptyEntries);
 
 				// In order to support parsing blob names also to blob name supper classes
-				// in case of inheritance, we simply ignore supplement items in the name
+				// in case of inheritance, we simply ignore supplementary items in the name
 				if (split.Length < Members.Length)
 				{
 					throw new ArgumentException("Number of items in the string is invalid. Are you missing something?", "value");
