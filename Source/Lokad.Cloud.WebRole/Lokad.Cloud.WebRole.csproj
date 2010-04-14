@@ -99,15 +99,6 @@
     <Compile Include="..\VersionAssemblyInfo.cs">
       <Link>Properties\VersionAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Api10\CloudAssembliesAdapter.cs" />
-    <Compile Include="Api10\CloudConfigurationAdapter.cs" />
-    <Compile Include="Api10\CloudProvisioningAdapter.cs" />
-    <Compile Include="Api10\CloudServicesAdapter.cs" />
-    <Compile Include="Api10\CloudServiceSchedulingAdapter.cs" />
-    <Compile Include="Api10\RestApiKeyVerifier.cs" />
-    <Compile Include="Api10\HybridServiceHostFactory.cs" />
-    <Compile Include="Api10\HybridServiceHost.cs" />
-    <Compile Include="Api10\SoapApiKeyVerifier.cs" />
     <Compile Include="Assemblies.aspx.cs">
       <DependentUpon>Assemblies.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -146,7 +137,6 @@
     </Compile>
     <Compile Include="LokadCloudUserRoles.cs" />
     <Compile Include="LokadCloudVersion.cs" />
-    <Compile Include="Api10\CloudStatisticsAdapter.cs" />
     <Compile Include="Monitoring.aspx.cs">
       <DependentUpon>Monitoring.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -206,12 +196,6 @@
     <Content Include="Workloads.aspx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Api10\Configuration.svc" />
-    <Content Include="Api10\Assemblies.svc" />
-    <Content Include="Api10\ServiceScheduling.svc" />
-    <Content Include="Api10\Provisioning.svc" />
-    <Content Include="Api10\Services.svc" />
-    <Content Include="Api10\Statistics.svc" />
     <Content Include="App_Themes\Lokad\Images\bg_body.gif" />
     <Content Include="App_Themes\Lokad\Images\bg_col2.gif" />
     <Content Include="App_Themes\Lokad\Images\bg_content.gif" />
@@ -235,17 +219,22 @@
     <Content Include="Scheduler.aspx" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Web.template.config" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="BeforeBuild">
+    <!-- Copy template for developer only if it does not exist -->
+    <Copy SourceFiles="Web.template.config" DestinationFiles="Web.config" Condition="!Exists('Web.config')" />
+  </Target>
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">

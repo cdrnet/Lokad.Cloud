@@ -10,8 +10,8 @@
 			<!-- Must use port 80 for http and port 443 for https when running in the cloud -->
 			<InputEndpoint name="HttpIn" protocol="http" port="80" />
 			<!-- remove the https endpoint if you're not interested or can't use secure access -->
-			<!-- note: removing the https endpoint disables the soap service endpoint (but not the rest endpoint) -->
-			<InputEndpoint name="HttpsIn" protocol="https" port="443" certificate="SSL" />
+			<!-- note: removing the https endpoint disables the soap service endpoint (but not the rest endpoint) 
+			<InputEndpoint name="HttpsIn" protocol="https" port="443" certificate="SSL" /> -->
 		</InputEndpoints>
 		<ConfigurationSettings>
 			<Setting name="DataConnectionString" />
@@ -24,7 +24,7 @@
 		</ConfigurationSettings>
 		<Certificates>
 			<Certificate name="SelfManagement" storeLocation="CurrentUser" storeName="My" />
-			<Certificate name="SSL" storeLocation="CurrentUser" storeName="My" />
+			<!-- <Certificate name="SSL" storeLocation="CurrentUser" storeName="My" /> -->
 		</Certificates>
 	</WebRole>
 	<!-- Full trust is needed for binary serialization -->
