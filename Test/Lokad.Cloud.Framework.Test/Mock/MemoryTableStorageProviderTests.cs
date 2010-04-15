@@ -15,7 +15,6 @@ namespace Lokad.Cloud.Mock.Test
     [TestFixture]
     public class MemoryTableStorageProviderTests
     {
-
         [Test]
         public void CreateAndGetTable()
         {
@@ -92,6 +91,25 @@ namespace Lokad.Cloud.Mock.Test
              var emptyEnumeration =  tableStorage.Get<object>("IAmNotATable", "IaMNotAPartiTion");
 
              Assert.AreEqual(0, emptyEnumeration.Count(), "#B08");
+        }
+
+        [Test]
+        public void InsertOnMissingTableShouldWork()
+        {
+            var tableStorage = new MemoryTableStorageProvider();
+
+            var entities =
+                Enumerable.Range(0, 10).Select(
+                    i =>
+                        new CloudEntity<object>
+                            {
+                                PartitionKey = "Pkey-" + i,
+                                RowKey = "RowKey-" + i,
+                                Value = new object()
+                            }
+                    );
+
+            tableStorage.Insert("myTable", entities);
         }
 
         [Test]
