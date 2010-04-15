@@ -166,7 +166,7 @@ namespace Lokad.Cloud.Storage.Test
 			var entities = Entities(150, p1, 10);
 			for (int i = 0; i < entities.Length; i++ )
 			{
-				entities[i].RowRey = "series+" + i;	
+				entities[i].RowKey = "series+" + i;	
 			}
 
 			Provider.Upsert(TableName, entities);
@@ -304,14 +304,14 @@ namespace Lokad.Cloud.Storage.Test
 			var entities = Enumerable.Range(0, N).Select(i => new CloudEntity<string>
 					{
 						PartitionKey = pKey,
-						RowRey = "RowKey" + i,
+						RowKey = "RowKey" + i,
 						Value = Guid.NewGuid().ToString()
 					});
 
 			Provider.Insert(TableName, entities);
 
 			var retrieved = Provider.Get<string>(TableName, pKey, null, null).ToArray();
-			var retrievedSorted = retrieved.OrderBy(e => e.RowRey).ToArray();
+			var retrievedSorted = retrieved.OrderBy(e => e.RowKey).ToArray();
 
 			bool isOrdered = true;
 			for (int i = 0; i < retrieved.Length; i++)
@@ -325,7 +325,7 @@ namespace Lokad.Cloud.Storage.Test
 			Assert.That(isOrdered, "#C01");
 
 			var retrieved2 = Provider.Get<string>(TableName, pKey, "RowKey25", null).ToArray();
-			var retrievedSorted2 = retrieved2.OrderBy(e => e.RowRey).ToArray();
+			var retrievedSorted2 = retrieved2.OrderBy(e => e.RowKey).ToArray();
 
 			bool isOrdered2 = true;
 			for (int i = 0; i < retrieved2.Length; i++)
@@ -339,7 +339,7 @@ namespace Lokad.Cloud.Storage.Test
 			Assert.That(isOrdered2, "#C02");
 
 			var retrieved3 = Provider.Get<string>(TableName, pKey, null, "RowKey25").ToArray();
-			var retrievedSorted3 = retrieved3.OrderBy(e => e.RowRey).ToArray();
+			var retrievedSorted3 = retrieved3.OrderBy(e => e.RowKey).ToArray();
 
 			bool isOrdered3 = true;
 			for (int i = 0; i < retrieved3.Length; i++)
@@ -362,7 +362,7 @@ namespace Lokad.Cloud.Storage.Test
 			var entity = new CloudEntity<string>
 				{
 					PartitionKey = partitionKey,
-					RowRey = rowKey,
+					RowKey = rowKey,
 					Timestamp = DateTime.UtcNow,
 					Value = "value1"
 				};
@@ -402,7 +402,7 @@ namespace Lokad.Cloud.Storage.Test
 				new CloudEntity<string>
 					{
 						PartitionKey = pkey,
-						RowRey = Guid.NewGuid().ToString("N"),
+						RowKey = Guid.NewGuid().ToString("N"),
 						Value = "nothing"
 					});
 
@@ -410,13 +410,13 @@ namespace Lokad.Cloud.Storage.Test
 			Provider.Insert(TableName, entities);
 
 			// partial deletion
-			Provider.Delete<string>(TableName, pkey, entities.Take(5).ToArray(e => e.RowRey));
+			Provider.Delete<string>(TableName, pkey, entities.Take(5).ToArray(e => e.RowKey));
 
 			// complete deletion, but with overlap
-			Provider.Delete<string>(TableName, pkey, entities.Convert(e => e.RowRey));
+			Provider.Delete<string>(TableName, pkey, entities.Convert(e => e.RowKey));
 
 			// checking that all entities have been deleted
-			var list = Provider.Get<string>(TableName, pkey, entities.Convert(e => e.RowRey));
+			var list = Provider.Get<string>(TableName, pkey, entities.Convert(e => e.RowKey));
 			Assert.That(list.Count() == 0, "#A00");
 		}
 
@@ -439,12 +439,12 @@ namespace Lokad.Cloud.Storage.Test
 			var partitionKey = Guid.NewGuid().ToString();
 
 			// entities are sorted
-			var entities = Entities(entityCount, partitionKey, 1).OrderBy(e => e.RowRey).ToArray();
+			var entities = Entities(entityCount, partitionKey, 1).OrderBy(e => e.RowKey).ToArray();
 
 			Provider.Insert(TableName, entities);
 
 			var retrievedCount = Provider.Get<string>(TableName, partitionKey,
-				entities[150].RowRey, entities[200].RowRey).Count();
+				entities[150].RowKey, entities[200].RowKey).Count();
 
 			// only the range should have been retrieved
 			Assert.AreEqual(200 - 150, retrievedCount);
@@ -493,7 +493,7 @@ Time:2010-01-15T12:37:25.1611631Z</message>
 			var entities = keys.Select(key => new CloudEntity<string>
 				{
 					PartitionKey = key,
-					RowRey = key,
+					RowKey = key,
 					Value = key,
 				}).ToArray();
 
@@ -502,7 +502,7 @@ Time:2010-01-15T12:37:25.1611631Z</message>
 			var result = keys.Select(key => Provider.Get<string>(TableName, key, key).Value).ToArray();
 			CollectionAssert.AreEqual(keys, result.Select(e => e.Value));
 			CollectionAssert.AreEqual(keys, result.Select(e => e.PartitionKey));
-			CollectionAssert.AreEqual(keys, result.Select(e => e.RowRey));
+			CollectionAssert.AreEqual(keys, result.Select(e => e.RowKey));
 
 			foreach (var key in keys)
 			{
@@ -616,7 +616,7 @@ Time:2010-01-15T12:37:25.1611631Z</message>
 				yield return new CloudEntity<string>
 					{
 						PartitionKey = partitionKey,
-						RowRey = Guid.NewGuid().ToString(),
+						RowKey = Guid.NewGuid().ToString(),
 						Value = RandomString(entitySize)
 					};
 			}

@@ -52,7 +52,7 @@ namespace Lokad.Cloud.Mock.Test
                         new CloudEntity<object>()
                             {
                                 PartitionKey = "Pkey-" + (i % partitionCount).ToString("0"),
-                                RowRey = "RowKey-" + i.ToString("00"),
+                                RowKey = "RowKey-" + i.ToString("00"),
                                 Value = new object()
                             }
                     );
@@ -106,14 +106,14 @@ namespace Lokad.Cloud.Mock.Test
             var entites = Enumerable.Range(0,N).Select(i=> new CloudEntity<MockObject>
                         {
                             PartitionKey = "PKey",
-                            RowRey = "RowKey" + i,
+                            RowKey = "RowKey" + i,
                             Value = new MockObject() {Name = i.ToString(), Values = new[] {new DateTime(2008, 12, 14)}}
                         });
 
             tableStorage.Insert(MockDataTable, entites);
 
             var retrieved = tableStorage.Get<MockObject>(MockDataTable, "PKey", null, null).ToArray();
-            var retrievedSorted = retrieved.OrderBy(e => e.RowRey).ToArray();
+            var retrievedSorted = retrieved.OrderBy(e => e.RowKey).ToArray();
 
             bool isOrdered = true;
             for (int i = 0; i < retrieved.Length; i++)
@@ -127,7 +127,7 @@ namespace Lokad.Cloud.Mock.Test
             Assert.That(isOrdered,"#C01");
 
             var retrieved2 = tableStorage.Get<MockObject>(MockDataTable, "PKey", "RowKey25", null).ToArray();
-            var retrievedSorted2 = retrieved2.OrderBy(e => e.RowRey).ToArray();
+            var retrievedSorted2 = retrieved2.OrderBy(e => e.RowKey).ToArray();
 
             bool isOrdered2 = true;
             for (int i = 0; i < retrieved2.Length; i++)
@@ -156,7 +156,7 @@ namespace Lokad.Cloud.Mock.Test
                         new CloudEntity<object>()
                         {
                             PartitionKey = "Pkey-" + (i % partitionCount).ToString("0"),
-                            RowRey = "RowKey-" + i.ToString("00"),
+                            RowKey = "RowKey-" + i.ToString("00"),
                             Value = new object()
                         }
                     );
@@ -165,7 +165,7 @@ namespace Lokad.Cloud.Mock.Test
             var isSucces = false;
             try
             {
-                tableStorage.Insert("myTable", new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowRey = "RowKey-56" } });
+                tableStorage.Insert("myTable", new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowKey = "RowKey-56" } });
             }
             catch (Exception exception)
             {
@@ -175,11 +175,11 @@ namespace Lokad.Cloud.Mock.Test
 
             tableStorage.CreateTable("myNewTable");
             tableStorage.Insert("myNewTable",
-                new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowRey = "RowKey-56", Value = new object() } });
+                new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowKey = "RowKey-56", Value = new object() } });
 
             Assert.AreEqual(2, tableStorage.GetTables().Count());
 
-            tableStorage.Update("myNewTable", new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowRey = "RowKey-56", Value = 2000 } });
+            tableStorage.Update("myNewTable", new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowKey = "RowKey-56", Value = 2000 } });
             Assert.AreEqual(2000, (int)tableStorage.Get<object>("myNewTable", "Pkey-6", new[] { "RowKey-56" }).First().Value);
 
             tableStorage.Delete<object>("myNewTable", "Pkey-6", new[] { "RowKey-56" });
@@ -199,7 +199,7 @@ namespace Lokad.Cloud.Mock.Test
                     new CloudEntity<object>
                         {
                             PartitionKey = "PKey",
-                            RowRey = "RowKey",
+                            RowKey = "RowKey",
                             Timestamp = DateTime.UtcNow,
                             Value = new object()
                         }

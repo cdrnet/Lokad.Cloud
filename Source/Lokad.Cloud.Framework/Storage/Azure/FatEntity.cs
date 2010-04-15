@@ -145,7 +145,7 @@ namespace Lokad.Cloud.Storage.Azure
 			return new CloudEntity<T>
 				{
 					PartitionKey = fatEntity.PartitionKey,
-					RowRey = fatEntity.RowKey,
+					RowKey = fatEntity.RowKey,
 					Timestamp = fatEntity.Timestamp,
 					ETag = etag,
 					Value = val
@@ -161,7 +161,7 @@ namespace Lokad.Cloud.Storage.Azure
 			var fatEntity = new FatEntity
 				{
 					PartitionKey = cloudEntity.PartitionKey,
-					RowKey = cloudEntity.RowRey,
+					RowKey = cloudEntity.RowKey,
 					Timestamp = cloudEntity.Timestamp
 				};
 

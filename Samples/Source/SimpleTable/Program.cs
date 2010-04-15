@@ -35,15 +35,15 @@ namespace SimpleTable
             // inserting (or updating record in Table Storage)
             books.Upsert(new[]
                 {
-                    new CloudEntity<Book> {PartitionKey = "UK", RowRey = "potter", Value = potterBook},
-                    new CloudEntity<Book> {PartitionKey = "UK", RowRey = "poems", Value = poemsBook}
+                    new CloudEntity<Book> {PartitionKey = "UK", RowKey = "potter", Value = potterBook},
+                    new CloudEntity<Book> {PartitionKey = "UK", RowKey = "poems", Value = poemsBook}
                 });
 
             // reading from table
             foreach(var entity in books.Get())
             {
                 Console.WriteLine("{0} by {1} in partition '{2}' and rowkey '{3}'",
-                    entity.Value.Title, entity.Value.Author, entity.PartitionKey, entity.RowRey);
+                    entity.Value.Title, entity.Value.Author, entity.PartitionKey, entity.RowKey);
             }
 
             Console.WriteLine("Press enter to exit.");

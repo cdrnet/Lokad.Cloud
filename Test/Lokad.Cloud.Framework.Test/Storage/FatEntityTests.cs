@@ -56,7 +56,7 @@ namespace Lokad.Cloud.Storage.Test
 			var cloudEntity = new CloudEntity<TimeSerie>
 				{
 					PartitionKey = "part",
-					RowRey = "key",
+					RowKey = "key",
 					Value = serie
 				};
 
@@ -68,11 +68,11 @@ namespace Lokad.Cloud.Storage.Test
 			Assert.IsNotNull(fatEntity2);
 
 			Assert.AreEqual(cloudEntity.PartitionKey, fatEntity.PartitionKey);
-			Assert.AreEqual(cloudEntity.RowRey, fatEntity.RowKey);
+			Assert.AreEqual(cloudEntity.RowKey, fatEntity.RowKey);
 			
 
 			Assert.AreEqual(cloudEntity.PartitionKey, fatEntity2.PartitionKey);
-			Assert.AreEqual(cloudEntity.RowRey, fatEntity2.RowKey);
+			Assert.AreEqual(cloudEntity.RowKey, fatEntity2.RowKey);
 
 			Assert.IsNotNull(cloudEntity2.Value);
 			Assert.AreEqual(cloudEntity.Value.TimeValues.Length, cloudEntity2.Value.TimeValues.Length);
@@ -106,7 +106,7 @@ namespace Lokad.Cloud.Storage.Test
 			var cloudEntity = new CloudEntity<TimeSerieNoContract>
 			{
 				PartitionKey = "part",
-				RowRey = "key",
+				RowKey = "key",
 				Value = serie
 			};
 
@@ -118,11 +118,11 @@ namespace Lokad.Cloud.Storage.Test
 			Assert.IsNotNull(fatEntity2);
 
 			Assert.AreEqual(cloudEntity.PartitionKey, fatEntity.PartitionKey);
-			Assert.AreEqual(cloudEntity.RowRey, fatEntity.RowKey);
+			Assert.AreEqual(cloudEntity.RowKey, fatEntity.RowKey);
 
 
 			Assert.AreEqual(cloudEntity.PartitionKey, fatEntity2.PartitionKey);
-			Assert.AreEqual(cloudEntity.RowRey, fatEntity2.RowKey);
+			Assert.AreEqual(cloudEntity.RowKey, fatEntity2.RowKey);
 
 			Assert.IsNotNull(cloudEntity2.Value);
 			Assert.AreEqual(cloudEntity.Value.TimeValues.Length, cloudEntity2.Value.TimeValues.Length);

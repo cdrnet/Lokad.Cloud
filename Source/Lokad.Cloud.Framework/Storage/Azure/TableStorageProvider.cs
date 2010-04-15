@@ -437,12 +437,12 @@ namespace Lokad.Cloud.Storage.Azure
 			// checking for entities that already exist
 			var partitionKey = entities.First().PartitionKey;
 			var existingKeys =
-				Get<T>(tableName, partitionKey, entities.Select(e => e.RowRey))
-					.ToSet(e => e.RowRey);
+				Get<T>(tableName, partitionKey, entities.Select(e => e.RowKey))
+					.ToSet(e => e.RowKey);
 
 			// inserting or updating depending on the presence of the keys
-			Insert(tableName, entities.Where(e => !existingKeys.Contains(e.RowRey)));
-			Update(tableName, entities.Where(e => existingKeys.Contains(e.RowRey)), true);
+			Insert(tableName, entities.Where(e => !existingKeys.Contains(e.RowKey)));
+			Update(tableName, entities.Where(e => existingKeys.Contains(e.RowKey)), true);
 		}
 
 		/// <summary>Slice entities according the payload limitation of
@@ -483,7 +483,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			entities.GroupBy(e => e.PartitionKey)
 				.ForEach(g => DeleteInternal<T>(tableName, g.Key,
-					g.Select(e => Tuple.From(e.RowRey, MapETag(e.ETag, force))), force));
+					g.Select(e => Tuple.From(e.RowKey, MapETag(e.ETag, force))), force));
 		}
 
 		void DeleteInternal<T>(string tableName, string partitionKey, IEnumerable<Pair<string,string>> rowKeysAndETags, bool force)
@@ -549,7 +549,7 @@ namespace Lokad.Cloud.Storage.Azure
 					}
 
 					slice = Get<T>(tableName, partitionKey, slice.Select(p => p.Key))
-						.Select(e => Tuple.From(e.RowRey, MapETag(e.ETag, force))).ToArray();
+						.Select(e => Tuple.From(e.RowKey, MapETag(e.ETag, force))).ToArray();
 
 					// entities with same name will be added again
 					context = _tableStorage.GetDataServiceContext();

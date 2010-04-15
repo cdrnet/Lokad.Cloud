@@ -175,14 +175,14 @@ namespace Lokad.Cloud.Mock
 					if (!_tableStorage[tableName].ContainsKey(entity.PartitionKey))
 					{
 						_tableStorage[tableName].Add(entity.PartitionKey, new Dictionary<string, FatEntity>());
-						_tableStorage[tableName][entity.PartitionKey].Add(entity.RowRey,
+						_tableStorage[tableName][entity.PartitionKey].Add(entity.RowKey,
 							FatEntity.Convert(entity, _formatter));
 					}
 					else
 					{
-						if (!_tableStorage[tableName][entity.PartitionKey].ContainsKey(entity.RowRey))
+						if (!_tableStorage[tableName][entity.PartitionKey].ContainsKey(entity.RowKey))
 						{
-							_tableStorage[tableName][entity.PartitionKey].Add(entity.RowRey,
+							_tableStorage[tableName][entity.PartitionKey].Add(entity.RowKey,
 						   FatEntity.Convert(entity, _formatter));
 						}
 						// In this case both partitionKey and rowKey exist then the method is supposed to fail.
@@ -204,9 +204,9 @@ namespace Lokad.Cloud.Mock
 				{
 					//The method fails at the first non existing entity.
 					if (_tableStorage[tableName].ContainsKey(entity.PartitionKey)
-						&& _tableStorage[tableName][entity.PartitionKey].ContainsKey(entity.RowRey))
+						&& _tableStorage[tableName][entity.PartitionKey].ContainsKey(entity.RowKey))
 
-						_tableStorage[tableName][entity.PartitionKey][entity.RowRey] = FatEntity.Convert(entity,
+						_tableStorage[tableName][entity.PartitionKey][entity.RowKey] = FatEntity.Convert(entity,
 							_formatter);
 					else
 					{
@@ -222,7 +222,7 @@ namespace Lokad.Cloud.Mock
 			{
 				// deleting all existing entities
 				entities.GroupBy(e => e.PartitionKey)
-					.ForEach(g => Delete<T>(tableName, g.Key, g.Select(e => e.RowRey)));
+					.ForEach(g => Delete<T>(tableName, g.Key, g.Select(e => e.RowKey)));
 
 				// inserting all entities
 				Insert(tableName, entities);
@@ -252,7 +252,7 @@ namespace Lokad.Cloud.Mock
 		public void Delete<T>(string tableName, IEnumerable<CloudEntity<T>> entities, bool force)
 		{
 			entities.GroupBy(e => e.PartitionKey)
-				.ForEach(g => Delete<T>(tableName, g.Key, g.Select(e => e.RowRey)));
+				.ForEach(g => Delete<T>(tableName, g.Key, g.Select(e => e.RowKey)));
 		}
 
 		/// <summary>

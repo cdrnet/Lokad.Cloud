@@ -14,14 +14,15 @@ namespace Lokad.Cloud.Storage
 	public class CloudEntity<T>
 	{
 		/// <summary>Indexed system property.</summary>
-		public string RowRey { get; set; }
+		public string RowKey { get; set; }
 
 		/// <summary>Indexed system property.</summary>
 		public string PartitionKey { get; set; }
 
-		/// <summary>Flag indicating last update.</summary>
+		/// <summary>Flag indicating last update. Populated by the Table Storage.</summary>
 		public DateTime Timestamp { get; set; }
 
+        /// <summary>ETag. Indicates changes. Populated by the Table Storage.</summary>
 		public string ETag { get; set; }
 
 		/// <summary>Value carried by the entity.</summary>
