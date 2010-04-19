@@ -199,7 +199,8 @@ namespace Lokad.Cloud.Storage.Azure
 						{
 							// if the table does not exist, there is nothing to return
 							var errorCode = AzurePolicies.GetErrorCode(ex);
-							if (TableErrorCodeStrings.TableNotFound == errorCode)
+							if (TableErrorCodeStrings.TableNotFound == errorCode
+								|| StorageErrorCodeStrings.ResourceNotFound == errorCode)
 							{
 								fatEntities = new FatEntity[0];
 								return;
@@ -278,7 +279,8 @@ namespace Lokad.Cloud.Storage.Azure
 							catch (DataServiceRequestException ex)
 							{
 								var errorCode = AzurePolicies.GetErrorCode(ex);
-								if (errorCode == TableErrorCodeStrings.TableNotFound)
+								if (errorCode == TableErrorCodeStrings.TableNotFound
+									|| errorCode == StorageErrorCodeStrings.ResourceNotFound)
 								{
 									AzurePolicies.SlowInstantiation.Do(() =>
 										{
