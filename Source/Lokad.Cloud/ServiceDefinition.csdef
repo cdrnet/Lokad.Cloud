@@ -18,7 +18,7 @@
 			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
 			<Setting name="Admins" />
 			<!--Apikey for clients to authenticate against the Lokad.Cloud Management Api-->
-			<Setting name="ManagementApiKey" />
+			<!--<Setting name="ManagementApiKey" />-->
 			<Setting name="SelfManagementCertificateThumbprint" />
 			<Setting name="SelfManagementSubscriptionId" />
 		</ConfigurationSettings>
