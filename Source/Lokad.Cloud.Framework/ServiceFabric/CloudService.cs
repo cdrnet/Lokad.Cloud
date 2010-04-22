@@ -42,8 +42,6 @@ namespace Lokad.Cloud.ServiceFabric
 		/// <summary>Instantiate a new blob name associated to the specified service.</summary>
 		public CloudServiceStateName(string serviceName)
 		{
-			Enforce.That(serviceName);
-
 			ServiceName = serviceName;
 		}
 
