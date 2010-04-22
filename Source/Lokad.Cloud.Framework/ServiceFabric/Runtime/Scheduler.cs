@@ -17,7 +17,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 	/// time limit (greedy), and the scheduling is slowed down when all available
 	/// services skip execution consecutively.
 	/// </summary>
-	internal class Scheduler
+	public class Scheduler
 	{
 		readonly Func<IEnumerable<CloudService>> _serviceProvider;
 		readonly Func<CloudService, ServiceExecutionFeedback> _schedule;
