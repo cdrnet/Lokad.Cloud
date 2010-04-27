@@ -168,6 +168,7 @@ namespace Lokad.Cloud.Storage.Azure
 			var timestamp = _countQuery.Open();
 
 			context.MergeOption = MergeOption.AppendOnly;
+			context.ResolveType = ResolveFatEntityType;
 			Debug.Assert(context.Entities.Count == 0);
 
 			do
@@ -247,6 +248,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			var context = _tableStorage.GetDataServiceContext();
 			context.MergeOption = MergeOption.AppendOnly;
+			context.ResolveType = ResolveFatEntityType;
 
 			var fatEntities = entities.Select(e => Tuple.From(FatEntity.Convert(e, _formatter), e));
 
@@ -354,6 +356,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			var context = _tableStorage.GetDataServiceContext();
 			context.MergeOption = MergeOption.AppendOnly;
+			context.ResolveType = ResolveFatEntityType;
 
 			var fatEntities = entities.Select(e => Tuple.From(FatEntity.Convert(e, _formatter), e));
 
@@ -562,6 +565,11 @@ namespace Lokad.Cloud.Storage.Azure
 
 				_countDelete.Close(timestamp);
 			}
+		}
+
+		static Type ResolveFatEntityType(string name)
+		{
+			return typeof (FatEntity);
 		}
 
 		static string MapETag(string etag, bool force)
