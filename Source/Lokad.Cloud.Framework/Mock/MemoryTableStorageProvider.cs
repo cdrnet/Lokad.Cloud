@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Services.Client;
 using System.Linq;
 using Lokad.Cloud.Storage;
 using Lokad.Cloud.Storage.Azure;
@@ -17,24 +18,23 @@ namespace Lokad.Cloud.Mock
 	/// </remarks>
 	public class MemoryTableStorageProvider : ITableStorageProvider
 	{
-		//In memory table storage : triple nested dictionaries.
-		//First level : access indexed tables.
-		//Second level : access indexed partitions. (partitionKey)
-		//Third level : access indexed entities. (rowKey)
-		readonly Dictionary<string, Dictionary<string, Dictionary<string, FatEntity>>> _tableStorage;
+		/// <summary>In memory table storage : entries per table (designed for simplicity instead of performance)</summary>
+		readonly Dictionary<string, List<MockTableEntry>> _tables;
 
-		//A formatter is requiered to handle FatEntities.
+		/// <summary>Formatter as requiered to handle FatEntities.</summary>
 		readonly IBinaryFormatter _formatter;
 
 		/// <summary>naive global lock to make methods thread-safe.</summary>
 		readonly object _syncRoot;
+
+		int _nextETag;
 
 		/// <summary>
 		/// Constructor for <see cref="MemoryTableStorageProvider"/>.
 		/// </summary>
 		public MemoryTableStorageProvider()
 		{
-			_tableStorage = new Dictionary<string, Dictionary<string, Dictionary<string, FatEntity>>>();
+			_tables = new Dictionary<string, List<MockTableEntry>>();
 			_syncRoot = new object();
 			_formatter = new CloudFormatter();
 		}
@@ -44,13 +44,14 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_syncRoot)
 			{
-				if (_tableStorage.ContainsKey(tableName))
+				if (_tables.ContainsKey(tableName))
 				{
 					//If the table already exists: return false.
 					return false;
 				}
+
 				//create table return true.
-				_tableStorage.Add(tableName, new Dictionary<string, Dictionary<string, FatEntity>>());
+				_tables.Add(tableName, new List<MockTableEntry>());
 				return true;
 			}
 		}
@@ -60,12 +61,13 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_syncRoot)
 			{
-				if (_tableStorage.ContainsKey(tableName))
+				if (_tables.ContainsKey(tableName))
 				{
 					//If the table exists remove it.
-					_tableStorage.Remove(tableName);
+					_tables.Remove(tableName);
 					return true;
 				}
+				
 				//Can not remove an unexisting table.
 				return false;
 			}
@@ -76,86 +78,54 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_syncRoot)
 			{
-				return _tableStorage.Keys;
+				return _tables.Keys;
+			}
+		}
+
+		/// <see cref="ITableStorageProvider.Get{T}(string)"/>
+		IEnumerable<CloudEntity<T>> GetInternal<T>(string tableName, Func<MockTableEntry,bool> predicate)
+		{
+			lock (_syncRoot)
+			{
+				if (!_tables.ContainsKey(tableName))
+				{
+					return new List<CloudEntity<T>>();
+				}
+
+				return from entry in _tables[tableName]
+					   where predicate(entry)
+					   select entry.ToCloudEntity<T>(_formatter);
 			}
 		}
 
 		/// <see cref="ITableStorageProvider.Get{T}(string)"/>
 		public IEnumerable<CloudEntity<T>> Get<T>(string tableName)
 		{
-			lock (_syncRoot)
-			{
-				if (!_tableStorage.ContainsKey(tableName))
-				{
-					return new List<CloudEntity<T>>();
-				}
-
-				return _tableStorage[tableName].Values
-					   .SelectMany(dict => dict.Values.Select(ent => FatEntity.Convert<T>(ent, _formatter, null)));
-
-			}
-
+			return GetInternal<T>(tableName, entry => true);
 		}
 
 		/// <see cref="ITableStorageProvider.Get{T}(string,string)"/>
 		public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey)
 		{
-			lock (_syncRoot)
-			{
-				//If tableName or partitionKey does not exist the method is supposed to return an empty collection.
-				if (_tableStorage.ContainsKey(tableName) && _tableStorage[tableName].ContainsKey(partitionKey))
-				{
-					return _tableStorage[tableName][partitionKey].Values
-							.Select(ent => FatEntity.Convert<T>(ent, _formatter, null));
-				}
-				return new List<CloudEntity<T>>();
-			}
+			return GetInternal<T>(tableName, entry => entry.PartitionKey == partitionKey);
 		}
 
 		/// <see cref="ITableStorageProvider.Get{T}(string,string,string,string)"/>
 		public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, string startRowKey, string endRowKey)
 		{
-			lock (_syncRoot)
-			{
-				//If tableName or partitionKey does not exist the method is supposed to return an empty collection.
-				if (_tableStorage.ContainsKey(tableName) && _tableStorage[tableName].ContainsKey(partitionKey))
-				{
-					return _tableStorage[tableName][partitionKey].Where(
-						pair =>
-							(string.Compare(startRowKey, pair.Key) <= 0)
-							&& (string.IsNullOrEmpty(endRowKey) ? true : string.Compare(pair.Key, endRowKey) < 0))
-						.OrderBy(pair => pair.Key)
-						.Select(pair => FatEntity.Convert<T>(pair.Value, _formatter, null));
-				}
-				return new List<CloudEntity<T>>();
-			}
+			var isInRange = string.IsNullOrEmpty(endRowKey)
+				? (Func<string, bool>)(rowKey => string.Compare(startRowKey, rowKey) <= 0)
+				: (rowKey => string.Compare(startRowKey, rowKey) <= 0 && string.Compare(rowKey, endRowKey) < 0);
+
+			return GetInternal<T>(tableName, entry => entry.PartitionKey == partitionKey && isInRange(entry.RowKey))
+				.OrderBy(entity => entity.RowKey);
 		}
 
 		/// <see cref="ITableStorageProvider.Get{T}(string,string,System.Collections.Generic.IEnumerable{string})"/>
 		public IEnumerable<CloudEntity<T>> Get<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys)
 		{
-			lock (_syncRoot)
-			{
-				//If tableName or partitionKey does not exist the method is supposed to return an empty collection.
-				if (_tableStorage.ContainsKey(tableName) && _tableStorage[tableName].ContainsKey(partitionKey))
-				{
-					//Retrieves the partition.
-					var partition = _tableStorage[tableName][partitionKey];
-					var entities = new List<CloudEntity<T>>();
-					//If the rowKeys exists then return the associated entity.
-					foreach (var rowKey in rowKeys)
-					{
-						FatEntity fatEntity;
-						if (partition.TryGetValue(rowKey, out fatEntity))
-						{
-							entities.Add(FatEntity.Convert<T>(fatEntity, _formatter, null));
-						}
-					}
-					return entities;
-				}
-				return new List<CloudEntity<T>>();
-			}
-
+			var keys = rowKeys.ToSet();
+			return GetInternal<T>(tableName, entry => entry.PartitionKey == partitionKey && keys.Contains(entry.RowKey));
 		}
 
 		/// <see cref="ITableStorageProvider.Insert{T}"/>
@@ -163,34 +133,34 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_syncRoot)
 			{
+				List<MockTableEntry> entries;
+				if (!_tables.TryGetValue(tableName, out entries))
+				{
+					_tables.Add(tableName, entries = new List<MockTableEntry>());
+				}
+
+				// verify valid data BEFORE inserting them
+				if (entities.Join(entries, u => ToId(u), ToId, (u, v) => true).Any())
+				{
+					throw new DataServiceRequestException("INSERT: key conflict.");
+				}
+				if (entities.GroupBy(e => ToId(e)).Any(id => id.Count() != 1))
+				{
+					throw new DataServiceRequestException("INSERT: duplicate keys.");
+				}
+
+				// ok, we can insert safely now
 				foreach (var entity in entities)
 				{
-					//If table does not exist then we have to create it.
-					if (!_tableStorage.ContainsKey(tableName))
-					{
-						_tableStorage.Add(tableName, new Dictionary<string, Dictionary<string, FatEntity>>());
-					}
-
-					//If the partitionKey does not exist then we have to create it.
-					if (!_tableStorage[tableName].ContainsKey(entity.PartitionKey))
-					{
-						_tableStorage[tableName].Add(entity.PartitionKey, new Dictionary<string, FatEntity>());
-						_tableStorage[tableName][entity.PartitionKey].Add(entity.RowKey,
-							FatEntity.Convert(entity, _formatter));
-					}
-					else
-					{
-						if (!_tableStorage[tableName][entity.PartitionKey].ContainsKey(entity.RowKey))
+					var etag = (_nextETag++).ToString();
+					entity.ETag = etag;
+					entries.Add(new MockTableEntry
 						{
-							_tableStorage[tableName][entity.PartitionKey].Add(entity.RowKey,
-						   FatEntity.Convert(entity, _formatter));
-						}
-						// In this case both partitionKey and rowKey exist then the method is supposed to fail.
-						else
-						{
-							throw new MockTableStorageException("Insert is impossible : already existing entities.");
-						}
-					}
+							PartitionKey = entity.PartitionKey,
+							RowKey = entity.RowKey,
+							ETag = etag,
+							Value = FatEntity.Convert(entity, _formatter)
+						});
 				}
 			}
 		}
@@ -200,18 +170,35 @@ namespace Lokad.Cloud.Mock
 		{
 			lock (_syncRoot)
 			{
+				List<MockTableEntry> entries;
+				if (!_tables.TryGetValue(tableName, out entries))
+				{
+					throw new DataServiceRequestException("UPDATE: table not found.");
+				}
+
+				// verify valid data BEFORE updating them
+				if (entities.GroupJoin(entries, u => ToId(u), ToId, (u, vs) => vs.Count(entry => force || entry.ETag == u.ETag)).Any(c => c != 1))
+				{
+					throw new DataServiceRequestException("UPDATE: key not found or etag conflict.");
+				}
+				if (entities.GroupBy(e => ToId(e)).Any(id => id.Count() != 1))
+				{
+					throw new DataServiceRequestException("UPDATE: duplicate keys.");
+				}
+
+				// ok, we can update safely now
 				foreach (var entity in entities)
 				{
-					//The method fails at the first non existing entity.
-					if (_tableStorage[tableName].ContainsKey(entity.PartitionKey)
-						&& _tableStorage[tableName][entity.PartitionKey].ContainsKey(entity.RowKey))
-
-						_tableStorage[tableName][entity.PartitionKey][entity.RowKey] = FatEntity.Convert(entity,
-							_formatter);
-					else
-					{
-						throw new MockTableStorageException("Update is impossible : non existing entities.");
-					}
+					var etag = (_nextETag++).ToString();
+					entity.ETag = etag;
+					var index = entries.FindIndex(entry => entry.PartitionKey == entity.PartitionKey && entry.RowKey == entity.RowKey);
+					entries[index] = new MockTableEntry
+						{
+							PartitionKey = entity.PartitionKey,
+							RowKey = entity.RowKey,
+							ETag = etag,
+							Value = FatEntity.Convert(entity, _formatter)
+						};
 				}
 			}
 		}
@@ -230,37 +217,65 @@ namespace Lokad.Cloud.Mock
 		}
 
 		/// <see cref="ITableStorageProvider.Delete{T}"/>
-		public void Delete<T>(string tableName, string partitionKeys, IEnumerable<string> rowKeys)
+		public void Delete<T>(string tableName, string partitionKey, IEnumerable<string> rowKeys)
 		{
 			lock (_syncRoot)
 			{
-				//Iteration on rowKey is necessary only if partitionKey exist.
-				if (_tableStorage.ContainsKey(tableName) && _tableStorage[tableName].ContainsKey(partitionKeys))
+				List<MockTableEntry> entries;
+				if (!_tables.TryGetValue(tableName, out entries))
 				{
-					foreach (var key in rowKeys)
-					{
-						if (_tableStorage[tableName][partitionKeys].ContainsKey(key))
-						{
-							_tableStorage[tableName][partitionKeys].Remove(key);
-						}
-					}
+					return;
 				}
+
+				var keys = rowKeys.ToSet();
+				entries.RemoveAll(entry => entry.PartitionKey == partitionKey && keys.Contains(entry.RowKey));
 			}
 		}
 
 		/// <see cref="ITableStorageProvider.Delete{T}"/>
 		public void Delete<T>(string tableName, IEnumerable<CloudEntity<T>> entities, bool force)
 		{
-			entities.GroupBy(e => e.PartitionKey)
-				.ForEach(g => Delete<T>(tableName, g.Key, g.Select(e => e.RowKey)));
+			lock (_syncRoot)
+			{
+				List<MockTableEntry> entries;
+				if (!_tables.TryGetValue(tableName, out entries))
+				{
+					return;
+				}
+
+				var entityList = entities.ToList();
+
+				// verify valid data BEFORE updating them
+				if (entityList.Join(entries, u => ToId(u), ToId, (u, v) => force || u.ETag == v.ETag).Any(c => !c))
+				{
+					throw new DataServiceRequestException("UPDATE: etag conflict.");
+				}
+
+				// ok, we can update safely now
+				entries.RemoveAll(entry => entityList.Exists(entity => entity.PartitionKey == entry.PartitionKey && entity.RowKey == entry.RowKey));
+			}
 		}
 
-		/// <summary>
-		/// Exception raised my MemoryTableStorageProvider.
-		/// </summary>
-		class MockTableStorageException : InvalidOperationException
+		static Tuple<string, string> ToId<T>(CloudEntity<T> entity)
 		{
-			public MockTableStorageException(string message) : base(message) { }
+			return Tuple.From(entity.PartitionKey, entity.RowKey);
+		}
+		static Tuple<string, string> ToId(MockTableEntry entry)
+		{
+			return Tuple.From(entry.PartitionKey, entry.RowKey);
+		}
+
+		class MockTableEntry
+		{
+			public string PartitionKey { get; set; }
+			public string RowKey { get; set; }
+			public string ETag { get; set; }
+			public FatEntity Value { get; set; }
+
+			public CloudEntity<T> ToCloudEntity<T>(IBinaryFormatter formatter)
+			{
+				return FatEntity.Convert<T>(Value, formatter, ETag);
+			}
 		}
 	}
 }

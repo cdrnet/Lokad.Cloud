@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Lokad.Cloud.Storage.Azure;
 using Lokad.Cloud.Test;
+using Lokad.Quality;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Storage.Test
@@ -21,10 +22,21 @@ namespace Lokad.Cloud.Storage.Test
 		readonly static Random Rand = new Random();
 
 		// ReSharper disable InconsistentNaming
-		readonly ITableStorageProvider Provider = GlobalSetup.Container.Resolve<ITableStorageProvider>();
+		readonly ITableStorageProvider Provider;
 		// ReSharper restore InconsistentNaming
 
 		const string TableName = "teststablestorageprovidermytable";
+
+		[UsedImplicitly]
+		public TableStorageProviderTests()
+		{
+			Provider = GlobalSetup.Container.Resolve<ITableStorageProvider>();
+		}
+
+		protected TableStorageProviderTests(ITableStorageProvider provider)
+		{
+			Provider = provider;
+		}
 
 		[TestFixtureSetUp]
 		public void Setup()
@@ -367,12 +379,12 @@ namespace Lokad.Cloud.Storage.Test
 					Value = "value1"
 				};
 
-			//Insert entity.
+			// Insert entity.
 			Provider.Insert(TableName, new[] { entity });
 
+			// Insert Retry should fail.
 			try
 			{
-				//retry should fail.
 				Provider.Insert(TableName, new[] { entity });
 				Assert.Fail("#A01");
 			}
@@ -380,13 +392,36 @@ namespace Lokad.Cloud.Storage.Test
 			{
 			}
 
-			//delete the entity.
+			// Update entity twice should fail
+			try
+			{
+				entity.Value = "value2";
+				Provider.Update(TableName, new[] { entity, entity });
+				Assert.Fail("#A02");
+			}
+			catch (InvalidOperationException)
+			{
+			}
+
+			// Delete entity.
 			Provider.Delete<string>(TableName, partitionKey, new[] { rowKey });
+
+			// Update deleted entity should fail
 			try
 			{
 				entity.Value = "value2";
 				Provider.Update(TableName, new[] { entity });
-				Assert.Fail("#A02");
+				Assert.Fail("#A03");
+			}
+			catch (InvalidOperationException)
+			{
+			}
+
+			// Insert entity twice should fail
+			try
+			{
+				Provider.Insert(TableName, new[] { entity, entity });
+				Assert.Fail("#A04");
 			}
 			catch (InvalidOperationException)
 			{

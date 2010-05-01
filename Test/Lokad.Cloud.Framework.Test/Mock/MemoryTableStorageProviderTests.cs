@@ -5,20 +5,26 @@
 
 using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Test;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Mock.Test
 {
+	/// <remarks>Includes all unit tests for the real table provider</remarks>
     [TestFixture]
-    public class MemoryTableStorageProviderTests
+    public class MemoryTableStorageProviderTests : TableStorageProviderTests
     {
+		public MemoryTableStorageProviderTests()
+			: base(new MemoryTableStorageProvider())
+		{
+		}
+
         [Test]
         public void CreateAndGetTable()
         {
-            //Mono thread.
+            //Single thread.
             var tableStorage = new MemoryTableStorageProvider();
             for (int i = 0; i <= 5; i++)
             {
@@ -37,7 +43,7 @@ namespace Lokad.Cloud.Mock.Test
         }
 
         [Test]
-        public void InsertAndGetMethodMonoThread()
+        public void InsertAndGetMethodSingleThread()
         {
             var tableStorage = new MemoryTableStorageProvider();
             tableStorage.CreateTable("myTable");
@@ -94,74 +100,7 @@ namespace Lokad.Cloud.Mock.Test
         }
 
         [Test]
-        public void InsertOnMissingTableShouldWork()
-        {
-            var tableStorage = new MemoryTableStorageProvider();
-
-            var entities =
-                Enumerable.Range(0, 10).Select(
-                    i =>
-                        new CloudEntity<object>
-                            {
-                                PartitionKey = "Pkey-" + i,
-                                RowKey = "RowKey-" + i,
-                                Value = new object()
-                            }
-                    );
-
-            tableStorage.Insert("myTable", entities);
-        }
-
-        [Test]
-        public void GetMethodStartEnd()
-        {
-            //This is a test on the ordered enumeration return by the GetMethod with StartRowKEy-EndRowKey.
-            const int N = 250;
-            const string MockDataTable = "MockTable";
-            var tableStorage = new MemoryTableStorageProvider();
-
-            tableStorage.CreateTable(MockDataTable);
-            var entites = Enumerable.Range(0,N).Select(i=> new CloudEntity<MockObject>
-                        {
-                            PartitionKey = "PKey",
-                            RowKey = "RowKey" + i,
-                            Value = new MockObject() {Name = i.ToString(), Values = new[] {new DateTime(2008, 12, 14)}}
-                        });
-
-            tableStorage.Insert(MockDataTable, entites);
-
-            var retrieved = tableStorage.Get<MockObject>(MockDataTable, "PKey", null, null).ToArray();
-            var retrievedSorted = retrieved.OrderBy(e => e.RowKey).ToArray();
-
-            bool isOrdered = true;
-            for (int i = 0; i < retrieved.Length; i++)
-            {
-                if(retrieved[i] != retrievedSorted[i])
-                {
-                    isOrdered = false;
-                    break;
-                }
-            }
-            Assert.That(isOrdered,"#C01");
-
-            var retrieved2 = tableStorage.Get<MockObject>(MockDataTable, "PKey", "RowKey25", null).ToArray();
-            var retrievedSorted2 = retrieved2.OrderBy(e => e.RowKey).ToArray();
-
-            bool isOrdered2 = true;
-            for (int i = 0; i < retrieved2.Length; i++)
-            {
-                if (retrieved2[i] != retrievedSorted2[i])
-                {
-                    isOrdered2 = false;
-                    break;
-                }
-            }
-            Assert.That(isOrdered2, "#C02");
-                    
-        }
-
-        [Test]
-        public void InsertUpdateAndDeleteMonoThread()
+        public void InsertUpdateAndDeleteSingleThread()
         {
             var tableStorage = new MemoryTableStorageProvider();
             tableStorage.CreateTable("myTable");
@@ -171,8 +110,8 @@ namespace Lokad.Cloud.Mock.Test
             var entities =
                 Enumerable.Range(0, 100).Select(
                     i =>
-                        new CloudEntity<object>()
-                        {
+                        new CloudEntity<object>
+                        	{
                             PartitionKey = "Pkey-" + (i % partitionCount).ToString("0"),
                             RowKey = "RowKey-" + i.ToString("00"),
                             Value = new object()
@@ -193,11 +132,11 @@ namespace Lokad.Cloud.Mock.Test
 
             tableStorage.CreateTable("myNewTable");
             tableStorage.Insert("myNewTable",
-                new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowKey = "RowKey-56", Value = new object() } });
+                new[] { new CloudEntity<object> { PartitionKey = "Pkey-6", RowKey = "RowKey-56", Value = new object() } });
 
             Assert.AreEqual(2, tableStorage.GetTables().Count());
 
-            tableStorage.Update("myNewTable", new[] { new CloudEntity<object>() { PartitionKey = "Pkey-6", RowKey = "RowKey-56", Value = 2000 } });
+            tableStorage.Update("myNewTable", new[] { new CloudEntity<object> { PartitionKey = "Pkey-6", RowKey = "RowKey-56", Value = 2000 } }, true);
             Assert.AreEqual(2000, (int)tableStorage.Get<object>("myNewTable", "Pkey-6", new[] { "RowKey-56" }).First().Value);
 
             tableStorage.Delete<object>("myNewTable", "Pkey-6", new[] { "RowKey-56" });
@@ -205,28 +144,6 @@ namespace Lokad.Cloud.Mock.Test
             var retrieved = tableStorage.Get<object>("myNewTable");
             Assert.AreEqual(0, retrieved.Count());
 
-        }
-
-        [Test]
-        public void DeleteIdempotence()
-        {
-            var provider = new MemoryTableStorageProvider();
-            provider.CreateTable("myTable");
-            provider.Insert("myTable", new[]
-                {
-                    new CloudEntity<object>
-                        {
-                            PartitionKey = "PKey",
-                            RowKey = "RowKey",
-                            Timestamp = DateTime.UtcNow,
-                            Value = new object()
-                        }
-                }
-                );
-
-            //Check idempotence
-            provider.Delete<object>("myTable", "PKey", new[] { "RowKey" });
-            provider.Delete<object>("myTable", "PKey", new[] { "RowKey" });
         }
 
         [Test]
@@ -239,7 +156,7 @@ namespace Lokad.Cloud.Mock.Test
             var threads = Enumerable.Range(0, M).Select(i => new Thread(CreateTables)).ToArray();
             var threadsParameters =
                 Enumerable.Range(0, M).Select(
-                    i => new ThreadParameter() { TableStorage = tableStorage, ThreadId = "treadId" + i.ToString() }).
+                    i => new ThreadParameter { TableStorage = tableStorage, ThreadId = "treadId" + i.ToString() }).
                     ToArray();
 
             for (int i = 0; i < M; i++)
@@ -268,15 +185,6 @@ namespace Lokad.Cloud.Mock.Test
         {
             public MemoryTableStorageProvider TableStorage { get; set; }
             public string ThreadId { get; set; }
-        }
-
-        [DataContract]
-        class MockObject
-        {
-            public string Name { get; set; }
-
-            [DataMember]
-            public DateTime[] Values { get; set; } //some type here.
         }
     }
 }
