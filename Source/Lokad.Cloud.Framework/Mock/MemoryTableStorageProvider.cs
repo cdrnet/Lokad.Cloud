@@ -245,13 +245,13 @@ namespace Lokad.Cloud.Mock
 
 				var entityList = entities.ToList();
 
-				// verify valid data BEFORE updating them
+				// verify valid data BEFORE deleting them
 				if (entityList.Join(entries, u => ToId(u), ToId, (u, v) => force || u.ETag == v.ETag).Any(c => !c))
 				{
-					throw new DataServiceRequestException("UPDATE: etag conflict.");
+					throw new DataServiceRequestException("DELETE: etag conflict.");
 				}
 
-				// ok, we can update safely now
+				// ok, we can delete safely now
 				entries.RemoveAll(entry => entityList.Exists(entity => entity.PartitionKey == entry.PartitionKey && entity.RowKey == entry.RowKey));
 			}
 		}
