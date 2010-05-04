@@ -1,14 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "Lokad.Cloud", "Source\Lokad.Cloud\Lokad.Cloud.ccproj", "{2852690A-742A-4C43-8C54-411FE4F7C31E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.WebRole", "Source\Lokad.Cloud.WebRole\Lokad.Cloud.WebRole.csproj", "{2F00BD58-DE46-4FD0-8A64-32520F86EF4D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.WorkerRole", "Source\Lokad.Cloud.WorkerRole\Lokad.Cloud.WorkerRole.csproj", "{78EC3B0C-6C2B-4919-A986-658A40A34825}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.Framework", "Source\Lokad.Cloud.Framework\Lokad.Cloud.Framework.csproj", "{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}"
-EndProject
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CF8E9359-9AE9-46E8-B52E-E99B12663AEE}"
 	ProjectSection(SolutionItems) = preProject
 		Source\GlobalAssemblyInfo.cs = Source\GlobalAssemblyInfo.cs
@@ -24,8 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{58865F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{1C6763CC-FD47-4AB5-B326-D1B6ADF2B5CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.Framework.Test", "Test\Lokad.Cloud.Framework.Test\Lokad.Cloud.Framework.Test.csproj", "{93D4C481-3265-42F3-BF63-C06106AE016F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{50709B8F-2F9A-4D2B-A46D-0DD01E159BC1}"
 	ProjectSection(SolutionItems) = preProject
 		Resource\Template\index.template.htm = Resource\Template\index.template.htm
@@ -39,6 +29,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{BC3C
 		Samples\Source\SimpleBlob\ReadMe.SimpleBlob.txt = Samples\Source\SimpleBlob\ReadMe.SimpleBlob.txt
 		Samples\Source\SimpleTable\ReadMe.SimpleTable.txt = Samples\Source\SimpleTable\ReadMe.SimpleTable.txt
 	EndProjectSection
+EndProject
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "Lokad.Cloud", "Source\Lokad.Cloud\Lokad.Cloud.ccproj", "{2852690A-742A-4C43-8C54-411FE4F7C31E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.WebRole", "Source\Lokad.Cloud.WebRole\Lokad.Cloud.WebRole.csproj", "{2F00BD58-DE46-4FD0-8A64-32520F86EF4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.WorkerRole", "Source\Lokad.Cloud.WorkerRole\Lokad.Cloud.WorkerRole.csproj", "{78EC3B0C-6C2B-4919-A986-658A40A34825}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.Framework", "Source\Lokad.Cloud.Framework\Lokad.Cloud.Framework.csproj", "{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lokad.Cloud.Framework.Test", "Test\Lokad.Cloud.Framework.Test\Lokad.Cloud.Framework.Test.csproj", "{93D4C481-3265-42F3-BF63-C06106AE016F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingPongClient", "Samples\Source\PingPong\PingPongClient\PingPongClient.csproj", "{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874}"
 EndProject
@@ -140,12 +140,12 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{2F00BD58-DE46-4FD0-8A64-32520F86EF4D} = {1C6763CC-FD47-4AB5-B326-D1B6ADF2B5CA}
-		{78EC3B0C-6C2B-4919-A986-658A40A34825} = {1C6763CC-FD47-4AB5-B326-D1B6ADF2B5CA}
-		{2852690A-742A-4C43-8C54-411FE4F7C31E} = {1C6763CC-FD47-4AB5-B326-D1B6ADF2B5CA}
-		{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29} = {58865F1A-F33E-419A-ABF0-871911E20D4C}
 		{50709B8F-2F9A-4D2B-A46D-0DD01E159BC1} = {CF8E9359-9AE9-46E8-B52E-E99B12663AEE}
 		{93D4C481-3265-42F3-BF63-C06106AE016F} = {A4EE85F0-A2E1-4516-8B4E-F4BA7DA67968}
+		{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29} = {58865F1A-F33E-419A-ABF0-871911E20D4C}
+		{2852690A-742A-4C43-8C54-411FE4F7C31E} = {1C6763CC-FD47-4AB5-B326-D1B6ADF2B5CA}
+		{2F00BD58-DE46-4FD0-8A64-32520F86EF4D} = {1C6763CC-FD47-4AB5-B326-D1B6ADF2B5CA}
+		{78EC3B0C-6C2B-4919-A986-658A40A34825} = {1C6763CC-FD47-4AB5-B326-D1B6ADF2B5CA}
 		{1A544FE1-D45B-4B72-9E7B-EE4D0C4BD874} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 		{EF63B21A-0390-4DB3-8573-21BE5931CD5E} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}
 		{9CE653AE-247C-4A3B-B18B-07411EF9B59F} = {BC3CBCF3-BDDF-4152-8A89-5D843A070FD8}

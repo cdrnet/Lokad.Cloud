@@ -1,2 +1,2 @@
 @echo off
-@%SystemRoot%\Microsoft.NET\Framework\v3.5\msbuild Lokad.Cloud.ccnet %*
+@%SystemRoot%\Microsoft.NET\Framework\v4.0.30319\msbuild Lokad.Cloud.ccnet %*
