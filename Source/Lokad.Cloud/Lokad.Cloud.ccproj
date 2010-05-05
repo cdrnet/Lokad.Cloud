@@ -54,5 +54,6 @@
   <PropertyGroup>
     <CloudExtensionsDir Condition=" '$(CloudExtensionsDir)' == '' ">$(MSBuildExtensionsPath)\Microsoft\Cloud Service\1.0\Visual Studio 10.0\</CloudExtensionsDir>
   </PropertyGroup>
-  <Import Project="$(CloudExtensionsDir)Microsoft.CloudService.targets" />
+  <Import Project="$(CloudExtensionsDir)Microsoft.CloudService.targets" Condition="Exists('$(CloudExtensionsDir)Microsoft.CloudService.targets')" />
+  <Import Project="..\..\Resource\Build\Microsoft.CloudService.targets" Condition="!Exists('$(CloudExtensionsDir)Microsoft.CloudService.targets')" />
 </Project>
