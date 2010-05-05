@@ -16,7 +16,7 @@ namespace Lokad.Cloud.Storage.Azure
 	/// <summary>
 	/// Azure retry policies for corner-situation and server errors.
 	/// </summary>
-	internal static class AzurePolicies
+	public static class AzurePolicies
 	{
 		/// <summary>
 		/// Retry policy to temporarily back off in case of transient Azure server
@@ -37,9 +37,9 @@ namespace Lokad.Cloud.Storage.Azure
 		public static ActionPolicy SlowInstantiation { get; private set; }
 
 		// Instrumentation
-		static readonly ExecutionCounter _countOnTransientServerError;
-		static readonly ExecutionCounter _countOnTransientTableError;
-		static readonly ExecutionCounter _countOnSlowInstantiation;
+		static readonly ExecutionCounter CountOnTransientServerError;
+		static readonly ExecutionCounter CountOnTransientTableError;
+		static readonly ExecutionCounter CountOnSlowInstantiation;
 
 		/// <summary>
 		/// Static Constructor
@@ -49,9 +49,9 @@ namespace Lokad.Cloud.Storage.Azure
 			// Instrumentation
 			ExecutionCounters.Default.RegisterRange(new[]
 				{
-					_countOnTransientServerError = new ExecutionCounter("Policies.ServerErrorRetryWait", 0, 0),
-					_countOnTransientTableError = new ExecutionCounter("Policies.TableErrorRetryWait", 0, 0),
-					_countOnSlowInstantiation = new ExecutionCounter("Policies.SlowInstantiationRetryWait", 0, 0)
+					CountOnTransientServerError = new ExecutionCounter("Policies.ServerErrorRetryWait", 0, 0),
+					CountOnTransientTableError = new ExecutionCounter("Policies.TableErrorRetryWait", 0, 0),
+					CountOnSlowInstantiation = new ExecutionCounter("Policies.SlowInstantiationRetryWait", 0, 0)
 				});
 
 			// Initialize Policies
@@ -69,36 +69,36 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			// NOTE: we can't log here, since logging would fail as well
 
-			var timestamp = _countOnTransientServerError.Open();
+			var timestamp = CountOnTransientServerError.Open();
 
 			// quadratic backoff, capped at 5 minutes
 			var c = count + 1;
 			SystemUtil.Sleep(Math.Min(300, c * c).Seconds());
 
-			_countOnTransientServerError.Close(timestamp);
+			CountOnTransientServerError.Close(timestamp);
 		}
 
 		static void OnTransientTableErrorRetry(Exception exception, int count)
 		{
 			// NOTE: we can't log here, since logging would fail as well
 
-			var timestamp = _countOnTransientTableError.Open();
+			var timestamp = CountOnTransientTableError.Open();
 
 			// quadratic backoff, capped at 5 minutes
 			var c = count + 1;
 			SystemUtil.Sleep(Math.Min(300, c * c).Seconds());
 
-			_countOnTransientTableError.Close(timestamp);
+			CountOnTransientTableError.Close(timestamp);
 		}
 
 		static void OnSlowInstantiationRetry(Exception exception, int count)
 		{
-			var timestamp = _countOnSlowInstantiation.Open();
+			var timestamp = CountOnSlowInstantiation.Open();
 
 			// linear backoff
 			SystemUtil.Sleep((100 * count).Milliseconds());
 
-			_countOnSlowInstantiation.Close(timestamp);
+			CountOnSlowInstantiation.Close(timestamp);
 		}
 
 		static bool IsErrorCodeMatch(StorageException exception, params StorageErrorCode[] codes)
