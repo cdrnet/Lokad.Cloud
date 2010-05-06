@@ -617,8 +617,8 @@ namespace Lokad.Cloud.Storage.Azure
 					throw;
 				}
 
-				// removing /container/ from the blob name
-				yield return enumerator.Current.Uri.AbsolutePath.Substring(containerName.Length + 2);
+				// removing /container/ from the blob name (dev storage: /account/container/)
+				yield return Uri.UnescapeDataString(enumerator.Current.Uri.AbsolutePath.Substring(container.Uri.LocalPath.Length + 1));
 			}
 		}
 	}
