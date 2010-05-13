@@ -12,7 +12,6 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Configuration;
 using Lokad.Cloud.Diagnostics;
-using Lokad.Diagnostics;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {
@@ -32,20 +31,13 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 		/// <summary>Container used to populate cloud service properties.</summary>
 		public IContainer RuntimeContainer { get; set; }
 
-		// Instrumentation
-		readonly ExceptionCounters _exceptions;
 
 		/// <summary>IoC constructor.</summary>
-		public Runtime(
-			CloudInfrastructureProviders providers,
-			ICloudDiagnosticsRepository diagnosticsRepository)
+		public Runtime(CloudInfrastructureProviders providers, ICloudDiagnosticsRepository diagnosticsRepository)
 		{
 			_providers = providers;
 			_monitoring = new ServiceMonitor(diagnosticsRepository);
 			_diagnostics = new DiagnosticsAcquisition(diagnosticsRepository);
-
-			// Instrumentation
-			_exceptions = ExceptionCounters.Default;
 		}
 
 		/// <summary>The name of the service that is being executed, if any, <c>null</c> otherwise.</summary>
@@ -103,7 +95,7 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 					{
 						if (!(ex is TriggerRestartException) && !(ex is ThreadAbortException))
 						{
-							_exceptions.Add(ex);
+						    _providers.Log.Error(ex);
 						}
 
 						throw;
@@ -164,8 +156,6 @@ namespace Lokad.Cloud.ServiceFabric.Runtime
 			TryLogInfoFormat("Runtime stopping on worker {0}.", CloudEnvironment.PartitionKey);
 
 			_providers.RuntimeFinalizer.FinalizeRuntime();
-
-			//TryLogInfoFormat("Runtime finalized on worker {0}.", CloudEnvironment.PartitionKey);
 
 			TryDumpDiagnostics();
 

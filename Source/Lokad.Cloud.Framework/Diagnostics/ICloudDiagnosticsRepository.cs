@@ -13,13 +13,6 @@ namespace Lokad.Cloud.Diagnostics
 	/// </summary>
 	public interface ICloudDiagnosticsRepository
 	{
-		/// <summary>Get the statistics of all tracked exceptions.</summary>
-		IEnumerable<ExceptionTrackingStatistics> GetExceptionTrackingStatistics(string timeSegment);
-		/// <summary>Update the statistics of a tracked exception.</summary>
-		void UpdateExceptionTrackingStatistics(string timeSegment, string contextName, Func<Maybe<ExceptionTrackingStatistics>, ExceptionTrackingStatistics> updater);
-		/// <summary>Remove old statistics of tracked exceptions.</summary>
-		void RemoveExceptionTrackingStatistics(string timeSegmentPrefix, string timeSegmentBefore);
-
 		/// <summary>Get the statistics of all execution profiles.</summary>
 		IEnumerable<ExecutionProfilingStatistics> GetExecutionProfilingStatistics(string timeSegment);
 		/// <summary>Update the statistics of an execution profile.</summary>

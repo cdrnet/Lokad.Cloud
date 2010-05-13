@@ -15,7 +15,6 @@ namespace Lokad.Cloud.Diagnostics
 	public class DiagnosticsAcquisition
 	{
 		readonly ExecutionProfilingMonitor _executionProfiling;
-		readonly ExceptionTrackingMonitor _exceptionTracking;
 		readonly PartitionMonitor _partitionMonitor;
 		readonly ServiceMonitor _serviceMonitor;
 
@@ -25,7 +24,6 @@ namespace Lokad.Cloud.Diagnostics
 		public DiagnosticsAcquisition(ICloudDiagnosticsRepository repository)
 		{
 			_executionProfiling = new ExecutionProfilingMonitor(repository);
-			_exceptionTracking = new ExceptionTrackingMonitor(repository);
 			_partitionMonitor = new PartitionMonitor(repository);
 			_serviceMonitor = new ServiceMonitor(repository);
 		}
@@ -37,16 +35,13 @@ namespace Lokad.Cloud.Diagnostics
 		public void CollectStatistics()
 		{
 			_executionProfiling.UpdateDefaultStatistics();
-			_exceptionTracking.UpdateDefaultStatistics();
 
 			_partitionMonitor.UpdateStatistics();
 			_serviceMonitor.UpdateStatistics();
 
 			if (DiagnosticsSource != null)
 			{
-				DiagnosticsSource.GetIncrementalStatistics(
-					_executionProfiling.Update,
-					_exceptionTracking.Update);
+				DiagnosticsSource.GetIncrementalStatistics(_executionProfiling.Update);
 			}
 		}
 
@@ -57,7 +52,6 @@ namespace Lokad.Cloud.Diagnostics
 		public void RemoveStatisticsBefore(DateTimeOffset before)
 		{
 			_executionProfiling.RemoveStatisticsBefore(before);
-			_exceptionTracking.RemoveStatisticsBefore(before);
 			_partitionMonitor.RemoveStatisticsBefore(before);
 			_serviceMonitor.RemoveStatisticsBefore(before);
 		}
@@ -69,7 +63,6 @@ namespace Lokad.Cloud.Diagnostics
 		public void RemoveStatisticsBefore(int numberOfPeriods)
 		{
 			_executionProfiling.RemoveStatisticsBefore(numberOfPeriods);
-			_exceptionTracking.RemoveStatisticsBefore(numberOfPeriods);
 			_partitionMonitor.RemoveStatisticsBefore(numberOfPeriods);
 			_serviceMonitor.RemoveStatisticsBefore(numberOfPeriods);
 		}
@@ -80,16 +73,6 @@ namespace Lokad.Cloud.Diagnostics
 		public void PushExecutionProfilingStatistics(string context, IEnumerable<ExecutionData> additionalData)
 		{
 			_executionProfiling.Update(context, additionalData);
-		}
-
-		/// <summary>
-		/// Push incremental statistics for externally tracked exceptions.
-		/// </summary>
-		/// <param name="context"></param>
-		/// <param name="additionalData"></param>
-		public void PushTrackedExceptionStatistics(string context, IEnumerable<ExceptionData> additionalData)
-		{
-			_exceptionTracking.Update(context, additionalData);
 		}
 	}
 }

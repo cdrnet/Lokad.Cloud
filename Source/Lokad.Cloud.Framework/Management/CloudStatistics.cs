@@ -50,17 +50,6 @@ namespace Lokad.Cloud.Management
 			return _repository.GetAllServiceStatistics(TimeSegments.For(TimeSegmentPeriod.Day, new DateTimeOffset(dayUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
 		}
 
-		/// <summary>Get the statistics of all tracked exceptions on the provided month.</summary>
-		public List<ExceptionTrackingStatistics> GetExceptionsOfMonth(DateTime? monthUtc)
-		{
-			return _repository.GetExceptionTrackingStatistics(TimeSegments.For(TimeSegmentPeriod.Month, new DateTimeOffset(monthUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
-		}
-		/// <summary>Get the statistics of all tracked exceptions on the provided day.</summary>
-		public List<ExceptionTrackingStatistics> GetExceptionsOfDay(DateTime? dayUtc)
-		{
-			return _repository.GetExceptionTrackingStatistics(TimeSegments.For(TimeSegmentPeriod.Day, new DateTimeOffset(dayUtc ?? DateTime.UtcNow, TimeSpan.Zero))).ToList();
-		}
-
 		/// <summary>Get the statistics of all execution profiles on the provided month.</summary>
 		public List<ExecutionProfilingStatistics> GetProfilesOfMonth(DateTime? monthUtc)
 		{

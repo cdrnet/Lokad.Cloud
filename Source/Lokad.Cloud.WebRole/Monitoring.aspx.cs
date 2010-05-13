@@ -23,7 +23,6 @@ namespace Lokad.Cloud.Web
 			PartitionView.DataBind();
 			ServiceView.DataBind();
 			ProfilesView.DataBind();
-			ExceptionsView.DataBind();
 		}
 
 		static object ToPresentationModel(IEnumerable<PartitionStatistics> partitionStatistics)
@@ -32,7 +31,6 @@ namespace Lokad.Cloud.Web
 				.Select<PartitionStatistics, object>(s => new
 					{
 						Partition = s.PartitionKey,
-						//OS = PrettyFormatOperatingSystem(s.OperatingSystem),
 						Runtime = s.Runtime,
 						Cores = s.ProcessorCount,
 						Threads = s.ThreadCount,
@@ -82,21 +80,6 @@ namespace Lokad.Cloud.Web
 				.ToList();
 		}
 
-		static object ToPresentationModel(IEnumerable<ExceptionTrackingStatistics> exceptionStatisticses)
-		{
-			return exceptionStatisticses
-				.SelectMany(s => s.Statistics
-					.Select(d => new
-						{
-							Context = s.Name,
-							Count = d.Count,
-							Message = d.Message,
-							Text = d.Text
-						}))
-				.Take(25)
-				.ToList();
-		}
-
 		protected void PartitionView_DataBinding(object sender, EventArgs e)
 		{
 			ApplySelectedDataSource<PartitionStatistics>(
@@ -128,17 +111,6 @@ namespace Lokad.Cloud.Web
 				_cloudStatistics.GetProfilesOfDay,
 				ToPresentationModel,
 				"lokad-cloud-diag-profiles");
-		}
-
-		protected void ExceptionsView_DataBinding(object sender, EventArgs e)
-		{
-			ApplySelectedDataSource<ExceptionTrackingStatistics>(
-				ExceptionsView,
-				ExceptionsSelector,
-				_cloudStatistics.GetExceptionsOfMonth,
-				_cloudStatistics.GetExceptionsOfDay,
-				ToPresentationModel,
-				"lokad-cloud-diag-exceptions");
 		}
 
 		void ApplySelectedDataSource<T>(
@@ -197,17 +169,6 @@ namespace Lokad.Cloud.Web
 		public static string PrettyFormatMemoryMB(long byteCount)
 		{
 			return String.Format("{0} MB", byteCount / (1024 * 1024));
-		}
-
-		public static string PrettyFormatOperatingSystem(string os)
-		{
-			if (string.IsNullOrEmpty(os))
-			{
-				return string.Empty;
-			}
-
-			os = os.Replace("Microsoft Windows ", string.Empty);
-			return os.Replace("Service Pack ", "SP");
 		}
 
 		public static string PrettyFormatActiveTime(TimeSpan activeTime, int startCount)

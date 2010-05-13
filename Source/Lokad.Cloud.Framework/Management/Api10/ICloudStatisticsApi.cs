@@ -31,14 +31,6 @@ namespace Lokad.Cloud.Management.Api10
 		List<ServiceStatistics> GetServicesOfDay(DateTime? dayUtc);
 
 		[OperationContract]
-		[WebGet(UriTemplate = @"exceptions/month?date={monthUtc}")]
-		List<ExceptionTrackingStatistics> GetExceptionsOfMonth(DateTime? monthUtc);
-
-		[OperationContract]
-		[WebGet(UriTemplate = @"exceptions/day?date={dayUtc}")]
-		List<ExceptionTrackingStatistics> GetExceptionsOfDay(DateTime? dayUtc);
-
-		[OperationContract]
 		[WebGet(UriTemplate = @"profiles/month?date={monthUtc}")]
 		List<ExecutionProfilingStatistics> GetProfilesOfMonth(DateTime? monthUtc);
 

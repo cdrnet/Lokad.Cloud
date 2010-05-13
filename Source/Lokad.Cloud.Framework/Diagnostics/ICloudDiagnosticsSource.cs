@@ -19,9 +19,7 @@ namespace Lokad.Cloud.Diagnostics
 	/// </remarks>
 	public interface ICloudDiagnosticsSource
 	{
-		void GetIncrementalStatistics(
-			Action<string, IEnumerable<ExecutionData>> pushExecutionProfiles,
-			Action<string, IEnumerable<ExceptionData>> pushTrackedExceptions);
+		void GetIncrementalStatistics(Action<string, IEnumerable<ExecutionData>> pushExecutionProfiles);
 	}
 	
 }

@@ -92,7 +92,6 @@
     <None Include="App.template.config" />
     <Compile Include="Diagnostics\CloudLoggerTests.cs" />
     <Compile Include="Diagnostics\ExecutionCounterTests.cs" />
-    <Compile Include="Diagnostics\ExceptionCounterTests.cs" />
     <Compile Include="GlobalSetup.cs" />
     <Compile Include="Mock\MemoryBlobStorageProviderTests.cs" />
     <Compile Include="Mock\MemoryQueueStorageProviderTests.cs" />

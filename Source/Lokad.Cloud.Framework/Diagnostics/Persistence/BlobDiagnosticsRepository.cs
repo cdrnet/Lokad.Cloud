@@ -74,15 +74,6 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		}
 
 		/// <summary>
-		/// Get the statistics of all tracked exceptions.
-		/// </summary>
-		public IEnumerable<ExceptionTrackingStatistics> GetExceptionTrackingStatistics(string timeSegment)
-		{
-			return GetAll<ExceptionTrackingStatistics,ExceptionTrackingStatisticsName>(
-				ExceptionTrackingStatisticsName.GetPrefix(timeSegment));
-		}
-
-		/// <summary>
 		/// Get the statistics of all execution profiles.
 		/// </summary>
 		public IEnumerable<ExecutionProfilingStatistics> GetExecutionProfilingStatistics(string timeSegment)
@@ -110,14 +101,6 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		}
 
 		/// <summary>
-		/// Update the statistics of a tracked exception.
-		/// </summary>
-		public void UpdateExceptionTrackingStatistics(string timeSegment, string contextName, Func<Maybe<ExceptionTrackingStatistics>, ExceptionTrackingStatistics> updater)
-		{
-			Update(ExceptionTrackingStatisticsName.New(timeSegment, contextName), updater);
-		}
-
-		/// <summary>
 		/// Update the statistics of an execution profile.
 		/// </summary>
 		public void UpdateExecutionProfilingStatistics(string timeSegment, string contextName, Func<Maybe<ExecutionProfilingStatistics>, ExecutionProfilingStatistics> updater)
@@ -139,17 +122,6 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 		public void UpdateServiceStatistics(string timeSegment, string serviceName, Func<Maybe<ServiceStatistics>, ServiceStatistics> updater)
 		{
 			Update(ServiceStatisticsName.New(timeSegment, serviceName), updater);
-		}
-
-		/// <summary>
-		/// Remove old statistics of tracked exceptions.
-		/// </summary>
-		public void RemoveExceptionTrackingStatistics(string timeSegmentPrefix, string timeSegmentBefore)
-		{
-			RemoveWhile(
-				ExceptionTrackingStatisticsName.GetPrefix(timeSegmentPrefix),
-				blobRef => blobRef.TimeSegment,
-				timeSegmentBefore);
 		}
 
 		/// <summary>

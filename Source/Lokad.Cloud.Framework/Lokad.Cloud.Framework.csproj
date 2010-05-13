@@ -118,7 +118,6 @@
     <Compile Include="CloudEnvironment.cs" />
     <Compile Include="CloudModule.cs" />
     <Compile Include="Diagnostics\CloudLogger.cs" />
-    <Compile Include="Diagnostics\Persistence\ExceptionTrackingStatisticsName.cs" />
     <Compile Include="Diagnostics\Persistence\ExecutionProfilingStatisticsName.cs" />
     <Compile Include="Diagnostics\Persistence\PartitionStatisticsName.cs" />
     <Compile Include="Diagnostics\Persistence\ServiceStatisticsName.cs" />
@@ -172,8 +171,6 @@
     <Compile Include="Diagnostics\DiagnosticsAcquisition.cs" />
     <Compile Include="Diagnostics\DiagnosticsModule.cs" />
     <Compile Include="Diagnostics\ExecutionProfilingMonitor.cs" />
-    <Compile Include="Diagnostics\ExceptionTrackingMonitor.cs" />
-    <Compile Include="Diagnostics\ExceptionTrackingStatistics.cs" />
     <Compile Include="Diagnostics\ExecutionProfilingStatistics.cs" />
     <Compile Include="Diagnostics\ICloudDiagnosticsSource.cs" />
     <Compile Include="Diagnostics\PartitionMonitor.cs" />

@@ -62,22 +62,5 @@
                 OnDataBinding="PartitionView_DataBinding" />
         </ContentTemplate>
     </asp:UpdatePanel>
-    <br /><br />
-    <h1 class="separator">Exception Tracking</h1>
-    <p>This table shows the most common exceptions and how many times they were tracked, aggregated by service or subsystem.</p>
-    <asp:UpdatePanel ID="ExceptionsPanel" runat="server" UpdateMode="Conditional">
-        <ContentTemplate>
-            <asp:RadioButtonList ID="ExceptionsSelector" runat="server"
-                RepeatDirection="Horizontal" AutoPostBack="true">
-                <asp:ListItem Selected="True">Today</asp:ListItem>
-                <asp:ListItem>Yesterday</asp:ListItem>
-                <asp:ListItem>This Month</asp:ListItem>
-                <asp:ListItem>Last Month</asp:ListItem>
-            </asp:RadioButtonList>
-            <asp:GridView ID="ExceptionsView" runat="server"
-                EmptyDataText="No exceptions have been tracked yet." AutoGenerateColumns="True" 
-                OnDataBinding="ExceptionsView_DataBinding" />
-        </ContentTemplate>
-    </asp:UpdatePanel>
     
 </asp:Content>
