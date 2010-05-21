@@ -129,6 +129,7 @@
     <Compile Include="Management\Api10\ICloudServiceSchedulingApi.cs" />
     <Compile Include="Management\Api10\ICloudStatisticsApi.cs" />
     <Compile Include="Management\Azure\ApiConstants.cs" />
+    <Compile Include="Management\Azure\AzureManagementPolicies.cs" />
     <Compile Include="Management\Azure\Entities\AffinityGroup.cs" />
     <Compile Include="Management\Azure\Entities\Certificate.cs" />
     <Compile Include="Management\Azure\Entities\Deployment.cs" />

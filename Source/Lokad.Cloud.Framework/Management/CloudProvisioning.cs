@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.ServiceModel;
 using System.ServiceModel.Security;
 using System.Text;
 using System.Xml.Linq;
@@ -32,6 +31,8 @@ namespace Lokad.Cloud.Management
 		readonly Maybe<string> _deploymentId = Maybe.String;
 		readonly Maybe<string> _subscriptionId = Maybe.String;
 
+		readonly ActionPolicy _retryPolicy;
+
 		ManagementStatus _status;
 		Maybe<HostedService> _service = Maybe<HostedService>.Empty;
 		Maybe<Deployment> _deployment = Maybe<Deployment>.Empty;
@@ -45,6 +46,7 @@ namespace Lokad.Cloud.Management
 		public CloudProvisioning(ICloudConfigurationSettings settings, ILog log)
 		{
 			_log = log;
+			_retryPolicy = AzureManagementPolicies.TransientServerErrorBackOff;
 
 			// try get settings and certificate
 			_deploymentId = CloudEnvironment.AzureDeploymentId;
@@ -141,10 +143,7 @@ namespace Lokad.Cloud.Management
 
 			PrepareRequest();
 
-			//using (new OperationContextScope((IContextChannel)_channel))
-			//{
-				_deployment = _channel.GetDeployment(_subscriptionId.Value, _service.Value.ServiceName, _deployment.Value.Name);
-			//}
+			_deployment = _retryPolicy.Get(() => _channel.GetDeployment(_subscriptionId.Value, _service.Value.ServiceName, _deployment.Value.Name));
 		}
 
 		Maybe<int> IProvisioningProvider.GetWorkerInstanceCount()
@@ -193,13 +192,10 @@ namespace Lokad.Cloud.Management
 		{
 			PrepareRequest();
 
-			//using (new OperationContextScope((IContextChannel) _channel))
-			//{
-				_deployment = _channel.GetDeployment(
-					_subscriptionId.Value,
-					_service.Value.ServiceName,
-					_deployment.Value.Name);
-			//}
+			_deployment = _retryPolicy.Get(() => _channel.GetDeployment(
+				_subscriptionId.Value,
+				_service.Value.ServiceName,
+				_deployment.Value.Name));
 
 			var config = Base64Decode(_deployment.Value.Configuration);
 			var xml = XDocument.Parse(config, LoadOptions.SetBaseUri | LoadOptions.PreserveWhitespace);
@@ -208,17 +204,14 @@ namespace Lokad.Cloud.Management
 
 			var newConfig = xml.ToString(SaveOptions.DisableFormatting);
 
-			//using (new OperationContextScope((IContextChannel) _channel))
-			//{
-				_channel.ChangeConfiguration(
-					_subscriptionId.Value,
-					_service.Value.ServiceName,
-					_deployment.Value.Name,
-					new ChangeConfigurationInput
-						{
-							Configuration = Base64Encode(newConfig)
-						});
-			//}
+			_retryPolicy.Do(() => _channel.ChangeConfiguration(
+				_subscriptionId.Value,
+				_service.Value.ServiceName,
+				_deployment.Value.Name,
+				new ChangeConfigurationInput
+					{
+						Configuration = Base64Encode(newConfig)
+					}));
 		}
 
 		void PrepareRequest()
@@ -270,24 +263,21 @@ namespace Lokad.Cloud.Management
 			var deployments = new List<Pair<Deployment, HostedService>>();
 			try
 			{
-				//using (new OperationContextScope((IContextChannel)_channel))
-				//{
-					var hostedServices = _channel.ListHostedServices(_subscriptionId.Value);
-					foreach (var hostedService in hostedServices)
+				var hostedServices = _retryPolicy.Get(() => _channel.ListHostedServices(_subscriptionId.Value));
+				foreach (var hostedService in hostedServices)
+				{
+					var service = _retryPolicy.Get(() => _channel.GetHostedServiceWithDetails(_subscriptionId.Value, hostedService.ServiceName, true));
+					if (service == null || service.Deployments == null)
 					{
-						var service = _channel.GetHostedServiceWithDetails(_subscriptionId.Value, hostedService.ServiceName, true);
-						if (service == null || service.Deployments == null)
-						{
-							_log.Warn("Azure Self-Management: skipped unexpected null service or deployment list");
-							continue;
-						}
-
-						foreach (var deployment in service.Deployments)
-						{
-							deployments.Add(Tuple.From(deployment, service));
-						}
+						_log.Warn("Azure Self-Management: skipped unexpected null service or deployment list");
+						continue;
 					}
-				//}
+
+					foreach (var deployment in service.Deployments)
+					{
+						deployments.Add(Tuple.From(deployment, service));
+					}
+				}
 			}
 			catch (MessageSecurityException)
 			{
