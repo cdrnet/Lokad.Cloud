@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Lokad.Cloud.Storage;
+using Lokad.Serialization;
 
 namespace Lokad.Cloud.Mock
 {
@@ -20,7 +21,7 @@ namespace Lokad.Cloud.Mock
 		readonly Dictionary<string,Queue<object>> _queues;
 		readonly HashSet<Pair<string,object>> _inProgressMessages;
 		readonly HashSet<Quad<string,string,string,object>> _persistedMessages;
-		readonly IBinaryFormatter _formatter;
+		readonly IDataSerializer _serializer;
 		
 		/// <summary>Default constructor.</summary>
 		public MemoryQueueStorageProvider() 
@@ -28,7 +29,7 @@ namespace Lokad.Cloud.Mock
 			_queues = new Dictionary<string, Queue<object>>();
 			_inProgressMessages = new HashSet<Pair<string, object>>();
 			_persistedMessages = new HashSet<Quad<string, string, string, object>>();
-			_formatter = new CloudFormatter();
+			_serializer = new CloudFormatter();
 		}
 
 		public IEnumerable<string> List(string prefix)
@@ -60,7 +61,7 @@ namespace Lokad.Cloud.Mock
 			{
 				using (var stream = new MemoryStream())
 				{
-					_formatter.Serialize(stream, message);
+					_serializer.Serialize(message, stream);
 				} //Checking the message is serializable.
 
 				if (!_queues.ContainsKey(queueName))

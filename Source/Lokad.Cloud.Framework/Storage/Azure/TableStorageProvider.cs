@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using Lokad.Diagnostics;
+using Lokad.Serialization;
 using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Storage.Azure
@@ -31,7 +32,7 @@ namespace Lokad.Cloud.Storage.Azure
 		const string NextPartitionKeyToken = "NextPartitionKey";
 
 		readonly CloudTableClient _tableStorage;
-		readonly IBinaryFormatter _formatter;
+		readonly IDataSerializer _serializer;
 		readonly ActionPolicy _storagePolicy;
 
 		// Instrumentation
@@ -41,10 +42,10 @@ namespace Lokad.Cloud.Storage.Azure
 		readonly ExecutionCounter _countDelete;
 
 		/// <summary>IoC constructor.</summary>
-		public TableStorageProvider(CloudTableClient tableStorage, IBinaryFormatter formatter)
+		public TableStorageProvider(CloudTableClient tableStorage, IDataSerializer serializer)
 		{
 			_tableStorage = tableStorage;
-			_formatter = formatter;
+			_serializer = serializer;
 			_storagePolicy = AzurePolicies.TransientTableErrorBackOff;
 
 			// Instrumentation
@@ -217,7 +218,7 @@ namespace Lokad.Cloud.Storage.Azure
 				{
 					var etag = context.Entities.First(e => e.Entity == fatEntity).ETag;
 					context.Detach(fatEntity);
-					yield return FatEntity.Convert<T>(fatEntity, _formatter, etag);
+					yield return FatEntity.Convert<T>(fatEntity, _serializer, etag);
 				}
 
 				Debug.Assert(context.Entities.Count == 0);
@@ -250,7 +251,7 @@ namespace Lokad.Cloud.Storage.Azure
 			context.MergeOption = MergeOption.AppendOnly;
 			context.ResolveType = ResolveFatEntityType;
 
-			var fatEntities = entities.Select(e => Tuple.From(FatEntity.Convert(e, _formatter), e));
+			var fatEntities = entities.Select(e => Tuple.From(FatEntity.Convert(e, _serializer), e));
 
 			var noBatchMode = false;
 
@@ -358,7 +359,7 @@ namespace Lokad.Cloud.Storage.Azure
 			context.MergeOption = MergeOption.AppendOnly;
 			context.ResolveType = ResolveFatEntityType;
 
-			var fatEntities = entities.Select(e => Tuple.From(FatEntity.Convert(e, _formatter), e));
+			var fatEntities = entities.Select(e => Tuple.From(FatEntity.Convert(e, _serializer), e));
 
 			var noBatchMode = false;
 

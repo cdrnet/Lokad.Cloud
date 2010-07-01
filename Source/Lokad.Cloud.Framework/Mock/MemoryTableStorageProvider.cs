@@ -9,6 +9,7 @@ using System.Data.Services.Client;
 using System.Linq;
 using Lokad.Cloud.Storage;
 using Lokad.Cloud.Storage.Azure;
+using Lokad.Serialization;
 
 namespace Lokad.Cloud.Mock
 {
@@ -22,7 +23,7 @@ namespace Lokad.Cloud.Mock
 		readonly Dictionary<string, List<MockTableEntry>> _tables;
 
 		/// <summary>Formatter as requiered to handle FatEntities.</summary>
-		readonly IBinaryFormatter _formatter;
+		readonly IDataSerializer _serializer;
 
 		/// <summary>naive global lock to make methods thread-safe.</summary>
 		readonly object _syncRoot;
@@ -36,7 +37,7 @@ namespace Lokad.Cloud.Mock
 		{
 			_tables = new Dictionary<string, List<MockTableEntry>>();
 			_syncRoot = new object();
-			_formatter = new CloudFormatter();
+			_serializer = new CloudFormatter();
 		}
 
 		/// <see cref="ITableStorageProvider.CreateTable"/>
@@ -94,7 +95,7 @@ namespace Lokad.Cloud.Mock
 
 				return from entry in _tables[tableName]
 					   where predicate(entry)
-					   select entry.ToCloudEntity<T>(_formatter);
+					   select entry.ToCloudEntity<T>(_serializer);
 			}
 		}
 
@@ -159,7 +160,7 @@ namespace Lokad.Cloud.Mock
 							PartitionKey = entity.PartitionKey,
 							RowKey = entity.RowKey,
 							ETag = etag,
-							Value = FatEntity.Convert(entity, _formatter)
+							Value = FatEntity.Convert(entity, _serializer)
 						});
 				}
 			}
@@ -197,7 +198,7 @@ namespace Lokad.Cloud.Mock
 							PartitionKey = entity.PartitionKey,
 							RowKey = entity.RowKey,
 							ETag = etag,
-							Value = FatEntity.Convert(entity, _formatter)
+							Value = FatEntity.Convert(entity, _serializer)
 						};
 				}
 			}
@@ -272,9 +273,9 @@ namespace Lokad.Cloud.Mock
 			public string ETag { get; set; }
 			public FatEntity Value { get; set; }
 
-			public CloudEntity<T> ToCloudEntity<T>(IBinaryFormatter formatter)
+			public CloudEntity<T> ToCloudEntity<T>(IDataSerializer serializer)
 			{
-				return FatEntity.Convert<T>(Value, formatter, ETag);
+				return FatEntity.Convert<T>(Value, serializer, ETag);
 			}
 		}
 	}

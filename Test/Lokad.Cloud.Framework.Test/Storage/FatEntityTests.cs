@@ -7,6 +7,7 @@ using System;
 using System.Runtime.Serialization;
 using Lokad.Cloud.Storage.Azure;
 using Lokad.Cloud.Test;
+using Lokad.Serialization;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Storage.Test
@@ -40,7 +41,7 @@ namespace Lokad.Cloud.Storage.Test
 			public TimeValueNoContract[] TimeValues { get; set; }
 		}
 
-		readonly IBinaryFormatter Formatter = GlobalSetup.Container.Resolve<IBinaryFormatter>();
+		readonly IDataSerializer _serializer = GlobalSetup.Container.Resolve<IDataSerializer>();
 
 		[Test]
 		public void Convert()
@@ -60,9 +61,9 @@ namespace Lokad.Cloud.Storage.Test
 					Value = serie
 				};
 
-			var fatEntity = FatEntity.Convert(cloudEntity, Formatter);
-			var cloudEntity2 = FatEntity.Convert<TimeSerie>(fatEntity, Formatter, null);
-			var fatEntity2 = FatEntity.Convert(cloudEntity2, Formatter);
+			var fatEntity = FatEntity.Convert(cloudEntity, _serializer);
+			var cloudEntity2 = FatEntity.Convert<TimeSerie>(fatEntity, _serializer, null);
+			var fatEntity2 = FatEntity.Convert(cloudEntity2, _serializer);
 
 			Assert.IsNotNull(cloudEntity2);
 			Assert.IsNotNull(fatEntity2);
@@ -110,9 +111,9 @@ namespace Lokad.Cloud.Storage.Test
 				Value = serie
 			};
 
-			var fatEntity = FatEntity.Convert(cloudEntity, Formatter);
-			var cloudEntity2 = FatEntity.Convert<TimeSerieNoContract>(fatEntity, Formatter, null);
-			var fatEntity2 = FatEntity.Convert(cloudEntity2, Formatter);
+			var fatEntity = FatEntity.Convert(cloudEntity, _serializer);
+			var cloudEntity2 = FatEntity.Convert<TimeSerieNoContract>(fatEntity, _serializer, null);
+			var fatEntity2 = FatEntity.Convert(cloudEntity2, _serializer);
 
 			Assert.IsNotNull(cloudEntity2);
 			Assert.IsNotNull(fatEntity2);

@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
+using Lokad.Serialization;
 
 namespace Lokad.Cloud.Storage
 {
@@ -20,7 +21,7 @@ namespace Lokad.Cloud.Storage
 	/// is favored. If not, then the <c>NetDataContractSerializer</c> is used instead.
 	/// This class is not <b>thread-safe</b>.
 	/// </remarks>
-	public class CloudFormatter : IBinaryFormatter, IIntermediateBinaryFormatter
+	public class CloudFormatter : IDataSerializer, IIntermediateDataSerializer
 	{
 		XmlObjectSerializer GetXmlSerializer(Type type)
 		{
@@ -32,7 +33,7 @@ namespace Lokad.Cloud.Storage
 			return new NetDataContractSerializer();
 		}
 
-		public void Serialize(Stream destination, object instance)
+		public void Serialize(object instance, Stream destination)
 		{
 			var serializer = GetXmlSerializer(instance.GetType());
 
@@ -63,7 +64,7 @@ namespace Lokad.Cloud.Storage
 			}
 		}
 
-		public void RepackXml(Stream destination, XElement data)
+		public void RepackXml(XElement data, Stream destination)
 		{
 			using(var compressed = destination.Compress(true))
 			using(var writer = XmlDictionaryWriter.CreateBinaryWriter(compressed, null, null, false))

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Lokad.Serialization;
 using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Storage.Azure
@@ -137,10 +138,10 @@ namespace Lokad.Cloud.Storage.Azure
 		}
 
 		/// <summary>Converts a <c>FatEntity</c> toward a <c>CloudEntity</c>.</summary>
-		public static CloudEntity<T> Convert<T>(FatEntity fatEntity, IBinaryFormatter formatter, string etag)
+		public static CloudEntity<T> Convert<T>(FatEntity fatEntity, IDataSerializer serializer, string etag)
 		{
 			var stream = new MemoryStream(fatEntity.GetData()) { Position = 0 };
-			var val = (T)formatter.Deserialize(stream, typeof(T));
+			var val = (T)serializer.Deserialize(stream, typeof(T));
 
 			return new CloudEntity<T>
 				{
@@ -153,10 +154,10 @@ namespace Lokad.Cloud.Storage.Azure
 		}
 
 		/// <summary>Converts a <c>CloudEntity</c> toward a <c>FatEntity</c>.</summary>
-		public static FatEntity Convert<T>(CloudEntity<T> cloudEntity, IBinaryFormatter formatter)
+		public static FatEntity Convert<T>(CloudEntity<T> cloudEntity, IDataSerializer serializer)
 		{
 			var stream = new MemoryStream();
-			formatter.Serialize(stream, cloudEntity.Value);
+			serializer.Serialize(cloudEntity.Value, stream);
 
 			var fatEntity = new FatEntity
 				{

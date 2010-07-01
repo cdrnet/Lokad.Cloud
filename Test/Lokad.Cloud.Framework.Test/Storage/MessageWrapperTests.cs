@@ -5,6 +5,7 @@
 
 using System.IO;
 using Lokad.Cloud.Test;
+using Lokad.Serialization;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Storage.Test
@@ -19,11 +20,11 @@ namespace Lokad.Cloud.Storage.Test
 			var om = new MessageWrapper {ContainerName = "con", BlobName = "blo"};
 
 			var stream = new MemoryStream();
-			var formatter = GlobalSetup.Container.Resolve<IBinaryFormatter>();
+			var serializer = GlobalSetup.Container.Resolve<IDataSerializer>();
 
-			formatter.Serialize(stream, om);
+			serializer.Serialize(om, stream);
 			stream.Position = 0;
-			var omBis = (MessageWrapper) formatter.Deserialize(stream, typeof(MessageWrapper));
+			var omBis = (MessageWrapper) serializer.Deserialize(stream, typeof(MessageWrapper));
 
 			Assert.AreEqual(om.ContainerName, omBis.ContainerName, "#A00");
 			Assert.AreEqual(om.BlobName, omBis.BlobName, "#A01");

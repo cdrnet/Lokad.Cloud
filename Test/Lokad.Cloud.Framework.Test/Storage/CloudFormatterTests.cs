@@ -67,7 +67,7 @@ namespace Lokad.Cloud.Storage.Test
 			using(var stream = new MemoryStream())
 			{
 				var test = "hello!";
-				formatter.Serialize(stream, test);
+				formatter.Serialize(test, stream);
 				stream.Seek(0, SeekOrigin.Begin);
 				Assert.AreEqual(test, formatter.Deserialize(stream, typeof(string)));
 				//Console.WriteLine(stream.CanSeek);
@@ -76,7 +76,7 @@ namespace Lokad.Cloud.Storage.Test
 			using(var stream = new MemoryStream())
 			{
 				var test = 123;
-				formatter.Serialize(stream, test);
+				formatter.Serialize(test, stream);
 				stream.Seek(0, SeekOrigin.Begin);
 				Assert.AreEqual(test, formatter.Deserialize(stream, typeof(int)));
 			}
@@ -84,7 +84,7 @@ namespace Lokad.Cloud.Storage.Test
 			using(var stream = new MemoryStream())
 			{
 				var test = new byte[] { 1, 2, 3 };
-				formatter.Serialize(stream, test);
+				formatter.Serialize(test, stream);
 				stream.Seek(0, SeekOrigin.Begin);
 				CollectionAssert.AreEquivalent(test, (byte[])formatter.Deserialize(stream, typeof(byte[])));
 			}
@@ -122,7 +122,7 @@ namespace Lokad.Cloud.Storage.Test
 					Field = 2.0F
 				};
 
-				formatter.Serialize(stream, items);
+				formatter.Serialize(items, stream);
 				stream.Seek(0, SeekOrigin.Begin);
 
 				var output = (MockComplex[])formatter.Deserialize(stream, typeof(MockComplex[]));
@@ -148,7 +148,7 @@ namespace Lokad.Cloud.Storage.Test
 						Flags = new List<MockEnum> {MockEnum.Item1},
 					};
 
-				formatter.Serialize(stream, item);
+				formatter.Serialize(item, stream);
 				stream.Seek(0, SeekOrigin.Begin);
 
 				var output = (MockComplex2)formatter.Deserialize(stream, typeof(MockComplex2));
@@ -167,7 +167,7 @@ namespace Lokad.Cloud.Storage.Test
 					hugeArray[i] = i;
 				}
 
-				formatter.Serialize(stream, hugeArray);
+				formatter.Serialize(hugeArray, stream);
 
 				stream.Seek(0, SeekOrigin.Begin);
 				var output = (double[])formatter.Deserialize(stream, typeof(double[]));
@@ -184,7 +184,7 @@ namespace Lokad.Cloud.Storage.Test
 			using(var stream = new MemoryStream())
 			{
 				var item = new MockWithObject { Generic = DateTime.UtcNow.Second > 30 ? (object)100 : "hello" };
-				formatter.Serialize(stream, item);
+				formatter.Serialize(item, stream);
 				stream.Seek(0, SeekOrigin.Begin);
 				var output = (MockWithObject)formatter.Deserialize(stream, typeof(MockWithObject));
 				Assert.AreEqual(item.Generic, output.Generic);
@@ -281,12 +281,12 @@ namespace Lokad.Cloud.Storage.Test
 			}
 		}
 
-		IEnumerable<T> ApplyUnpackRepackXml<T>(IIntermediateBinaryFormatter formatter, T input)
+		IEnumerable<T> ApplyUnpackRepackXml<T>(IIntermediateDataSerializer formatter, T input)
 		{
 			XElement intermediate;
 			using (var stream = new MemoryStream())
 			{
-				formatter.Serialize(stream, input);
+				formatter.Serialize(input, stream);
 				stream.Seek(0, SeekOrigin.Begin);
 				intermediate = formatter.UnpackXml(stream);
 			}
@@ -294,7 +294,7 @@ namespace Lokad.Cloud.Storage.Test
 			// Direct
 			using (var stream = new MemoryStream())
 			{
-				formatter.RepackXml(stream, intermediate);
+				formatter.RepackXml(intermediate, stream);
 				stream.Seek(0, SeekOrigin.Begin);
 				yield return (T)formatter.Deserialize(stream, typeof(T));
 			}
@@ -306,7 +306,7 @@ namespace Lokad.Cloud.Storage.Test
 
 				using (var stream = new MemoryStream())
 				{
-					formatter.RepackXml(stream, xml);
+					formatter.RepackXml(xml, stream);
 					stream.Seek(0, SeekOrigin.Begin);
 					yield return (T)formatter.Deserialize(stream, typeof(T));
 				}
@@ -329,7 +329,7 @@ namespace Lokad.Cloud.Storage.Test
 
 				using (var stream = new MemoryStream())
 				{
-					formatter.RepackXml(stream, xml);
+					formatter.RepackXml(xml, stream);
 					stream.Seek(0, SeekOrigin.Begin);
 					yield return (T)formatter.Deserialize(stream, typeof(T));
 				}

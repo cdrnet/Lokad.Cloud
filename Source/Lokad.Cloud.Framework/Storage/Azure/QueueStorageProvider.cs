@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 using System.Xml.Linq;
 using Lokad.Diagnostics;
 using Lokad.Quality;
+using Lokad.Serialization;
 using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Storage.Azure
@@ -36,7 +37,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 		readonly CloudQueueClient _queueStorage;
 		readonly IBlobStorageProvider _blobStorage;
-		readonly IBinaryFormatter _formatter;
+		readonly IDataSerializer _serializer;
 		readonly IRuntimeFinalizer _runtimeFinalizer;
 		readonly ActionPolicy _azureServerPolicy;
 
@@ -56,16 +57,18 @@ namespace Lokad.Cloud.Storage.Azure
 		/// <summary>IoC constructor.</summary>
 		/// <param name="blobStorage">Not null.</param>
 		/// <param name="queueStorage">Not null.</param>
-		/// <param name="formatter">Not null.</param>
+		/// <param name="serializer">Not null.</param>
 		/// <param name="runtimeFinalizer">May be null (handy for strict O/C mapper
 		/// scenario).</param>
 		public QueueStorageProvider(
-			CloudQueueClient queueStorage, IBlobStorageProvider blobStorage,
-			IBinaryFormatter formatter, IRuntimeFinalizer runtimeFinalizer)
+			CloudQueueClient queueStorage,
+			IBlobStorageProvider blobStorage,
+			IDataSerializer serializer,
+			IRuntimeFinalizer runtimeFinalizer)
 		{
 			_queueStorage = queueStorage;
 			_blobStorage = blobStorage;
-			_formatter = formatter;
+			_serializer = serializer;
 			_runtimeFinalizer = runtimeFinalizer;
 
 			// finalizer can be null in a strict O/C mapper scenario
@@ -114,12 +117,12 @@ namespace Lokad.Cloud.Storage.Azure
 			object item;
 			try
 			{
-				item = _formatter.Deserialize(source, typeof(T));
+				item = _serializer.Deserialize(source, typeof(T));
 			}
 			catch (SerializationException)
 			{
 				source.Position = position;
-				item = _formatter.Deserialize(source, typeof(MessageWrapper));
+				item = _serializer.Deserialize(source, typeof(MessageWrapper));
 			}
 
 			return item;
@@ -264,7 +267,7 @@ namespace Lokad.Cloud.Storage.Azure
 				var timestamp = _countPutMessage.Open();
 				using (var stream = new MemoryStream())
 				{
-					_formatter.Serialize(stream, message);
+					_serializer.Serialize(message, stream);
 
 					// Caution: MaxMessageSize is not related to the number of bytes
 					// but the number of characters when Base64-encoded:
@@ -309,7 +312,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 			using (var stream = new MemoryStream())
 			{
-				_formatter.Serialize(stream, mw);
+				_serializer.Serialize(mw, stream);
 				var serializerWrapper = stream.ToArray();
 
 				_countWrapMessage.Close(timestamp);
@@ -388,7 +391,7 @@ namespace Lokad.Cloud.Storage.Azure
 				{
 					using (var stream = new MemoryStream(rawMessage.AsBytes))
 					{
-						var mw = (MessageWrapper)_formatter.Deserialize(stream, typeof(MessageWrapper));
+						var mw = (MessageWrapper)_serializer.Deserialize(stream, typeof(MessageWrapper));
 
 						_blobStorage.DeleteBlob(mw.ContainerName, mw.BlobName);
 					}
@@ -531,7 +534,7 @@ namespace Lokad.Cloud.Storage.Azure
 			{
 				using (var stream = new MemoryStream(data))
 				{
-					wrapper = (MessageWrapper)_formatter.Deserialize(stream, typeof(MessageWrapper));
+					wrapper = (MessageWrapper)_serializer.Deserialize(stream, typeof(MessageWrapper));
 				}
 			}
 			catch (SerializationException)
@@ -547,7 +550,7 @@ namespace Lokad.Cloud.Storage.Azure
 			}
 			else
 			{
-				var formatter = _formatter as IIntermediateBinaryFormatter;
+				var formatter = _serializer as IIntermediateDataSerializer;
 				if (formatter != null)
 				{
 					using (var stream = new MemoryStream(data))
@@ -593,7 +596,7 @@ namespace Lokad.Cloud.Storage.Azure
 			{
 				using (var stream = new MemoryStream(persistedMessage.Data))
 				{
-					wrapper = (MessageWrapper)_formatter.Deserialize(stream, typeof(MessageWrapper));
+					wrapper = (MessageWrapper)_serializer.Deserialize(stream, typeof(MessageWrapper));
 				}
 			}
 			catch (SerializationException)

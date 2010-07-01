@@ -7,6 +7,7 @@ using System;
 using Autofac;
 using Autofac.Builder;
 using Lokad.Cloud.Management;
+using Lokad.Serialization;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.StorageClient;
 using Module=Autofac.Builder.Module;
@@ -20,7 +21,7 @@ namespace Lokad.Cloud.Storage.Azure
 	{
 		protected override void Load(ContainerBuilder builder)
 		{
-			builder.Register(typeof (CloudFormatter)).As<IBinaryFormatter>().DefaultOnly();
+			builder.Register<CloudFormatter>().As<IDataSerializer>().DefaultOnly();
 
 			// .NET 3.5 compiler can't infer types properly here, hence the directive
 			// After moving to VS2010 (in .NET 3.5 mode), lambdas
@@ -66,7 +67,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 		static ITableStorageProvider TableStorageProvider(IContext c)
 		{
-			IBinaryFormatter formatter;
+			IDataSerializer formatter;
 			if (!c.TryResolve(out formatter))
 			{
 				formatter = new CloudFormatter();
@@ -77,7 +78,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 		static IQueueStorageProvider QueueStorageProvider(IContext c)
 		{
-			IBinaryFormatter formatter;
+			IDataSerializer formatter;
 			if (!c.TryResolve(out formatter))
 			{
 				formatter = new CloudFormatter();
@@ -95,7 +96,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 		static IBlobStorageProvider BlobStorageProvider(IContext c)
 		{
-			IBinaryFormatter formatter;
+			IDataSerializer formatter;
 			if (!c.TryResolve(out formatter))
 			{
 				formatter = new CloudFormatter();

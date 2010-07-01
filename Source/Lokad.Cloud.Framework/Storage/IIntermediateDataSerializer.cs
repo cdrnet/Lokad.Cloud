@@ -3,28 +3,12 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using System;
 using System.IO;
 using System.Xml.Linq;
+using Lokad.Serialization;
 
 namespace Lokad.Cloud.Storage
 {
-	/// <summary>Defines the interface for a custom formatter.</summary>
-	public interface IBinaryFormatter
-	{
-		/// <summary>Serializes an object to a stream.</summary>
-		/// <param name="destination">The destination stream.</param>
-		/// <param name="instance">The object.</param>
-		void Serialize(Stream destination, object instance);
-
-		/// <summary>Deserializes an object from a stream.</summary>
-		/// <typeparam name="T">The type of the object.</typeparam>
-		/// <param name="source">The source stream.</param>
-		/// <param name="type">The type of the object.</param>
-		/// <returns>The deserialized object.</returns>
-		object Deserialize(Stream source, Type type);
-	}
-
 	/// <summary>
 	/// Optional extension for custom formatters supporting an
 	/// intermediate xml representation for inspection and recovery.
@@ -37,12 +21,12 @@ namespace Lokad.Cloud.Storage
 	/// should be registered in IoC as IBinaryFormatter, not by
 	/// this extension interface.
 	/// </remarks>
-	public interface IIntermediateBinaryFormatter : IBinaryFormatter
+	public interface IIntermediateDataSerializer : IDataSerializer
 	{
 		/// <summary>Unpack and transform an object from a stream to xml.</summary>
 		XElement UnpackXml(Stream source);
 
 		/// <summary>Transform and repack an object from xml to a stream.</summary>
-		void RepackXml(Stream destination, XElement data);
+		void RepackXml(XElement data, Stream destination);
 	}
 }

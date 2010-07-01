@@ -213,13 +213,13 @@
     <Compile Include="Storage\Azure\StorageModule.cs" />
     <Compile Include="Storage\Azure\TableStorageProvider.cs" />
     <Compile Include="Storage\BlobCounter.cs" />
+    <Compile Include="Storage\IIntermediateDataSerializer.cs" />
     <Compile Include="Storage\UntypedBlobName.cs" />
     <Compile Include="Storage\BlobName.cs" />
     <Compile Include="Storage\CloudEntity.cs" />
     <Compile Include="Storage\CloudFormatter.cs" />
     <Compile Include="Storage\CloudTable.cs" />
     <Compile Include="Storage\DelayedQueue.cs" />
-    <Compile Include="Storage\IBinaryFormatter.cs" />
     <Compile Include="Storage\IBlobStorageProvider.cs" />
     <Compile Include="Storage\IQueueStorageProvider.cs" />
     <Compile Include="Storage\ITableStorageProvider.cs" />

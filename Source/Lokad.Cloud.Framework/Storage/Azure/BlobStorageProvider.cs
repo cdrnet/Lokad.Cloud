@@ -9,6 +9,7 @@ using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
 using Lokad.Diagnostics;
+using Lokad.Serialization;
 using Lokad.Threading;
 using Microsoft.WindowsAzure.StorageClient;
 
@@ -21,7 +22,7 @@ namespace Lokad.Cloud.Storage.Azure
 	public class BlobStorageProvider : IBlobStorageProvider
 	{
 		readonly CloudBlobClient _blobStorage;
-		readonly IBinaryFormatter _formatter;
+		readonly IDataSerializer _serializer;
 		readonly ActionPolicy _azureServerPolicy;
 
 		// Instrumentation
@@ -31,10 +32,10 @@ namespace Lokad.Cloud.Storage.Azure
 		readonly ExecutionCounter _countUpdateIfNotModified;
 		readonly ExecutionCounter _countDeleteBlob;
 
-		public BlobStorageProvider(CloudBlobClient blobStorage, IBinaryFormatter formatter)
+		public BlobStorageProvider(CloudBlobClient blobStorage, IDataSerializer serializer)
 		{
 			_blobStorage = blobStorage;
-			_formatter = formatter;
+			_serializer = serializer;
 			_azureServerPolicy = AzurePolicies.TransientServerErrorBackOff;
 
 			// Instrumentation
@@ -110,7 +111,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 			using(var stream = new MemoryStream())
 			{
-				_formatter.Serialize(stream, item);
+				_serializer.Serialize(item, stream);
 
 				var container = _blobStorage.GetContainerReference(containerName);
 
@@ -279,7 +280,7 @@ namespace Lokad.Cloud.Storage.Azure
 				}
 
 				stream.Seek(0, SeekOrigin.Begin);
-				var deserialized = _formatter.Deserialize(stream, type);
+				var deserialized = _serializer.Deserialize(stream, type);
 
 				if (deserialized == null)
 				{
@@ -295,7 +296,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			etag = null;
 
-			var formatter = _formatter as IIntermediateBinaryFormatter;
+			var formatter = _serializer as IIntermediateDataSerializer;
 			if (formatter == null)
 			{
 				return Maybe<XElement>.Empty;
@@ -394,7 +395,7 @@ namespace Lokad.Cloud.Storage.Azure
 					newEtag = blob.Properties.ETag;
 
 					stream.Seek(0, SeekOrigin.Begin);
-					var deserialized = (T)_formatter.Deserialize(stream, typeof(T));
+					var deserialized = (T)_serializer.Deserialize(stream, typeof(T));
 					_countGetBlobIfModified.Close(timestamp);
 					return deserialized;
 				}
@@ -488,7 +489,7 @@ namespace Lokad.Cloud.Storage.Azure
 					originalEtag = blob.Properties.ETag;
 
 					rstream.Seek(0, SeekOrigin.Begin);
-					var blobData = _formatter.Deserialize(rstream, typeof(T));
+					var blobData = _serializer.Deserialize(rstream, typeof(T));
 
 					input = blobData == null ? Maybe<T>.Empty : (T) blobData;
 				}
@@ -523,7 +524,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 			using (var wstream = new MemoryStream())
 			{
-				_formatter.Serialize(wstream, result.Value);
+				_serializer.Serialize(result.Value, wstream);
 				wstream.Seek(0, SeekOrigin.Begin);
 
 				var success = string.IsNullOrEmpty(originalEtag) ? 
