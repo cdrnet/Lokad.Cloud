@@ -503,6 +503,107 @@
             Starts this instance up.
             </summary>
     </member>
+    <member name="T:Lokad.ISyntax`1">
+      <summary>
+            Interface for implementing decoupled configuration extensions. It hides
+            unnecessary members from the IntelliSense.
+            </summary>
+      <typeparam name="TSyntaxTarget">syntax target</typeparam>
+    </member>
+    <member name="M:Lokad.ISyntax`1.ToString">
+      <summary>
+            Returns a <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
+            </summary>
+      <returns>
+            A <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
+            </returns>
+    </member>
+    <member name="M:Lokad.ISyntax`1.Equals(System.Object)">
+      <summary>
+            Determines whether the specified <see cref="T:System.Object" /> is equal to the current <see cref="T:System.Object" />.
+            </summary>
+      <param name="obj">The <see cref="T:System.Object" /> to compare with the current <see cref="T:System.Object" />.</param>
+      <returns>
+            true if the specified <see cref="T:System.Object" /> is equal to the current <see cref="T:System.Object" />; otherwise, false.
+            </returns>
+      <exception cref="T:System.NullReferenceException">
+            The <paramref name="obj" /> parameter is null.
+            </exception>
+    </member>
+    <member name="M:Lokad.ISyntax`1.GetHashCode">
+      <summary>
+            Serves as a hash function for a particular type.
+            </summary>
+      <returns>
+            A hash code for the current <see cref="T:System.Object" />.
+            </returns>
+    </member>
+    <member name="M:Lokad.ISyntax`1.GetType">
+      <summary>
+            Gets the <see cref="T:System.Type" /> of the current instance.
+            </summary>
+      <returns>
+            The <see cref="T:System.Type" /> instance that represents the exact runtime type of the current instance.
+            </returns>
+    </member>
+    <member name="P:Lokad.ISyntax`1.Target">
+      <summary>
+            Gets the underlying object.
+            </summary>
+      <value>The underlying object.</value>
+    </member>
+    <member name="T:Lokad.ISyntax`2">
+      <summary>
+            Interface for implementing decoupled configuration extensions 
+            that are limited by the subject.
+            </summary>
+      <typeparam name="TTarget">The type of the target.</typeparam>
+      <typeparam name="TSubject">The type of the subject to extend.</typeparam>
+    </member>
+    <member name="T:Lokad.Serialization.IDataSerializer">
+      <summary>
+            Generic data serializer interface.
+            </summary>
+    </member>
+    <member name="M:Lokad.Serialization.IDataSerializer.Serialize(System.Object,System.IO.Stream)">
+      <summary>
+            Serializes the object to the specified stream
+            </summary>
+      <param name="instance">The instance.</param>
+      <param name="destinationStream">The destination stream.</param>
+    </member>
+    <member name="M:Lokad.Serialization.IDataSerializer.Deserialize(System.IO.Stream,System.Type)">
+      <summary>
+            Deserializes the object from specified source stream.
+            </summary>
+      <param name="sourceStream">The source stream.</param>
+      <param name="type">The type of the object to deserialize.</param>
+      <returns>deserialized object</returns>
+    </member>
+    <member name="T:Lokad.Serialization.BinaryDataSerializer">
+      <summary>
+            Binary data serializer using <see cref="T:System.Runtime.Serialization.Formatters.Binary.BinaryFormatter" /></summary>
+    </member>
+    <member name="F:Lokad.Serialization.BinaryDataSerializer.Instance">
+      <summary>
+            Singleton instance of the serializer
+            </summary>
+    </member>
+    <member name="M:Lokad.Serialization.BinaryDataSerializer.Serialize(System.Object,System.IO.Stream)">
+      <summary>
+            Serializes the object to the specified stream
+            </summary>
+      <param name="instance">The instance.</param>
+      <param name="destinationStream">The destination stream.</param>
+    </member>
+    <member name="M:Lokad.Serialization.BinaryDataSerializer.Deserialize(System.IO.Stream,System.Type)">
+      <summary>
+            Deserializes the object from specified source stream.
+            </summary>
+      <param name="sourceStream">The source stream.</param>
+      <param name="type">The type of the object to deserialize.</param>
+      <returns>deserialized object</returns>
+    </member>
     <member name="T:Lokad.Maybe`1">
       <summary>
             Helper class that indicates nullable value in a good-citizenship code
@@ -529,6 +630,22 @@
             </summary>
       <param name="defaultValue">The default value.</param>
       <returns>value</returns>
+    </member>
+    <member name="M:Lokad.Maybe`1.GetValue(System.Func{Lokad.Maybe{`0}})">
+      <summary>
+            Retrieves value from this instance, using a <paramref name="defaultValue" />
+            factory, if it is absent
+            </summary>
+      <param name="defaultValue">The default value to provide.</param>
+      <returns>maybe value</returns>
+    </member>
+    <member name="M:Lokad.Maybe`1.GetValue(Lokad.Maybe{`0})">
+      <summary>
+            Retrieves value from this instance, using a <paramref name="defaultValue" />
+            if it is absent
+            </summary>
+      <param name="defaultValue">The default value to provide.</param>
+      <returns>maybe value</returns>
     </member>
     <member name="M:Lokad.Maybe`1.Apply(System.Action{`0})">
       <summary>
@@ -934,12 +1051,11 @@
             Base attribute for marking classes with some design constraints
             </summary>
     </member>
-    <member name="M:Lokad.Quality.ClassDesignAttribute.#ctor(System.String,System.String[])">
+    <member name="M:Lokad.Quality.ClassDesignAttribute.#ctor(System.String[])">
       <summary>
             Initializes a new instance of the <see cref="T:Lokad.Quality.ClassDesignAttribute" /> class.
             </summary>
-      <param name="firstDesignTag">The first design tag.</param>
-      <param name="otherDesignTags">The other design tags.</param>
+      <param name="designTags">The design tags.</param>
     </member>
     <member name="M:Lokad.Quality.ClassDesignAttribute.#ctor(System.String)">
       <summary>
@@ -947,12 +1063,17 @@
             </summary>
       <param name="classDesignTag">The class design tag.</param>
     </member>
-    <member name="M:Lokad.Quality.ClassDesignAttribute.#ctor(Lokad.Quality.DesignTag,Lokad.Quality.DesignTag[])">
+    <member name="M:Lokad.Quality.ClassDesignAttribute.#ctor(Lokad.Quality.DesignTag)">
       <summary>
             Initializes a new instance of the <see cref="T:Lokad.Quality.ClassDesignAttribute" /> class.
             </summary>
-      <param name="firstDesignTag">The first design tag.</param>
-      <param name="otherDesignTags">The other design tags.</param>
+      <param name="designTag">The design tag.</param>
+    </member>
+    <member name="M:Lokad.Quality.ClassDesignAttribute.#ctor(Lokad.Quality.DesignTag[])">
+      <summary>
+            Initializes a new instance of the <see cref="T:Lokad.Quality.ClassDesignAttribute" /> class.
+            </summary>
+      <param name="designTags">The design tags.</param>
     </member>
     <member name="P:Lokad.Quality.ClassDesignAttribute.ClassDesignTags">
       <summary>
@@ -1029,8 +1150,14 @@
             	Converts the tag to string.
             </summary>
       <param name="tag">The tag.</param>
-      <returns>
-      </returns>
+      <returns>string representation for the tag</returns>
+    </member>
+    <member name="M:Lokad.Quality.DesignUtil.ConvertTagsToStrings(Lokad.Quality.DesignTag[])">
+      <summary>
+            Converts multiple tags to strings.
+            </summary>
+      <param name="tags">The tags to convert.</param>
+      <returns>array of string representations for the design tags</returns>
     </member>
     <member name="M:Lokad.Quality.DesignUtil.GetClassDesignTags(System.Type,System.Boolean)">
       <summary>
@@ -1818,7 +1945,7 @@
       <summary>
             Helper class for creating fluent APIs
             </summary>
-      <typeparam name="T">underlying type</typeparam>
+      <typeparam name="TSyntaxTarget">underlying type</typeparam>
     </member>
     <member name="M:Lokad.Syntax`1.#ctor(`0)">
       <summary>
@@ -3515,6 +3642,73 @@
       <param name="path">The path to load from.</param>
       <returns>graph loaded from the specified path</returns>
     </member>
+    <member name="T:Lokad.EnumComparer`1">
+      <summary>
+            A fast and efficient implementation of <see cref="T:System.Collections.Generic.IEqualityComparer`1" /> for Enum types.
+            Useful for dictionaries that use Enums as their keys. 
+            </summary>
+      <remarks>
+            http://www.codeproject.com/KB/cs/EnumComparer.aspx
+            </remarks>
+      <example>
+        <code>
+            var dict = new Dictionary&lt;DayOfWeek, string&gt;(EnumComparer&lt;DayOfWeek&gt;.Instance);
+            </code>
+      </example>
+      <typeparam name="TEnum">The type of the Enum.</typeparam>
+    </member>
+    <member name="F:Lokad.EnumComparer`1.Instance">
+      <summary>
+            The singleton accessor.
+            </summary>
+    </member>
+    <member name="M:Lokad.EnumComparer`1.#ctor">
+      <summary>
+            A private constructor to prevent user instantiation.
+            </summary>
+    </member>
+    <member name="M:Lokad.EnumComparer`1.Equals(`0,`0)">
+      <summary>
+            Determines whether the specified objects are equal.
+            </summary>
+      <param name="x">The first object of type <typeparamref name="TEnum" /> to compare.</param>
+      <param name="y">The second object of type <typeparamref name="TEnum" /> to compare.</param>
+      <returns>
+            true if the specified objects are equal; otherwise, false.
+            </returns>
+    </member>
+    <member name="M:Lokad.EnumComparer`1.GetHashCode(`0)">
+      <summary>
+            Returns a hash code for the specified object.
+            </summary>
+      <param name="obj">The <see cref="T:System.Object" /> for which a hash code is to be returned.</param>
+      <returns>A hash code for the specified object.</returns>
+      <exception cref="T:System.ArgumentNullException">
+            The type of <paramref name="obj" /> is a reference type and <paramref name="obj" /> is null.
+            </exception>
+    </member>
+    <member name="M:Lokad.EnumComparer`1.GenerateEquals">
+      <summary>
+            Generates a comparison method similiar to this:
+            <code>
+            bool Equals(TEnum x, TEnum y)
+            {
+                return x == y;
+            }
+            </code></summary>
+      <returns>The generated method.</returns>
+    </member>
+    <member name="M:Lokad.EnumComparer`1.GenerateGetHashCode">
+      <summary>
+            Generates a GetHashCode method similar to this:
+            <code>
+            int GetHashCode(TEnum obj)
+            {
+                return ((int)obj).GetHashCode();
+            }
+            </code></summary>
+      <returns>The generated method.</returns>
+    </member>
     <member name="T:Lokad.EnumUtil">
       <summary>
             Enum helper class from xLim
@@ -3582,6 +3776,11 @@
     <member name="F:Lokad.EnumUtil`1.ValuesWithoutDefault">
       <summary>
             Values of the <typeparamref name="TEnum" /> without the default value.
+            </summary>
+    </member>
+    <member name="F:Lokad.EnumUtil`1.Comparer">
+      <summary>
+            Efficient comparer for the enum
             </summary>
     </member>
     <member name="M:Lokad.EnumUtil`1.ConvertSafelyFrom``1(``0)">
@@ -3983,6 +4182,58 @@
       <returns>
             requested instance of <typeparamref name="TService" /></returns>
       <exception cref="T:Lokad.ResolutionException">if there is resolution problem</exception>
+    </member>
+    <member name="T:Lokad.FormatUtil">
+      <summary>
+            Pretty format utils
+            </summary>
+    </member>
+    <member name="M:Lokad.FormatUtil.SizeInBytes(System.Int64)">
+      <summary>
+            Formats the size in bytes to a pretty string.
+            </summary>
+      <param name="sizeInBytes">The size in bytes.</param>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:Lokad.FormatUtil.TimeOffsetUtc(System.DateTime)">
+      <summary>
+            Displays time passed since (or remaining before) some event expressed in UTC, displaying it as '<em>5 days ago</em>'.
+            </summary>
+      <param name="dateInUtc">The date in UTC.</param>
+      <returns>formatted event</returns>
+    </member>
+    <member name="M:Lokad.FormatUtil.TimeOffset(System.DateTime)">
+      <summary>
+            Displays time passed since some event expressed, displaying it as '<em>5 days ago</em>'.
+            </summary>
+      <param name="localTime">The local time.</param>
+      <returns>
+      </returns>
+    </member>
+    <member name="M:Lokad.FormatUtil.TimeSpan(System.TimeSpan)">
+      <summary>
+            Formats time span nicely
+            </summary>
+      <param name="offset">The offset.</param>
+      <returns>formatted string</returns>
+    </member>
+    <member name="T:Lokad.GuidUtil">
+      <summary>
+            Guid comb generator as in NHibernate
+            </summary>
+    </member>
+    <member name="M:Lokad.GuidUtil.NewComb">
+      <summary>
+            Generates new COMB Guid
+            </summary>
+      <returns>new comb guid</returns>
+    </member>
+    <member name="M:Lokad.GuidUtil.NewStringSortable">
+      <summary>
+            Creates GUIDs that have same uniqueness as COMB, but are string-sortable
+            </summary>
+      <returns>String-sortable GUID</returns>
     </member>
     <member name="T:Lokad.ResourceUtil`1">
       <summary>
@@ -4545,6 +4796,14 @@
       <param name="suffix">The suffix.</param>
       <returns>composed path</returns>
       <exception cref="T:System.ArgumentException">if path parameters are null or empty</exception>
+    </member>
+    <member name="M:Lokad.Rules.Scope.ForLogging(System.String,System.Text.StringBuilder)">
+      <summary>
+            Creates new scope for logging into the provided string builder
+            </summary>
+      <param name="scopeName">Name of the scope.</param>
+      <param name="log">The builder to write to.</param>
+      <returns>composed scope</returns>
     </member>
     <member name="T:Lokad.Rules.ExtendIScope">
       <summary> /// <para>Extensions that encapsulate some repetitive tasks
@@ -6332,6 +6591,13 @@
             that can handle exceptions, as determined by 
             <paramref name="handler" /></summary>
       <param name="handler">The exception handler.</param>
+      <returns>syntax</returns>
+    </member>
+    <member name="M:Lokad.ActionPolicy.From(System.Func{System.Exception,System.Boolean})">
+      <summary> Starts building <see cref="T:Lokad.ActionPolicy" /> 
+            that can handle exceptions, as determined by 
+            <paramref name="doWeHandle" /> function</summary>
+      <param name="doWeHandle"> function that returns <em>true</em> if we can hande the specified exception.</param>
       <returns>syntax</returns>
     </member>
     <member name="M:Lokad.ActionPolicy.Handle``1">
