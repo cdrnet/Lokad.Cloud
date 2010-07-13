@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.Net;
 using Autofac;
 using Autofac.Builder;
 using Lokad.Cloud.Management;
@@ -19,6 +20,11 @@ namespace Lokad.Cloud.Storage.Azure
 	/// <see cref="TableStorageProvider"/> from the <see cref="ICloudConfigurationSettings"/>.</summary>
 	public sealed class StorageModule : Module
 	{
+		static StorageModule()
+		{
+			
+		}
+
 		protected override void Load(ContainerBuilder builder)
 		{
 			builder.Register<CloudFormatter>().As<IDataSerializer>().DefaultOnly();
@@ -46,6 +52,11 @@ namespace Lokad.Cloud.Storage.Azure
 			CloudStorageAccount account;
 			if (CloudStorageAccount.TryParse(settings.DataConnectionString, out account))
 			{
+				// http://blogs.msdn.com/b/windowsazurestorage/archive/2010/06/25/nagle-s-algorithm-is-not-friendly-towards-small-requests.aspx
+				ServicePointManager.FindServicePoint(account.BlobEndpoint).UseNagleAlgorithm = false;
+				ServicePointManager.FindServicePoint(account.TableEndpoint).UseNagleAlgorithm = false;
+				ServicePointManager.FindServicePoint(account.QueueEndpoint).UseNagleAlgorithm = false;
+
 				return account;
 			}
 			throw new InvalidOperationException("Failed to get valid connection string");
