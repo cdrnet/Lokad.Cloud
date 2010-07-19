@@ -140,10 +140,11 @@ namespace Lokad.Cloud.Storage.Azure
 		/// <summary>Converts a <c>FatEntity</c> toward a <c>CloudEntity</c>.</summary>
 		public static CloudEntity<T> Convert<T>(FatEntity fatEntity, IDataSerializer serializer, string etag)
 		{
-			var stream = new MemoryStream(fatEntity.GetData()) { Position = 0 };
-			var val = (T)serializer.Deserialize(stream, typeof(T));
+			using (var stream = new MemoryStream(fatEntity.GetData()) { Position = 0 })
+			{
+				var val = (T)serializer.Deserialize(stream, typeof(T));
 
-			return new CloudEntity<T>
+				return new CloudEntity<T>
 				{
 					PartitionKey = fatEntity.PartitionKey,
 					RowKey = fatEntity.RowKey,
@@ -151,24 +152,25 @@ namespace Lokad.Cloud.Storage.Azure
 					ETag = etag,
 					Value = val
 				};
+			}
 		}
 
 		/// <summary>Converts a <c>CloudEntity</c> toward a <c>FatEntity</c>.</summary>
 		public static FatEntity Convert<T>(CloudEntity<T> cloudEntity, IDataSerializer serializer)
 		{
-			var stream = new MemoryStream();
-			serializer.Serialize(cloudEntity.Value, stream);
-
 			var fatEntity = new FatEntity
-				{
-					PartitionKey = cloudEntity.PartitionKey,
-					RowKey = cloudEntity.RowKey,
-					Timestamp = cloudEntity.Timestamp
-				};
+			{
+				PartitionKey = cloudEntity.PartitionKey,
+				RowKey = cloudEntity.RowKey,
+				Timestamp = cloudEntity.Timestamp
+			};
 
-			fatEntity.SetData(stream.ToArray());
-
-			return fatEntity;
+			using (var stream = new MemoryStream())
+			{
+				serializer.Serialize(cloudEntity.Value, stream);
+				fatEntity.SetData(stream.ToArray());
+				return fatEntity;
+			}
 		}
 	}
 }
