@@ -5,6 +5,7 @@
 
 using System;
 using System.ServiceModel;
+using System.ServiceModel.Security;
 
 namespace Lokad.Cloud.Management.Azure
 {
@@ -40,7 +41,15 @@ namespace Lokad.Cloud.Management.Azure
 
 		static bool TransientServerErrorExceptionFilter(Exception exception)
 		{
-			if (exception is EndpointNotFoundException || exception is TimeoutException)
+			// NOTE: We observed Azure hiccups that caused transport security
+			// to momentarily fail, causing a MessageSecurity exception (#1405).
+			// We thus tread this exception as a transient error.
+			// In case it is a permanent error it will still show up,
+			// although delayed by the 30 retrials.
+
+			if (exception is EndpointNotFoundException
+				|| exception is TimeoutException
+				|| exception is MessageSecurityException)
 			{
 				return true;
 			}
