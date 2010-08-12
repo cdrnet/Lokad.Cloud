@@ -70,6 +70,11 @@ namespace Lokad.Cloud.Storage
 			return provider.GetBlob<T>(name.ContainerName, name.ToString());
 		}
 
+        public static string GetBlobEtag<T>(this IBlobStorageProvider provider, BlobName<T> name)
+        {
+            return provider.GetBlobEtag(name.ContainerName, name.ToString());
+        }
+
 		/// <summary>Gets the corresponding object. If the deserialization fails
 		/// just delete the existing copy.</summary>
 		public static Maybe<T> GetBlobOrDelete<T>(this IBlobStorageProvider provider, string containerName, string blobName)
