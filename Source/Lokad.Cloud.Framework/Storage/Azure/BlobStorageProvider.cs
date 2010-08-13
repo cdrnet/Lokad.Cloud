@@ -105,92 +105,92 @@ namespace Lokad.Cloud.Storage.Azure
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
-        public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, string expectedEtag, out string outEtag)
-        {
-            var timestamp = _countPutBlob.Open();
+		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, string expectedEtag, out string outEtag)
+		{
+			var timestamp = _countPutBlob.Open();
 
-            using (var stream = new MemoryStream())
-            {
-                _serializer.Serialize(item, stream);
+			using (var stream = new MemoryStream())
+			{
+				_serializer.Serialize(item, stream);
 
-                var container = _blobStorage.GetContainerReference(containerName);
+				var container = _blobStorage.GetContainerReference(containerName);
 
-                Func<Maybe<string>> doUpload = () =>
-                {
-                    var blob = container.GetBlobReference(blobName);
+				Func<Maybe<string>> doUpload = () =>
+				{
+					var blob = container.GetBlobReference(blobName);
 
-                    // single remote call
-                    var result = UploadBlobContent(blob, stream, overwrite, expectedEtag);
+					// single remote call
+					var result = UploadBlobContent(blob, stream, overwrite, expectedEtag);
 
-                    return result;
-                };
+					return result;
+				};
 
-                try
-                {
-                    var result = doUpload();
-                    if (!result.HasValue)
-                    {
-                        outEtag = null;
-                        return false;
-                    }
+				try
+				{
+					var result = doUpload();
+					if (!result.HasValue)
+					{
+						outEtag = null;
+						return false;
+					}
 
-                    outEtag = result.Value;
-                    _countPutBlob.Close(timestamp);
-                    return true;
-                }
-                catch (StorageClientException ex)
-                {
-                    // if the container does not exist, it gets created
-                    if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
-                    {
-                        // caution: the container might have been freshly deleted
-                        // (multiple retries are needed in such a situation)
-                        var tentativeEtag = Maybe<string>.Empty;
-                        AzurePolicies.SlowInstantiation.Do(() =>
-                        {
-                            _azureServerPolicy.Get<bool>(container.CreateIfNotExist);
+					outEtag = result.Value;
+					_countPutBlob.Close(timestamp);
+					return true;
+				}
+				catch (StorageClientException ex)
+				{
+					// if the container does not exist, it gets created
+					if (ex.ErrorCode == StorageErrorCode.ContainerNotFound)
+					{
+						// caution: the container might have been freshly deleted
+						// (multiple retries are needed in such a situation)
+						var tentativeEtag = Maybe<string>.Empty;
+						AzurePolicies.SlowInstantiation.Do(() =>
+						{
+							_azureServerPolicy.Get<bool>(container.CreateIfNotExist);
 
-                            tentativeEtag = doUpload();
-                        });
+							tentativeEtag = doUpload();
+						});
 
-                        if (!tentativeEtag.HasValue)
-                        {
-                            outEtag = null;
-                            return false;
-                        }
+						if (!tentativeEtag.HasValue)
+						{
+							outEtag = null;
+							return false;
+						}
 
-                        outEtag = tentativeEtag.Value;
-                        _countPutBlob.Close(timestamp);
-                        return true;
-                    }
+						outEtag = tentativeEtag.Value;
+						_countPutBlob.Close(timestamp);
+						return true;
+					}
 
-                    if (ex.ErrorCode == StorageErrorCode.BlobAlreadyExists && !overwrite)
-                    {
-                        // See http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/fff78a35-3242-4186-8aee-90d27fbfbfd4
-                        // and http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/86b9f184-c329-4c30-928f-2991f31e904b/
+					if (ex.ErrorCode == StorageErrorCode.BlobAlreadyExists && !overwrite)
+					{
+						// See http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/fff78a35-3242-4186-8aee-90d27fbfbfd4
+						// and http://social.msdn.microsoft.com/Forums/en-US/windowsazure/thread/86b9f184-c329-4c30-928f-2991f31e904b/
 
-                        outEtag = null;
-                        return false;
-                    }
+						outEtag = null;
+						return false;
+					}
 
-                    var result = doUpload();
-                    if (!result.HasValue)
-                    {
-                        outEtag = null;
-                        return false;
-                    }
+					var result = doUpload();
+					if (!result.HasValue)
+					{
+						outEtag = null;
+						return false;
+					}
 
-                    outEtag = result.Value;
-                    _countPutBlob.Close(timestamp);
-                    return true;
-                }
-            }
-        }
+					outEtag = result.Value;
+					_countPutBlob.Close(timestamp);
+					return true;
+				}
+			}
+		}
 
-        public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string outEtag)
-        {
-            return PutBlob(containerName, blobName, item, type, overwrite, null, out outEtag);
-        }
+		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string outEtag)
+		{
+			return PutBlob(containerName, blobName, item, type, overwrite, null, out outEtag);
+		}
 
 		Maybe<string> UploadBlobContent(CloudBlob blob, Stream stream, bool overwrite)
 		{
@@ -212,9 +212,9 @@ namespace Lokad.Cloud.Storage.Azure
 			else // overwrite is OK
 			{
 				options = string.IsNullOrEmpty(expectedEtag) ?
-				                                             	// case with no etag constraint
+																// case with no etag constraint
 					new BlobRequestOptions { AccessCondition = AccessCondition.None } :
-					                                                                  	// case with etag constraint
+																						// case with etag constraint
 					new BlobRequestOptions { AccessCondition = AccessCondition.IfMatch(expectedEtag) };
 			}
 
@@ -533,9 +533,9 @@ namespace Lokad.Cloud.Storage.Azure
 				wstream.Seek(0, SeekOrigin.Begin);
 
 				var success = string.IsNullOrEmpty(originalEtag) ? 
-				                                                 	// no etag, then we should not overwrite a blob created meantime
+																	// no etag, then we should not overwrite a blob created meantime
 					UploadBlobContent(blob, wstream, false, null).HasValue : 
-					                                                       	// existing etag, then we should not overwrite a different etag
+																			// existing etag, then we should not overwrite a different etag
 					UploadBlobContent(blob, wstream, true, originalEtag).HasValue;
 
 				if(success)

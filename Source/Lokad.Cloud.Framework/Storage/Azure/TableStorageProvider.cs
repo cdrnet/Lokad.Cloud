@@ -397,6 +397,15 @@ namespace Lokad.Cloud.Storage.Azure
 								ReadETagsAndDetach(context, (entity, etag) => cloudEntityOfFatEntity[entity].ETag = etag);
 								noBatchMode = true;
 							}
+							else if (errorCode == TableErrorCodeStrings.TableNotFound)
+							{
+								AzurePolicies.SlowInstantiation.Do(() =>
+									{
+										_tableStorage.CreateTableIfNotExist(tableName);
+										context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
+										ReadETagsAndDetach(context, (entity, etag) => cloudEntityOfFatEntity[entity].ETag = etag);
+									});
+							}
 							else
 							{
 								throw;

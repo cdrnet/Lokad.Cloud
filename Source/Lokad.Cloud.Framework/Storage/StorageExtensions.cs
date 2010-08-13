@@ -70,10 +70,10 @@ namespace Lokad.Cloud.Storage
 			return provider.GetBlob<T>(name.ContainerName, name.ToString());
 		}
 
-        public static string GetBlobEtag<T>(this IBlobStorageProvider provider, BlobName<T> name)
-        {
-            return provider.GetBlobEtag(name.ContainerName, name.ToString());
-        }
+		public static string GetBlobEtag<T>(this IBlobStorageProvider provider, BlobName<T> name)
+		{
+			return provider.GetBlobEtag(name.ContainerName, name.ToString());
+		}
 
 		/// <summary>Gets the corresponding object. If the deserialization fails
 		/// just delete the existing copy.</summary>
@@ -112,11 +112,11 @@ namespace Lokad.Cloud.Storage
 			return provider.PutBlob(name.ContainerName, name.ToString(), item, overwrite);
 		}
 
-        public static IEnumerable<T> List<T>(
-            this IBlobStorageProvider provider, T prefix) where T : UntypedBlobName
+		public static IEnumerable<T> List<T>(
+			this IBlobStorageProvider provider, T prefix) where T : UntypedBlobName
 		{
 			return provider.List(prefix.ContainerName, prefix.ToString())
-                .Select(rawName => UntypedBlobName.Parse<T>(rawName));
+				.Select(rawName => UntypedBlobName.Parse<T>(rawName));
 		}
 
 		public static bool UpdateIfNotModified<T>(this IBlobStorageProvider provider,
