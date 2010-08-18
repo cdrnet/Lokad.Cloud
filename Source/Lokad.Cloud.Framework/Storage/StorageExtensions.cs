@@ -70,6 +70,11 @@ namespace Lokad.Cloud.Storage
 			return provider.GetBlob<T>(name.ContainerName, name.ToString());
 		}
 
+        public static Maybe<T> GetBlob<T>(this IBlobStorageProvider provider, BlobName<T> name, out string etag)
+        {
+            return provider.GetBlob<T>(name.ContainerName, name.ToString(), out etag);
+        }
+
 		public static string GetBlobEtag<T>(this IBlobStorageProvider provider, BlobName<T> name)
 		{
 			return provider.GetBlobEtag(name.ContainerName, name.ToString());
@@ -111,6 +116,12 @@ namespace Lokad.Cloud.Storage
 		{
 			return provider.PutBlob(name.ContainerName, name.ToString(), item, overwrite);
 		}
+
+        /// <summary>Push the blob only if etag is matching the etag of the blob in BlobStorage</summary>
+        public static bool PutBlob<T>(this IBlobStorageProvider provider, BlobName<T> name, T item, string etag)
+        {
+            return provider.PutBlob(name.ContainerName, name.ToString(), item, etag);
+        }
 
 		public static IEnumerable<T> List<T>(
 			this IBlobStorageProvider provider, T prefix) where T : UntypedBlobName

@@ -79,6 +79,20 @@ namespace Lokad.Cloud.Storage.Test
 			Assert.AreEqual(6, Provider.GetBlob<int>(ContainerName, BlobName).Value, "#A03");
 		}
 
+        [Test]
+        public void PutBlobEnforceMatchingEtag()
+        {
+            Provider.PutBlob(ContainerName, BlobName, 1);
+
+            var etag = Provider.GetBlobEtag(ContainerName, BlobName);
+            var isUpdated = Provider.PutBlob(ContainerName, BlobName, 2, Guid.NewGuid().ToString());
+
+            Assert.IsTrue(!isUpdated, "#A00 Blob shouldn't be updated if etag is not matching");
+
+            isUpdated = Provider.PutBlob(ContainerName, BlobName, 3, etag);
+            Assert.IsTrue(isUpdated, "#A01 Blob should have been updated");
+        }
+
 		[Test]
 		public void EtagChangesOnlyWithBlogChange()
 		{

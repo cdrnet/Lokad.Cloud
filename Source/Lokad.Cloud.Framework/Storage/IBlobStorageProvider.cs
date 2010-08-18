@@ -49,6 +49,16 @@ namespace Lokad.Cloud.Storage
 		/// exists but could not be overwritten.</returns>
 		bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite, out string etag);
 
+        /// <summary>Puts a blob only if etag given in argument is matching blob's etag in blobStorage.</summary>
+        /// <param name="containerName">Name of the container.</param>
+        /// <param name="blobName">Name of the blob.</param>
+        /// <param name="item">Item to be put.</param>
+        /// <param name="expectedEtag">etag that should be matched inside BlobStorage.</param>
+        /// <remarks>Creates the container if it does not exist beforehand.</remarks>
+        /// <returns><c>true</c> if the blob has been put and <c>false</c> if the blob already
+        /// exists but version were not matching.</returns>
+	    bool PutBlob<T>(string containerName, string blobName, T item, string expectedEtag);
+
 		/// <summary>Puts a blob and optionally overwrite.</summary>
 		/// <param name="containerName">Name of the container.</param>
 		/// <param name="blobName">Name of the blob.</param>

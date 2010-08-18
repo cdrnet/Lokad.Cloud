@@ -75,6 +75,18 @@ namespace Lokad.Cloud.Mock
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
+        public bool PutBlob<T>(string containerName, string blobName, object item, string expectedEtag)
+        {
+            lock (_syncRoot)
+            {
+                if (Containers[containerName].BlobsEtag[blobName] == expectedEtag)
+                {
+                    Containers[containerName].SetBlob(blobName, item);
+                }
+                return false;
+            }
+        }
+
 		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag)
 		{
 			lock(_syncRoot)
@@ -311,5 +323,17 @@ namespace Lokad.Cloud.Mock
 				_blobsEtag.Remove(blobName);
 			}
 		}
-	}
+
+        public bool PutBlob<T>(string containerName, string blobName, T item, string etag)
+        {
+            lock (_syncRoot)
+            {
+                if (Containers[containerName].BlobsEtag[blobName] == etag)
+                {
+                    Containers[containerName].SetBlob(blobName, item);
+                }
+                return false;
+            }
+        }
+    }
 }

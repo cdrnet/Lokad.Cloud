@@ -105,6 +105,12 @@ namespace Lokad.Cloud.Storage.Azure
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
+        public bool PutBlob<T>(string containerName, string blobName, T item, string expectedEtag)
+        {
+            string outEtag;
+            return PutBlob(containerName, blobName, item, typeof (T), true, expectedEtag, out outEtag);
+        }
+
 		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, string expectedEtag, out string outEtag)
 		{
 			var timestamp = _countPutBlob.Open();
