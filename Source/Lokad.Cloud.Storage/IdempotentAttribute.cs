@@ -3,9 +3,12 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using System;
+
 namespace Lokad.Cloud.Storage
 {
-	public interface IFileStorage
+	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+	public class IdempotentAttribute : Attribute
 	{
 	}
 }

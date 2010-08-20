@@ -1,0 +1,11 @@
+﻿## Cloud Storage Providers
+
+Storage providers are abstracting the storage implementation (Azure, Memory, Local File)
+but are very close to the storage protocol. They offer:
+
+* Retrying on transient errors (and slow instantiation) without delaying propagation of other exceptions
+* Async pattern using TPL Tasks with cancellation support
+* Byte-Stream usage, no serialization
+
+You'd usually not working directly with these providers unless you need more direct access,
+but use one of the higher abstractions like document or list storage instead.
