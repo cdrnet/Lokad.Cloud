@@ -70,6 +70,7 @@ namespace Lokad.Cloud.Storage
 		public override string ToString()
 		{
 			// Invoke a Static Generic Method using Reflection
+            // because type is programmatically defined
 			var method = typeof(UntypedBlobName).GetMethod("Print", BindingFlags.Static | BindingFlags.Public);
 
 			// Binding the method info to generic arguments
@@ -140,6 +141,13 @@ namespace Lokad.Cloud.Storage
                     if(null == value
                         || (TreatDefaultAsNull[i] && Activator.CreateInstance(memberType).Equals(value)))
                     {
+                        // Delimiter has to be appended here to avoid enumerating
+                        // too many blog (names being prefix of each other).
+                        //
+                        // For example, without delimiter, the prefix 'foo/123' whould enumerate both
+                        // foo/123/bar
+                        // foo/1234/bar
+                        sb.Append(Delimeter);
                         break;
                     }
 
