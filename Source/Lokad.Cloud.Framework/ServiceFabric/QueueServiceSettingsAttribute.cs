@@ -15,6 +15,11 @@ namespace Lokad.Cloud.ServiceFabric
 		/// on the type <c>T</c>.</remarks>
 		public string QueueName { get; set; }
 
+		/// <summary>Name of the services as it will appear in administration console. This is also its identifier</summary>
+		/// <remarks>If this value is <c>null</c> or empty, a default service name is chosen based
+		/// on the class type.</remarks>
+		public string ServiceName { get; set; }
+
 		/// <summary>Suggested size for batch retrieval of messages.</summary>
 		/// <remarks>The maximal value is 1000. We suggest to retrieve small messages
 		/// in batch to reduce network overhead.</remarks>

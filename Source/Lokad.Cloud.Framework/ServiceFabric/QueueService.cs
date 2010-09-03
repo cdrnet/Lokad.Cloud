@@ -22,6 +22,7 @@ namespace Lokad.Cloud.ServiceFabric
 	public abstract class QueueService<T> : CloudService
 	{
 		readonly string _queueName;
+		readonly string _serviceName;
 		readonly int _batchSize;
 		readonly TimeSpan _visibilityTimeout;
 		readonly int _maxProcessingTrials;
@@ -29,7 +30,7 @@ namespace Lokad.Cloud.ServiceFabric
 		/// <summary>Name of the queue associated to the service.</summary>
 		public override string Name
 		{
-			get { return _queueName; }
+			get { return _serviceName; }
 		}
 
 		/// <summary>Default constructor</summary>
@@ -44,6 +45,7 @@ namespace Lokad.Cloud.ServiceFabric
 			if (null != settings) // settings are provided through custom attribute
 			{
 				_queueName = settings.QueueName ?? TypeMapper.GetStorageName(typeof(T));
+				_serviceName = settings.ServiceName ?? GetType().FullName;
 
 				if (settings.BatchSize > 0)
 				{
@@ -59,6 +61,7 @@ namespace Lokad.Cloud.ServiceFabric
 			else
 			{
 				_queueName = TypeMapper.GetStorageName(typeof(T));
+				_serviceName = GetType().FullName;
 			}
 
 			// 1.25 * execution timeout, but limited to 2h max
