@@ -147,7 +147,11 @@ namespace Lokad.Cloud.Storage
                         // For example, without delimiter, the prefix 'foo/123' whould enumerate both
                         // foo/123/bar
                         // foo/1234/bar
-                        sb.Append(Delimeter);
+                        //
+                        // Then, we should not append a delimiter if prefix is entirely empty
+                        // because it would not properly enumerate all blobs (semantic associated with
+                        // empty prefix).
+                        if (i > 0) sb.Append(Delimeter);
                         break;
                     }
 
