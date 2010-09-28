@@ -5,8 +5,10 @@
 
 namespace Lokad.Cloud.Storage
 {
-	/// <summary>Simple non-sharded counter.</summary>
-	/// <remarks>The content of the counter is stored in a single blob value.</remarks>
+	/// <summary>Simple non-sharded counter shared among several workers.</summary>
+	/// <remarks>The content of the counter is stored in a single blob value. Present design 
+	/// starts to be slow when about 50 workers are trying to modify the same counter.
+	/// Caution : this counter is not idempotent, so using it in services could lead to incorrect behaviour.</remarks>
 	public class BlobCounter
 	{
 		readonly IBlobStorageProvider _provider;
