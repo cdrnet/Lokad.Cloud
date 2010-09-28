@@ -28,7 +28,7 @@ namespace Lokad.Cloud.Mock.Services.Test
 			var service = new SquareQueueService { Providers = providersForCloudStorage };
 			var blobStorage = providersForCloudStorage.BlobStorage;
 
-			const string containerName = "mockContainer";
+			const string containerName = "mockcontainer";
 
 			//filling blobs to be processed.
 			for (int i = 0 ; i < 10 ; i++)
