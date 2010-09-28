@@ -37,17 +37,21 @@ namespace Lokad.Cloud.Storage
 		}
 
 		/// <summary>Retry an update method until it succeeds. Timing
-		/// increases to avoid overstressing the storage for nothing.</summary>
-		/// <param name="func"></param>
+		/// increases to avoid overstressing the storage for nothing. 
+		/// Maximal delay is set to 10 seconds.</summary>
 		static void RetryUpdate(Func<bool> func)
 		{
 			// HACK: hard-coded constant, the whole counter system have to be perfected.
-			const int MaxSleepInMs = 50;
+			const int step = 10;
+		    const int maxDelayInMilliseconds = 10000;
 
+		    int retryAttempts = 0;
 			while (!func())
 			{
-				var sleepTime = _rand.Next(MaxSleepInMs).Milliseconds();
+                retryAttempts++;
+                var sleepTime = _rand.Next(Math.Max(retryAttempts * retryAttempts * step, maxDelayInMilliseconds)).Milliseconds();
 				Thread.Sleep(sleepTime);
+			    
 			}
 		}
 
