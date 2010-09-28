@@ -5,9 +5,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Lokad.Cloud.Storage;
+using Lokad.Serialization;
 using Lokad.Threading;
 
 namespace Lokad.Cloud.Mock
@@ -25,16 +27,24 @@ namespace Lokad.Cloud.Mock
 		/// <summary>naive global lock to make methods thread-safe.</summary>
 		readonly object _syncRoot;
 
+        readonly IDataSerializer _serializer;
+
 		public MemoryBlobStorageProvider()
 		{
 			_containers = new Dictionary<string, MockContainer>();
 			_syncRoot = new object();
+		    _serializer = new CloudFormatter();
 		}
 
 		public bool CreateContainer(string containerName)
 		{
 			lock (_syncRoot)
 			{
+                if (!StorageExtensions.IsContainerNameValid(containerName))
+                {
+                    throw new NotSupportedException("the containerName is not compliant with azure constraints on container names");
+                }
+
 				if (Containers.Keys.Contains(containerName))
 				{
 					return false;
@@ -79,6 +89,12 @@ namespace Lokad.Cloud.Mock
         {
             lock (_syncRoot)
             {
+                using (var stream = new MemoryStream())
+                {
+                    _serializer.Serialize(item, stream);
+                    var deserialized = _serializer.Deserialize(stream, item.GetType());
+                }
+
                 if (Containers[containerName].BlobsEtag[blobName] == expectedEtag)
                 {
                     Containers[containerName].SetBlob(blobName, item);
@@ -101,6 +117,12 @@ namespace Lokad.Cloud.Mock
 							return false;
 						}
 
+                        using (var stream = new MemoryStream())
+                        {
+                            _serializer.Serialize(item, stream);
+                            var deserialized = _serializer.Deserialize(stream, type);
+                        }
+
 						Containers[containerName].SetBlob(blobName, item);
 						etag = Containers[containerName].BlobsEtag[blobName];
 						return true;
@@ -111,7 +133,19 @@ namespace Lokad.Cloud.Mock
 					return true;
 				}
 
+                if (!StorageExtensions.IsContainerNameValid(containerName))
+                {
+                    throw new NotSupportedException("the containerName is not compliant with azure constraints on container names");
+                }
+
 				Containers.Add(containerName, new MockContainer());
+
+                using (var stream = new MemoryStream())
+                {
+                    _serializer.Serialize(item, stream);
+                    var deserialized = _serializer.Deserialize(stream, type);
+                }
+
 				Containers[containerName].AddBlob(blobName, item);
 				etag = Containers[containerName].BlobsEtag[blobName];
 				return true;

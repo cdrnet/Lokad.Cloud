@@ -51,6 +51,10 @@ namespace Lokad.Cloud.Storage.Azure
 
 		public bool CreateContainer(string containerName)
 		{
+            //workaround since Azure is presently returning OutOfRange exception when using a wrong name.
+            if (!StorageExtensions.IsContainerNameValid(containerName))
+                throw new NotSupportedException("containerName is not compliant with azure constraints on container naming");
+
 			var container = _blobStorage.GetContainerReference(containerName);
 			try
 			{

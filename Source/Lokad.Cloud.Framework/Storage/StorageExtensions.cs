@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 // ReSharper disable UnusedMember.Global
@@ -229,5 +230,12 @@ namespace Lokad.Cloud.Storage
 		{
 			provider.Delete(tableName, entities, false);
 		}
+
+        /// <summary>Checks that containerName is a valid DNS name, as requested by Azure</summary>
+        public static bool IsContainerNameValid(string containerName)
+        {
+            return (Regex.IsMatch(containerName, @"(^([a-z]|\d))((-([a-z]|\d)|([a-z]|\d))+)$")
+                && (3 <= containerName.Length) && (containerName.Length <= 63));
+        }
 	}
 }
