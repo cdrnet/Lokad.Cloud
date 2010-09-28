@@ -92,7 +92,6 @@ namespace Lokad.Cloud.Mock
                 using (var stream = new MemoryStream())
                 {
                     _serializer.Serialize(item, stream);
-                    var deserialized = _serializer.Deserialize(stream, item.GetType());
                 }
 
                 if (Containers[containerName].BlobsEtag[blobName] == expectedEtag)
@@ -120,7 +119,6 @@ namespace Lokad.Cloud.Mock
                         using (var stream = new MemoryStream())
                         {
                             _serializer.Serialize(item, stream);
-                            var deserialized = _serializer.Deserialize(stream, type);
                         }
 
 						Containers[containerName].SetBlob(blobName, item);
@@ -143,7 +141,6 @@ namespace Lokad.Cloud.Mock
                 using (var stream = new MemoryStream())
                 {
                     _serializer.Serialize(item, stream);
-                    var deserialized = _serializer.Deserialize(stream, type);
                 }
 
 				Containers[containerName].AddBlob(blobName, item);
