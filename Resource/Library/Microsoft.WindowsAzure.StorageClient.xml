@@ -11834,6 +11834,11 @@
             Stores the length of the delay.
             </summary>
         </member>
+        <member name="F:Microsoft.WindowsAzure.StorageClient.Tasks.DelayTask.disposingLockObject">
+            <summary>
+            ObjectUsed to lock disposing methods and timer callbacks.
+            </summary>
+        </member>
         <member name="F:Microsoft.WindowsAzure.StorageClient.Tasks.DelayTask.timer">
             <summary>
             Stores the native timer used to trigger after the specified delay.
