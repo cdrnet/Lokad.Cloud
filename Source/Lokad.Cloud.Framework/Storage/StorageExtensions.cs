@@ -166,7 +166,7 @@ namespace Lokad.Cloud.Storage
 		/// <returns>Enumeration of messages, possibly empty.</returns>
 		public static IEnumerable<T> Get<T>(this IQueueStorageProvider provider, string queueName, int count)
 		{
-			return provider.Get<T>(queueName, count, new TimeSpan(2, 0, 0), 50);
+			return provider.Get<T>(queueName, count, new TimeSpan(2, 0, 0), 5);
 		}
 
 		/// <summary>Gets messages from a queue with a visibility timeout of 2 hours.</summary>
