@@ -110,22 +110,21 @@ namespace Lokad.Cloud.Storage.Azure
 			return _queueStorage.ListQueues(prefix).Select(queue => queue.Name);
 		}
 
-		object SafeDeserialize<T>(Stream source)
+		bool TryDeserializeAs<T>(Stream source, out object result)
 		{
 			var position = source.Position;
 
-			object item;
 			try
 			{
-				item = _serializer.Deserialize(source, typeof(T));
+				result = _serializer.Deserialize(source, typeof(T));
+				return true;
 			}
 			catch (SerializationException)
 			{
 				source.Position = position;
-				item = _serializer.Deserialize(source, typeof(MessageWrapper));
+				result = default(T);
+				return false;
 			}
-
-			return item;
 		}
 
 		public IEnumerable<T> Get<T>(string queueName, int count, TimeSpan visibilityTimeout, int maxProcessingTrials)
@@ -184,29 +183,32 @@ namespace Lokad.Cloud.Storage.Azure
 						continue;
 					}
 
-					// 3.2. DESERIALIZE MESSAGE
+					// 3.2. DESERIALIZE MESSAGE, CHECK-OUT, COLLECT WRAPPED MESSAGES TO BE UNWRAPPED LATER
 
-					object innerMessage;
 					using (var stream = new MemoryStream(rawMessage.AsBytes))
 					{
-						innerMessage = SafeDeserialize<T>(stream);
-					}
-
-					// 3.3 CHECK-OUT, COLLECT WRAPPED MESSAGES TO BE UNWRAPPED LATER
-
-					if (innerMessage is T)
-					{
-						messages.Add((T)innerMessage);
-
-						CheckOutMessage(innerMessage, rawMessage, queueName, false);
-					}
-					else
-					{
-						// we don't retrieve messages while holding the lock
-						var mw = (MessageWrapper)innerMessage;
-						wrappedMessages.Add(mw);
-
-						CheckOutMessage(mw, rawMessage, queueName, true);
+						object innerMessage;
+						if (TryDeserializeAs<T>(stream, out innerMessage))
+						{
+							messages.Add((T)innerMessage);
+							CheckOutMessage(innerMessage, rawMessage, queueName, false);
+						}
+						else if (TryDeserializeAs<MessageWrapper>(stream, out innerMessage))
+						{
+							// we don't retrieve messages while holding the lock
+							var mw = (MessageWrapper)innerMessage;
+							wrappedMessages.Add(mw);
+							CheckOutMessage(mw, rawMessage, queueName, true);
+						}
+						else
+						{
+							// we failed to deserialize, so we remove it from the queue and persist it in the poison quarantine
+							PersistRawMessage(
+								rawMessage,
+								queueName,
+								PoisonedMessagePersistenceStoreName,
+								"Message failed to deserialize.");
+						}
 					}
 				}
 			}
@@ -944,7 +946,7 @@ namespace Lokad.Cloud.Storage.Azure
 			return new PersistedMessageBlobName(storeName, Guid.NewGuid().ToString("N"));
 		}
 
-        public static PersistedMessageBlobName GetPrefix(string storeName)
+		public static PersistedMessageBlobName GetPrefix(string storeName)
 		{
 			return new PersistedMessageBlobName(storeName, null);
 		}
