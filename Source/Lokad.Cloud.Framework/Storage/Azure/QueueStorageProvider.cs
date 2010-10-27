@@ -174,10 +174,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 					if (rawMessage.DequeueCount > maxProcessingTrials)
 					{
-						PersistRawMessage(
-							rawMessage,
-							queueName,
-							PoisonedMessagePersistenceStoreName,
+						PersistRawMessage(rawMessage, queueName, PoisonedMessagePersistenceStoreName,
 							String.Format("Message was {0} times dequeued but failed processing each time.", rawMessage.DequeueCount - 1));
 
 						continue;
@@ -185,30 +182,55 @@ namespace Lokad.Cloud.Storage.Azure
 
 					// 3.2. DESERIALIZE MESSAGE, CHECK-OUT, COLLECT WRAPPED MESSAGES TO BE UNWRAPPED LATER
 
-					using (var stream = new MemoryStream(rawMessage.AsBytes))
+					var stream = new MemoryStream(rawMessage.AsBytes);
+					try
 					{
+						var dequeueCount = rawMessage.DequeueCount;
 						object innerMessage;
+
+						// 3.2.1 UNPACK ENVELOPE, UPDATE POISONING INDICATOR
+
+						if (TryDeserializeAs<MessageEnvelope>(stream, out innerMessage))
+						{
+							stream.Dispose();
+							var envelope = (MessageEnvelope) innerMessage;
+							dequeueCount += envelope.DequeueCount;
+							stream = new MemoryStream(envelope.RawMessage);
+						}
+
+						// 3.2.2 PERSIST POISONED MESSAGES (2nd check), SKIP
+
+						if (dequeueCount > maxProcessingTrials)
+						{
+							PersistRawMessage(rawMessage, queueName, PoisonedMessagePersistenceStoreName,
+								String.Format("Message was {0} times dequeued but failed processing each time (with envelope).", dequeueCount - 1));
+
+							continue;
+						}
+
+						// 3.2.3 DESERIALIZE MESSAGE OR WRAPPER, PERSIST BAD MESSAGES (SKIP)
+
 						if (TryDeserializeAs<T>(stream, out innerMessage))
 						{
 							messages.Add((T)innerMessage);
-							CheckOutMessage(innerMessage, rawMessage, queueName, false);
+							CheckOutMessage(innerMessage, rawMessage, queueName, false, dequeueCount);
 						}
 						else if (TryDeserializeAs<MessageWrapper>(stream, out innerMessage))
 						{
 							// we don't retrieve messages while holding the lock
 							var mw = (MessageWrapper)innerMessage;
 							wrappedMessages.Add(mw);
-							CheckOutMessage(mw, rawMessage, queueName, true);
+							CheckOutMessage(mw, rawMessage, queueName, true, dequeueCount);
 						}
 						else
 						{
 							// we failed to deserialize, so we remove it from the queue and persist it in the poison quarantine
-							PersistRawMessage(
-								rawMessage,
-								queueName,
-								PoisonedMessagePersistenceStoreName,
-								"Message failed to deserialize.");
+							PersistRawMessage(rawMessage, queueName, PoisonedMessagePersistenceStoreName, "Message failed to deserialize.");
 						}
+					}
+					finally
+					{
+						stream.Dispose();
 					}
 				}
 			}
@@ -433,6 +455,7 @@ namespace Lokad.Cloud.Storage.Azure
 
 				CloudQueueMessage oldRawMessage;
 				string queueName;
+				int dequeueCount;
 
 				lock (_sync)
 				{
@@ -444,14 +467,46 @@ namespace Lokad.Cloud.Storage.Azure
 					}
 
 					queueName = inProcMsg.QueueName;
+					dequeueCount = inProcMsg.DequeueCount;
 					oldRawMessage = inProcMsg.RawMessages[0];
 				}
 
 				var queue = _queueStorage.GetQueueReference(queueName);
 
 				// 2. CLONE THE MESSAGE AND PUT IT TO THE QUEUE
+				// we always use an envelope here since the dequeue count
+				// is always >0, which we should continue to track in order
+				// to make poison detection possible at all.
 
-				var newRawMessage = new CloudQueueMessage(oldRawMessage.AsBytes);
+				var envelope = new MessageEnvelope
+					{
+						DequeueCount = dequeueCount,
+						RawMessage = oldRawMessage.AsBytes
+					};
+
+				CloudQueueMessage newRawMessage = null;
+				using (var stream = new MemoryStream())
+				{
+					_serializer.Serialize(envelope, stream);
+					if (stream.Length < (CloudQueueMessage.MaxMessageSize - 1)/4*3)
+					{
+						try
+						{
+							newRawMessage = new CloudQueueMessage(stream.ToArray());
+						}
+						catch (ArgumentException) { }
+					}
+
+					if (newRawMessage == null)
+					{
+						envelope.RawMessage = PutOverflowingMessageAndWrap(queueName, message);
+						using (var wrappedStream = new MemoryStream())
+						{
+							_serializer.Serialize(envelope, wrappedStream);
+							newRawMessage = new CloudQueueMessage(wrappedStream.ToArray());
+						}
+					}
+				}
 				PutRawMessage(newRawMessage, queue);
 
 				// 3. DELETE THE OLD MESSAGE FROM THE QUEUE
@@ -713,7 +768,7 @@ namespace Lokad.Cloud.Storage.Azure
 			}
 		}
 
-		void CheckOutMessage(object message, CloudQueueMessage rawMessage, string queueName, bool isOverflowing)
+		void CheckOutMessage(object message, CloudQueueMessage rawMessage, string queueName, bool isOverflowing, int dequeueCount)
 		{
 			lock (_sync)
 			{
@@ -726,7 +781,8 @@ namespace Lokad.Cloud.Storage.Azure
 						{
 							QueueName = queueName,
 							RawMessages = new List<CloudQueueMessage> {rawMessage},
-							IsOverflowing = isOverflowing
+							IsOverflowing = isOverflowing,
+							DequeueCount = dequeueCount
 						};
 					_inProcessMessages.Add(message, inProcessMessage);
 				}
@@ -856,13 +912,23 @@ namespace Lokad.Cloud.Storage.Azure
 		/// <summary>Name of the queue where messages are originating from.</summary>
 		public string QueueName { get; set; }
 
-		/// <summary>The multiple, different raw <see cref="CloudQueueMessage" /> 
-		/// objects as returned from the queue storage.</summary>
+		/// <summary>
+		/// The multiple, different raw <see cref="CloudQueueMessage" /> 
+		/// objects as returned from the queue storage.
+		/// </summary>
 		public List<CloudQueueMessage> RawMessages { get; set; }
 
-		/// <summary>A flag indicating whether the original message was bigger than the max 
-		/// allowed size and was  therefore wrapped in <see cref="MessageWrapper" />.</summary>
+		/// <summary>
+		/// A flag indicating whether the original message was bigger than the max 
+		/// allowed size and was therefore wrapped in <see cref="MessageWrapper" />.
+		/// </summary>
 		public bool IsOverflowing { get; set; }
+
+		/// <summary>
+		/// The number of times this message has already been dequeued,
+		/// so we can track it safely even when abandoning it later
+		/// </summary>
+		public int DequeueCount { get; set; }
 	}
 
 	internal class OverflowingMessageBlobName<T> : BlobName<T>

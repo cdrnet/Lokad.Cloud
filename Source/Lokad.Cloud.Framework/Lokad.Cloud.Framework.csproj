@@ -213,6 +213,7 @@
     <Compile Include="Storage\Azure\StorageModule.cs" />
     <Compile Include="Storage\Azure\TableStorageProvider.cs" />
     <Compile Include="Storage\BlobCounter.cs" />
+    <Compile Include="Storage\MessageEnvelope.cs" />
     <Compile Include="Storage\IIntermediateDataSerializer.cs" />
     <Compile Include="Storage\UntypedBlobName.cs" />
     <Compile Include="Storage\BlobName.cs" />
