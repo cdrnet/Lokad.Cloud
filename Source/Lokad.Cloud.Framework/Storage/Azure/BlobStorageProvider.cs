@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Xml.Linq;
 using Lokad.Diagnostics;
 using Lokad.Serialization;
@@ -227,6 +228,8 @@ namespace Lokad.Cloud.Storage.Azure
 																						// case with etag constraint
 					new BlobRequestOptions { AccessCondition = AccessCondition.IfMatch(expectedEtag) };
 			}
+
+			blob.Properties.ContentMD5 = ComputeContentHash(stream);
 
 			try
 			{
@@ -636,6 +639,19 @@ namespace Lokad.Cloud.Storage.Azure
 				// removing /container/ from the blob name (dev storage: /account/container/)
 				yield return Uri.UnescapeDataString(enumerator.Current.Uri.AbsolutePath.Substring(container.Uri.LocalPath.Length + 1));
 			}
+		}
+
+		public static string ComputeContentHash(Stream source)
+		{
+			byte[] hash;
+			source.Seek(0, SeekOrigin.Begin);
+			using (var md5 = MD5.Create())
+			{
+				hash = md5.ComputeHash(source);
+			}
+
+			source.Seek(0, SeekOrigin.Begin);
+			return Convert.ToBase64String(hash);
 		}
 	}
 }
