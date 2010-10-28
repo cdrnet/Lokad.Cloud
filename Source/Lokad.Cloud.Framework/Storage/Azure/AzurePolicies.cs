@@ -120,6 +120,17 @@ namespace Lokad.Cloud.Storage.Azure
 
 		static bool TransientServerErrorExceptionFilter(Exception exception)
 		{
+			var clientException = exception as StorageClientException;
+			if (clientException != null
+				&& clientException.ErrorCode == StorageErrorCode.BadRequest
+				&& clientException.ExtendedErrorInformation != null
+				&& clientException.ExtendedErrorInformation.ErrorCode == StorageErrorCodeStrings.InvalidHeaderValue
+				&& clientException.ExtendedErrorInformation.AdditionalDetails["HeaderName"] == "Content-MD5")
+			{
+				// network transport corruption, try again
+				return true;
+			}
+
 			var serverException = exception as StorageServerException;
 			if (serverException == null)
 			{
