@@ -1,0 +1,21 @@
+[repository]
+native = LF
+
+[patterns]
+**.txt = native
+**.cs = native
+**.aspx = native
+**.xml = native
+**.xsl = native
+**.html = native
+**.config = native
+**.cscfg = native
+**.csdef = native
+**.build = native
+**.shfb = native
+**.csproj = native
+**.exe = BIN
+**.dll = BIN
+**.pdb = BIN
+**.png = BIN
+**.docx = BIN
