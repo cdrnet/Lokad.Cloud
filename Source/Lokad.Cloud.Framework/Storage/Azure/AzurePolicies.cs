@@ -127,7 +127,13 @@ namespace Lokad.Cloud.Storage.Azure
 				&& clientException.ExtendedErrorInformation.ErrorCode == StorageErrorCodeStrings.InvalidHeaderValue
 				&& clientException.ExtendedErrorInformation.AdditionalDetails["HeaderName"] == "Content-MD5")
 			{
-				// network transport corruption, try again
+				// network transport corruption (automatic), try again
+				return true;
+			}
+
+			if (exception is DataCorruptionException)
+			{
+				// network transport corruption (manual), try again
 				return true;
 			}
 

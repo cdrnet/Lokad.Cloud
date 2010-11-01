@@ -208,6 +208,7 @@
     <Compile Include="Standalone.cs" />
     <Compile Include="Storage\Azure\AzurePolicies.cs" />
     <Compile Include="Storage\Azure\BlobStorageProvider.cs" />
+    <Compile Include="Storage\Azure\DataCorruptionException.cs" />
     <Compile Include="Storage\Azure\FatEntity.cs" />
     <Compile Include="Storage\Azure\QueueStorageProvider.cs" />
     <Compile Include="Storage\Azure\StorageModule.cs" />
