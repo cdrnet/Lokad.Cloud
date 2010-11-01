@@ -2,3 +2,4 @@ _ReSharper*
 *.user
 *.suo
 Thumbs.db
+.hg
