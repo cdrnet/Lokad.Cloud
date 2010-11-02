@@ -178,7 +178,7 @@ namespace Lokad.Cloud.Mock
 				}
 
 				// verify valid data BEFORE updating them
-				if (entities.GroupJoin(entries, u => ToId(u), ToId, (u, vs) => vs.Count(entry => force || entry.ETag == u.ETag)).Any(c => c != 1))
+				if (entities.GroupJoin(entries, u => ToId(u), ToId, (u, vs) => vs.Count(entry => force || u.ETag == null || entry.ETag == u.ETag)).Any(c => c != 1))
 				{
 					throw new DataServiceRequestException("UPDATE: key not found or etag conflict.");
 				}
@@ -247,7 +247,7 @@ namespace Lokad.Cloud.Mock
 				var entityList = entities.ToList();
 
 				// verify valid data BEFORE deleting them
-				if (entityList.Join(entries, u => ToId(u), ToId, (u, v) => force || u.ETag == v.ETag).Any(c => !c))
+				if (entityList.Join(entries, u => ToId(u), ToId, (u, v) => force || u.ETag == null || u.ETag == v.ETag).Any(c => !c))
 				{
 					throw new DataServiceRequestException("DELETE: etag conflict.");
 				}

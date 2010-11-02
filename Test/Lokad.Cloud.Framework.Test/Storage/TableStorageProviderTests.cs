@@ -609,6 +609,21 @@ Time:2010-01-15T12:37:25.1611631Z</message>
 			Provider.Update(TableName, entities, true);
 		}
 
+		[Test]
+		public void UpdateOnRemotelyModifiedEntityShouldNotFailIfETagIsNull()
+		{
+			var partition = Guid.NewGuid().ToString("N");
+			var entities = Entities(1, partition, 10);
+			var entity = entities.First();
+
+			Provider.Insert(TableName, entities);
+
+			entity.ETag = null;
+			entity.Value = "def";
+
+			Provider.Update(TableName, entities, false);
+		}
+
 		[Test, ExpectedException(typeof(DataServiceRequestException))]
 		public void DeleteOnRemotelyModifiedEntityShouldFailIfNotForced()
 		{
@@ -637,6 +652,21 @@ Time:2010-01-15T12:37:25.1611631Z</message>
 			entity.Value = "def";
 
 			Provider.Delete(TableName, entities, true);
+		}
+
+		[Test]
+		public void DeleteOnRemotelyModifiedEntityShouldNotFailIfETagIsNull()
+		{
+			var partition = Guid.NewGuid().ToString("N");
+			var entities = Entities(1, partition, 10);
+			var entity = entities.First();
+
+			Provider.Insert(TableName, entities);
+
+			entity.ETag = null;
+			entity.Value = "def";
+
+			Provider.Delete(TableName, entities, false);
 		}
 
 		CloudEntity<String>[] Entities(int count, string partitionKey, int entitySize)
