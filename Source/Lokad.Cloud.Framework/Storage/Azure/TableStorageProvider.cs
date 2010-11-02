@@ -287,7 +287,19 @@ namespace Lokad.Cloud.Storage.Azure
 								{
 									AzurePolicies.SlowInstantiation.Do(() =>
 										{
-											_tableStorage.CreateTableIfNotExist(tableName);
+											try
+											{
+												_tableStorage.CreateTableIfNotExist(tableName);
+											}
+											// HACK: incorrect behavior of the StorageClient (2010-09)
+											// Fails to behave properly in multi-threaded situations
+											catch (StorageClientException cex)
+											{
+												if (cex.ExtendedErrorInformation.ErrorCode != TableErrorCodeStrings.TableAlreadyExists)
+												{
+													throw;
+												}
+											}
 											context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
 											ReadETagsAndDetach(context, (entity, etag) => cloudEntityOfFatEntity[entity].ETag = etag);
 										});
@@ -401,7 +413,19 @@ namespace Lokad.Cloud.Storage.Azure
 							{
 								AzurePolicies.SlowInstantiation.Do(() =>
 									{
-										_tableStorage.CreateTableIfNotExist(tableName);
+										try
+										{
+											_tableStorage.CreateTableIfNotExist(tableName);
+										}
+										// HACK: incorrect behavior of the StorageClient (2010-09)
+										// Fails to behave properly in multi-threaded situations
+										catch (StorageClientException cex)
+										{
+											if (cex.ExtendedErrorInformation.ErrorCode != TableErrorCodeStrings.TableAlreadyExists)
+											{
+												throw;
+											}
+										}
 										context.SaveChanges(noBatchMode ? SaveChangesOptions.None : SaveChangesOptions.Batch);
 										ReadETagsAndDetach(context, (entity, etag) => cloudEntityOfFatEntity[entity].ETag = etag);
 									});
