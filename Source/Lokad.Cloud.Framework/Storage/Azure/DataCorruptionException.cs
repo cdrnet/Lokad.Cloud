@@ -4,8 +4,22 @@
 #endregion
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Lokad.Cloud.Storage.Azure
 {
-    public class DataCorruptionException : Exception { }
+    /// <summary>
+    /// Exception indicating that received data has been detected to be corrupt or altered.
+    /// </summary>
+    [Serializable]
+    public class DataCorruptionException : Exception
+    {
+        public DataCorruptionException() { }
+
+        public DataCorruptionException(string message) : base(message) { }
+
+        public DataCorruptionException(string message, Exception inner) : base(message, inner) { }
+
+        protected DataCorruptionException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    }
 }
