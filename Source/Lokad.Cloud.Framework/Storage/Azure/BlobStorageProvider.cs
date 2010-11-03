@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Xml.Linq;
@@ -13,6 +14,7 @@ using Lokad.Diagnostics;
 using Lokad.Serialization;
 using Lokad.Threading;
 using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.StorageClient.Protocol;
 
 namespace Lokad.Cloud.Storage.Azure
 {
@@ -683,6 +685,95 @@ namespace Lokad.Cloud.Storage.Azure
 			if (expectedHash != ComputeContentHash(stream))
 			{
 				throw new DataCorruptionException();
+			}
+		}
+
+		public Result<string> TryAcquireLease(string containerName, string blobName)
+		{
+			var container = _blobStorage.GetContainerReference(containerName);
+			var blob = container.GetBlockBlobReference(blobName);
+			var credentials = _blobStorage.Credentials;
+			var uri = new Uri(credentials.TransformUri(blob.Uri.ToString()));
+			var request = BlobRequest.Lease(uri, 90, LeaseAction.Acquire, null);
+			credentials.SignRequest(request);
+
+			HttpWebResponse response;
+			try
+			{
+				response = (HttpWebResponse)request.GetResponse();
+			}
+			catch (WebException we)
+			{
+				var statusCode = ((HttpWebResponse) we.Response).StatusCode;
+				switch (statusCode)
+				{
+					case HttpStatusCode.Conflict:
+					case HttpStatusCode.RequestTimeout:
+					case HttpStatusCode.InternalServerError:
+						return Result<string>.CreateError(statusCode.ToString());
+					default:
+						throw;
+				}
+			}
+
+			try
+			{
+				return response.StatusCode == HttpStatusCode.Created
+					? Result<string>.CreateSuccess(response.Headers["x-ms-lease-id"])
+					: Result<string>.CreateError(response.StatusCode.ToString());
+			}
+			finally
+			{
+				response.Close();
+			}
+		}
+
+		public bool TryReleaseLease(string containerName, string blobName, string leaseId)
+		{
+			return TryLeaseAction(containerName, blobName, LeaseAction.Release, leaseId);
+		}
+
+		public bool TryRenewLease(string containerName, string blobName, string leaseId)
+		{
+			return TryLeaseAction(containerName, blobName, LeaseAction.Renew, leaseId);
+		}
+
+		private bool TryLeaseAction(string containerName, string blobName, LeaseAction action, string leaseId = null)
+		{
+			var container = _blobStorage.GetContainerReference(containerName);
+			var blob = container.GetBlockBlobReference(blobName);
+			var credentials = _blobStorage.Credentials;
+			var uri = new Uri(credentials.TransformUri(blob.Uri.ToString()));
+			var request = BlobRequest.Lease(uri, 90, action, leaseId);
+			credentials.SignRequest(request);
+
+			HttpWebResponse response;
+			try
+			{
+				response = (HttpWebResponse)request.GetResponse();
+			}
+			catch (WebException we)
+			{
+				var statusCode = ((HttpWebResponse) we.Response).StatusCode;
+				switch(statusCode)
+				{
+					case HttpStatusCode.Conflict:
+					case HttpStatusCode.RequestTimeout:
+					case HttpStatusCode.InternalServerError:
+						return false;
+					default:
+						throw;
+				}
+			}
+
+			try
+			{
+				var expectedCode = action == LeaseAction.Break ? HttpStatusCode.Accepted : HttpStatusCode.OK;
+				return response.StatusCode == expectedCode;
+			}
+			finally
+			{
+				response.Close();
 			}
 		}
 	}

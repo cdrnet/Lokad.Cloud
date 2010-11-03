@@ -17,8 +17,8 @@ namespace Lokad.Cloud.Mock.Test
 		public void BlobsGetCreatedMonoThread()
 		{
 			const string containerName1 = "container-1";
-            const string containerName2 = "container-2";
-            const string containerName3 = "container-3";
+			const string containerName2 = "container-2";
+			const string containerName3 = "container-3";
 			const string blobPrefix = "mockBlobPrefix";
 			const string secondBlobPrefix = "sndBlobPrefix";
 
@@ -51,7 +51,7 @@ namespace Lokad.Cloud.Mock.Test
 		[Test]
 		public void BlobsGetCreatedMultiThread()
 		{
-            const string containerNamePrefix = "container-";
+			const string containerNamePrefix = "container-";
 			
 			const string blobPrefix = "mockBlobPrefix";
 
@@ -66,18 +66,18 @@ namespace Lokad.Cloud.Mock.Test
 			
 			var threadParameters = Enumerable.Range(0, 32).Select(i => 
 				i<=15
-                ? new ThreadParameters("threadId" + i, "container-1", storage)
-                : new ThreadParameters("threadId" + i, "container-2", storage)).ToArray();
+				? new ThreadParameters("threadId" + i, "container-1", storage)
+				: new ThreadParameters("threadId" + i, "container-2", storage)).ToArray();
 
 			Enumerable.Range(0,32).ForEach(i=> threads[i].Start(threadParameters[i]));
 			
 			Thread.Sleep(2000);
 
-            var blobNames = storage.List("container-1", blobPrefix);
+			var blobNames = storage.List("container-1", blobPrefix);
 			Assert.AreEqual(1600, blobNames.Count(), 
 				"first container with corresponding prefix does not hold 3 blobs");
 
-            blobNames = storage.List("container-2", blobPrefix);
+			blobNames = storage.List("container-2", blobPrefix);
 			Assert.AreEqual(1600, blobNames.Count(), 
 				"second container with corresponding prefix does not hold 1 blobs");
 
