@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using Lokad.Cloud.Test;
+using Lokad.Quality;
 using Lokad.Threading;
 using NUnit.Framework;
 
@@ -19,7 +20,20 @@ namespace Lokad.Cloud.Storage.Test
 		private const string ContainerName = "tests-blobstorageprovider-mycontainer";
 		private const string BlobName = "myprefix/myblob";
 
-		readonly IBlobStorageProvider Provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+		// ReSharper disable InconsistentNaming
+		readonly IBlobStorageProvider Provider;
+		// ReSharper restore InconsistentNaming
+
+		[UsedImplicitly]
+		public BlobStorageProviderTests()
+		{
+			Provider = GlobalSetup.Container.Resolve<IBlobStorageProvider>();
+		}
+
+		protected BlobStorageProviderTests(IBlobStorageProvider provider)
+		{
+			Provider = provider;
+		}
 
 		[TestFixtureSetUp]
 		public void Setup()
@@ -160,7 +174,7 @@ namespace Lokad.Cloud.Storage.Test
 		/// <summary>Loose check of the behavior of 'UpdateIfNotModified'
 		/// under concurrency stress.</summary>
 		[Test]
-		public void UpdateIfNotModifiedWithStress()
+		public virtual void UpdateIfNotModifiedWithStress()
 		{
 			Provider.PutBlob(ContainerName, BlobName, 0);
 
@@ -169,8 +183,10 @@ namespace Lokad.Cloud.Storage.Test
 			int ignored;
 
 			array = array.SelectInParallel(
-				k => Provider.UpdateIfNotModified(ContainerName,
-					BlobName, i => i.HasValue ? i.Value + 1 : 1, out ignored), array.Length);
+				k => Provider.UpdateIfNotModified(
+					ContainerName, BlobName,
+					i => i.HasValue ? i.Value + 1 : 1,
+					out ignored), array.Length);
 
 			Assert.IsTrue(array.Any(x => x), "#A00 write should have happened at least once.");
 			Assert.IsTrue(array.Any(x => !x), "#A01 conflict should have happened at least once.");

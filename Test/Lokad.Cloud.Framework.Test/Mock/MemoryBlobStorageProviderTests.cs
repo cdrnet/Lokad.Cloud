@@ -6,13 +6,25 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Lokad.Cloud.Storage.Test;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Mock.Test
 {
 	[TestFixture]
-	public class MemoryBlobStorageProviderTests
+	public class MemoryBlobStorageProviderTests : BlobStorageProviderTests
 	{
+		public MemoryBlobStorageProviderTests()
+			: base(new MemoryBlobStorageProvider())
+		{
+		}
+
+		public override void UpdateIfNotModifiedWithStress()
+		{
+			// Test invalid with memory blob storage because
+			// UpdateIfNotModified is implemented atomically
+		}
+
 		[Test]
 		public void BlobsGetCreatedMonoThread()
 		{

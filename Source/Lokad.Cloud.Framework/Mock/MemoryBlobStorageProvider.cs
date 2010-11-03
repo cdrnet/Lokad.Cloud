@@ -72,7 +72,7 @@ namespace Lokad.Cloud.Mock
 
 		public void PutBlob<T>(string containerName, string blobName, T item)
 		{
-			PutBlob<T>(containerName, blobName,item, true);
+			PutBlob<T>(containerName, blobName, item, true);
 		}
 
 		public bool PutBlob<T>(string containerName, string blobName, T item, bool overwrite)
@@ -86,24 +86,18 @@ namespace Lokad.Cloud.Mock
 			return PutBlob(containerName, blobName, item, typeof(T), overwrite, out etag);
 		}
 
-		public bool PutBlob<T>(string containerName, string blobName, object item, string expectedEtag)
+		public bool PutBlob<T>(string containerName, string blobName, T item, string expectedEtag)
 		{
-			lock (_syncRoot)
-			{
-				using (var stream = new MemoryStream())
-				{
-					_serializer.Serialize(item, stream);
-				}
-
-				if (Containers[containerName].BlobsEtag[blobName] == expectedEtag)
-				{
-					Containers[containerName].SetBlob(blobName, item);
-				}
-				return false;
-			}
+			string ignored;
+			return PutBlob(containerName, blobName, item, typeof (T), true, expectedEtag, out ignored);
 		}
 
 		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, out string etag)
+		{
+			return PutBlob(containerName, blobName, item, type, overwrite, null, out etag);
+		}
+
+		public bool PutBlob(string containerName, string blobName, object item, Type type, bool overwrite, string expectedEtag, out string etag)
 		{
 			lock(_syncRoot)
 			{
@@ -112,7 +106,7 @@ namespace Lokad.Cloud.Mock
 				{
 					if(Containers[containerName].BlobNames.Contains(blobName))
 					{
-						if(!overwrite)
+						if(!overwrite || expectedEtag != null && expectedEtag != Containers[containerName].BlobsEtag[blobName])
 						{
 							return false;
 						}
@@ -166,8 +160,8 @@ namespace Lokad.Cloud.Mock
 		{
 			lock(_syncRoot)
 			{
-				if(!Containers.ContainsKey(containerName) ||
-					 !Containers[containerName].BlobNames.Contains(blobName))
+				if(!Containers.ContainsKey(containerName)
+					|| !Containers[containerName].BlobNames.Contains(blobName))
 				{
 					etag = null;
 					return Maybe<object>.Empty;
@@ -180,9 +174,33 @@ namespace Lokad.Cloud.Mock
 
 		public Maybe<XElement> GetBlobXml(string containerName, string blobName, out string etag)
 		{
-			// supporting GetBlobXml is optional, and depending on formatter
 			etag = null;
-			return Maybe<XElement>.Empty;
+
+			var formatter = _serializer as IIntermediateDataSerializer;
+			if (formatter == null)
+			{
+				return Maybe<XElement>.Empty;
+			}
+
+			object data;
+			lock (_syncRoot)
+			{
+				if (!Containers.ContainsKey(containerName)
+					|| !Containers[containerName].BlobNames.Contains(blobName))
+				{
+					return Maybe<XElement>.Empty;
+				}
+
+				etag = Containers[containerName].BlobsEtag[blobName];
+				data = Containers[containerName].GetBlob(blobName);
+			}
+
+			using (var stream = new MemoryStream())
+			{
+				formatter.Serialize(data, stream);
+				stream.Position = 0;
+				return Maybe.From(formatter.UnpackXml(stream));
+			}
 		}
 
 		public Maybe<T>[] GetBlobRange<T>(string containerName, string[] blobNames, out string[] etags)
@@ -357,18 +375,6 @@ namespace Lokad.Cloud.Mock
 				_blobSet.Remove(blobName);
 				_blobsEtag.Remove(blobName);
 				_blobsLeases.Remove(blobName);
-			}
-		}
-
-		public bool PutBlob<T>(string containerName, string blobName, T item, string etag)
-		{
-			lock (_syncRoot)
-			{
-				if (Containers[containerName].BlobsEtag[blobName] == etag)
-				{
-					Containers[containerName].SetBlob(blobName, item);
-				}
-				return false;
 			}
 		}
 
