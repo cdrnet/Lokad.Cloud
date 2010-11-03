@@ -176,6 +176,9 @@
     </Compile>
     <Compile Include="PresentationHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="rsm.ashx.cs">
+      <DependentUpon>rsm.ashx</DependentUpon>
+    </Compile>
     <Compile Include="Scheduler.aspx.cs">
       <DependentUpon>Scheduler.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -235,6 +238,7 @@
     <Content Include="Scheduler.aspx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="rsm.ashx" />
     <None Include="Web.template.config" />
   </ItemGroup>
   <ItemGroup>
@@ -270,5 +274,5 @@
     </VisualStudio>
   </ProjectExtensions>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets')" />
-  <Import Project="..\..\Resource\Build\Microsoft.WebApplication.targets" Condition="!Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets')"/>
+  <Import Project="..\..\Resource\Build\Microsoft.WebApplication.targets" Condition="!Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets')" />
 </Project>

@@ -128,6 +128,9 @@
     <Compile Include="Diagnostics\Persistence\ExecutionProfilingStatisticsName.cs" />
     <Compile Include="Diagnostics\Persistence\PartitionStatisticsName.cs" />
     <Compile Include="Diagnostics\Persistence\ServiceStatisticsName.cs" />
+    <Compile Include="Diagnostics\Rsm\RsmReport.cs" />
+    <Compile Include="Diagnostics\Rsm\RsmIndicatorReport.cs" />
+    <Compile Include="Diagnostics\Rsm\RsmMessageReport.cs" />
     <Compile Include="IRuntimeFinalizer.cs" />
     <Compile Include="Management\Api10\ICloudAssembliesApi.cs" />
     <Compile Include="Management\Api10\ICloudConfigurationApi.cs" />

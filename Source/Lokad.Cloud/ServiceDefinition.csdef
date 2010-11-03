@@ -17,8 +17,8 @@
 			<Setting name="DataConnectionString" />
 			<!--Space separated OpenId identifiers (don't forget the trailing slash) -->
 			<Setting name="Admins" />
-			<!--Apikey for clients to authenticate against the Lokad.Cloud Management Api-->
-			<!--<Setting name="ManagementApiKey" />-->
+			<!--Apikey for monitoring (RSM) clients to authenticate against the Lokad.Cloud Rsm Api-->
+			<Setting name="MonitoringApiKey" />
 			<Setting name="SelfManagementCertificateThumbprint" />
 			<Setting name="SelfManagementSubscriptionId" />
 		</ConfigurationSettings>
