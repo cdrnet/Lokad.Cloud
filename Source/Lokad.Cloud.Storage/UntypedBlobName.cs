@@ -70,7 +70,7 @@ namespace Lokad.Cloud.Storage
 		public override string ToString()
 		{
 			// Invoke a Static Generic Method using Reflection
-            // because type is programmatically defined
+			// because type is programmatically defined
 			var method = typeof(UntypedBlobName).GetMethod("Print", BindingFlags.Static | BindingFlags.Public);
 
 			// Binding the method info to generic arguments
@@ -98,18 +98,18 @@ namespace Lokad.Cloud.Storage
 		class ConverterTypeCache<T>
 		{
 			static readonly MemberInfo[] Members; // either 'FieldInfo' or 'PropertyInfo'
-		    static readonly bool[] TreatDefaultAsNull;
+			static readonly bool[] TreatDefaultAsNull;
 			const string Delimeter = "/";
 
 			static readonly ConstructorInfo FirstCtor;
 
 			static ConverterTypeCache()
 			{
-               
+			   
 				// HACK: optimize this to IL code, if needed
 				// NB: this approach could be used to generate F# style objects!
 				Members = 
-                    (typeof(T).GetFields().Select(f => (MemberInfo)f).Union(typeof(T).GetProperties()))
+					(typeof(T).GetFields().Select(f => (MemberInfo)f).Union(typeof(T).GetProperties()))
 					.Where(f => f.GetCustomAttributes(typeof(RankAttribute), true).Exists())
 					// ordering always respect inheritance
 					.GroupBy(f => f.DeclaringType)
@@ -119,8 +119,8 @@ namespace Lokad.Cloud.Storage
 					.SelectMany(f => f)
 					.ToArray();
 
-			    TreatDefaultAsNull = Members.ToArray(m =>
-			        ((RankAttribute) (m.GetCustomAttributes(typeof (RankAttribute), true).First())).TreatDefaultAsNull);
+				TreatDefaultAsNull = Members.ToArray(m =>
+					((RankAttribute) (m.GetCustomAttributes(typeof (RankAttribute), true).First())).TreatDefaultAsNull);
 
 				FirstCtor = typeof(T).GetConstructors(
 					BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).First();
@@ -129,34 +129,34 @@ namespace Lokad.Cloud.Storage
 			public static string Print(T instance)
 			{
 				var sb = new StringBuilder();
-                for (int i = 0; i < Members.Length; i++)
+				for (int i = 0; i < Members.Length; i++)
 				{
 					var info = Members[i];
-				    var fieldInfo = info as FieldInfo;
-				    var propInfo = info as PropertyInfo;
+					var fieldInfo = info as FieldInfo;
+					var propInfo = info as PropertyInfo;
 
-				    var memberType = (null != fieldInfo) ? fieldInfo.FieldType : propInfo.PropertyType;
-				    var value = (null != fieldInfo) ? fieldInfo.GetValue(instance) : propInfo.GetValue(instance, new object[0]);
-				    
-                    if(null == value
-                        || (TreatDefaultAsNull[i] && Activator.CreateInstance(memberType).Equals(value)))
-                    {
-                        // Delimiter has to be appended here to avoid enumerating
-                        // too many blog (names being prefix of each other).
-                        //
-                        // For example, without delimiter, the prefix 'foo/123' whould enumerate both
-                        // foo/123/bar
-                        // foo/1234/bar
-                        //
-                        // Then, we should not append a delimiter if prefix is entirely empty
-                        // because it would not properly enumerate all blobs (semantic associated with
-                        // empty prefix).
-                        if (i > 0) sb.Append(Delimeter);
-                        break;
-                    }
+					var memberType = (null != fieldInfo) ? fieldInfo.FieldType : propInfo.PropertyType;
+					var value = (null != fieldInfo) ? fieldInfo.GetValue(instance) : propInfo.GetValue(instance, new object[0]);
+					
+					if(null == value
+						|| (TreatDefaultAsNull[i] && Activator.CreateInstance(memberType).Equals(value)))
+					{
+						// Delimiter has to be appended here to avoid enumerating
+						// too many blog (names being prefix of each other).
+						//
+						// For example, without delimiter, the prefix 'foo/123' whould enumerate both
+						// foo/123/bar
+						// foo/1234/bar
+						//
+						// Then, we should not append a delimiter if prefix is entirely empty
+						// because it would not properly enumerate all blobs (semantic associated with
+						// empty prefix).
+						if (i > 0) sb.Append(Delimeter);
+						break;
+					}
 
-				    var s = InternalPrint(value, memberType);
-                    if (i > 0) sb.Append(Delimeter);
+					var s = InternalPrint(value, memberType);
+					if (i > 0) sb.Append(Delimeter);
 					sb.Append(s);
 				}
 				return sb.ToString();
@@ -182,25 +182,25 @@ namespace Lokad.Cloud.Storage
 
 				for (int i = 0; i < parameters.Length; i++)
 				{
-				    var memberType = Members[i] is FieldInfo
-				        ? ((FieldInfo) Members[i]).FieldType
-				        : ((PropertyInfo) Members[i]).PropertyType;
+					var memberType = Members[i] is FieldInfo
+						? ((FieldInfo) Members[i]).FieldType
+						: ((PropertyInfo) Members[i]).PropertyType;
 
-                    parameters[i] = InternalParse(split[i], memberType);
+					parameters[i] = InternalParse(split[i], memberType);
 				}
 
 				// Initialization through reflection (no assumption on constructors)
 				var name = (T)FormatterServices.GetUninitializedObject(typeof (T));
 				for (int i = 0; i < Members.Length; i++)
 				{
-                    if (Members[i] is FieldInfo)
-                    {
-                        ((FieldInfo)Members[i]).SetValue(name, parameters[i]);
-                    }
-                    else
-                    {
-                        ((PropertyInfo)Members[i]).SetValue(name, parameters[i], new object[0]);
-                    }
+					if (Members[i] is FieldInfo)
+					{
+						((FieldInfo)Members[i]).SetValue(name, parameters[i]);
+					}
+					else
+					{
+						((PropertyInfo)Members[i]).SetValue(name, parameters[i], new object[0]);
+					}
 				}
 
 				return name;

@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.InMemory;
 using Lokad.Cloud.Storage.Test;
 using NUnit.Framework;
 
@@ -92,11 +93,8 @@ namespace Lokad.Cloud.Mock.Test
 			Assert.AreEqual(2, retrieved7.Count(), "#B07");
 
 			//The next test should handle non existing table names.
-			var isSuccess = false;
-		   
-			 var emptyEnumeration =  tableStorage.Get<object>("IAmNotATable", "IaMNotAPartiTion");
-
-			 Assert.AreEqual(0, emptyEnumeration.Count(), "#B08");
+			var emptyEnumeration =  tableStorage.Get<object>("IAmNotATable", "IaMNotAPartiTion");
+			Assert.AreEqual(0, emptyEnumeration.Count(), "#B08");
 		}
 
 		[Test]

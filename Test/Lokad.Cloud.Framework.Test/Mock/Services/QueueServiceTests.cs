@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using Lokad.Cloud.ServiceFabric;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.InMemory;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Mock.Services.Test

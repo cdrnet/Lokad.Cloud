@@ -43,15 +43,15 @@ namespace Lokad.Cloud.Storage
 		{
 			// HACK: hard-coded constant, the whole counter system have to be perfected.
 			const int step = 10;
-		    const int maxDelayInMilliseconds = 10000;
+			const int maxDelayInMilliseconds = 10000;
 
-		    int retryAttempts = 0;
+			int retryAttempts = 0;
 			while (!func())
 			{
-                retryAttempts++;
-                var sleepTime = _rand.Next(Math.Max(retryAttempts * retryAttempts * step, maxDelayInMilliseconds)).Milliseconds();
+				retryAttempts++;
+				var sleepTime = _rand.Next(Math.Max(retryAttempts * retryAttempts * step, maxDelayInMilliseconds)).Milliseconds();
 				Thread.Sleep(sleepTime);
-			    
+				
 			}
 		}
 
@@ -75,10 +75,10 @@ namespace Lokad.Cloud.Storage
 			return provider.GetBlob<T>(name.ContainerName, name.ToString());
 		}
 
-        public static Maybe<T> GetBlob<T>(this IBlobStorageProvider provider, BlobName<T> name, out string etag)
-        {
-            return provider.GetBlob<T>(name.ContainerName, name.ToString(), out etag);
-        }
+		public static Maybe<T> GetBlob<T>(this IBlobStorageProvider provider, BlobName<T> name, out string etag)
+		{
+			return provider.GetBlob<T>(name.ContainerName, name.ToString(), out etag);
+		}
 
 		public static string GetBlobEtag<T>(this IBlobStorageProvider provider, BlobName<T> name)
 		{
@@ -122,11 +122,11 @@ namespace Lokad.Cloud.Storage
 			return provider.PutBlob(name.ContainerName, name.ToString(), item, overwrite);
 		}
 
-        /// <summary>Push the blob only if etag is matching the etag of the blob in BlobStorage</summary>
-        public static bool PutBlob<T>(this IBlobStorageProvider provider, BlobName<T> name, T item, string etag)
-        {
-            return provider.PutBlob(name.ContainerName, name.ToString(), item, etag);
-        }
+		/// <summary>Push the blob only if etag is matching the etag of the blob in BlobStorage</summary>
+		public static bool PutBlob<T>(this IBlobStorageProvider provider, BlobName<T> name, T item, string etag)
+		{
+			return provider.PutBlob(name.ContainerName, name.ToString(), item, etag);
+		}
 
 		public static IEnumerable<T> List<T>(
 			this IBlobStorageProvider provider, T prefix) where T : UntypedBlobName
@@ -235,11 +235,11 @@ namespace Lokad.Cloud.Storage
 			provider.Delete(tableName, entities, false);
 		}
 
-        /// <summary>Checks that containerName is a valid DNS name, as requested by Azure</summary>
-        public static bool IsContainerNameValid(string containerName)
-        {
-            return (Regex.IsMatch(containerName, @"(^([a-z]|\d))((-([a-z]|\d)|([a-z]|\d))+)$")
-                && (3 <= containerName.Length) && (containerName.Length <= 63));
-        }
+		/// <summary>Checks that containerName is a valid DNS name, as requested by Azure</summary>
+		public static bool IsContainerNameValid(string containerName)
+		{
+			return (Regex.IsMatch(containerName, @"(^([a-z]|\d))((-([a-z]|\d)|([a-z]|\d))+)$")
+				&& (3 <= containerName.Length) && (containerName.Length <= 63));
+		}
 	}
 }

@@ -3,6 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using Lokad.Cloud.Storage.InMemory;
 using NUnit.Framework;
 
 namespace Lokad.Cloud.Test
@@ -58,7 +59,7 @@ namespace Lokad.Cloud.Test
 		{
 			var providers = Standalone.CreateMockProviders();
 			VerifyBlobProviderWorks(providers, true);
-			Assert.IsInstanceOf(typeof(Mock.MemoryBlobStorageProvider), providers.BlobStorage);
+			Assert.IsInstanceOf(typeof(MemoryBlobStorageProvider), providers.BlobStorage);
 		}
 
 		void VerifyBlobProviderWorks(CloudInfrastructureProviders providers, bool verifyBlobRoundtrip)

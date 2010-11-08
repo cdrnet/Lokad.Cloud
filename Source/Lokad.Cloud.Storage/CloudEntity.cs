@@ -22,7 +22,7 @@ namespace Lokad.Cloud.Storage
 		/// <summary>Flag indicating last update. Populated by the Table Storage.</summary>
 		public DateTime Timestamp { get; set; }
 
-        /// <summary>ETag. Indicates changes. Populated by the Table Storage.</summary>
+		/// <summary>ETag. Indicates changes. Populated by the Table Storage.</summary>
 		public string ETag { get; set; }
 
 		/// <summary>Value carried by the entity.</summary>

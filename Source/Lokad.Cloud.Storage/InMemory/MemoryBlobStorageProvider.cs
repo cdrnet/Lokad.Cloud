@@ -8,11 +8,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Lokad.Cloud.Storage;
 using Lokad.Serialization;
 using Lokad.Threading;
 
-namespace Lokad.Cloud.Mock
+namespace Lokad.Cloud.Storage.InMemory
 {
 	/// <summary>Mock in-memory Blob Storage.</summary>
 	/// <remarks>

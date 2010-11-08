@@ -7,11 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
-using Lokad.Cloud.Storage;
 using Lokad.Cloud.Storage.Azure;
 using Lokad.Serialization;
 
-namespace Lokad.Cloud.Mock
+namespace Lokad.Cloud.Storage.InMemory
 {
 	/// <summary>Mock in-memory TableStorage Provider.</summary>
 	/// <remarks>

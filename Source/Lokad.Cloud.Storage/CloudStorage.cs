@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using Lokad.Cloud.Storage.Azure;
 using Lokad.Serialization;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.StorageClient;
@@ -62,41 +61,41 @@ namespace Lokad.Cloud.Storage
             return this;
         }
 
-        public abstract IBlobStorageProvider BuildBlobProvider();
-        public abstract ITableStorageProvider BuildTableProvider();
-        public abstract IQueueStorageProvider BuildQueueProvider();
+        public abstract IBlobStorageProvider BuildBlobStorage();
+        public abstract ITableStorageProvider BuildTableStorage();
+        public abstract IQueueStorageProvider BuildQueueStorage();
 
-        public CloudStorageProviders BuildProviders()
+        public CloudStorageProviders BuildStorageProviders()
         {
             return new CloudStorageProviders(
-                BuildBlobProvider(),
-                BuildQueueProvider(),
-                BuildTableProvider(),
+                BuildBlobStorage(),
+                BuildQueueStorage(),
+                BuildTableStorage(),
                 RuntimeFinalizer);
         }
     }
 
     internal sealed class InMemoryStorageBuilder : CloudStorageBuilder
     {
-        public override IBlobStorageProvider BuildBlobProvider()
+        public override IBlobStorageProvider BuildBlobStorage()
         {
-            return new Mock.MemoryBlobStorageProvider
+            return new InMemory.MemoryBlobStorageProvider
             {
                 DataSerializer = DataSerializer
             };
         }
 
-        public override ITableStorageProvider BuildTableProvider()
+        public override ITableStorageProvider BuildTableStorage()
         {
-            return new Mock.MemoryTableStorageProvider
+            return new InMemory.MemoryTableStorageProvider
             {
                 DataSerializer = DataSerializer
             };
         }
 
-        public override IQueueStorageProvider BuildQueueProvider()
+        public override IQueueStorageProvider BuildQueueStorage()
         {
-            return new Mock.MemoryQueueStorageProvider
+            return new InMemory.MemoryQueueStorageProvider
             {
                 DataSerializer = DataSerializer
             };
@@ -116,21 +115,21 @@ namespace Lokad.Cloud.Storage
             ServicePointManager.FindServicePoint(storageAccount.QueueEndpoint).UseNagleAlgorithm = false;
         }
 
-        public override IBlobStorageProvider BuildBlobProvider()
+        public override IBlobStorageProvider BuildBlobStorage()
         {
-            return new BlobStorageProvider(BlobClient(), DataSerializer);
+            return new Azure.BlobStorageProvider(BlobClient(), DataSerializer);
         }
 
-        public override ITableStorageProvider BuildTableProvider()
+        public override ITableStorageProvider BuildTableStorage()
         {
-            return new TableStorageProvider(TableClient(), DataSerializer);
+            return new Azure.TableStorageProvider(TableClient(), DataSerializer);
         }
 
-        public override IQueueStorageProvider BuildQueueProvider()
+        public override IQueueStorageProvider BuildQueueStorage()
         {
-            return new QueueStorageProvider(
+            return new Azure.QueueStorageProvider(
                 QueueClient(),
-                BuildBlobProvider(),
+                BuildBlobStorage(),
                 DataSerializer,
                 RuntimeFinalizer);
         }

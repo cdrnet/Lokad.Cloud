@@ -5,6 +5,7 @@
 
 using System;
 using Lokad.Cloud.Mock;
+using Lokad.Cloud.Storage.InMemory;
 using NUnit.Framework;
 
 

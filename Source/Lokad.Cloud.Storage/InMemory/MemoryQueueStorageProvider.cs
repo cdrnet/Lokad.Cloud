@@ -7,10 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Lokad.Cloud.Storage;
 using Lokad.Serialization;
 
-namespace Lokad.Cloud.Mock
+namespace Lokad.Cloud.Storage.InMemory
 {
 	/// <summary>Mock in-memory Queue Storage.</summary>
 	public class MemoryQueueStorageProvider : IQueueStorageProvider

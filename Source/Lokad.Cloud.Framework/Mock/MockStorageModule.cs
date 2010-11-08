@@ -7,6 +7,7 @@ using Autofac.Builder;
 using Lokad.Cloud.Diagnostics;
 using Lokad.Cloud.Management;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.InMemory;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Mock

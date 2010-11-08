@@ -33,7 +33,6 @@ namespace Lokad.Cloud
 		/// <summary>
 		/// Create standalone infrastructure providers using the specified settings.
 		/// </summary>
-		[Obsolete("Use the Lokad.Cloud.Storage.CloudStorage class directly instead.")]
 		public static CloudInfrastructureProviders CreateProviders(string dataConnectionString)
 		{
 			return CreateProviders(new RoleConfigurationSettings
@@ -62,7 +61,6 @@ namespace Lokad.Cloud
 		/// Create standalone mock infrastructure providers.
 		/// </summary>
 		/// <returns></returns>
-		[Obsolete("Use the Lokad.Cloud.Storage.CloudStorage class directly instead.")]
 		public static CloudInfrastructureProviders CreateMockProviders()
 		{
 			var builder = new ContainerBuilder();
@@ -78,7 +76,6 @@ namespace Lokad.Cloud
 		/// <summary>
 		/// Create standalone infrastructure providers bound to the local development storage.
 		/// </summary>
-		[Obsolete("Use the Lokad.Cloud.Storage.CloudStorage class directly instead.")]
 		public static CloudInfrastructureProviders CreateDevelopmentStorageProviders()
 		{
 			return CreateProviders("UseDevelopmentStorage=true");

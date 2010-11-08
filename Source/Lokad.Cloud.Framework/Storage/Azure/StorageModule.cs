@@ -67,7 +67,7 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			return CloudStorage.ForAzureAccount(c.Resolve<CloudStorageAccount>())
 				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new CloudFormatter())
-				.BuildTableProvider();
+				.BuildTableStorage();
 		}
 
 		static IQueueStorageProvider QueueStorageProvider(IContext c)
@@ -75,14 +75,14 @@ namespace Lokad.Cloud.Storage.Azure
 			return CloudStorage.ForAzureAccount(c.Resolve<CloudStorageAccount>())
 				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new CloudFormatter())
 				.WithRuntimeFinalizer(c.ResolveOptional<IRuntimeFinalizer>())
-				.BuildQueueProvider();
+				.BuildQueueStorage();
 		}
 
 		static IBlobStorageProvider BlobStorageProvider(IContext c)
 		{
 			return CloudStorage.ForAzureAccount(c.Resolve<CloudStorageAccount>())
 				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new CloudFormatter())
-				.BuildBlobProvider();
+				.BuildBlobStorage();
 		}
 	}
 }
