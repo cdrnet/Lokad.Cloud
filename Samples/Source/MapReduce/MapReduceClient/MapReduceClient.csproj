@@ -90,6 +90,10 @@
     <Compile Include="Setup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Source\Lokad.Cloud.Storage\Lokad.Cloud.Storage.csproj">
+      <Project>{0F9244AB-3B7C-4F98-9D44-E46FBC65522C}</Project>
+      <Name>Lokad.Cloud.Storage</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MapReduceClientLib\MapReduceClientLib.csproj">
       <Project>{600A345F-DEE1-41E4-B106-3366AFB3B56C}</Project>
       <Name>MapReduceClientLib</Name>

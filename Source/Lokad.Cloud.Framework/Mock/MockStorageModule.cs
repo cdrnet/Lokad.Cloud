@@ -16,6 +16,7 @@ namespace Lokad.Cloud.Mock
 	{
 		protected override void Load(ContainerBuilder builder)
 		{
+			// From Lokad.Cloud.Storage
 			builder.Register(c => new MemoryBlobStorageProvider()).As<IBlobStorageProvider>();
 			builder.Register(c => new MemoryQueueStorageProvider()).As<IQueueStorageProvider>();
 			builder.Register(c => new MemoryTableStorageProvider()).As<ITableStorageProvider>();

@@ -28,13 +28,13 @@ namespace Lokad.Cloud.Mock
 		/// <summary>naive global lock to make methods thread-safe.</summary>
 		readonly object _syncRoot;
 
-		readonly IDataSerializer _serializer;
+		internal IDataSerializer DataSerializer { get; set; }
 
 		public MemoryBlobStorageProvider()
 		{
 			_containers = new Dictionary<string, MockContainer>();
 			_syncRoot = new object();
-			_serializer = new CloudFormatter();
+			DataSerializer = new CloudFormatter();
 		}
 
 		public bool CreateContainer(string containerName)
@@ -113,7 +113,7 @@ namespace Lokad.Cloud.Mock
 
 						using (var stream = new MemoryStream())
 						{
-							_serializer.Serialize(item, stream);
+							DataSerializer.Serialize(item, stream);
 						}
 
 						Containers[containerName].SetBlob(blobName, item);
@@ -135,7 +135,7 @@ namespace Lokad.Cloud.Mock
 
 				using (var stream = new MemoryStream())
 				{
-					_serializer.Serialize(item, stream);
+					DataSerializer.Serialize(item, stream);
 				}
 
 				Containers[containerName].AddBlob(blobName, item);
@@ -176,7 +176,7 @@ namespace Lokad.Cloud.Mock
 		{
 			etag = null;
 
-			var formatter = _serializer as IIntermediateDataSerializer;
+			var formatter = DataSerializer as IIntermediateDataSerializer;
 			if (formatter == null)
 			{
 				return Maybe<XElement>.Empty;

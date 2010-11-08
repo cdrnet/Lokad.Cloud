@@ -5,9 +5,6 @@
 
 using System;
 using System.Runtime.Serialization;
-using Lokad.Cloud.ServiceFabric;
-using Lokad.Cloud.Services;
-using Lokad.Quality;
 
 namespace Lokad.Cloud.Storage
 {
@@ -25,16 +22,18 @@ namespace Lokad.Cloud.Storage
 	[Serializable, DataContract]
 	public class TemporaryBlobName<T> : BlobName<T>
 	{
+		public const string DefaultContainerName = "lokad-cloud-temporary";
+
 		/// <summary>
 		/// Returns the garbage collected container.
 		/// </summary>
 		public sealed override string ContainerName
 		{
-			get { return CloudService.TemporaryContainer; }
+			get { return DefaultContainerName; }
 		}
 
-		[UsedImplicitly, Rank(0), DataMember] public readonly DateTimeOffset Expiration;
-		[UsedImplicitly, Rank(1), DataMember] public readonly string Suffix;
+		[Rank(0), DataMember] public readonly DateTimeOffset Expiration;
+		[Rank(1), DataMember] public readonly string Suffix;
 
 		/// <summary>
 		/// Explicit constructor.

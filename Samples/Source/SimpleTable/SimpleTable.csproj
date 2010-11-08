@@ -78,6 +78,10 @@
       <Project>{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}</Project>
       <Name>Lokad.Cloud.Framework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\Lokad.Cloud.Storage\Lokad.Cloud.Storage.csproj">
+      <Project>{0F9244AB-3B7C-4F98-9D44-E46FBC65522C}</Project>
+      <Name>Lokad.Cloud.Storage</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

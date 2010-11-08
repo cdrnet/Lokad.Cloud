@@ -11,7 +11,7 @@ namespace Lokad.Cloud.Storage
 	/// handle messages that are too large of the queue storage (or messages that 
 	/// happen to be already stored in the Blob Storage).</summary>
 	[DataContract]
-	internal sealed class MessageWrapper
+	public sealed class MessageWrapper
 	{
 		[DataMember]
 		public string ContainerName { get; set; }

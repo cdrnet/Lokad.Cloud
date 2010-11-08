@@ -23,7 +23,7 @@ namespace Lokad.Cloud.Mock
 		readonly Dictionary<string, List<MockTableEntry>> _tables;
 
 		/// <summary>Formatter as requiered to handle FatEntities.</summary>
-		readonly IDataSerializer _serializer;
+		internal IDataSerializer DataSerializer { get; set; }
 
 		/// <summary>naive global lock to make methods thread-safe.</summary>
 		readonly object _syncRoot;
@@ -37,7 +37,7 @@ namespace Lokad.Cloud.Mock
 		{
 			_tables = new Dictionary<string, List<MockTableEntry>>();
 			_syncRoot = new object();
-			_serializer = new CloudFormatter();
+			DataSerializer = new CloudFormatter();
 		}
 
 		/// <see cref="ITableStorageProvider.CreateTable"/>
@@ -95,7 +95,7 @@ namespace Lokad.Cloud.Mock
 
 				return from entry in _tables[tableName]
 					   where predicate(entry)
-					   select entry.ToCloudEntity<T>(_serializer);
+					   select entry.ToCloudEntity<T>(DataSerializer);
 			}
 		}
 
@@ -160,7 +160,7 @@ namespace Lokad.Cloud.Mock
 							PartitionKey = entity.PartitionKey,
 							RowKey = entity.RowKey,
 							ETag = etag,
-							Value = FatEntity.Convert(entity, _serializer)
+							Value = FatEntity.Convert(entity, DataSerializer)
 						});
 				}
 			}
@@ -198,7 +198,7 @@ namespace Lokad.Cloud.Mock
 							PartitionKey = entity.PartitionKey,
 							RowKey = entity.RowKey,
 							ETag = etag,
-							Value = FatEntity.Convert(entity, _serializer)
+							Value = FatEntity.Convert(entity, DataSerializer)
 						};
 				}
 			}

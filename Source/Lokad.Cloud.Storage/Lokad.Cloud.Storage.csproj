@@ -31,10 +31,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Lokad.Shared">
+      <HintPath>..\..\Resource\Library\Lokad.Shared.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.WindowsAzure.StorageClient, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Services.Client" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -42,7 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudStorage.cs" />
     <Compile Include="IdempotentAttribute.cs" />
+    <Compile Include="Mock.Legacy\MemoryBlobStorageProvider.cs" />
+    <Compile Include="Mock.Legacy\MemoryQueueStorageProvider.cs" />
+    <Compile Include="Mock.Legacy\MemoryTableStorageProvider.cs" />
     <Compile Include="NonIdempotentAttribute.cs" />
     <Compile Include="Providers\TaskFactoryExtensions.cs" />
     <Compile Include="Providers\AzurePolicies.cs" />
@@ -54,6 +63,30 @@
     <Compile Include="Providers\Blobs\IBlobProvider.cs" />
     <Compile Include="Queues\IQueueStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Storage.Legacy\Azure\AzurePolicies.cs" />
+    <Compile Include="Storage.Legacy\Azure\BlobStorageProvider.cs" />
+    <Compile Include="Storage.Legacy\Azure\DataCorruptionException.cs" />
+    <Compile Include="Storage.Legacy\Azure\FatEntity.cs" />
+    <Compile Include="Storage.Legacy\Azure\QueueStorageProvider.cs" />
+    <Compile Include="Storage.Legacy\Azure\TableStorageProvider.cs" />
+    <Compile Include="Storage.Legacy\BlobCounter.cs" />
+    <Compile Include="Storage.Legacy\BlobName.cs" />
+    <Compile Include="Storage.Legacy\CloudEntity.cs" />
+    <Compile Include="Storage.Legacy\CloudFormatter.cs" />
+    <Compile Include="Storage.Legacy\CloudStorageProviders.cs" />
+    <Compile Include="Storage.Legacy\CloudTable.cs" />
+    <Compile Include="Storage.Legacy\IBlobStorageProvider.cs" />
+    <Compile Include="Storage.Legacy\IIntermediateDataSerializer.cs" />
+    <Compile Include="Storage.Legacy\IQueueStorageProvider.cs" />
+    <Compile Include="Storage.Legacy\IRuntimeFinalizer.cs" />
+    <Compile Include="Storage.Legacy\ITableStorageProvider.cs" />
+    <Compile Include="Storage.Legacy\MessageEnvelope.cs" />
+    <Compile Include="Storage.Legacy\MessageWrapper.cs" />
+    <Compile Include="Storage.Legacy\RankAttribute.cs" />
+    <Compile Include="Storage.Legacy\StorageExtensions.cs" />
+    <Compile Include="Storage.Legacy\TemporaryBlobName.cs" />
+    <Compile Include="Storage.Legacy\TypeMapperProvider.cs" />
+    <Compile Include="Storage.Legacy\UntypedBlobName.cs" />
     <Compile Include="Values\IValueStorage.cs" />
   </ItemGroup>
   <ItemGroup>

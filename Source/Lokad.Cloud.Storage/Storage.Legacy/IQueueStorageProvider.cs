@@ -142,26 +142,26 @@ namespace Lokad.Cloud.Storage
 	public class PersistedMessage
 	{
 		/// <summary>Identifier of the originating message queue.</summary>
-		public string QueueName { get; internal set; }
+		public string QueueName { get; set; }
 		/// <summary>Name of the message persistence store.</summary>
-		public string StoreName { get; internal set; }
+		public string StoreName { get; set; }
 		/// <summary>Unique key of the persisted message as returned by ListPersisted.</summary>
-		public string Key { get; internal set; }
+		public string Key { get; set; }
 
 		/// <summary>Time when the message was inserted into the message queue.</summary>
-		public DateTimeOffset InsertionTime { get; internal set; }
+		public DateTimeOffset InsertionTime { get; set; }
 		/// <summary>Time when the message was persisted and removed from the message queue.</summary>
-		public DateTimeOffset PersistenceTime { get; internal set; }
+		public DateTimeOffset PersistenceTime { get; set; }
 		/// <summary>The number of times the message has been dequeued.</summary>
-		public int DequeueCount { get; internal set; }
+		public int DequeueCount { get; set; }
 		/// <summary>Optional reason text why the message was persisted.</summary>
-		public string Reason { get; internal set; }
+		public string Reason { get; set; }
 
 		/// <summary>XML representation of the message, if possible and supported by the serializer</summary>
-		public Maybe<XElement> DataXml { get; internal set; }
+		public Maybe<XElement> DataXml { get; set; }
 
 		/// <summary>True if the raw message data is available and can be restored.</summary>
 		/// <remarks>Can be true even if DataXML is not available.</remarks>
-		public bool IsDataAvailable { get; internal set; }
+		public bool IsDataAvailable { get; set; }
 	}
 }
