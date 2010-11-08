@@ -36,8 +36,7 @@ namespace Lokad.Cloud.Management
 				null,
 				new object[] {assemblyBytes, symbolBytes},
 				null,
-				new object[0],
-				null) as AssemblyWrapper;
+				new object[0]) as AssemblyWrapper;
 		}
 
 		/// <summary>Gets the assembly version.</summary>
