@@ -6,7 +6,6 @@
 using Autofac.Builder;
 using Lokad.Cloud.Diagnostics;
 using Lokad.Cloud.Management;
-using Lokad.Cloud.Storage;
 using Lokad.Cloud.Storage.InMemory;
 using Lokad.Quality;
 
@@ -18,9 +17,9 @@ namespace Lokad.Cloud.Mock
 		protected override void Load(ContainerBuilder builder)
 		{
 			// From Lokad.Cloud.Storage
-			builder.Register(c => new MemoryBlobStorageProvider()).As<IBlobStorageProvider>();
-			builder.Register(c => new MemoryQueueStorageProvider()).As<IQueueStorageProvider>();
-			builder.Register(c => new MemoryTableStorageProvider()).As<ITableStorageProvider>();
+			builder.Register(c => new MemoryBlobStorageProvider()).As<Storage.Blobs.IBlobStorageProvider>();
+			builder.Register(c => new MemoryQueueStorageProvider()).As<Storage.Queues.IQueueStorageProvider>();
+			builder.Register(c => new MemoryTableStorageProvider()).As<Storage.Tables.ITableStorageProvider>();
 
 			builder.Register(c => new MemoryLogger()).As<ILog>();
 			builder.Register(c => new MemoryMonitor()).As<IServiceMonitor>();

@@ -3,6 +3,8 @@
 // URL: http://www.lokad.com/
 #endregion
 
+using Lokad.Cloud.Storage.Blobs;
+
 namespace Lokad.Cloud.Storage
 {
 	/// <summary>Simple non-sharded counter shared among several workers.</summary>

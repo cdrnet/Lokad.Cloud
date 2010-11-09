@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Lokad.Cloud.Storage
+namespace Lokad.Cloud.Storage.Tables
 {
 	/// <summary>Entity to be stored by the <see cref="ITableStorageProvider"/>.</summary>
 	/// <typeparam name="T">Type of the value carried by the entity.</typeparam>

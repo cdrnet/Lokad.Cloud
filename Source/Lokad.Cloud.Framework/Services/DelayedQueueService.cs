@@ -6,6 +6,7 @@
 using System;
 using Lokad.Cloud.ServiceFabric;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 
 // HACK: the delayed queue service does not provide a scalable iteration pattern.
 // (single instance iterating over the delayed message)
@@ -23,7 +24,7 @@ namespace Lokad.Cloud.Services
 		protected override void StartOnSchedule()
 		{
 			// lazy enumeration over the delayed messages
-            foreach (var parsedName in BlobStorage.List(new DelayedMessageName()))
+			foreach (var parsedName in BlobStorage.List(new DelayedMessageName()))
 			{
 				if (DateTimeOffset.UtcNow <= parsedName.TriggerTime)
 				{

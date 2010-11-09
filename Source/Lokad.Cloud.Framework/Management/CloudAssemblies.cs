@@ -9,7 +9,7 @@ using System.IO;
 using ICSharpCode.SharpZipLib.Zip;
 using Lokad.Cloud.Management.Api10;
 using Lokad.Cloud.ServiceFabric.Runtime;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Management

@@ -5,7 +5,7 @@
 
 using Autofac.Builder;
 using Lokad.Cloud.Diagnostics.Persistence;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Diagnostics

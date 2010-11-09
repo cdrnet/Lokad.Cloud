@@ -2,9 +2,11 @@
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System;
 using System.Runtime.Serialization;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Tables;
 
 namespace SimpleTable
 {

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Lokad.Cloud.Storage.Azure;
+using Lokad.Cloud.Storage.Tables;
 using Lokad.Cloud.Test;
 using Lokad.Quality;
 using NUnit.Framework;

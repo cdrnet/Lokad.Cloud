@@ -6,7 +6,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Storage
+namespace Lokad.Cloud.Storage.Blobs
 {
 	/// <summary>
 	/// Reference to a unique blob with a fixed limited lifespan.

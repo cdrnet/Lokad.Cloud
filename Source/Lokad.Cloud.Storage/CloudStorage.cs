@@ -1,4 +1,9 @@
-﻿using System;
+﻿#region Copyright (c) Lokad 2010
+// This code is released under the terms of the new BSD licence.
+// URL: http://www.lokad.com/
+#endregion
+
+using System;
 using System.Net;
 using Lokad.Serialization;
 using Microsoft.WindowsAzure;
@@ -61,9 +66,9 @@ namespace Lokad.Cloud.Storage
             return this;
         }
 
-        public abstract IBlobStorageProvider BuildBlobStorage();
-        public abstract ITableStorageProvider BuildTableStorage();
-        public abstract IQueueStorageProvider BuildQueueStorage();
+        public abstract Blobs.IBlobStorageProvider BuildBlobStorage();
+        public abstract Tables.ITableStorageProvider BuildTableStorage();
+        public abstract Queues.IQueueStorageProvider BuildQueueStorage();
 
         public CloudStorageProviders BuildStorageProviders()
         {
@@ -77,7 +82,7 @@ namespace Lokad.Cloud.Storage
 
     internal sealed class InMemoryStorageBuilder : CloudStorageBuilder
     {
-        public override IBlobStorageProvider BuildBlobStorage()
+        public override Blobs.IBlobStorageProvider BuildBlobStorage()
         {
             return new InMemory.MemoryBlobStorageProvider
             {
@@ -85,7 +90,7 @@ namespace Lokad.Cloud.Storage
             };
         }
 
-        public override ITableStorageProvider BuildTableStorage()
+        public override Tables.ITableStorageProvider BuildTableStorage()
         {
             return new InMemory.MemoryTableStorageProvider
             {
@@ -93,7 +98,7 @@ namespace Lokad.Cloud.Storage
             };
         }
 
-        public override IQueueStorageProvider BuildQueueStorage()
+        public override Queues.IQueueStorageProvider BuildQueueStorage()
         {
             return new InMemory.MemoryQueueStorageProvider
             {
@@ -115,17 +120,17 @@ namespace Lokad.Cloud.Storage
             ServicePointManager.FindServicePoint(storageAccount.QueueEndpoint).UseNagleAlgorithm = false;
         }
 
-        public override IBlobStorageProvider BuildBlobStorage()
+        public override Blobs.IBlobStorageProvider BuildBlobStorage()
         {
             return new Azure.BlobStorageProvider(BlobClient(), DataSerializer);
         }
 
-        public override ITableStorageProvider BuildTableStorage()
+        public override Tables.ITableStorageProvider BuildTableStorage()
         {
             return new Azure.TableStorageProvider(TableClient(), DataSerializer);
         }
 
-        public override IQueueStorageProvider BuildQueueStorage()
+        public override Queues.IQueueStorageProvider BuildQueueStorage()
         {
             return new Azure.QueueStorageProvider(
                 QueueClient(),

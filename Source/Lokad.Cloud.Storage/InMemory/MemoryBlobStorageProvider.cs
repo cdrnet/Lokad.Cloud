@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Serialization;
 using Lokad.Threading;
 
@@ -40,7 +41,7 @@ namespace Lokad.Cloud.Storage.InMemory
 		{
 			lock (_syncRoot)
 			{
-				if (!StorageExtensions.IsContainerNameValid(containerName))
+				if (!BlobStorageExtensions.IsContainerNameValid(containerName))
 				{
 					throw new NotSupportedException("the containerName is not compliant with azure constraints on container names");
 				}
@@ -125,7 +126,7 @@ namespace Lokad.Cloud.Storage.InMemory
 					return true;
 				}
 
-				if (!StorageExtensions.IsContainerNameValid(containerName))
+				if (!BlobStorageExtensions.IsContainerNameValid(containerName))
 				{
 					throw new NotSupportedException("the containerName is not compliant with azure constraints on container names");
 				}

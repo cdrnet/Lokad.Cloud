@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Lokad.Cloud.Storage
+namespace Lokad.Cloud.Storage.Blobs
 {
     /// <summary>Used to specify the field position in the blob name.</summary>
     /// <remarks>The name (chosen as the abbreviation of "field position")

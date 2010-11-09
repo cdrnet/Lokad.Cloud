@@ -6,6 +6,7 @@
 using System;
 using System.Runtime.Serialization;
 using Lokad.Cloud.Storage.Azure;
+using Lokad.Cloud.Storage.Tables;
 using Lokad.Cloud.Test;
 using Lokad.Serialization;
 using NUnit.Framework;

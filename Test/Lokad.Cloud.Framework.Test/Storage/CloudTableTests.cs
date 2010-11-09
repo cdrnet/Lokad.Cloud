@@ -4,8 +4,8 @@
 #endregion
 
 using System;
-using Lokad.Cloud.Mock;
 using Lokad.Cloud.Storage.InMemory;
+using Lokad.Cloud.Storage.Tables;
 using NUnit.Framework;
 
 

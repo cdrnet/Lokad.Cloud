@@ -5,7 +5,7 @@
 
 using System;
 using Lokad.Cloud.ServiceFabric;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 
 namespace Lokad.Cloud.Services
 {
@@ -30,9 +30,9 @@ namespace Lokad.Cloud.Services
 			var executionExpiration = DateTimeOffset.UtcNow.Add(MaxExecutionTime);
 
 			// lazy enumeration over the overflowing messages
-            foreach (var blobName in BlobStorage.List(TemporaryContainer, null))
+			foreach (var blobName in BlobStorage.List(TemporaryContainer, null))
 			{
-                // HACK: targeted object is irrelevant
+				// HACK: targeted object is irrelevant
 				var parsedName = UntypedBlobName.Parse<TemporaryBlobName<object>>(blobName);
 
 				if (DateTimeOffset.UtcNow <= parsedName.Expiration)
@@ -44,7 +44,7 @@ namespace Lokad.Cloud.Services
 				}
 
 				// if the overflowing message is expired, delete it
-                BlobStorage.DeleteBlob(TemporaryContainer, blobName);
+				BlobStorage.DeleteBlob(TemporaryContainer, blobName);
 
 				// don't freeze the worker with this service
 				if (DateTimeOffset.UtcNow > executionExpiration)

@@ -6,8 +6,8 @@
 using System;
 using System.Linq;
 using System.Threading;
-using Lokad.Cloud.Storage;
 using Lokad.Cloud.Storage.InMemory;
+using Lokad.Cloud.Storage.Tables;
 using Lokad.Cloud.Storage.Test;
 using NUnit.Framework;
 

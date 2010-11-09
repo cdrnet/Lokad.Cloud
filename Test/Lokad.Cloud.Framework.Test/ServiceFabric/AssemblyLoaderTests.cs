@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using Lokad.Cloud.Management;
 using Lokad.Cloud.ServiceFabric.Runtime;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Cloud.Test;
 using Lokad.Diagnostics;
 using NUnit.Framework;

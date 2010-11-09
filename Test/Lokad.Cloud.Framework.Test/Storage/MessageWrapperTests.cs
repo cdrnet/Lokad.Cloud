@@ -4,6 +4,7 @@
 #endregion
 
 using System.IO;
+using Lokad.Cloud.Storage.Queues;
 using Lokad.Cloud.Test;
 using Lokad.Serialization;
 using NUnit.Framework;

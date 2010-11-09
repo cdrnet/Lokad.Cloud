@@ -6,6 +6,9 @@
 using System;
 using System.Collections.Generic;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
+using Lokad.Cloud.Storage.Queues;
+using Lokad.Cloud.Storage.Tables;
 using Lokad.Quality;
 using Lokad.Threading;
 
@@ -46,7 +49,7 @@ namespace Lokad.Cloud.ServiceFabric
 		}
 
 		/// <summary>Let you iterate over the state of each cloud service.</summary>
-        public static CloudServiceStateName GetPrefix()
+		public static CloudServiceStateName GetPrefix()
 		{
 			return new CloudServiceStateName(null);
 		}

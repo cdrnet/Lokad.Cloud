@@ -5,7 +5,7 @@
 
 using System;
 using System.Linq;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Queues;
 using Lokad.Cloud.Storage.InMemory;
 using NUnit.Framework;
 

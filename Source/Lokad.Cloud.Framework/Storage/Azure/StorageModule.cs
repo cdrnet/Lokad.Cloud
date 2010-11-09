@@ -53,9 +53,9 @@ namespace Lokad.Cloud.Storage.Azure
 		{
 			return new CloudInfrastructureProviders(
 				// storage providers supporting the O/C mapper scenario
-				c.Resolve<IBlobStorageProvider>(),
-				c.Resolve<IQueueStorageProvider>(),
-				c.Resolve<ITableStorageProvider>(),
+				c.Resolve<Blobs.IBlobStorageProvider>(),
+				c.Resolve<Queues.IQueueStorageProvider>(),
+				c.Resolve<Tables.ITableStorageProvider>(),
 
 				// optional providers supporting the execution framework scenario
 				c.ResolveOptional<ILog>(),
@@ -63,14 +63,14 @@ namespace Lokad.Cloud.Storage.Azure
 				c.ResolveOptional<IRuntimeFinalizer>());
 		}
 
-		static ITableStorageProvider TableStorageProvider(IContext c)
+		static Tables.ITableStorageProvider TableStorageProvider(IContext c)
 		{
 			return CloudStorage.ForAzureAccount(c.Resolve<CloudStorageAccount>())
 				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new CloudFormatter())
 				.BuildTableStorage();
 		}
 
-		static IQueueStorageProvider QueueStorageProvider(IContext c)
+		static Queues.IQueueStorageProvider QueueStorageProvider(IContext c)
 		{
 			return CloudStorage.ForAzureAccount(c.Resolve<CloudStorageAccount>())
 				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new CloudFormatter())
@@ -78,7 +78,7 @@ namespace Lokad.Cloud.Storage.Azure
 				.BuildQueueStorage();
 		}
 
-		static IBlobStorageProvider BlobStorageProvider(IContext c)
+		static Blobs.IBlobStorageProvider BlobStorageProvider(IContext c)
 		{
 			return CloudStorage.ForAzureAccount(c.Resolve<CloudStorageAccount>())
 				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new CloudFormatter())

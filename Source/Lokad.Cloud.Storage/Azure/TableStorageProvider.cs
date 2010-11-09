@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
+using Lokad.Cloud.Storage.Tables;
 using Lokad.Diagnostics;
 using Lokad.Serialization;
 using Microsoft.WindowsAzure.StorageClient;

@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using Lokad.Quality;
 
-namespace Lokad.Cloud.Storage
+namespace Lokad.Cloud.Storage.Blobs
 {
 	/// <summary>
 	/// Base class for untyped hierarchical blob names. Implementations should

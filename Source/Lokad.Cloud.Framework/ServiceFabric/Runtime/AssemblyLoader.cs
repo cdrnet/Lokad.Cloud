@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using ICSharpCode.SharpZipLib.Zip;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 
 namespace Lokad.Cloud.ServiceFabric.Runtime
 {

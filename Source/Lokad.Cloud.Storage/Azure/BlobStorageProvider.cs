@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Diagnostics;
 using Lokad.Serialization;
 using Lokad.Threading;
@@ -57,7 +58,7 @@ namespace Lokad.Cloud.Storage.Azure
 		public bool CreateContainer(string containerName)
 		{
 			//workaround since Azure is presently returning OutOfRange exception when using a wrong name.
-			if (!StorageExtensions.IsContainerNameValid(containerName))
+			if (!BlobStorageExtensions.IsContainerNameValid(containerName))
 				throw new NotSupportedException("containerName is not compliant with azure constraints on container naming");
 
 			var container = _blobStorage.GetContainerReference(containerName);

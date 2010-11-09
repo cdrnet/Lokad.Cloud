@@ -6,7 +6,8 @@
 using System;
 using System.Linq;
 using Lokad.Cloud.Storage;
-using Lokad.Cloud.Storage.Azure;
+using Lokad.Cloud.Storage.Blobs;
+using Lokad.Cloud.Storage.Queues;
 using Lokad.Cloud.Test;
 using NUnit.Framework;
 using System.Text;

@@ -10,7 +10,7 @@ using System.IO;
 using System.Security;
 using System.Text;
 using System.Xml.XPath;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 using Microsoft.WindowsAzure.StorageClient;
 
 namespace Lokad.Cloud.Diagnostics

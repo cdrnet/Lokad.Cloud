@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Lokad.Quality;
 
-namespace Lokad.Cloud.Storage
+namespace Lokad.Cloud.Storage.Tables
 {
 	/// <summary>Strong-typed utility wrapper for the <see cref="ITableStorageProvider"/>.</summary>
 	/// <remarks>

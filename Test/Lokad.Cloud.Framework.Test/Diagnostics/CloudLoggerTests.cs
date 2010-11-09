@@ -6,7 +6,7 @@
 using System;
 using System.Linq;
 using Lokad.Cloud.ServiceFabric.Runtime;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Cloud.Test;
 using NUnit.Framework;
 

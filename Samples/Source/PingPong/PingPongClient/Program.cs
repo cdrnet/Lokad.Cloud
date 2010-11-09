@@ -5,6 +5,7 @@
 
 using System;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Queues;
 using PingPongClient.Properties;
 
 namespace PingPongClient

@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using Lokad.Cloud.ServiceFabric;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Cloud.Storage.InMemory;
 using NUnit.Framework;
 
@@ -88,7 +89,7 @@ namespace Lokad.Cloud.Mock.Services.Test
 
 				if (message.IsStart)
 				{
-                    var counterName = TemporaryBlobName<decimal>.GetNew(message.Expiration);
+					var counterName = TemporaryBlobName<decimal>.GetNew(message.Expiration);
 					var counter = new BlobCounter(blobStorage, counterName);
 					counter.Reset(BlobCounter.Aleph);
 

@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lokad.Cloud.Storage
+namespace Lokad.Cloud.Storage.Tables
 {
 	/// <summary>Abstraction for the Table Storage.</summary>
 	/// <remarks>This provider represents a logical abstraction of the Table Storage,

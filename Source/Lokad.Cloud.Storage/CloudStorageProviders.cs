@@ -14,13 +14,13 @@ namespace Lokad.Cloud.Storage
     public class CloudStorageProviders
     {
         /// <summary>Abstracts the Blob Storage.</summary>
-        public IBlobStorageProvider BlobStorage { get; private set; }
+        public Blobs.IBlobStorageProvider BlobStorage { get; private set; }
 
         /// <summary>Abstracts the Queue Storage.</summary>
-        public IQueueStorageProvider QueueStorage { get; private set; }
+        public Queues.IQueueStorageProvider QueueStorage { get; private set; }
 
         /// <summary>Abstracts the Table Storage.</summary>
-        public ITableStorageProvider TableStorage { get; private set; }
+        public Tables.ITableStorageProvider TableStorage { get; private set; }
 
         /// <summary>Abstracts the finalizer (used for fast resource release
         /// in case of runtime shutdown).</summary>
@@ -28,9 +28,9 @@ namespace Lokad.Cloud.Storage
 
         /// <summary>IoC constructor.</summary>
         public CloudStorageProviders(
-            IBlobStorageProvider blobStorage, 
-            IQueueStorageProvider queueStorage,
-            ITableStorageProvider tableStorage,
+            Blobs.IBlobStorageProvider blobStorage,
+            Queues.IQueueStorageProvider queueStorage,
+            Tables.ITableStorageProvider tableStorage,
             IRuntimeFinalizer runtimeFinalizer)
         {
             BlobStorage = blobStorage;

@@ -5,11 +5,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Lokad.Cloud;
-using Lokad;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
+using Lokad.Cloud.Storage.Queues;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Samples.MapReduce
@@ -404,7 +402,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 				return new MapReduceConfigurationName(ConfigPrefix, jobName);
 			}
 
-            public static MapReduceConfigurationName GetPrefix()
+			public static MapReduceConfigurationName GetPrefix()
 			{
 				return new MapReduceConfigurationName(ConfigPrefix, null);
 			}
@@ -440,7 +438,7 @@ namespace Lokad.Cloud.Samples.MapReduce
 				return new InputBlobName(InputPrefix, jobName, blobSetId, blobId);
 			}
 
-            public static InputBlobName GetPrefix(string jobName, int blobSetId)
+			public static InputBlobName GetPrefix(string jobName, int blobSetId)
 			{
 				return new InputBlobName(InputPrefix, jobName, blobSetId, null);
 			}

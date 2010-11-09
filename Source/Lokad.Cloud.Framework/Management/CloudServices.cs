@@ -9,6 +9,7 @@ using Lokad.Cloud.Management.Api10;
 using Lokad.Cloud.ServiceFabric;
 using Lokad.Cloud.Services;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Quality;
 
 // TODO: blobs are sequentially enumerated, performance issue

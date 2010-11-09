@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blobs\BlobStorageExtensions.cs" />
     <Compile Include="CloudStorage.cs" />
     <Compile Include="IdempotentAttribute.cs" />
     <Compile Include="InMemory\MemoryBlobStorageProvider.cs" />
@@ -55,13 +56,13 @@
     <Compile Include="NonIdempotentAttribute.cs" />
     <Compile Include="Providers\TaskFactoryExtensions.cs" />
     <Compile Include="Providers\AzurePolicies.cs" />
+    <Compile Include="Queues\QueueStorageExtensions.cs" />
     <Compile Include="SideEffectFreeAttribute.cs" />
     <Compile Include="Documents\IDocumentName.cs" />
     <Compile Include="Documents\IDocumentStorage.cs" />
     <Compile Include="Lists\IListStorage.cs" />
     <Compile Include="Providers\Blobs\AzureBlobProvider.cs" />
     <Compile Include="Providers\Blobs\IBlobProvider.cs" />
-    <Compile Include="Queues\IQueueStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Azure\AzurePolicies.cs" />
     <Compile Include="Azure\BlobStorageProvider.cs" />
@@ -70,23 +71,23 @@
     <Compile Include="Azure\QueueStorageProvider.cs" />
     <Compile Include="Azure\TableStorageProvider.cs" />
     <Compile Include="BlobCounter.cs" />
-    <Compile Include="BlobName.cs" />
-    <Compile Include="CloudEntity.cs" />
+    <Compile Include="Blobs\BlobName.cs" />
+    <Compile Include="Tables\CloudEntity.cs" />
     <Compile Include="CloudFormatter.cs" />
     <Compile Include="CloudStorageProviders.cs" />
-    <Compile Include="CloudTable.cs" />
-    <Compile Include="IBlobStorageProvider.cs" />
+    <Compile Include="Tables\CloudTable.cs" />
+    <Compile Include="Blobs\IBlobStorageProvider.cs" />
     <Compile Include="IIntermediateDataSerializer.cs" />
-    <Compile Include="IQueueStorageProvider.cs" />
+    <Compile Include="Queues\IQueueStorageProvider.cs" />
     <Compile Include="IRuntimeFinalizer.cs" />
-    <Compile Include="ITableStorageProvider.cs" />
-    <Compile Include="MessageEnvelope.cs" />
-    <Compile Include="MessageWrapper.cs" />
-    <Compile Include="RankAttribute.cs" />
-    <Compile Include="StorageExtensions.cs" />
-    <Compile Include="TemporaryBlobName.cs" />
+    <Compile Include="Tables\ITableStorageProvider.cs" />
+    <Compile Include="Queues\MessageEnvelope.cs" />
+    <Compile Include="Queues\MessageWrapper.cs" />
+    <Compile Include="Blobs\RankAttribute.cs" />
+    <Compile Include="Tables\TableStorageExtensions.cs" />
+    <Compile Include="Blobs\TemporaryBlobName.cs" />
     <Compile Include="TypeMapperProvider.cs" />
-    <Compile Include="UntypedBlobName.cs" />
+    <Compile Include="Blobs\UntypedBlobName.cs" />
     <Compile Include="Values\IValueStorage.cs" />
   </ItemGroup>
   <ItemGroup>

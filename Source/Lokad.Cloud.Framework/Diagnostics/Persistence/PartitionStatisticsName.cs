@@ -3,7 +3,7 @@
 // URL: http://www.lokad.com/
 #endregion
 
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Diagnostics.Persistence
@@ -32,12 +32,12 @@ namespace Lokad.Cloud.Diagnostics.Persistence
 			return new PartitionStatisticsName(timeSegment, partitionKey);
 		}
 
-        public static PartitionStatisticsName GetPrefix()
+		public static PartitionStatisticsName GetPrefix()
 		{
 			return new PartitionStatisticsName(null, null);
 		}
 
-        public static PartitionStatisticsName GetPrefix(string timeSegment)
+		public static PartitionStatisticsName GetPrefix(string timeSegment)
 		{
 			return new PartitionStatisticsName(timeSegment, null);
 		}

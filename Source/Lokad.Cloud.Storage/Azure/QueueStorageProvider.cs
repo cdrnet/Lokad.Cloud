@@ -9,6 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
+using Lokad.Cloud.Storage.Blobs;
+using Lokad.Cloud.Storage.Queues;
 using Lokad.Diagnostics;
 using Lokad.Quality;
 using Lokad.Serialization;

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Storage

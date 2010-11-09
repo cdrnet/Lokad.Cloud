@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Lokad.Cloud.Storage.Tables;
 using Lokad.Serialization;
 using Microsoft.WindowsAzure.StorageClient;
 

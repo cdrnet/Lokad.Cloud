@@ -5,7 +5,9 @@
 
 using Lokad.Cloud.Management;
 using Lokad.Cloud.ServiceFabric;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
+using Lokad.Cloud.Storage.Queues;
+using Lokad.Cloud.Storage.Tables;
 
 namespace Lokad.Cloud
 {

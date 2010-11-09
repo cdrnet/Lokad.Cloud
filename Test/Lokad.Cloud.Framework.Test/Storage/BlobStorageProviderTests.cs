@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Cloud.Test;
 using Lokad.Quality;
 using Lokad.Threading;

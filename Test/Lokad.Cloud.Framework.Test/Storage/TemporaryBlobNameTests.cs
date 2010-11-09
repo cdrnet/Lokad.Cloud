@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using Lokad.Cloud.Storage.Blobs;
 using Lokad.Quality;
 using NUnit.Framework;
 

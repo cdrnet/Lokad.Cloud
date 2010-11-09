@@ -5,7 +5,7 @@
 
 using Lokad.Cloud.ServiceFabric;
 using Lokad.Cloud.ServiceFabric.Runtime;
-using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 
 namespace Lokad.Cloud.Services
 {

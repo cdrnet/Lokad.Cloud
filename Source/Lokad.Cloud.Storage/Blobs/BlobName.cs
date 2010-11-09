@@ -6,7 +6,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Lokad.Cloud.Storage
+namespace Lokad.Cloud.Storage.Blobs
 {
 	/// <summary>
 	/// Base class for strongly typed hierarchical references to blobs of a

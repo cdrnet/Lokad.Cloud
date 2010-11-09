@@ -6,6 +6,7 @@
 using System;
 using System.Runtime.Serialization;
 using Lokad.Cloud.Storage;
+using Lokad.Cloud.Storage.Blobs;
 
 namespace Lokad.Cloud.ServiceFabric
 {
