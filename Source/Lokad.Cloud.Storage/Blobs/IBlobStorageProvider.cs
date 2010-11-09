@@ -26,6 +26,9 @@ namespace Lokad.Cloud.Storage.Blobs
 		/// <remarks>Returns <c>true</c> if the container has been actually deleted.</remarks>
 		bool DeleteContainer(string containerName);
 
+		/// <summary>Iterates over the all container names.</summary>
+		IEnumerable<string> ListContainers(string prefix = null);
+
 		/// <summary>Puts a blob (overwrite if the blob already exists).</summary>
 		/// <remarks>Creates the container if it does not exist beforehand.</remarks>
 		void PutBlob<T>(string containerName, string blobName, T item);

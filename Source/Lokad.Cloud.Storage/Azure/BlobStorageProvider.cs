@@ -100,6 +100,24 @@ namespace Lokad.Cloud.Storage.Azure
 			}
 		}
 
+		public IEnumerable<string> ListContainers(string prefix = null)
+		{
+			IEnumerator<CloudBlobContainer> enumerator = String.IsNullOrEmpty(prefix)
+				? _blobStorage.ListContainers().GetEnumerator()
+				: _blobStorage.ListContainers(prefix).GetEnumerator();
+
+			while (true)
+			{
+				if (!_azureServerPolicy.Get(enumerator.MoveNext))
+				{
+					yield break;
+				}
+
+				// removing /container/ from the blob name (dev storage: /account/container/)
+				yield return enumerator.Current.Name;
+			}
+		}
+
 		public void PutBlob<T>(string containerName, string blobName, T item)
 		{
 			PutBlob(containerName, blobName, item, true);
@@ -630,7 +648,7 @@ namespace Lokad.Cloud.Storage.Azure
 			{
 				try
 				{
-					if(!_azureServerPolicy.Get<bool>(enumerator.MoveNext))
+					if(!_azureServerPolicy.Get(enumerator.MoveNext))
 					{
 						yield break;
 					}

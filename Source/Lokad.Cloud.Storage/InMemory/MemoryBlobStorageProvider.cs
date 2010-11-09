@@ -71,6 +71,19 @@ namespace Lokad.Cloud.Storage.InMemory
 			}
 		}
 
+		public IEnumerable<string> ListContainers(string prefix = null)
+		{
+			lock (_syncRoot)
+			{
+				if (String.IsNullOrEmpty(prefix))
+				{
+					return Containers.Keys;
+				}
+
+				return Containers.Keys.Where(key => key.StartsWith(prefix));
+			}
+		}
+
 		public void PutBlob<T>(string containerName, string blobName, T item)
 		{
 			PutBlob<T>(containerName, blobName, item, true);

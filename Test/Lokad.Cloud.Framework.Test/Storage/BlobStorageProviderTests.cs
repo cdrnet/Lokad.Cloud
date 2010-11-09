@@ -44,6 +44,14 @@ namespace Lokad.Cloud.Storage.Test
 		}
 
 		[Test]
+		public void CanListContainers()
+		{
+			Assert.IsTrue(Provider.ListContainers().Contains(ContainerName));
+			Assert.IsTrue(Provider.ListContainers(ContainerName.Substring(0, 5)).Contains(ContainerName));
+			Assert.IsFalse(Provider.ListContainers("another-prefix").Contains(ContainerName));
+		}
+
+		[Test]
 		public void GetAndDelete()
 		{
 			Provider.DeleteBlob(ContainerName, BlobName);
