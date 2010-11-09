@@ -58,9 +58,6 @@
     <Compile Include="Providers\AzurePolicies.cs" />
     <Compile Include="Queues\QueueStorageExtensions.cs" />
     <Compile Include="SideEffectFreeAttribute.cs" />
-    <Compile Include="Documents\IDocumentName.cs" />
-    <Compile Include="Documents\IDocumentStorage.cs" />
-    <Compile Include="Lists\IListStorage.cs" />
     <Compile Include="Providers\Blobs\AzureBlobProvider.cs" />
     <Compile Include="Providers\Blobs\IBlobProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
