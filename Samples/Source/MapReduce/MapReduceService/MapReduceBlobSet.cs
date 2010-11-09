@@ -5,9 +5,9 @@
 
 using System;
 using System.Collections.Generic;
-using Lokad.Cloud.Storage;
 using Lokad.Cloud.Storage.Blobs;
 using Lokad.Cloud.Storage.Queues;
+using Lokad.Cloud.Storage.Synchronization;
 using Lokad.Quality;
 
 namespace Lokad.Cloud.Samples.MapReduce

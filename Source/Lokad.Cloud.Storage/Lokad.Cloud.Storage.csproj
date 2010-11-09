@@ -70,7 +70,7 @@
     <Compile Include="Azure\FatEntity.cs" />
     <Compile Include="Azure\QueueStorageProvider.cs" />
     <Compile Include="Azure\TableStorageProvider.cs" />
-    <Compile Include="BlobCounter.cs" />
+    <Compile Include="Synchronization\BlobCounter.cs" />
     <Compile Include="Blobs\BlobName.cs" />
     <Compile Include="Tables\CloudEntity.cs" />
     <Compile Include="Serialization\CloudFormatter.cs" />

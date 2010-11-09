@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using Lokad.Cloud.Storage.Blobs;
+using Lokad.Cloud.Storage.Synchronization;
 using Lokad.Cloud.Test;
 using Lokad.Threading;
 using NUnit.Framework;
