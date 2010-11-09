@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data.Services.Client;
 using System.Linq;
 using Lokad.Cloud.Storage.Azure;
+using Lokad.Cloud.Storage.Serialization;
 using Lokad.Cloud.Storage.Tables;
 using Lokad.Serialization;
 

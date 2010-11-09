@@ -73,11 +73,11 @@
     <Compile Include="BlobCounter.cs" />
     <Compile Include="Blobs\BlobName.cs" />
     <Compile Include="Tables\CloudEntity.cs" />
-    <Compile Include="CloudFormatter.cs" />
+    <Compile Include="Serialization\CloudFormatter.cs" />
     <Compile Include="CloudStorageProviders.cs" />
     <Compile Include="Tables\CloudTable.cs" />
     <Compile Include="Blobs\IBlobStorageProvider.cs" />
-    <Compile Include="IIntermediateDataSerializer.cs" />
+    <Compile Include="Serialization\IIntermediateDataSerializer.cs" />
     <Compile Include="Queues\IQueueStorageProvider.cs" />
     <Compile Include="IRuntimeFinalizer.cs" />
     <Compile Include="Tables\ITableStorageProvider.cs" />

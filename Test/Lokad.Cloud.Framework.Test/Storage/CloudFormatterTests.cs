@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using Lokad.Cloud.Storage.Serialization;
 using NUnit.Framework;
 using System.IO;
 using System.Runtime.Serialization;

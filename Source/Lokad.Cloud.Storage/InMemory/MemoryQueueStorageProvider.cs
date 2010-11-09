@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Lokad.Cloud.Storage.Queues;
+using Lokad.Cloud.Storage.Serialization;
 using Lokad.Serialization;
 
 namespace Lokad.Cloud.Storage.InMemory

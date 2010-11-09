@@ -4,6 +4,7 @@
 #endregion
 
 using System;
+using System.ComponentModel;
 using System.Net;
 using Lokad.Serialization;
 using Microsoft.WindowsAzure;
@@ -38,49 +39,50 @@ namespace Lokad.Cloud.Storage
         {
             return new InMemoryStorageBuilder();
         }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public abstract class CloudStorageBuilder
+        {
+            /// <remarks>Can not be null</remarks>
+            protected IDataSerializer DataSerializer { get; private set; }
+
+            /// <remarks>Can be null if not needed</remarks>
+            protected IRuntimeFinalizer RuntimeFinalizer { get; private set; }
+
+            protected CloudStorageBuilder()
+            {
+                // defaults
+                DataSerializer = new Serialization.CloudFormatter();
+            }
+
+            public CloudStorageBuilder WithDataSerializer(IDataSerializer dataSerializer)
+            {
+                DataSerializer = dataSerializer;
+                return this;
+            }
+
+            public CloudStorageBuilder WithRuntimeFinalizer(IRuntimeFinalizer runtimeFinalizer)
+            {
+                RuntimeFinalizer = runtimeFinalizer;
+                return this;
+            }
+
+            public abstract Blobs.IBlobStorageProvider BuildBlobStorage();
+            public abstract Tables.ITableStorageProvider BuildTableStorage();
+            public abstract Queues.IQueueStorageProvider BuildQueueStorage();
+
+            public CloudStorageProviders BuildStorageProviders()
+            {
+                return new CloudStorageProviders(
+                    BuildBlobStorage(),
+                    BuildQueueStorage(),
+                    BuildTableStorage(),
+                    RuntimeFinalizer);
+            }
+        }
     }
 
-    public abstract class CloudStorageBuilder
-    {
-        /// <remarks>Can not be null</remarks>
-        protected IDataSerializer DataSerializer { get; private set; }
-
-        /// <remarks>Can be null if not needed</remarks>
-        protected IRuntimeFinalizer RuntimeFinalizer { get; private set; }
-
-        protected CloudStorageBuilder()
-        {
-            // defaults
-            DataSerializer = new CloudFormatter();
-        }
-
-        public CloudStorageBuilder WithDataSerializer(IDataSerializer dataSerializer)
-        {
-            DataSerializer = dataSerializer;
-            return this;
-        }
-
-        public CloudStorageBuilder WithRuntimeFinalizer(IRuntimeFinalizer runtimeFinalizer)
-        {
-            RuntimeFinalizer = runtimeFinalizer;
-            return this;
-        }
-
-        public abstract Blobs.IBlobStorageProvider BuildBlobStorage();
-        public abstract Tables.ITableStorageProvider BuildTableStorage();
-        public abstract Queues.IQueueStorageProvider BuildQueueStorage();
-
-        public CloudStorageProviders BuildStorageProviders()
-        {
-            return new CloudStorageProviders(
-                BuildBlobStorage(),
-                BuildQueueStorage(),
-                BuildTableStorage(),
-                RuntimeFinalizer);
-        }
-    }
-
-    internal sealed class InMemoryStorageBuilder : CloudStorageBuilder
+    internal sealed class InMemoryStorageBuilder : CloudStorage.CloudStorageBuilder
     {
         public override Blobs.IBlobStorageProvider BuildBlobStorage()
         {
@@ -107,7 +109,7 @@ namespace Lokad.Cloud.Storage
         }
     }
 
-    internal sealed class AzureCloudStorageBuilder : CloudStorageBuilder
+    internal sealed class AzureCloudStorageBuilder : CloudStorage.CloudStorageBuilder
     {
         private readonly CloudStorageAccount _storageAccount;
 

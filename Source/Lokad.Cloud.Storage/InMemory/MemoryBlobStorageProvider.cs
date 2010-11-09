@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Lokad.Cloud.Storage.Blobs;
+using Lokad.Cloud.Storage.Serialization;
 using Lokad.Serialization;
 using Lokad.Threading;
 

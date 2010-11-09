@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 using Lokad.Cloud.Storage.Blobs;
+using Lokad.Cloud.Storage.Serialization;
 using Lokad.Diagnostics;
 using Lokad.Serialization;
 using Lokad.Threading;

@@ -7,7 +7,7 @@ using System.IO;
 using System.Xml.Linq;
 using Lokad.Serialization;
 
-namespace Lokad.Cloud.Storage
+namespace Lokad.Cloud.Storage.Serialization
 {
 	/// <summary>
 	/// Optional extension for custom formatters supporting an

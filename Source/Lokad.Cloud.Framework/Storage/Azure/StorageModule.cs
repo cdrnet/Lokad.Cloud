@@ -21,7 +21,7 @@ namespace Lokad.Cloud.Storage.Azure
 	{
 		protected override void Load(ContainerBuilder builder)
 		{
-			builder.Register<CloudFormatter>().As<IDataSerializer>().DefaultOnly();
+			builder.Register<Serialization.CloudFormatter>().As<IDataSerializer>().DefaultOnly();
 
 			// ReSharper disable ConvertClosureToMethodGroup
 			builder.Register(context => StorageAccountFromSettings(context));
@@ -66,14 +66,14 @@ namespace Lokad.Cloud.Storage.Azure
 		static Tables.ITableStorageProvider TableStorageProvider(IContext c)
 		{
 			return CloudStorage.ForAzureAccount(c.Resolve<CloudStorageAccount>())
-				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new CloudFormatter())
+				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new Serialization.CloudFormatter())
 				.BuildTableStorage();
 		}
 
 		static Queues.IQueueStorageProvider QueueStorageProvider(IContext c)
 		{
 			return CloudStorage.ForAzureAccount(c.Resolve<CloudStorageAccount>())
-				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new CloudFormatter())
+				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new Serialization.CloudFormatter())
 				.WithRuntimeFinalizer(c.ResolveOptional<IRuntimeFinalizer>())
 				.BuildQueueStorage();
 		}
@@ -81,7 +81,7 @@ namespace Lokad.Cloud.Storage.Azure
 		static Blobs.IBlobStorageProvider BlobStorageProvider(IContext c)
 		{
 			return CloudStorage.ForAzureAccount(c.Resolve<CloudStorageAccount>())
-				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new CloudFormatter())
+				.WithDataSerializer(c.ResolveOptional<IDataSerializer>() ?? new Serialization.CloudFormatter())
 				.BuildBlobStorage();
 		}
 	}

@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 using System.Xml.Linq;
 using Lokad.Cloud.Storage.Blobs;
 using Lokad.Cloud.Storage.Queues;
+using Lokad.Cloud.Storage.Serialization;
 using Lokad.Diagnostics;
 using Lokad.Quality;
 using Lokad.Serialization;

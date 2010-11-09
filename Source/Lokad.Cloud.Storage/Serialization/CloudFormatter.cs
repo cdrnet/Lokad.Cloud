@@ -10,7 +10,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Lokad.Serialization;
 
-namespace Lokad.Cloud.Storage
+namespace Lokad.Cloud.Storage.Serialization
 {
 	/// <summary>
 	/// Formatter based on <c>DataContractSerializer</c> and <c>NetDataContractSerializer</c>. 
