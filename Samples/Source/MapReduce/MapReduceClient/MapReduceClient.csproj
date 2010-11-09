@@ -55,14 +55,6 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Lokad.Shared, Version=1.5.110.0, Culture=neutral, PublicKeyToken=43f0664b2b4db1fc, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Resource\Library\Lokad.Shared.dll</HintPath>
-    </Reference>
-    <Reference Include="Lokad.Stack, Version=1.5.110.0, Culture=neutral, PublicKeyToken=43f0664b2b4db1fc, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Resource\Library\Lokad.Stack.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -87,7 +79,11 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Setup.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Source\Lokad.Cloud.Storage\Lokad.Cloud.Storage.csproj">
@@ -97,10 +93,6 @@
     <ProjectReference Include="..\MapReduceClientLib\MapReduceClientLib.csproj">
       <Project>{600A345F-DEE1-41E4-B106-3366AFB3B56C}</Project>
       <Name>MapReduceClientLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Source\Lokad.Cloud.Framework\Lokad.Cloud.Framework.csproj">
-      <Project>{BA84F8E7-F8B9-4912-BF93-9F4D0DDC5C29}</Project>
-      <Name>Lokad.Cloud.Framework</Name>
     </ProjectReference>
     <ProjectReference Include="..\MapReduceService\MapReduceService.csproj">
       <Project>{81BFCE50-70C9-434D-9AD4-55C4054A2CC8}</Project>
@@ -115,6 +107,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

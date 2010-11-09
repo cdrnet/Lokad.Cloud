@@ -4,14 +4,8 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using Lokad.Cloud.Samples.MapReduce;
 using System.Threading;
 using Lokad.Cloud.Storage;
 
@@ -19,9 +13,9 @@ namespace Lokad.Cloud.Samples.MapReduce
 {
 	public partial class MainForm : Form
 	{
-		string _currentFileName = null;
-		MapReduceJob<byte[], Histogram> _mapReduceJob = null;
-		Histogram _currentHistogram = null;
+		string _currentFileName;
+		MapReduceJob<byte[], Histogram> _mapReduceJob;
+		Histogram _currentHistogram;
 
 		public MainForm()
 		{
@@ -56,53 +50,55 @@ namespace Lokad.Cloud.Samples.MapReduce
 			_currentHistogram = null;
 			_pnlHistogram.Refresh();
 
-			_mapReduceJob = new MapReduceJob<byte[], Histogram>(
-				Setup.Container.Resolve<IBlobStorageProvider>(),
-				Setup.Container.Resolve<IQueueStorageProvider>());
+			var storage = CloudStorage
+				.ForAzureConnectionString(Properties.Settings.Default.DataConnectionString)
+				.BuildStorageProviders();
+
+			_mapReduceJob = new MapReduceJob<byte[], Histogram>(storage.BlobStorage, storage.QueueStorage);
 
 			// Do this asynchronously because it requires a few seconds
-			ThreadPool.QueueUserWorkItem(new WaitCallback((s) =>
-			{
-				using(var input = (Bitmap)Bitmap.FromFile(_currentFileName))
+			ThreadPool.QueueUserWorkItem(s =>
 				{
-					var slices = Helpers.SliceBitmapAsPng(input, 14);
+					using (var input = (Bitmap) Bitmap.FromFile(_currentFileName))
+					{
+						var slices = Helpers.SliceBitmapAsPng(input, 14);
 
-					// Queue slices
-					_mapReduceJob.PushItems(new HistogramMapReduceFunctions(), slices, 4);
-					//_currentHistogram = Helpers.ComputeHistogram(input);
-					//_pnlHistogram.Refresh();
-				}
+						// Queue slices
+						_mapReduceJob.PushItems(new HistogramMapReduceFunctions(), slices, 4);
+						//_currentHistogram = Helpers.ComputeHistogram(input);
+						//_pnlHistogram.Refresh();
+					}
 
-				BeginInvoke(new Action(() => _timer.Start()));
-			}));
+					BeginInvoke(new Action(() => _timer.Start()));
+				});
 		}
 
 		private void _timer_Tick(object sender, EventArgs e)
 		{
 			_timer.Stop();
-			ThreadPool.QueueUserWorkItem(new WaitCallback((s) =>
-			{
-				// Check job status
-				bool completed = _mapReduceJob.IsCompleted();
-
-				if(completed)
+			ThreadPool.QueueUserWorkItem(s =>
 				{
-					_currentHistogram = _mapReduceJob.GetResult();
-					_mapReduceJob.DeleteJobData();
-				}
+					// Check job status
+					bool completed = _mapReduceJob.IsCompleted();
 
-				BeginInvoke(new Action(() =>
-				{
-					if(completed)
+					if (completed)
 					{
-						_pnlHistogram.Refresh();
-						_btnStart.Enabled = true;
-						_btnBrowse.Enabled = true;
-						_prgProgress.Style = ProgressBarStyle.Blocks;
+						_currentHistogram = _mapReduceJob.GetResult();
+						_mapReduceJob.DeleteJobData();
 					}
-					else _timer.Start();
-				}));
-			}));
+
+					BeginInvoke(new Action(() =>
+						{
+							if (completed)
+							{
+								_pnlHistogram.Refresh();
+								_btnStart.Enabled = true;
+								_btnBrowse.Enabled = true;
+								_prgProgress.Style = ProgressBarStyle.Blocks;
+							}
+							else _timer.Start();
+						}));
+				});
 		}
 
 		private void _pnlHistogram_Paint(object sender, PaintEventArgs e)

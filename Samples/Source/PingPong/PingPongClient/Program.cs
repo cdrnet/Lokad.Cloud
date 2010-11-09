@@ -4,8 +4,8 @@
 #endregion
 
 using System;
-using Lokad.Cloud;
 using Lokad.Cloud.Storage;
+using PingPongClient.Properties;
 
 namespace PingPongClient
 {
@@ -13,8 +13,7 @@ namespace PingPongClient
 	{
 		static void Main(string[] args)
 		{
-			var providers = Standalone.CreateProvidersFromConfiguration("autofac");
-			var queues = providers.QueueStorage;
+			var queues = CloudStorage.ForAzureConnectionString(Settings.Default.DataConnectionString).BuildQueueStorage();
 
 			var input = new[] {0.0, 1.0, 2.0};
 
