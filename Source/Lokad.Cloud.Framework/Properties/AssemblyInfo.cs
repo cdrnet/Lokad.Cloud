@@ -1,7 +1,8 @@
-﻿#region Copyright (c) Lokad 2009
+﻿#region Copyright (c) Lokad 2009-2010
 // This code is released under the terms of the new BSD licence.
 // URL: http://www.lokad.com/
 #endregion
+
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -11,7 +12,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("Lokad.Cloud.Framework")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyCopyright("Copyright © Lokad 2009")]
+[assembly: AssemblyCopyright("Copyright © Lokad 2009-2010")]
 [assembly: AssemblyTrademark("")]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
