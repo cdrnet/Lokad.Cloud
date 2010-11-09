@@ -4,7 +4,6 @@
 #endregion
 using System;
 using System.Runtime.Serialization;
-using Lokad.Cloud;
 using Lokad.Cloud.Storage;
 
 namespace SimpleBlob
@@ -36,9 +35,10 @@ namespace SimpleBlob
     {
         static void Main(string[] args)
         {            
-            // TODO: change your connection string here
-            var providers = Standalone.CreateProviders("DefaultEndpointsProtocol=https;AccountName=;AccountKey=");
-            var blobStorage = providers.BlobStorage;
+            // TODO: change your connection string here, or use one of the other options
+            var blobStorage = CloudStorage
+                .ForAzureConnectionString("DefaultEndpointsProtocol=https;AccountName=;AccountKey=")
+                .BuildBlobStorage();
 
             var potterBook = new Book { Author = "J. K. Rowling", Title = "Harry Potter" };
             // Resulting blob name is: Bloomsbury Publishing/1

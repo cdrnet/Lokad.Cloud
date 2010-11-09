@@ -4,7 +4,6 @@
 #endregion
 using System;
 using System.Runtime.Serialization;
-using Lokad.Cloud;
 using Lokad.Cloud.Storage;
 
 namespace SimpleTable
@@ -24,10 +23,12 @@ namespace SimpleTable
         static void Main(string[] args)
         {
             // TODO: change your connection string here
-            var providers = Standalone.CreateProviders("DefaultEndpointsProtocol=https;AccountName=;AccountKey=");
+            var tableStorage = CloudStorage
+                .ForAzureConnectionString("DefaultEndpointsProtocol=https;AccountName=;AccountKey=")
+                .BuildTableStorage();
             
             // 'books' is the name of the table
-            var books = new CloudTable<Book>(providers.TableStorage, "books");
+            var books = new CloudTable<Book>(tableStorage, "books");
 
             var potterBook = new Book { Author = "J. K. Rowling", Title = "Harry Potter" };
             var poemsBook = new Book { Author = "John Keats", Title = "Complete Poems" };
